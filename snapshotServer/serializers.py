@@ -28,6 +28,7 @@ class ApplicationSerializer(serializers.ModelSerializer):
         fields = ('id', 'name',)
 
 class VersionSerializer(serializers.ModelSerializer):
+    
     class Meta:
         model = Version
         fields = ('id', 'name', 'application')
@@ -40,7 +41,7 @@ class TestEnvironmentSerializer(serializers.ModelSerializer):
 class TestSessionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestSession
-        fields = ('sessionId', 'date', 'testCase')
+        fields = ('sessionId', 'date', 'testCases')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:

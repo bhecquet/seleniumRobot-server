@@ -1,0 +1,9 @@
+.leftPane {
+	display: inline-block;
+	width: 200px;
+}
+
+.rightPane {
+	display: inline-block;
+	min-width: 1000px;
+}

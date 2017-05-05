@@ -1,0 +1,18 @@
+{% extends "snapshotServer/base.html" %}
+{% load static %}
+
+{% block head %}
+<link rel="stylesheet" href="{% static 'css/compare.css' %}">
+<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+
+
+{% endblock %}
+
+{% block body %}
+	<div id="selection" class="leftPane">
+	{% include "snapshotServer/selectionPanel.html" %}
+	</div>
+	<div id="display" class="label label-success rightPane">
+	{% include "snapshotServer/displayPanel.html" %}
+	</div>
+{% endblock %}
