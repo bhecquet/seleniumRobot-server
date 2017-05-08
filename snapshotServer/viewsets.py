@@ -13,7 +13,26 @@ from django.shortcuts import render
 from rest_framework import viewsets
 from snapshotServer.models import Snapshot, Application, TestEnvironment, \
     TestCase, TestStep, Difference, Version, TestSession
+from rest_framework.utils.serializer_helpers import ReturnDict
 
+
+class BaseViewSet(viewsets.ModelViewSet):
+    
+    def perform_create(self, serializer):
+        """
+        Do not create an object if it already exists
+        """
+        objects = self.serializer_class.Meta.model.objects.all()
+        for key, value in serializer.validated_data.items():
+            if type(value) == list:
+                objects = objects.filter(**{key + '__in': value})
+            else:
+                objects = objects.filter(**{key: value})
+    
+        if not objects:
+            super(BaseViewSet, self).perform_create(serializer)
+        else:
+            serializer.data.serializer._data.update({'id': objects[0].id})
 
 class UserViewSet(viewsets.ModelViewSet):
     """
@@ -30,27 +49,27 @@ class GroupViewSet(viewsets.ModelViewSet):
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
     
-class ApplicationViewSet(viewsets.ModelViewSet):
+class ApplicationViewSet(BaseViewSet):
     queryset = Application.objects.all()
     serializer_class = ApplicationSerializer
     
-class VersionViewSet(viewsets.ModelViewSet):
+class VersionViewSet(BaseViewSet):
     queryset = Version.objects.all()
     serializer_class = VersionSerializer
     
-class TestEnvironmentViewSet(viewsets.ModelViewSet):
+class TestEnvironmentViewSet(BaseViewSet):
     queryset = TestEnvironment.objects.all()
     serializer_class = TestEnvironmentSerializer
     
-class TestSessionViewSet(viewsets.ModelViewSet):
+class TestSessionViewSet(BaseViewSet):
     queryset = TestSession.objects.all()
     serializer_class = TestSessionSerializer
     
-class TestCaseViewSet(viewsets.ModelViewSet):
+class TestCaseViewSet(BaseViewSet):
     queryset = TestCase.objects.all()
     serializer_class = TestCaseSerializer
     
-class TestStepViewSet(viewsets.ModelViewSet):
+class TestStepViewSet(BaseViewSet):
     queryset = TestStep.objects.all()
     serializer_class = TestStepSerializer
     

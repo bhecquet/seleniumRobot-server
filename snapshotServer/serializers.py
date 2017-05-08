@@ -39,9 +39,13 @@ class TestEnvironmentSerializer(serializers.ModelSerializer):
         fields = ('name',)
 
 class TestSessionSerializer(serializers.ModelSerializer):
+    
+    # allow creating a test case given the name of environment and application, not the private key
+    environment = serializers.SlugRelatedField(slug_field='name', queryset=TestEnvironment.objects.all())
+    
     class Meta:
         model = TestSession
-        fields = ('sessionId', 'date', 'testCases')
+        fields = ('sessionId', 'date', 'testCases', 'browser', 'environment')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,15 +54,13 @@ class TestStepSerializer(serializers.ModelSerializer):
 
 class TestCaseSerializer(serializers.ModelSerializer):
     
-    # allow creating a test case given the name of environment and application, not the private key
-    environment = serializers.SlugRelatedField(slug_field='name', queryset=TestEnvironment.objects.all())
     version = serializers.SlugRelatedField(slug_field='name', queryset=Version.objects.all())
     
     class Meta:
         model = TestCase
-        fields = ('name', 'environment', 'version')
+        fields = ('name', 'version')
         
 class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Snapshot
-        fields = ('step', 'browser', 'session')
+        fields = ('step', 'testCase', 'session')

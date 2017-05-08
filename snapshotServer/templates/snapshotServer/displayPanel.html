@@ -1,1 +1,8 @@
-coucou
+Reference
+{% if reference %}
+	<img src="{{ reference.image.url }}" width="200px">
+{% else %}
+	No Reference
+{% endif %}
+Step
+<img src="{{ stepSnapshot.image.url }}" width="200px">

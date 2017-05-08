@@ -14,11 +14,14 @@ Including another URLconf
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework import routers
 
+from django.conf import settings
 from snapshotServer import views, viewsets
-from snapshotServer.views.CompareSnapshot import SessionList, TestList, StepList
+from snapshotServer.views.CompareSnapshot import SessionList, TestList, StepList, \
+    PictureView
 from snapshotServer.views.FileUploadView import FileUploadView
 
 
@@ -33,6 +36,7 @@ router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'groups', viewsets.GroupViewSet)
 router.register(r'session', viewsets.TestSessionViewSet)
 
+
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
@@ -40,6 +44,10 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     
     url(r'^compare/$', SessionList.as_view()),
-    url(r'^compare/testList/([0-9]+)/$', TestList.as_view(), name="testlistView"),
-    url(r'^compare/stepList/([0-9]+)/$', StepList.as_view(), name="steplistView"),
+    url(r'^compare/testList/([0-9]+)/$', TestList.as_view(), name="testlistView"),  # /sessionId/
+    url(r'^compare/stepList/([0-9]+)/([0-9]+)/$', StepList.as_view(), name="steplistView"), # /sessionId/testCase/
+    url(r'^compare/picture/([0-9]+)/([0-9]+)/([0-9]+)/$', PictureView.as_view(), name="pictureView"), # /sessionId/testCase/testStep
+    
+    # add media directory
+    static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)[0],
 ]

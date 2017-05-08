@@ -1,0 +1,13 @@
+pour mettre à jour un objet via l'API (nécessite de passer tous les paramètres):
+- requête PUT: curl -u <user>:<password> --request PUT -F "name=2.4" http://localhost:8000/api/version/2/
+
+pour mettre à jour un objet via l'API en ne spécifiant que le champ à mettre à jour
+- requête PATCH: curl -u <user>:<password> --request PATCH -F "name=2.4" http://localhost:8000/api/version/2/
+- Dans le cas où le champ à mettre à jour accepte une liste, il faut spécifier plusieurs fois celui-ci
+  ex: curl -u <user>:<password> --request PATCH -F "testCases=1" -F "testCases=2" http://localhost:8000/api/session/2/
+
+pour effacer un objet
+- requête DELETE: curl -u <user>:<password> --request DELETE -F "name=2.4" http://localhost:8000/api/version/2/
+
+pour créer un objet:
+- requête POST: curl -u <user>:<password> --request POST -F "name=2.4" -F "application=1" http://localhost:8000/api/version/

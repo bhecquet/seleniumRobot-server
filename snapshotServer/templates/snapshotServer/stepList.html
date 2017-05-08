@@ -2,7 +2,11 @@
 	<table class="table table-striped">
 		{% for testStep in object_list %}
 		<tr>
-			<td><a href='#'>{{ testStep }}</a></td>
+			<td>
+				<a href='#' onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStep.id %}', 'display')">
+				{{ testStep }}
+				</a>
+			</td>
 		</tr>
 		{% endfor %}
 		

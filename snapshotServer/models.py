@@ -24,12 +24,11 @@ class TestEnvironment(models.Model):
 
 class TestCase(models.Model):
     name = models.CharField(max_length=100)
-    environment = models.ForeignKey(TestEnvironment, related_name='testCase')
     version = models.ForeignKey(Version, related_name='testCase')
-    testSteps = models.ManyToManyField("TestStep", related_name="testCase")
+    testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     
     def __str__(self):
-        return "%s - %s - %s" % (self.name, self.environment.name, self.version.name)
+        return "%s - %s" % (self.name, self.version.name)
     
 class TestStep(models.Model):
     name = models.CharField(max_length=100) 
@@ -41,15 +40,16 @@ class TestSession(models.Model):
     sessionId = models.CharField(max_length=32)
     date = models.DateField()
     testCases = models.ManyToManyField("TestCase", related_name='testsession', blank=True)
+    browser = models.CharField(max_length=20)
+    environment = models.ForeignKey(TestEnvironment, related_name='testsession')
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
     step = models.ForeignKey(TestStep, related_name='snapshots')
-    image = models.ImageField(upload_to='documents/', default=None)
-    browser = models.CharField(max_length=20)
+    image = models.ImageField(upload_to='documents/')
     isReference = models.BooleanField(default=False)
-    session = models.ForeignKey(TestSession, default=None)
-    testCase = models.ForeignKey(TestCase, default=None)
+    session = models.ForeignKey(TestSession)
+    testCase = models.ForeignKey(TestCase)
     
 class Difference(models.Model):
     reference = models.ForeignKey(Snapshot, related_name='differenceRef')
