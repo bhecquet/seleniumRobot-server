@@ -36,7 +36,6 @@ router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'groups', viewsets.GroupViewSet)
 router.register(r'session', viewsets.TestSessionViewSet)
 
-
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^api/', include(router.urls)),
@@ -49,5 +48,5 @@ urlpatterns = [
     url(r'^compare/picture/([0-9]+)/([0-9]+)/([0-9]+)/$', PictureView.as_view(), name="pictureView"), # /sessionId/testCase/testStep
     
     # add media directory
-    static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)[0],
+    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]

@@ -1,0 +1,45 @@
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: infotel}
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.testcase
+    pk: 1
+    fields:
+        name: test1
+        version: 1
+        testSteps: [1]
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: {name: Step 1}
+-   model: snapshotServer.testsession
+    pk: 1
+    fields:
+        sessionId: '1234'
+        date: 2017-05-05
+        browser: firefox
+        environment: 1
+        testCases: [1]
+-   model: snapshotServer.testsession
+    pk: 2
+    fields:
+        sessionId: '1235'
+        date: 2017-05-05
+        browser: firefox
+        environment: 1
+        testCases: []
+-   model: snapshotServer.snapshot
+    pk: 1
+    fields: {step: 1, image: documents/Image1.png, isReference: true, session: 1,
+        testCase: 1}
+-   model: snapshotServer.snapshot
+    pk: 2
+    fields: {step: 1, image: documents/Image1_2k7DlRO.png, isReference: false, session: 1,
+        testCase: 1}
+-   model: snapshotServer.difference
+    pk: 1
+    fields: {reference: 1, compared: 2, pixels: gANdcQAu}
