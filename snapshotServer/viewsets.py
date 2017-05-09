@@ -1,7 +1,7 @@
 '''
 Created on 4 mai 2017
 
-@author: behe
+@author: bhecquet
 '''
 from snapshotServer.serializers import UserSerializer, GroupSerializer, \
     SnapshotSerializer, ApplicationSerializer, TestEnvironmentSerializer, \

@@ -1,7 +1,7 @@
 '''
 Created on 4 mai 2017
 
-@author: behe
+@author: bhecquet
 '''
 
 from django.views.generic import ListView
@@ -29,7 +29,7 @@ class StepList(ListView):
     
     def get_queryset(self):
         try:
-            return TestCase.objects.get(id=self.args[0]).testSteps.all()
+            return TestCase.objects.get(id=self.args[1]).testSteps.all()
         except:
             return []
         

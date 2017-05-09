@@ -13,6 +13,12 @@
         name: test1
         version: 1
         testSteps: [1]
+-   model: snapshotServer.testcase
+    pk: 2
+    fields:
+        name: test2
+        version: 1
+        testSteps: []
 -   model: snapshotServer.teststep
     pk: 1
     fields: {name: Step 1}
@@ -32,6 +38,14 @@
         browser: firefox
         environment: 1
         testCases: []
+-   model: snapshotServer.testsession
+    pk: 3
+    fields:
+        sessionId: '1236'
+        date: 2017-05-05
+        browser: firefox
+        environment: 1
+        testCases: [2]
 -   model: snapshotServer.snapshot
     pk: 1
     fields: {step: 1, image: documents/Image1.png, isReference: true, session: 1,
