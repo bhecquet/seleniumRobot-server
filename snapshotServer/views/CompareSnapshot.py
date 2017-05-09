@@ -5,9 +5,10 @@ Created on 4 mai 2017
 '''
 
 from django.views.generic import ListView
-from snapshotServer.models import TestSession, TestCase, Snapshot
+from snapshotServer.models import TestSession, TestCase, Snapshot, Difference
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView
+import pickle
 
 class SessionList(ListView):
     model = TestSession
@@ -50,7 +51,13 @@ class PictureView(TemplateView):
         
         stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(testCase=self.args[1]).filter(step=self.args[2]).last()
         refSnapshot = Snapshot.objects.filter(testCase=self.args[0]).filter(step=self.args[1]).filter(isReference=True).first()
+        diffPixelsBin = Difference.objects.filter(reference=refSnapshot).filter(compared=stepSnapshot).first().pixels
+        if diffPixelsBin:
+            diffPixels = pickle.loads(diffPixelsBin)
+        else:
+            diffPixels = []
      
         context['reference'] = refSnapshot
         context['stepSnapshot'] = stepSnapshot
+        context['diff'] = str([[p.x, p.y] for p in diffPixels])
         return context

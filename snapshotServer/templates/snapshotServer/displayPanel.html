@@ -1,8 +1,11 @@
-Reference
+<div>
+	<span class="label label-success maskRef">Reference</span>
+	<span class="label label-success maskStep">Step</span>
+</div>
 {% if reference %}
-	<img src="{{ reference.image.url }}" width="200px">
+	<img src="{{ reference.image.url }}" class="maskRef" style="top:30px;">
 {% else %}
-	No Reference
+	<span class="maskRef">No Reference</span>
 {% endif %}
-Step
-<img src="{{ stepSnapshot.image.url }}" width="200px">
+<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;top:30px;" onclick="displayDifference({{ diff }})" class="maskStep"></canvas> 
+<img id="stepSnapshot" src="{{ stepSnapshot.image.url }}" class="maskStep" style="z-index:1;top:30px;">

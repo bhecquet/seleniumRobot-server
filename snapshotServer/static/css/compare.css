@@ -7,3 +7,15 @@
 	display: inline-block;
 	min-width: 1000px;
 }
+
+.maskRef {
+	position: absolute;
+	left: 200px;
+	width: 400px;
+}
+
+.maskStep {
+	position: absolute;
+	left: 600px;
+	width: 400px;
+}
