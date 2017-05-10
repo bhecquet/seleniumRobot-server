@@ -55,4 +55,5 @@ class Difference(models.Model):
     reference = models.ForeignKey(Snapshot, related_name='differenceRef')
     compared = models.ForeignKey(Snapshot, related_name='differenceComp')
     pixels = models.BinaryField(null=True)
+
     
