@@ -74,3 +74,7 @@ class test_CompareSnapshot(TestCase):
         self.assertIsNotNone(response.context['reference'])
         self.assertIsNone(response.context['stepSnapshot'])
         
+    # tests:
+    # - makeRef à True et False => on vérifie que la référence est mise à jour et que le calcul est relancé
+    # - suppression de la toute première référence: cela ne doit pas être possible
+        

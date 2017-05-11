@@ -12,7 +12,7 @@ from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render
 from rest_framework import viewsets
 from snapshotServer.models import Snapshot, Application, TestEnvironment, \
-    TestCase, TestStep, Difference, Version, TestSession
+    TestCase, TestStep, Version, TestSession
 from rest_framework.utils.serializer_helpers import ReturnDict
 
 

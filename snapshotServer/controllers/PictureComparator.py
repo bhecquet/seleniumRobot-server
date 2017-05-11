@@ -4,13 +4,17 @@ Created on 8 mars 2017
 @author: worm
 '''
 
-import cv2 
-import numpy as np
-import os
-from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 import collections
+import os
+import pickle
+import threading
 
-        
+import cv2 
+
+import numpy as np
+from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+
+
 Rectangle = collections.namedtuple("Rectangle", ['x', 'y', 'width', 'height'])
 Pixel = collections.namedtuple("Pixel", ['x', 'y'])
 
@@ -75,3 +79,22 @@ class PictureComparator:
                     pixels.append(Pixel(x, y))
 
         return pixels
+    
+class DiffComputer(threading.Thread):
+    """
+    Class for processing differences asynchronously
+    """
+    
+    def __init__(self, refSnapshot, stepSnapshot):
+        self.refSnapshot = refSnapshot
+        self.stepSnapshot = stepSnapshot
+        super(DiffComputer, self).__init__()
+    
+    def run(self):
+        print('starting')
+        pixelDiffs = PictureComparator().getChangedPixels(self.refSnapshot.image.path, self.stepSnapshot.image.path)
+        binPixels = pickle.dumps(pixelDiffs, protocol=3)
+        self.stepSnapshot.pixelsDiff = binPixels
+        self.stepSnapshot.refSnapshot = self.refSnapshot
+        self.stepSnapshot.save()
+        print('finished')

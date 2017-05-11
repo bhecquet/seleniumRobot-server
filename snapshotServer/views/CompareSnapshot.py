@@ -5,10 +5,11 @@ Created on 4 mai 2017
 '''
 
 from django.views.generic import ListView
-from snapshotServer.models import TestSession, TestCase, Snapshot, Difference
+from snapshotServer.models import TestSession, TestCase, Snapshot
 from django.shortcuts import get_object_or_404
-from django.views.generic.base import TemplateView
+from django.views.generic.base import TemplateView, View
 import pickle
+from snapshotServer.controllers.PictureComparator import DiffComputer
 
 class SessionList(ListView):
     model = TestSession
@@ -42,7 +43,7 @@ class StepList(ListView):
     
 class PictureView(TemplateView):
     template_name = "snapshotServer/displayPanel.html"
-    
+
     def get_context_data(self, **kwargs):
         """
         Look for the snapshot of our session
@@ -50,14 +51,42 @@ class PictureView(TemplateView):
         context = super(PictureView, self).get_context_data(**kwargs)
         
         stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(testCase=self.args[1]).filter(step=self.args[2]).last()
-        refSnapshot = Snapshot.objects.filter(testCase=self.args[0]).filter(step=self.args[1]).filter(isReference=True).first()
-        diffPixelsBin = Difference.objects.filter(reference=refSnapshot).filter(compared=stepSnapshot).first().pixels
+        # search a reference with a lower id, meaning that it has been recorded before our step
+        refSnapshots = Snapshot.objects.filter(testCase=self.args[0]) \
+                                    .filter(step=self.args[2]) \
+                                    .filter(refSnapshot=None) \
+                                    .filter(id__lte=stepSnapshot.id)
+        
+        if 'makeRef' in self.request.GET: 
+            if self.request.GET['makeRef'] == 'True':
+                stepSnapshot.refSnapshot = None
+                stepSnapshot.pixelsDiff = None
+                stepSnapshot.save()
+            else:
+                # do not remove reference flag if our snapshot is the very first one
+                if len(refSnapshots) > 1:
+                    stepSnapshot.refSnapshot = refSnapshots.last()
+                    stepSnapshot.save()
+                    
+                    # recompute diff pixels
+                    diffComputerThread = DiffComputer(stepSnapshot.refSnapshot, stepSnapshot)
+                    diffComputerThread.start()
+                    diffComputerThread.join()
+
+        refSnapshot = stepSnapshot.refSnapshot
+        
+        # extract difference pixel. Recompute in case this step is no more a reference
+        diffPixelsBin = stepSnapshot.pixelsDiff
+            
         if diffPixelsBin:
-            diffPixels = pickle.loads(diffPixelsBin)
+            diffPixels = pickle.loads(diffPixelsBin.pixels)
         else:
             diffPixels = []
      
         context['reference'] = refSnapshot
         context['stepSnapshot'] = stepSnapshot
         context['diff'] = str([[p.x, p.y] for p in diffPixels])
+        context['testCaseId'] = self.args[1]
+        context['sessionId'] = self.args[0]
+        context['testStepId'] = self.args[2]
         return context

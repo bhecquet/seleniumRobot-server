@@ -1,9 +1,11 @@
-function updatePanel(url, idToUpdate) {
+
+function updatePanel(url, idToUpdate, data="") {
 	$.ajax({
-	  url: url,
-	  success: function(data) {
-	  $('#' + idToUpdate).html(data);
-	  }
+		url: url,
+		data: data,
+		success: function(data) {
+			$('#' + idToUpdate).html(data);
+		}
 	});
 }
 

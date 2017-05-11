@@ -47,6 +47,7 @@ urlpatterns = [
     url(r'^compare/stepList/([0-9]+)/([0-9]+)/$', StepList.as_view(), name="steplistView"), # /sessionId/testCase/
     url(r'^compare/picture/([0-9]+)/([0-9]+)/([0-9]+)/$', PictureView.as_view(), name="pictureView"), # /sessionId/testCase/testStep
     
+    
     # add media directory
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
 ]
