@@ -5,15 +5,20 @@
 {% if reference %}
 	<img src="{{ reference.image.url }}" class="maskRef" style="top:80px;">
 {% else %}
-	<span class="maskRef">No Reference</span>
+	<span class="maskRef" style="top:30px;">No Reference</span>
 {% endif %}
-<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;top:80px;" onclick="displayDifference({{ diff }})" class="maskStep"></canvas> 
-<img id="stepSnapshot" src="{{ stepSnapshot.image.url }}" class="maskStep" style="z-index:1;top:80px;">
-<div class="maskStep" style="position:relative;top:30px;">
-{% if stepSnapshot.isReference %}
-	This step is a reference
-	<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
+
+{% if stepSnapshot %}
+	<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;top:80px;" onclick="displayDifference({{ diff }})" class="maskStep"></canvas> 
+	<img id="stepSnapshot" src="{{ stepSnapshot.image.url }}" class="maskStep" style="z-index:1;top:80px;">
+	<div class="maskStep" style="top:30px;">
+	{% if stepSnapshot.refSnapshot %}
+		<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
+	{% else %}
+		This step is a reference
+		<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
+	{% endif %}
+	</div>
 {% else %}
-	<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
+	<span class="maskStep" style="top:30px;">No Snapshot for this step</span>
 {% endif %}
-</div>

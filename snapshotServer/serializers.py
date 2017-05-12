@@ -63,4 +63,4 @@ class TestCaseSerializer(serializers.ModelSerializer):
 class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Snapshot
-        fields = ('step', 'testCase', 'session')
+        fields = ('id', 'step', 'testCase', 'session')

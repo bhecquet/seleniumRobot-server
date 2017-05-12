@@ -48,12 +48,9 @@
         testCases: [2]
 -   model: snapshotServer.snapshot
     pk: 1
-    fields: {step: 1, image: documents/Image1.png, isReference: true, session: 1,
+    fields: {step: 1, image: documents/test_Image1.png, testCase: 1, session: 1,
         testCase: 1}
 -   model: snapshotServer.snapshot
     pk: 2
-    fields: {step: 1, image: documents/Image1_2k7DlRO.png, isReference: false, session: 1,
+    fields: {step: 1, image: documents/test_Image1Mod.png, testCase: 1, refSnapshot: 1, session: 1,
         testCase: 1}
--   model: snapshotServer.difference
-    pk: 1
-    fields: {reference: 1, compared: 2, pixels: gANdcQAu}

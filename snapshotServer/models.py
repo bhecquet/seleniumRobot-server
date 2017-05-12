@@ -34,12 +34,14 @@ class Version(models.Model):
         return versions
     
 class TestEnvironment(models.Model):
+    __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=20)
     
     def __str__(self):
         return self.name
 
 class TestCase(models.Model):
+    __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100)
     version = models.ForeignKey(Version, related_name='testCase')
     testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
@@ -48,12 +50,14 @@ class TestCase(models.Model):
         return "%s - %s" % (self.name, self.version.name)
     
 class TestStep(models.Model):
+    __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100) 
     
     def __str__(self):
         return self.name 
     
 class TestSession(models.Model):
+    __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=32)
     date = models.DateField()
     testCases = models.ManyToManyField("TestCase", related_name='testsession', blank=True)
@@ -69,13 +73,15 @@ class Snapshot(models.Model):
     refSnapshot = models.ForeignKey('self', default=None, null=True)
     pixelsDiff = models.BinaryField(null=True)
     
-    def snapshotsUntilNextRef(self):
+    def snapshotsUntilNextRef(self, refSnapshot):
         """
         get all snapshot until the next reference for the same testCase / testStep
+        Filter by the same reference snapshot
         """
         nextSnapshots = Snapshot.objects.filter(step=self.step, 
                                             testCase__name=self.testCase.name, 
                                             testCase__version__in=self.testCase.version.nextVersions(),
+                                            refSnapshot=refSnapshot,
                                             id__gt=self.id) \
                                         .order_by('id')
         

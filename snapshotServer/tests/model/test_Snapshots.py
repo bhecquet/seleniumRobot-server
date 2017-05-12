@@ -45,14 +45,14 @@ class TestSnapshots(django.test.TestCase):
         s1.save()
         s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc1, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        self.assertEqual(s2.snapshotsUntilNextRef(), [], "No next snapshot should be found")
+        self.assertEqual(s2.snapshotsUntilNextRef(s2.refSnapshot), [], "No next snapshot should be found")
     
     def test_nextSnapshotsWithNoRef(self):
         s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
         s1.save()
         s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc1, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        self.assertEqual(s1.snapshotsUntilNextRef(), [s2], "One snapshot should be found")
+        self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")
     
     def test_nextSnapshotsWithRef(self):
         s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
@@ -63,7 +63,7 @@ class TestSnapshots(django.test.TestCase):
         s3.save()
         s4 = Snapshot(step=self.step, image=None, session=self.session4, testCase=self.tc2, refSnapshot=None, pixelsDiff=None)
         s4.save()
-        self.assertEqual(s1.snapshotsUntilNextRef(), [s2, s3], "One snapshot should be found")
+        self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2, s3], "One snapshot should be found")
     
     def test_nextSnapshotsWithLowerVersion(self):
         """
@@ -78,4 +78,4 @@ class TestSnapshots(django.test.TestCase):
         s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tc1, refSnapshot=s0, pixelsDiff=None)
         s3.save()
 
-        self.assertEqual(s1.snapshotsUntilNextRef(), [s2], "One snapshot should be found")
+        self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")

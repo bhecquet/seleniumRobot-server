@@ -51,38 +51,55 @@ class PictureView(TemplateView):
         context = super(PictureView, self).get_context_data(**kwargs)
         
         stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(testCase=self.args[1]).filter(step=self.args[2]).last()
-        # search a reference with a lower id, meaning that it has been recorded before our step
-        refSnapshots = Snapshot.objects.filter(testCase=self.args[0]) \
-                                    .filter(step=self.args[2]) \
-                                    .filter(refSnapshot=None) \
-                                    .filter(id__lte=stepSnapshot.id)
         
-        if 'makeRef' in self.request.GET: 
-            if self.request.GET['makeRef'] == 'True':
-                stepSnapshot.refSnapshot = None
-                stepSnapshot.pixelsDiff = None
-                stepSnapshot.save()
-            else:
-                # do not remove reference flag if our snapshot is the very first one
-                if len(refSnapshots) > 1:
-                    stepSnapshot.refSnapshot = refSnapshots.last()
+        
+        if stepSnapshot:
+
+            if 'makeRef' in self.request.GET: 
+                if self.request.GET['makeRef'] == 'True':
+                    previousSnapshot = stepSnapshot.refSnapshot
+                    stepSnapshot.refSnapshot = None
+                    stepSnapshot.pixelsDiff = None
                     stepSnapshot.save()
                     
-                    # recompute diff pixels
-                    diffComputerThread = DiffComputer(stepSnapshot.refSnapshot, stepSnapshot)
-                    diffComputerThread.start()
-                    diffComputerThread.join()
-
-        refSnapshot = stepSnapshot.refSnapshot
-        
-        # extract difference pixel. Recompute in case this step is no more a reference
-        diffPixelsBin = stepSnapshot.pixelsDiff
+                    # Compute differences for the following snapshots as they will depend on this new ref
+                    for snap in stepSnapshot.snapshotsUntilNextRef(previousSnapshot):
+                        DiffComputer.addJobs(stepSnapshot, snap)
+                    
+                else:
+                    # search a reference with a lower id, meaning that it has been recorded before our step
+                    refSnapshots = Snapshot.objects.filter(testCase=self.args[1]) \
+                                                .filter(step=self.args[2]) \
+                                                .filter(refSnapshot=None) \
+                                                .filter(id__lt=stepSnapshot.id)
+                    
+                    # do not remove reference flag if our snapshot is the very first one
+                    if len(refSnapshots) > 0:
+                        stepSnapshot.refSnapshot = refSnapshots.last()
+                        stepSnapshot.save()
+                        
+                        # recompute diff pixels
+                        DiffComputer.computeNow(stepSnapshot.refSnapshot, stepSnapshot)
+                        
+                        # recompute all following snapshot as they will depend on a previous ref
+                        for snap in stepSnapshot.snapshotsUntilNextRef(stepSnapshot):
+                            DiffComputer.addJobs(stepSnapshot.refSnapshot, snap)
+    
+            refSnapshot = stepSnapshot.refSnapshot
             
-        if diffPixelsBin:
-            diffPixels = pickle.loads(diffPixelsBin.pixels)
+            # extract difference pixel. Recompute in case this step is no more a reference
+            diffPixelsBin = stepSnapshot.pixelsDiff
+                
+            if diffPixelsBin:
+                diffPixels = pickle.loads(diffPixelsBin)
+            else:
+                diffPixels = []
+                
+        # not snapshot has been recorded for this session
         else:
+            refSnapshot = None
             diffPixels = []
-     
+         
         context['reference'] = refSnapshot
         context['stepSnapshot'] = stepSnapshot
         context['diff'] = str([[p.x, p.y] for p in diffPixels])
