@@ -9,7 +9,7 @@ from snapshotServer.models import TestSession, TestCase, Snapshot
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView, View
 import pickle
-from snapshotServer.controllers.PictureComparator import DiffComputer
+from snapshotServer.controllers.DiffComputer import DiffComputer
 
 class SessionList(ListView):
     model = TestSession
@@ -56,7 +56,7 @@ class PictureView(TemplateView):
         if stepSnapshot:
 
             if 'makeRef' in self.request.GET: 
-                if self.request.GET['makeRef'] == 'True':
+                if self.request.GET['makeRef'] == 'True' and stepSnapshot.refSnapshot is not None:
                     previousSnapshot = stepSnapshot.refSnapshot
                     stepSnapshot.refSnapshot = None
                     stepSnapshot.pixelsDiff = None
@@ -66,7 +66,7 @@ class PictureView(TemplateView):
                     for snap in stepSnapshot.snapshotsUntilNextRef(previousSnapshot):
                         DiffComputer.addJobs(stepSnapshot, snap)
                     
-                else:
+                elif self.request.GET['makeRef'] == 'False' and stepSnapshot.refSnapshot is None:
                     # search a reference with a lower id, meaning that it has been recorded before our step
                     refSnapshots = Snapshot.objects.filter(testCase=self.args[1]) \
                                                 .filter(step=self.args[2]) \

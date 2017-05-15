@@ -6,11 +6,11 @@ from rest_framework import views
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 from rest_framework.response import Response
 
-from snapshotServer.controllers.PictureComparator import PictureComparator, \
-    DiffComputer
+from snapshotServer.controllers.PictureComparator import PictureComparator
 from snapshotServer.forms import ImageUploadForm
 from snapshotServer.models import Snapshot, TestStep, TestSession, \
     TestCase
+from snapshotServer.controllers.DiffComputer import DiffComputer
 
 
 # Create your views here.
@@ -56,6 +56,6 @@ class FileUploadView(views.APIView):
             return Response(status=204)
         
         else:
-            return Response(status=500)
+            return Response(status=500, data=str(form.errors))
         
 
