@@ -64,6 +64,10 @@ class TestSession(models.Model):
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession')
     
+    def __str__(self):
+        
+        return "Session %s testing %s with %s" % (self.sessionId, str([t.name for t in self.testCases.all()]), self.browser)
+    
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
     step = models.ForeignKey(TestStep, related_name='snapshots')

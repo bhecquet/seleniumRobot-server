@@ -4,6 +4,7 @@
 </div>
 {% if reference %}
 	<img src="{{ reference.image.url }}" class="maskRef" style="top:80px;">
+	<span class="maskRef" style="top:30px;">{{ reference.session }}</span>
 {% else %}
 	<span class="maskRef" style="top:30px;">No Reference</span>
 {% endif %}
