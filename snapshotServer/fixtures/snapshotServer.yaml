@@ -4,6 +4,9 @@
 -   model: snapshotServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
+-   model: snapshotServer.version
+    pk: 2
+    fields: {application: 1, name: '2.5'}
 -   model: snapshotServer.testenvironment
     pk: 1
     fields: {name: DEV}
