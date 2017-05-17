@@ -19,3 +19,25 @@
 	left: 600px;
 	width: 400px;
 }
+
+.snapshot {
+	width:100%;
+	position:absolute;
+	top:60px
+}
+
+.snapshotInfo {
+	width:100%;
+	position:absolute;
+	top:20px
+}
+
+#canvas {
+    width:400px;
+    height:400px;
+    border: 10px solid transparent;
+}
+.rectangle {
+    border: 1px solid #FF0000;
+    position: absolute;
+}
