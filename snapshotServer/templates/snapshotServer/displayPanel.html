@@ -1,3 +1,5 @@
+{% load static %}
+<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
 
 <div>
 	<div class="maskRef">
@@ -17,15 +19,25 @@
 		<div class="snapshotInfo">
 			{% if stepSnapshot.refSnapshot %}
 			<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
+			<button type="submit" onclick="toggleElement('diff');">Toggle differences</button>
 			{% else %}
 			This step is a reference
 			<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
 			{% endif %}
 		</div>
 		<div class="snapshot">
-			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;" onclick="displayDifference({{ diff }})"></canvas> 
+			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;"></canvas> 
 			<img id="stepSnapshot" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;position:absolute;">
-			<div id="canvas" onclick="initDraw(document.getElementById('canvas'));"></div>
+			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;"></div>
+		</div>
+		<div id="excludeZone"> 
+            Exclude zones
+            <table class="table table-striped" id="excludeTable">
+                <tr>
+                    <th width="20px">active</th>
+                    <th>position</th>
+                </tr>
+            </table>
 		</div>
 		
 		{% else %}
@@ -33,4 +45,13 @@
 		{% endif %}
 	</div>
 </div>
+
+<script>
+	console.log("displaying diff")
+	setTimeout(function(){
+		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable'), 0);
+		displayDifference({{ diff }});
+	}, 500);
+	
+</script>
 
