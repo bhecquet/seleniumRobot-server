@@ -8,7 +8,7 @@ from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 
 from snapshotServer.models import Snapshot, Application, TestEnvironment, \
-    TestCase, TestStep, Version, TestSession
+    TestCase, TestStep, Version, TestSession, ExcludeZone
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
@@ -59,6 +59,12 @@ class TestCaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestCase
         fields = ('name', 'version')
+        
+class ExcludeZoneSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = ExcludeZone
+        fields = ('x', 'y', 'width', 'height', 'snapshot')
         
 class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:

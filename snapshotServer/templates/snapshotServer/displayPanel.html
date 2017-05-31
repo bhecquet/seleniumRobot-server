@@ -31,13 +31,8 @@
 			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;"></div>
 		</div>
 		<div id="excludeZone"> 
-            Exclude zones
-            <table class="table table-striped" id="excludeTable">
-                <tr>
-                    <th width="20px">active</th>
-                    <th>position</th>
-                </tr>
-            </table>
+            <div id="excludeZoneTable"></div>
+            <button type="submit" onclick="updateExcludeZones({{ stepSnapshot.refSnapshot.id }})">Save</button>
 		</div>
 		
 		{% else %}
@@ -47,6 +42,8 @@
 </div>
 
 <script>
+	updatePanel('{% url "excludeListView" stepSnapshot.refSnapshot.id %}', 'excludeZoneTable');
+
 	console.log("displaying diff")
 	setTimeout(function(){
 		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable'), 0);

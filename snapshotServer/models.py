@@ -102,5 +102,15 @@ class Snapshot(models.Model):
         
         return snapshots
     
+class ExcludeZone(models.Model):
+    x = models.IntegerField()
+    y = models.IntegerField()
+    width = models.IntegerField()
+    height = models.IntegerField()
+    snapshot = models.ForeignKey(Snapshot)
+    
+    def __str__(self):
+        return "(x, y, width, height) = (%d, %d, %d, %d)" % (self.x, self.y, self.width, self.height)
+    
 
     

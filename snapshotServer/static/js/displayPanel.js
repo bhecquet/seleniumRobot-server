@@ -64,6 +64,11 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             activeBox = document.createElement('input')
             activeBox.type = 'checkbox';
             activeBox.checked = 'checked';
+            activeBox.setAttribute('name', 'new_exclude');
+            activeBox.setAttribute('r_x', element.style.left.substring(0, element.style.left.length - 2));
+            activeBox.setAttribute('r_y', element.style.top.substring(0, element.style.top.length - 2));
+            activeBox.setAttribute('r_w', element.style.width.substring(0, element.style.width.length - 2));
+            activeBox.setAttribute('r_h', element.style.height.substring(0, element.style.height.length - 2));
             activeBox.setAttribute('onclick', "toggleElement('exclude_" + excludeIndex + "');");
             colActive.appendChild(activeBox);
             colPosition = document.createElement('td');
@@ -90,4 +95,43 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             
         }
     }
+}
+
+function updateExcludeZones(refSnapshotId) {
+	var canvas = document.getElementById('canvas');
+	
+	// TODO: parcourir les enfants et supprimer tous les éléments
+	// parcourir ensuite les lignes du tableau d'exclusion et redessiner les zones
+	// pour cela, le tableau devra contenir des balises avec attributs spécifiques, à moins que cela ne soit
+	// appelé par le template qui passera en paramètre la liste des zones
+	
+	var newExcludes = document.getElementsByName('new_exclude');
+	
+	// add new exclude zones
+	for(var i= 0; i < newExcludes.length; i++) {
+		if (newExcludes[i].checked) {
+			$.post({
+				url: '/api/exclude/',
+				data: "x=" + newExcludes[i].getAttribute('r_x')
+					+ "&y=" + newExcludes[i].getAttribute('r_y')
+					+ "&width=" + newExcludes[i].getAttribute('r_w')
+					+ "&height=" + newExcludes[i].getAttribute('r_y')
+					+ "&snapshot=" + refSnapshotId
+					
+			});
+		}
+	}
+	
+	// remove exclude zones that should not be kept
+	var currentExcludes = document.getElementsByName('exclude');
+	console.log(currentExcludes);
+	for(var i= 0; i < currentExcludes.length; i++) {
+		if (!currentExcludes[i].checked) {
+			$.ajax({
+				type: 'DELETE',
+				url: '/api/exclude/' + currentExcludes[i].id.substring(16, currentExcludes[i].id.lenght) + '/',
+					
+			});
+		}
+	}
 }

@@ -1,0 +1,15 @@
+Exclude zones
+<table class="table table-striped" id="excludeTable">
+    <tr>
+        <th width="20px">active</th>
+        <th>position</th>
+    </tr>
+    {% for exclude in object_list %}
+    <tr>
+		<td>
+			<input type="checkbox" name="exclude" id="existingExclude_{{ exclude.id }}" checked="checked" onclick="toggleElement('exclude_{{ exclude.id }}');" />
+		</td>
+		<td>{{ exclude }}</td>
+	</tr>
+    {% endfor %}
+</table>

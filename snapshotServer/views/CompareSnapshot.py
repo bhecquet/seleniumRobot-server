@@ -5,7 +5,7 @@ Created on 4 mai 2017
 '''
 
 from django.views.generic import ListView
-from snapshotServer.models import TestSession, TestCase, Snapshot
+from snapshotServer.models import TestSession, TestCase, Snapshot, ExcludeZone
 from django.shortcuts import get_object_or_404
 from django.views.generic.base import TemplateView, View
 import pickle
@@ -107,3 +107,10 @@ class PictureView(TemplateView):
         context['sessionId'] = self.args[0]
         context['testStepId'] = self.args[2]
         return context
+    
+class ExclusionZoneList(ListView):
+    template_name = "snapshotServer/excludeList.html"
+    
+    def get_queryset(self):
+        return ExcludeZone.objects.filter(snapshot=self.args[0])
+
