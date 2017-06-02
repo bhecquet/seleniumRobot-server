@@ -1,4 +1,4 @@
-<select id="sessionList" onchange="updatePanel('{% url "testlistView" 0 %}'.replace (0, $( '#sessionList option:selected' ).val()), 'testList')" >
+<select id="sessionList" onchange="clearTestList();updatePanel('{% url "testlistView" 0 %}'.replace (0, $( '#sessionList option:selected' ).val()), 'testList')" >
 	<option value=0>No session selected</option>
 	{% for session in object_list %}
 	<option value={{ session.id }}>{{ session.date }}</option>

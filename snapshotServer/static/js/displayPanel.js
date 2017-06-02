@@ -1,10 +1,10 @@
 function displayDifference(pointList) {
-	console.log("toti");
 	var canvas = document.getElementById("diff");
 	canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
 	canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#FF0000";
+	ctx.save();
 	for(var i= 0; i < pointList.length; i++)
 	{
 		ctx.fillRect(pointList[i][0],pointList[i][1],1,1);
@@ -15,8 +15,13 @@ function toggleElement(elementId) {
     $("#" + elementId).toggle();
 }
 
+function getIntValue(strValue) {
+	var number = strValue.match(/\d+/);
+	return parseInt(number, 10);
+}
+
 function initDraw(canvas, excludeTable, excludeIndex) {
-	console.log("toti2");
+
     function setMousePosition(e) {
         var ev = e || window.event; //Moz || IE
         if (ev.pageX) { //Moz
@@ -40,6 +45,8 @@ function initDraw(canvas, excludeTable, excludeIndex) {
     
     canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
     canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
+    
+    var canvasRatio = getIntValue(canvas.getAttribute("width")) / getIntValue(canvas.style.width);
 
     canvas.onmousemove = function (e) {
         setMousePosition(e);
@@ -58,6 +65,12 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             canvas.style.cursor = "default";
             console.log("finsihed.");
             
+            // change coordinates according to ratio between real image size and its size on screen
+            var realLeft = Math.round(getIntValue(element.style.left) * canvasRatio);
+            var realTop = Math.round(getIntValue(element.style.top) * canvasRatio);
+            var realWidth = Math.round(getIntValue(element.style.width) * canvasRatio);
+            var realHeight = Math.round(getIntValue(element.style.height) * canvasRatio);
+            
             // add line to exclude excludeTable
             row = document.createElement('tr');
             colActive = document.createElement('td');
@@ -65,14 +78,14 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             activeBox.type = 'checkbox';
             activeBox.checked = 'checked';
             activeBox.setAttribute('name', 'new_exclude');
-            activeBox.setAttribute('r_x', element.style.left.substring(0, element.style.left.length - 2));
-            activeBox.setAttribute('r_y', element.style.top.substring(0, element.style.top.length - 2));
-            activeBox.setAttribute('r_w', element.style.width.substring(0, element.style.width.length - 2));
-            activeBox.setAttribute('r_h', element.style.height.substring(0, element.style.height.length - 2));
-            activeBox.setAttribute('onclick', "toggleElement('exclude_" + excludeIndex + "');");
+            activeBox.setAttribute('r_x', realLeft);
+            activeBox.setAttribute('r_y', realTop);
+            activeBox.setAttribute('r_w', realWidth);
+            activeBox.setAttribute('r_h', realHeight);
+            activeBox.setAttribute('onclick', "toggleElement('new_exclude_" + excludeIndex + "');");
             colActive.appendChild(activeBox);
             colPosition = document.createElement('td');
-            colPosition.innerHTML = '(x,y)=(' + element.style.left + ',' + element.style.top + '), (width,height)=(' + element.style.width + ',' + element.style.height + ')';
+            colPosition.innerHTML = '(x, y, width, height)=(' + realLeft + ', ' + realTop + ', ' + realWidth + ', ' + realHeight + ')';
             row.appendChild(colActive);
             row.appendChild(colPosition);
             excludeTable.appendChild(row);
@@ -86,10 +99,10 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             mouse.startY = mouse.y;
             element = document.createElement('div');
             element.className = 'rectangle'
-            element.id = 'exclude_' + excludeIndex;
+            element.id = 'new_exclude_' + excludeIndex;
             element.style.left = mouse.x + 'px';
             element.style.top = mouse.y + 'px';
-            canvas.appendChild(element)
+            canvas.appendChild(element);
             canvas.style.cursor = "crosshair";
             
             
@@ -97,14 +110,32 @@ function initDraw(canvas, excludeTable, excludeIndex) {
     }
 }
 
-function updateExcludeZones(refSnapshotId) {
+function drawExistingExcludeZones() {
+
 	var canvas = document.getElementById('canvas');
-	
-	// TODO: parcourir les enfants et supprimer tous les éléments
-	// parcourir ensuite les lignes du tableau d'exclusion et redessiner les zones
-	// pour cela, le tableau devra contenir des balises avec attributs spécifiques, à moins que cela ne soit
-	// appelé par le template qui passera en paramètre la liste des zones
-	
+	var canvasRatio = getIntValue(canvas.style.width) / getIntValue(canvas.getAttribute("width"));
+
+	var currentExcludes = document.getElementsByName('exclude');
+
+	console.log(currentExcludes);
+	for(var i= 0; i < currentExcludes.length; i++) {
+		if (currentExcludes[i].checked) {
+			var idx = getIntValue(currentExcludes[i].id) 
+			element = document.createElement('div');
+		    element.className = 'rectangle'
+		    element.id = 'exclude_' + idx;
+		    element.style.left = Math.round(getIntValue(currentExcludes[i].getAttribute('r_x')) * canvasRatio) + 'px';
+		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) + 'px';
+		    element.style.width = Math.round(getIntValue(currentExcludes[i].getAttribute('r_w')) * canvasRatio) + 'px';
+		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) + 'px';
+		    canvas.appendChild(element);
+		}
+	}
+}
+
+function updateExcludeZones(snapshotId, refSnapshotId, sessionId, testCaseId, testStepId) {
+	var diff = document.getElementById('diff');
+
 	var newExcludes = document.getElementsByName('new_exclude');
 	
 	// add new exclude zones
@@ -115,7 +146,7 @@ function updateExcludeZones(refSnapshotId) {
 				data: "x=" + newExcludes[i].getAttribute('r_x')
 					+ "&y=" + newExcludes[i].getAttribute('r_y')
 					+ "&width=" + newExcludes[i].getAttribute('r_w')
-					+ "&height=" + newExcludes[i].getAttribute('r_y')
+					+ "&height=" + newExcludes[i].getAttribute('r_h')
 					+ "&snapshot=" + refSnapshotId
 					
 			});
@@ -129,9 +160,21 @@ function updateExcludeZones(refSnapshotId) {
 		if (!currentExcludes[i].checked) {
 			$.ajax({
 				type: 'DELETE',
-				url: '/api/exclude/' + currentExcludes[i].id.substring(16, currentExcludes[i].id.lenght) + '/',
-					
+				url: '/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
+				async: false	
 			});
 		}
 	}
+	
+	// recompute difference
+	$.ajax({
+		type: 'POST',
+		url: '/compare/compute/' + snapshotId + '/',
+		async: false	
+	});
+	
+	// reload page
+	updatePanel('/compare/picture/' + sessionId + '/' + testCaseId + '/' + testStepId, 'display');
+	
+
 }

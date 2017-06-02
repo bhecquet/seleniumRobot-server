@@ -11,6 +11,7 @@ import time
 from snapshotServer.controllers import Tools
 from snapshotServer.controllers.PictureComparator import PictureComparator
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+from snapshotServer.models import ExcludeZone
 
 
 class DiffComputer(threading.Thread):
@@ -91,7 +92,11 @@ class DiffComputer(threading.Thread):
         logger.info('computing') 
         try:
             if refSnapshot and stepSnapshot and refSnapshot.image and stepSnapshot.image:
-                pixelDiffs = PictureComparator().getChangedPixels(refSnapshot.image.path, stepSnapshot.image.path)
+                
+                # get the list of exclude zones
+                excludeZones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=refSnapshot)]
+                
+                pixelDiffs = PictureComparator().getChangedPixels(refSnapshot.image.path, stepSnapshot.image.path, excludeZones)
                 binPixels = pickle.dumps(pixelDiffs, protocol=3)
                 stepSnapshot.pixelsDiff = binPixels
             else:

@@ -1,9 +1,11 @@
-from django.db import models
 from distutils.version import LooseVersion
 
-# Create your models here.
-    
+from django.db import models
 
+from snapshotServer.controllers.PictureComparator import Rectangle
+
+
+# Create your models here.
 class Application(models.Model):
     name = models.CharField(max_length=50)
     
@@ -102,6 +104,26 @@ class Snapshot(models.Model):
         
         return snapshots
     
+    def snapshotWithSameRef(self):
+        """
+        Returns the list of snapshots sharing the same reference
+        """
+        if not self.refSnapshot:
+            return []
+        
+        snapshots = Snapshot.objects.filter(step=self.step, 
+                                            testCase__name=self.testCase.name, 
+                                            refSnapshot=self.refSnapshot) \
+                                        .order_by('id')
+                          
+        newSnapshots = []              
+        for snap in snapshots:
+            if snap != self:
+                newSnapshots.append(snap)
+                
+        return newSnapshots
+        
+    
 class ExcludeZone(models.Model):
     x = models.IntegerField()
     y = models.IntegerField()
@@ -112,5 +134,6 @@ class ExcludeZone(models.Model):
     def __str__(self):
         return "(x, y, width, height) = (%d, %d, %d, %d)" % (self.x, self.y, self.width, self.height)
     
-
+    def toRectangle(self):
+        return Rectangle(self.x, self.y, self.width, self.height)
     

@@ -209,3 +209,28 @@ class test_CompareSnapshot(django.test.TestCase):
         # check s2 ref as been changed
         self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for s2 should have changed to first snapshot")
         
+    def test_RecomputeDiff_snapshotExistNoRef(self):
+        """
+        Send recompute request whereas no ref exists. Nothing should be done
+        """
+            
+        response = self.client.post(reverse('recompute', args=[1]))
+        self.assertEqual(response.status_code, 304, "No ref for this snapshot, 304 should be returned")
+        
+    def test_RecomputeDiff_snapshotExistWithRef(self):
+        """
+        Reference exists for the snapshot, do computing
+        """
+            
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
+        
+        
+    def test_RecomputeDiff_snapshotDoesNotExist(self):
+        """
+        Reference exists for the snapshot, do computing
+        """
+            
+        response = self.client.post(reverse('recompute', args=[25]))
+        self.assertEqual(response.status_code, 404, "404 should be returned as snapshot does not exist")
+        

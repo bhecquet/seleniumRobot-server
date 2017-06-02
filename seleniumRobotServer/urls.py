@@ -13,15 +13,15 @@ Including another URLconf
     1. Import the include() function: from django.conf.urls import url, include
     2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
 """
+from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
 from rest_framework import routers
 
-from django.conf import settings
 from snapshotServer import views, viewsets
 from snapshotServer.views.CompareSnapshot import SessionList, TestList, StepList, \
-    PictureView, ExclusionZoneList
+    PictureView, ExclusionZoneList, RecomputeDiff
 from snapshotServer.views.FileUploadView import FileUploadView
 
 
@@ -44,6 +44,7 @@ urlpatterns = [
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     
     url(r'^compare/$', SessionList.as_view()),
+    url(r'^compare/compute/([0-9]+)/$', RecomputeDiff.as_view(), name='recompute'),
     url(r'^compare/testList/([0-9]+)/$', TestList.as_view(), name="testlistView"),  # /sessionId/
     url(r'^compare/stepList/([0-9]+)/([0-9]+)/$', StepList.as_view(), name="steplistView"), # /sessionId/testCase/
     url(r'^compare/picture/([0-9]+)/([0-9]+)/([0-9]+)/$', PictureView.as_view(), name="pictureView"), # /sessionId/testCase/testStep

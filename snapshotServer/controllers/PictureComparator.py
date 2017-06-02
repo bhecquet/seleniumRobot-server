@@ -54,16 +54,19 @@ class PictureComparator:
         else:
             return None
         
-    def getChangedPixels(self, reference, image):
+    def getChangedPixels(self, reference, image, excludeZones=[]):
         """
         @param reference: reference picture
         @param image: image to compare with
+        @param excludeZones: list of zones (Rectangle objects) which should not be marked as differences.
         @return: list of pixels which are different between reference and image
         """
         if not os.path.isfile(reference):
             raise PictureComparatorError("Reference file %s does not exist" % reference)
         if not os.path.isfile(image):
             raise PictureComparatorError("Image file %s does not exist" % image)
+        
+        excludedPixels = self._buildListOfExcludedPixels(excludeZones)
         
         referenceImg = cv2.imread(reference, 0)
         imageImg = cv2.imread(image, 0)
@@ -76,8 +79,20 @@ class PictureComparator:
             if sum(row) == 0:
                 continue
             for x, value in enumerate(row):
-                if value != 0:
+                if value != 0 and Pixel(x, y) not in excludedPixels:
                     pixels.append(Pixel(x, y))
 
         return pixels
     
+    def _buildListOfExcludedPixels(self, excludeZones):
+        """
+        From the list of rectangles, build a list of pixels that these rectangles cover
+        """
+        
+        pixels = []
+        for x, y, width, height in excludeZones:
+            for row in range(height):
+                for col in range(width):
+                    pixels.append(Pixel(col + x, row + y))
+                    
+        return pixels

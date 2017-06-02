@@ -32,7 +32,7 @@
 		</div>
 		<div id="excludeZone"> 
             <div id="excludeZoneTable"></div>
-            <button type="submit" onclick="updateExcludeZones({{ stepSnapshot.refSnapshot.id }})">Save</button>
+            <button type="submit" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ sessionId }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
 		</div>
 		
 		{% else %}
@@ -42,11 +42,14 @@
 </div>
 
 <script>
-	updatePanel('{% url "excludeListView" stepSnapshot.refSnapshot.id %}', 'excludeZoneTable');
+	{% if stepSnapshot and stepSnapshot.refSnapshot %}
+		updatePanel('{% url "excludeListView" stepSnapshot.refSnapshot.id %}', 'excludeZoneTable');
+		drawExistingExcludeZones();
+	{% endif %}
 
 	console.log("displaying diff")
 	setTimeout(function(){
-		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable'), 0);
+		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable').getElementsByTagName('tbody')[0], 0);
 		displayDifference({{ diff }});
 	}, 500);
 	
