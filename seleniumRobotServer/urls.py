@@ -21,7 +21,7 @@ from rest_framework import routers
 
 from snapshotServer import views, viewsets
 from snapshotServer.views.CompareSnapshot import SessionList, TestList, StepList, \
-    PictureView, ExclusionZoneList, RecomputeDiff
+    PictureView, ExclusionZoneList, RecomputeDiff, TestStatus
 from snapshotServer.views.FileUploadView import FileUploadView
 
 
@@ -49,6 +49,11 @@ urlpatterns = [
     url(r'^compare/stepList/([0-9]+)/([0-9]+)/$', StepList.as_view(), name="steplistView"), # /sessionId/testCase/
     url(r'^compare/picture/([0-9]+)/([0-9]+)/([0-9]+)/$', PictureView.as_view(), name="pictureView"), # /sessionId/testCase/testStep
     url(r'^compare/excludeList/([0-9]+)/$', ExclusionZoneList.as_view(), name="excludeListView"),
+    
+    # get status of test session or test step
+    url(r'^status/(?P<sessionId>[0-9]+)/(?P<testCaseId>[0-9]+)/$', TestStatus.as_view(), name="testStatusView"), # /sessionId/testCase
+    url(r'^status/(?P<sessionId>[0-9]+)/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatus.as_view(), name="testStepStatusView"), # /sessionId/testCase/testStep
+    
     
     # add media directory
     *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),

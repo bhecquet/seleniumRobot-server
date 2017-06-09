@@ -89,3 +89,58 @@
 -   model: snapshotServer.snapshot
     pk: 4
     fields: {step: 1, image: documents/test_Image1Mod.png, testCase: 3, refSnapshot: 3, session: 5}
+    
+# A complete example of test session. 2 sessions of 1 test with 3 steps
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: {name: Login}
+-   model: snapshotServer.teststep
+    pk: 3
+    fields: {name: Logged}
+-   model: snapshotServer.teststep
+    pk: 4
+    fields: {name: Logged out}
+    
+-   model: snapshotServer.testcase
+    pk: 4
+    fields:
+        name: test login
+        version: 1
+        testSteps: [1, 2, 3]
+ 
+-   model: snapshotServer.testsession
+    pk: 6
+    fields:
+        sessionId: '1250'
+        date: 2017-05-05
+        browser: firefox
+        environment: 1
+        testCases: [4]
+-   model: snapshotServer.testsession
+    pk: 7
+    fields:
+        sessionId: '1251'
+        date: 2017-05-06
+        browser: firefox
+        environment: 1
+        testCases: [4]
+        
+-   model: snapshotServer.snapshot
+    pk: 5
+    fields: {step: 2, image: documents/test_Image1.png, testCase: 4, session: 6}
+-   model: snapshotServer.snapshot
+    pk: 6
+    fields: {step: 3, image: documents/test_Image1.png, testCase: 4, session: 6}
+-   model: snapshotServer.snapshot
+    pk: 7
+    fields: {step: 4, image: documents/test_Image1.png, testCase: 4, session: 6}
+-   model: snapshotServer.snapshot
+    pk: 8
+    fields: {step: 2, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 5}
+-   model: snapshotServer.snapshot
+    pk: 9
+    fields: {step: 3, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 6}
+-   model: snapshotServer.snapshot
+    pk: 10
+    fields: {step: 4, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 7}
+ 
