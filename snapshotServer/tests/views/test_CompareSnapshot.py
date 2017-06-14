@@ -60,7 +60,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.get(reverse('testlistView', args=[1]))
         self.assertEqual(len(response.context['object_list']), 1)
-        self.assertEqual(response.context['object_list'][0].name, "test1")
+        self.assertEqual(list(response.context['object_list'])[0].name, "test1")
  
     def test_TestList_sessionIdAdded(self):
         """
@@ -82,7 +82,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.get(reverse('steplistView', args=[1, 1]))
         self.assertEqual(len(response.context['object_list']), 1)
-        self.assertEqual(response.context['object_list'][0].name, "Step 1")
+        self.assertEqual(list(response.context['object_list'])[0].name, "Step 1")
  
     def test_StepList_noStepExists(self):
         """

@@ -23,19 +23,24 @@ class TestList(ListView):
     template_name = "snapshotServer/testList.html"
     
     def get_queryset(self):
-        return TestCase.objects.filter(testsession=self.args[0])
+        testCases = TestCase.objects.filter(testsession=self.args[0])
+        return dict([(t, t.isOk(self.args[0])) for t in testCases])
     
     def get_context_data(self, **kwargs):
         context = super(TestList, self).get_context_data(**kwargs)
         context['sessionId'] = self.args[0]
+        
         return context
+    
+        
     
 class StepList(ListView):
     template_name = "snapshotServer/stepList.html"
     
     def get_queryset(self):
         try:
-            return TestCase.objects.get(id=self.args[1]).testSteps.all()
+            testSteps = TestCase.objects.get(id=self.args[1]).testSteps.all()
+            return dict([(s, s.isOk(self.args[0], self.args[1])) for s in testSteps])
         except:
             return []
         

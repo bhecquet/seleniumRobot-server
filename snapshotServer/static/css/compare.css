@@ -38,6 +38,15 @@
 	top:20px
 }
 
+.itemSuccess {
+	background-color: rgb(153, 255, 102) !important;
+	
+}
+
+.itemFailure {
+	background-color: rgb(255, 102, 102) !important;
+}
+
 #canvas {
     width:400px;
     height:400px;

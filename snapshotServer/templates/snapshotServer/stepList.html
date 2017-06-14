@@ -1,8 +1,8 @@
 <div>
 	<table class="table table-striped">
-		{% for testStep in object_list %}
+		{% for testStep, status in object_list.items %}
 		<tr>
-			<td>
+			<td class="{% if status %}itemSuccess{% else %}itemFailure{% endif %}">
 				<a href='#' onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStep.id %}', 'display')">
 				{{ testStep }}
 				</a>

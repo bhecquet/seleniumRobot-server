@@ -3,6 +3,7 @@ from distutils.version import LooseVersion
 from django.db import models
 
 from snapshotServer.controllers.PictureComparator import Rectangle
+import pickle
 
 
 # Create your models here.
@@ -51,12 +52,50 @@ class TestCase(models.Model):
     def __str__(self):
         return "%s - %s" % (self.name, self.version.name)
     
+    def isOk(self, testSessionId):
+        """
+        Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
+        show a diff
+        @param testSessionId: testSessionId
+        """
+        
+        snapshots = Snapshot.objects.filter(session=testSessionId, testCase=self)
+        result = True 
+        for snapshot in snapshots:
+            if snapshot.pixelsDiff is None:
+                continue
+            pixels = pickle.loads(snapshot.pixelsDiff)
+            
+            result = result and not bool(pixels)
+            
+        return result
+    
 class TestStep(models.Model):
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100) 
     
     def __str__(self):
         return self.name 
+    
+    
+    def isOk(self, testSessionId, testCaseId):
+        """
+        Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
+        show a diff
+        @param testSessionId: testSessionId
+        @param testCaseIdparam: the test case this step belongs
+        """
+        
+        snapshots = Snapshot.objects.filter(session=testSessionId, testCase=testCaseId, step=self)
+        result = True 
+        for snapshot in snapshots:
+            if snapshot.pixelsDiff is None:
+                continue
+            pixels = pickle.loads(snapshot.pixelsDiff)
+            
+            result = result and not bool(pixels)
+            
+        return result
     
 class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
