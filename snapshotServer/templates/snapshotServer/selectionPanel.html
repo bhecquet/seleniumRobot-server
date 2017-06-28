@@ -6,7 +6,6 @@
 			{% else %}
 				<option value="{{ browser }}">{{ browser }}</option>
 			{% endif %}
-		
 		{% endfor %}
 	</select>
 	
@@ -17,7 +16,16 @@
 			{% else %}
 				<option value="{{ environment.id }}">{{ environment.name }}</option>
 			{% endif %}
-		
+		{% endfor %}
+	</select>
+	
+	<select id="testCases" multiple="multiple" name="testcase">
+		{% for testCase in testCases %}
+			{% if testCase in selectedTestCases %}
+				<option value="{{ testCase.id }}" selected="selected">{{ testCase.name }}</option>
+			{% else %}
+				<option value="{{ testCase.id }}">{{ testCase.name }}</option>
+			{% endif %}
 		{% endfor %}
 	</select>
 	

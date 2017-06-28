@@ -21,7 +21,8 @@ from rest_framework import routers
 
 from snapshotServer import views, viewsets
 from snapshotServer.views.CompareSnapshot import SessionList, TestList, StepList, \
-    PictureView, ExclusionZoneList, RecomputeDiff, TestStatus, SessionSearchView
+    PictureView, ExclusionZoneList, RecomputeDiff, TestStatus, \
+    ApplicationVersionList
 from snapshotServer.views.FileUploadView import FileUploadView
 
 
@@ -42,10 +43,9 @@ urlpatterns = [
     url(r'^api/', include(router.urls), name='api'),
     url(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    
-    url(r'^compare/session/filter/$', SessionSearchView.as_view()),
-    
-    url(r'^compare/$', SessionList.as_view()),
+
+    url(r'^compare/$', ApplicationVersionList.as_view(), name='home'),
+    url(r'^compare/(?P<versionId>[0-9]+)/$', SessionList.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiff.as_view(), name='recompute'),
     url(r'^compare/testList/([0-9]+)/$', TestList.as_view(), name="testlistView"),  # /sessionId/
     url(r'^compare/stepList/([0-9]+)/([0-9]+)/$', StepList.as_view(), name="steplistView"), # /sessionId/testCase/

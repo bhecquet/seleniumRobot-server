@@ -32,11 +32,11 @@ class test_FileUploadView(django.test.TestCase):
         self.testCase.save()
         self.testCase.testSteps = [TestStep.objects.get(id=1)]
         
-        self.session1 = TestSession(sessionId="8888", date="2017-05-07", browser="firefox", environment=TestEnvironment.objects.get(id=1))
+        self.session1 = TestSession(sessionId="8888", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session1.save()
         self.session1.testCases = [self.testCase]
         self.session1.save()
-        self.session2 = TestSession(sessionId="8889", date="2017-05-07", browser="firefox", environment=TestEnvironment.objects.get(id=1))
+        self.session2 = TestSession(sessionId="8889", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session2.save()
         self.session2.testCases = [self.testCase]
         self.session2.save()
@@ -87,7 +87,7 @@ class test_FileUploadView(django.test.TestCase):
         testCase2.save()
         testCase2.testSteps = [TestStep.objects.get(id=1)]
         
-        session3 = TestSession(sessionId="8890", date="2017-05-07", browser="firefox", environment=TestEnvironment.objects.get(id=1))
+        session3 = TestSession(sessionId="8890", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         session3.save()
         session3.testCases = [testCase2]
         session3.save()

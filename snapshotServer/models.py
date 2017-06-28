@@ -102,6 +102,7 @@ class TestSession(models.Model):
     sessionId = models.CharField(max_length=32)
     date = models.DateField()
     testCases = models.ManyToManyField("TestCase", related_name='testsession', blank=True)
+    version = models.ForeignKey(Version, related_name='testsession')
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession')
     

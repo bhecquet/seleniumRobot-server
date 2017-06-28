@@ -22,6 +22,7 @@
     pk: 1
     fields:
         sessionId: '1234'
+        version: 1
         date: 2017-05-05
         browser: firefox
         environment: 1
@@ -47,6 +48,7 @@
     pk: 2
     fields:
         sessionId: '1235'
+        version: 1
         date: 2017-05-05
         browser: firefox
         environment: 1
@@ -71,6 +73,7 @@
     pk: 4
     fields:
         sessionId: '1234bis'
+        version: 1
         date: 2017-05-05
         browser: firefox
         environment: 1
@@ -79,6 +82,7 @@
     pk: 5
     fields:
         sessionId: '1235bis'
+        version: 1
         date: 2017-05-05
         browser: firefox
         environment: 1
@@ -112,6 +116,7 @@
     pk: 6
     fields:
         sessionId: '1250'
+        version: 1
         date: 2017-05-05
         browser: firefox
         environment: 1
@@ -120,6 +125,7 @@
     pk: 7
     fields:
         sessionId: '1251'
+        version: 1
         date: 2017-05-06
         browser: firefox
         environment: 1

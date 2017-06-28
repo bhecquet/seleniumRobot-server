@@ -36,6 +36,7 @@ function displaySelected(url) {
 $(document).ready(function () {
     $("#browsers").ultraselect({autoListSelected: true});
     $("#environments").ultraselect({autoListSelected: true});
+    $("#testCases").ultraselect({autoListSelected: true});
     
     $('#sessionFrom').datepicker({
     	format: 'dd-mm-yyyy',

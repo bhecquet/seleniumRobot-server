@@ -1,0 +1,13 @@
+{% extends "snapshotServer/base.html" %}
+{% load static %}
+{% block body %}
+<form action="{% url 'home' %}" method="post">
+	<select id="appList" name="application">
+		<option value=0>No app selected</option>
+		{% for applicationVersion in object_list %}
+		<option value={{ applicationVersion.id }}>{{ applicationVersion }}</option>
+		{% endfor %}
+	</select>
+	<input type="submit" value="Select">
+</form>
+{% endblock %}

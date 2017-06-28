@@ -10,39 +10,48 @@ import pickle
 from django.http.response import HttpResponse
 from django.views.generic import ListView
 from django.views.generic.base import TemplateView, View
+from django.shortcuts import redirect, render_to_response
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import TestSession, TestCase, Snapshot, ExcludeZone, TestStep,\
-    TestEnvironment
+    TestEnvironment, Version
 from datetime import datetime
-from chardet.chardistribution import SURE_NO
+    
+class ApplicationVersionList(ListView):
+    template_name = "snapshotServer/home.html"
+#     model = Version
+    
+    def get_queryset(self):
+        return Version.objects.all()
 
-class SessionSearchView(TemplateView):
-    template_name = "snapshotServer/searchFields.html"
+    
+    def post(self, request):
+        try:
+            Version.objects.get(pk=request.POST.get('application'))
+        except:
+            return render_to_response(self.template_name, {'error': "Application version %s does not exist" % request.POST.get('application'),
+                                                           'object_list': self.get_queryset()})
 
-    def get_context_data(self, **kwargs):
-        context = super(SessionSearchView, self).get_context_data(**kwargs)
-    
-        context['browsers'] = ['firefox', 'chrome', 'ie']
-    
-        return context
-    
+        return redirect('sessionListView', request.POST.get('application'))
 
 class SessionList(TemplateView):
     template_name = "snapshotServer/compare.html"
     
-#     TODO: ajouter le filtre sur 
-#     - le nom de l'application', qui amène sur la page de filtre (donc, une autre vue mappée avec /compare/)
-#     - la version de l'application', les dernières sont présentées en 1ere position
-#     - le nom des tests
-#     Le filtrage de l'application et de la version doivent être un préalable aux autres filtres pour éviter d'avoir trop de données dans les listes
-#     Message d'erreur à afficher lorsque on ne ramène aucun résultat. Indiquer la raison probable (un des filtre sans valeur)
-#     TU des vues
+#     TODO: TU des vues
+
+    def get(self, request, versionId):
+        try:
+            Version.objects.get(pk=versionId)
+        except:
+            return render_to_response(ApplicationVersionList.template_name, {'error': "Application version %s does not exist" % versionId})
+        
+        return super(SessionList, self).get(request, versionId)
     
     def get_context_data(self, **kwargs):
+        
         context = super(SessionList, self).get_context_data(**kwargs)
         
-        sessions = TestSession.objects.all()
+        sessions = TestSession.objects.filter(version=self.kwargs['versionId'])
 
         context['browsers'] = list(set([s.browser for s in TestSession.objects.all()]))
         context['selectedBrowser'] = self.request.GET.getlist('browser')
@@ -52,6 +61,10 @@ class SessionList(TemplateView):
         context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
         
+        context['testCases'] = TestCase.objects.filter(version=self.kwargs['versionId'])
+        context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
+        sessions = sessions.filter(testCases__in=context['selectedTestCases'])
+        
         context['sessionFrom'] = self.request.GET.get('sessionFrom')
         if context['sessionFrom']:
             sessions = sessions.filter(date__gte=datetime.strptime(context['sessionFrom'], '%d-%m-%Y'))
@@ -60,8 +73,14 @@ class SessionList(TemplateView):
         if context['sessionTo']:
             sessions = sessions.filter(date__lte=datetime.strptime(context['sessionTo'], '%d-%m-%Y'))
 
+        # display error when no option of one select list is choosen
+        errors = []
+        if not list(self.request.GET.getlist('browser')):
+            errors.append("Choose at least one browser")
+        if not list(self.request.GET.getlist('environment')):
+            errors.append("Choose at least one environment")
         
-        
+        context['error'] = ', '.join(errors)
         
         # filter session according to request parameters
         context['sessions'] = sessions

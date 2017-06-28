@@ -18,7 +18,7 @@ from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.controllers.Tools import isTestMode
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
-    TestEnvironment
+    TestEnvironment, Version
 from snapshotServer.controllers.PictureComparator import Pixel
 
 
@@ -35,11 +35,11 @@ class test_CompareSnapshot(django.test.TestCase):
         self.testCase = TestCase.objects.get(id=1)
         self.initialRefSnapshot = Snapshot.objects.get(id=1)
         
-        self.session1 = TestSession(sessionId="1237", date="2017-05-07", browser="firefox", environment=TestEnvironment.objects.get(id=1))
+        self.session1 = TestSession(sessionId="1237", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session1.save()
         self.session1.testCases = [self.testCase]
         self.session1.save()
-        self.session2 = TestSession(sessionId="1238", date="2017-05-07", browser="firefox", environment=TestEnvironment.objects.get(id=1))
+        self.session2 = TestSession(sessionId="1238", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session2.save()
         self.session2.testCases = [self.testCase]
         self.session2.save()
