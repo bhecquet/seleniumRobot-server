@@ -1,6 +1,23 @@
 .leftPane {
 	display: inline-block;
-	width: 200px;
+	width: 300px;
+	top:44px;
+	padding-top:10px;
+	padding-bottom: 120px;
+	padding-left:5px;
+	border-width:0px;
+	border-style: solid solid solid hidden;
+	border-color: #33414a;
+	border-color: rgba(0,0,0,0.3);
+	color: #FFF;
+	text-align: center;
+	background-color:	#506876;
+	border-radius: 2%;
+	letter-spacing: 1px;
+	font-size: 12px;
+	border: 1px solid rgba(0,0,0,0.3);
+	border-bottom-width: 3px;
+	z-index: 3;
 }
 
 .rightPane {
@@ -10,26 +27,45 @@
 
 .maskRef {
 	position: absolute;
-	left: 200px;
-	width: 400px;
+	left: 110px;
+	width: 700px;
+	top: 275px;
 }
 
 .maskStep {
 	position: absolute;
-	left: 600px;
-	width: 400px;
+	left: 920px;
+	width: 700px;
+	top: 275px;
 }
 
 .snapshot {
 	width:100%;
 	position:absolute;
-	top:60px
+	top:120px;
 }
 
 #excludeZone {
 
     position: relative;
-    left: 400px;
+    padding-top: 10px;
+	padding-bottom: 10px;
+	background-color: #E48681;
+	border-color: rgba(0,0,0,0.3);
+	color: #FFF;
+	text-align: center;
+	background-color:	#428bca;
+	border-radius: 2%;
+	letter-spacing: 2px;
+	font-size: 20px;
+	border: 1px solid rgba(0,0,0,0.3);
+	border-bottom-width: 3px;
+	background: linear-gradient(to bottom, #48A9AE, #4DAA7DE6);
+	z-index: 10;
+	position: absolute;
+	left: 570px;
+	width: 400px;
+	top: 20px;
 }
 
 .snapshotInfo {
@@ -59,3 +95,167 @@
     opacity: 0.4;
     z-index: 9;
 }
+
+.bg-1 {	
+	background-color: gradient#42678480;	
+}
+
+#logo:hover {  						/* logo */
+	box-shadow: 2px 3px 10px #428bca;
+}
+
+#glass { 
+	width: 300px;/* logo */
+	margin-top: -300;
+	margin-bottom: -100px ;
+	margin-left: -17px;
+	image-orientation: 90deg;
+}
+
+#glass2 { 
+	width: 300px;/* logo */
+	margin-top: -300px;
+	margin-bottom: -100px ;
+	margin-left: 1445px;
+	image-orientation: 240deg;
+	position: fixed;
+	right: 0px;
+}
+
+.btn {
+  font-size: 11px; /*Taille bouton*/
+  }
+  
+.btn:hover {
+	box-shadow: 2px 3px 10px #428bca;
+}
+
+
+body {	
+	box-shadow: 5px 10px 10px #aaa;
+	background-color: #eef3f7;
+}
+#testList {
+	margin-top: 20px;
+}
+
+#stepList {
+	margin-top: 30px;
+}
+
+#boutonMenu {
+	margin-top: 10px;
+	border-width:0px;
+	border-bottom-right-radius: 0px;
+	border-style: solid solid solid hidden;
+	border-color: #294656CC;
+	border-spacing: 100px;
+	font-size: 11px;
+	border-width: 5px;
+}
+
+.shadowBox {
+	box-shadow: 5px 5px 10px #aaa;	
+}
+
+.btn-primary {
+	background-image: linear-gradient(to bottom,#428bca 0,#0e1318 100%);
+}
+
+.title {
+	text-shadow: 0 3px 10px rgba(0,0,0,5);
+	color: #FFF;
+	text-align: center;
+	background-color: #506876 ;
+	border-radius: 2%;
+	text-transform: uppercase;
+	letter-spacing: 10px;
+	font-size: 12px;
+	border: 1px solid rgba(0,0,0,0.3);
+	border-bottom-width: 3px;
+	box-shadow:
+    1px 5px 7px rgba(0, 0, 0, 0.5),
+    0 0 5px rgba(0, 0, 0, 0.4);
+}
+
+.snapshotInfo {
+	width:100%;
+	position:absolute;
+	padding-top: 53px;
+	padding-bottom: 10px;
+	background: linear-gradient(to bottom, #00888D, #69B18EE6);
+	text-align: center;
+	top: 20px;
+	font-size: 17px;
+	letter-spacing:0.5px;
+	box-shadow:
+    1px 6px 7px rgba(0, 0, 0, 0.5),
+    0 0 5px rgba(0, 0, 0, 0.4);
+}
+
+.step {
+	padding-top: 50px;
+}
+
+#new_exclude_2 {
+	margin-bottom: 100px;
+}	
+
+.table>tbody>tr>td {
+	padding: 4px;
+}
+
+#excludeZoneTable>table>tbody>tr {
+	font-size: 10px;
+}
+
+#excludeTable>tbody>tr>th {
+	text-transform: uppercase;
+	font-size: 10px;
+}
+		
+#titleZoneTable {
+	text-transform: uppercase;
+	font-size: 25px;
+	margin-bottom: 20px;
+}
+
+#excludeZone {
+	background: #aqua;
+}
+
+#selection {
+	background: linear-gradient(to bottom left, #47a8ad, #47a8ad33);
+}
+
+.table-striped>tbody>tr>td {
+	font-size: 11px;
+}
+
+#btnMenu {
+	padding-top:3;
+	padding-bottom: 0;
+	background-color: #437678cc;
+	border-radius: 0;
+	border-color: #00888d;
+	margin-right: 15px;
+}
+	
+.textFilter {
+	color: white;
+	text-align: center;
+}
+
+#date {
+	padding-top: 0;
+	padding-bottom:0;
+}
+
+.col-sm-10 {
+	border-bottom-width: 0px;
+	border-bottom-style: solid;
+	margin-bottom: 0px;
+	padding-bottom: 1px;
+}
+
+

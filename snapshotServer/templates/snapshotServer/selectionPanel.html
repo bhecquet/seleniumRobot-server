@@ -1,42 +1,7 @@
-<form>
-	<select id="browsers" multiple="multiple" name="browser">
-		{% for browser in browsers %}
-			{% if browser in selectedBrowser %}
-				<option value="{{ browser }}" selected="selected">{{ browser }}</option>
-			{% else %}
-				<option value="{{ browser }}">{{ browser }}</option>
-			{% endif %}
-		{% endfor %}
-	</select>
-	
-	<select id="environments" multiple="multiple" name="environment">
-		{% for environment in environments %}
-			{% if environment in selectedEnvironments %}
-				<option value="{{ environment.id }}" selected="selected">{{ environment.name }}</option>
-			{% else %}
-				<option value="{{ environment.id }}">{{ environment.name }}</option>
-			{% endif %}
-		{% endfor %}
-	</select>
-	
-	<select id="testCases" multiple="multiple" name="testcase">
-		{% for testCase in testCases %}
-			{% if testCase in selectedTestCases %}
-				<option value="{{ testCase.id }}" selected="selected">{{ testCase.name }}</option>
-			{% else %}
-				<option value="{{ testCase.id }}">{{ testCase.name }}</option>
-			{% endif %}
-		{% endfor %}
-	</select>
-	
-	From: <input type="text" value="{{ sessionFrom }}" id="sessionFrom" name="sessionFrom" />
-	To: <input type="text" value="{{ sessionTo }}" id="sessionTo" name="sessionTo" />
-	<input type="submit" value="Filter">
-</form>
+{% load static %}
 
 
-
-<select id="sessionList" onchange="clearTestList();updatePanel('{% url "testlistView" 0 %}'.replace (0, $( '#sessionList option:selected' ).val()), 'testList')" >
+<select id="sessionList" class="btn btn-primary" onchange="clearTestList();updatePanel('{% url "testlistView" 0 %}'.replace (0, $( '#sessionList option:selected' ).val()), 'testList')" >
 	<option value=0>No session selected</option>
 	{% for session in sessions %}
 	<option value={{ session.id }}>{{ session.date }}</option>

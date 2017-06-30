@@ -16,6 +16,10 @@ function clearTestList() {
 	document.getElementById('display').innerHTML = '';
 }
 
+function toggleElement(elementId) {
+    $("#" + elementId).toggle();
+}
+
 function displaySelected(url) {
 	data = 'browsers='
 	var selectedOptions = $('#browsers').find('.checked').find('input');

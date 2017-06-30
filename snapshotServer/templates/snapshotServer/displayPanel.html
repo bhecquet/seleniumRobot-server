@@ -3,40 +3,49 @@
 
 <div>
 	<div class="maskRef">
-		<div class="label label-success">Reference</div>
+		<div class="title">Reference</div>
 	{% if reference %}
 		<div class="snapshotInfo">{{ reference.session }}</div>
-		<div class="snapshot"><img src="{{ reference.image.url }}" style="width:inherit"></div>
+		<div class="snapshot"><img src="{{ reference.image.url }}" class="shadowBox" style="width:inherit"></div>
 	{% else %}
 		<div class="snapshotInfo">No Reference</div>
 	{% endif %}
 	</div>
 
 	<div class="maskStep">
-		<div class="label label-success">Step</div>
+		<div class="title">Step</div>
 		
 		{% if stepSnapshot %}
-		<div class="snapshotInfo">
+		<div class="snapshotInfo step">
 			{% if stepSnapshot.refSnapshot %}
-			<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
-			<button type="submit" onclick="toggleElement('diff');">Toggle differences</button>
+			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
+			<button type="submit" class="btn btn-primary" onclick="toggleElement('diff');">Toggle differences</button>
 			{% else %}
 			This step is a reference
-			<button type="submit" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
+			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
 			{% endif %}
 		</div>
 		<div class="snapshot">
-			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;"></canvas> 
-			<img id="stepSnapshot" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;position:absolute;">
-			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:400px;position:absolute;"></div>
+			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:700px;position:absolute;"></canvas> 
+			<img class="shadowBox" id="stepSnapshot" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;position:absolute;">
+			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:700px;position:absolute;"></div>
 		</div>
-		<div id="excludeZone"> 
-            <div id="excludeZoneTable"></div>
-            <button type="submit" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ sessionId }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
+		
+		<div id="a_masquer2" style="display:none">
+			<div id="excludeZone" class="col-lg-12" ><a></a> 
+	            <div id="excludeZoneTable">
+	            	<div id="titleZoneTable"> 
+	                    <img src="{% static 'img/exclude.png' %}"  class="img-circle" alt="" id="exclude" width="40"> Exclude zones 
+	                    <img src="{% static 'img/exclude.png' %}"  class="img-circle" alt="" id="exclude" width="40">
+	                </div>
+	            </div>
+	            
+	            <button type="submit" class="btn btn-primary" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ sessionId }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
+			</div>
 		</div>
 		
 		{% else %}
-		<div class="snapshot">No Snapshot for this step</div>
+		<div class="snapshotInfo step">No Snapshot for this step</div>
 		{% endif %}
 	</div>
 </div>

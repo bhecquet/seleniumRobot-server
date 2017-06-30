@@ -11,10 +11,6 @@ function displayDifference(pointList) {
 	}	
 }
 
-function toggleElement(elementId) {
-    $("#" + elementId).toggle();
-}
-
 function getIntValue(strValue) {
 	var number = strValue.match(/\d+/);
 	return parseInt(number, 10);
