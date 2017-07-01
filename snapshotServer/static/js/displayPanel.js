@@ -1,7 +1,7 @@
 function displayDifference(pointList) {
 	var canvas = document.getElementById("diff");
-	canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
-	canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
+	//canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
+	//canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#FF0000";
 	ctx.save();
@@ -12,8 +12,18 @@ function displayDifference(pointList) {
 }
 
 function getIntValue(strValue) {
+	if (typeof strValue === 'number') {
+		return strValue;
+	}
+	
 	var number = strValue.match(/\d+/);
 	return parseInt(number, 10);
+}
+
+function getCanvasRatio() {
+	canvasHeight = document.getElementById("stepSnapshot").clientHeight;
+    canvasWidth = document.getElementById("stepSnapshot").clientWidth;
+    return getIntValue(canvas.getAttribute("width")) / getIntValue(canvasWidth);
 }
 
 function initDraw(canvas, excludeTable, excludeIndex) {
@@ -38,14 +48,16 @@ function initDraw(canvas, excludeTable, excludeIndex) {
     
     var canvasCoords = canvas.getBoundingClientRect();
     var element = null;
-    
-    canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
-    canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
-    
-    var canvasRatio = getIntValue(canvas.getAttribute("width")) / getIntValue(canvas.style.width);
+   
+    var canvasRatio = getCanvasRatio();
 
     canvas.onmousemove = function (e) {
+    	
+    	canvasCoords = canvas.getBoundingClientRect();
+    	canvasRatio = getCanvasRatio();
+    	
         setMousePosition(e);
+        // TODO: mettre les tailles en pourcentage
         if (element !== null) {
             element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
             element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
@@ -56,6 +68,10 @@ function initDraw(canvas, excludeTable, excludeIndex) {
     }
 
     canvas.onclick = function (e) {
+    	
+    	canvasCoords = canvas.getBoundingClientRect();
+    	canvasRatio = getCanvasRatio();
+    	
         if (element !== null) {
             
             canvas.style.cursor = "default";
@@ -66,7 +82,7 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             var realTop = Math.round(getIntValue(element.style.top) * canvasRatio);
             var realWidth = Math.round(getIntValue(element.style.width) * canvasRatio);
             var realHeight = Math.round(getIntValue(element.style.height) * canvasRatio);
-            
+
             // add line to exclude excludeTable
             row = document.createElement('tr');
             colActive = document.createElement('td');
@@ -89,6 +105,7 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             element = null;
             
         } else {
+        	console.log(mouse.x);
             excludeIndex++;
             console.log("begun.");
             mouse.startX = mouse.x;
@@ -108,9 +125,12 @@ function initDraw(canvas, excludeTable, excludeIndex) {
 
 function drawExistingExcludeZones() {
 
+	// TODO: mettre les tailles en pourcentage de la fenêtre
+	
 	var canvas = document.getElementById('canvas');
-	var canvasRatio = getIntValue(canvas.style.width) / getIntValue(canvas.getAttribute("width"));
-
+	var canvasRatio = getIntValue(canvas.clientWidth) / getIntValue(canvas.getAttribute("width"));
+	console.log(canvasRatio);
+	
 	var currentExcludes = document.getElementsByName('exclude');
 
 	console.log(currentExcludes);

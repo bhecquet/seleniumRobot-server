@@ -26,9 +26,9 @@
 			{% endif %}
 		</div>
 		<div class="snapshot">
-			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:700px;position:absolute;"></canvas> 
+			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width: inherit;position:absolute;"></canvas> 
 			<img class="shadowBox" id="stepSnapshot" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;position:absolute;">
-			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width:700px;position:absolute;"></div>
+			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width: inherit;position:absolute;"></div>
 		</div>
 		
 		<div id="a_masquer2" style="display:none">

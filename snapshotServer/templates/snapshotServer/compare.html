@@ -8,8 +8,8 @@
 
 {% block body %}
 <div class="row">
-	<div class="col-sm-2 " style="background-color:#006266;padding-bottom: 16px;">&nbsp;  </div>
-	<div class="col-sm-8 " style="background-color:#006266;color: white; ">
+	<div class="col-sm-2 " style="background-color:#006266;height: 40px;"></div>
+	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">
 		<form>
 			<div  class="btn" id="btnMenu"  >Browser&nbsp;
 				<select id="browsers" multiple="multiple" name="browser">
@@ -48,27 +48,27 @@
 			</div>
 			
 			<div class="btn" id="btnMenu"  >Starting&nbsp;
-				<input type="text" value="{{ sessionFrom }}" id="sessionFrom" name="sessionFrom" />
+				<input type="text" value="{{ sessionFrom }}" id="sessionFrom" name="sessionFrom" style="color: black;"/>
 			</div>
 			
 			<div class="btn" id="btnMenu"  >Ending&nbsp;
-				<input type="text" value="{{ sessionTo }}" id="sessionTo" name="sessionTo" />
+				<input type="text" value="{{ sessionTo }}" id="sessionTo" name="sessionTo" style="color: black;" />
 			</div>
 			
 			<input type="submit" class="btn" value="Filter" style="background-color:#1E4F51;">
 		</form>
 	</div>
-	<div  class="col-sm-2 " style="background-color:#eef3f7; margin-left: -15px; padding-bottom: 16px; background-color:#006266;" >&nbsp  </div>
+	<div  class="col-sm-2 " style="margin-left: -15px;height: 40px;background-color:#006266;" >&nbsp;  </div>
 </div>
 
 <div class="row">
-	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center;">
+	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center;height: 25px;">
 		<div type="button" value="Display" onclick="toggleElement('sessionListMenu');" class="btn " id="btnMenu" >TEST &nbsp 
 			<img src="{% static 'img/down.png' %}"  class="img-circle" alt="" id="down" width="14">
 		</div>
 	</div>
-	<div  class="col-sm-10" style="background-color:#33414a;color: white; text-align: center;">&nbsp</div>
-	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center; padding-left:0px;margin-left: -15px;">
+	<div  class="col-sm-10" style="background-color:#33414a; text-align: center;height: 25px;">&nbsp</div>
+	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center; padding-left:0px;margin-left: -15px;height: 25px;">
 		<div type="button" value="Display" onclick="toggleElement('a_masquer2');" class="btn" id="btnMenu" >EXCLUDE ZONE &nbsp 
 			<img src="{% static 'img/down.png' %}"  class="img-circle" alt="" id="down" width="14">
 		</div>

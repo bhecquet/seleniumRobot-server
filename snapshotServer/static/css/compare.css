@@ -27,15 +27,15 @@
 
 .maskRef {
 	position: absolute;
-	left: 110px;
-	width: 700px;
+	left: 3%;
+	width: 47%;
 	top: 275px;
 }
 
 .maskStep {
 	position: absolute;
-	left: 920px;
-	width: 700px;
+	left: 51%;
+	width: 47%;
 	top: 275px;
 }
 
@@ -116,9 +116,9 @@
 	width: 300px;/* logo */
 	margin-top: -300px;
 	margin-bottom: -100px ;
-	margin-left: 1445px;
+	/*margin-left: 1445px;*/
 	image-orientation: 240deg;
-	position: fixed;
+	position: absolute;
 	right: 0px;
 }
 
@@ -233,22 +233,17 @@ body {
 }
 
 #btnMenu {
-	padding-top:3;
-	padding-bottom: 0;
+	padding-top: 3px;
+	padding-bottom: 0px;
 	background-color: #437678cc;
-	border-radius: 0;
+	border-radius: 0px;
 	border-color: #00888d;
 	margin-right: 15px;
 }
-	
-.textFilter {
-	color: white;
-	text-align: center;
-}
 
 #date {
-	padding-top: 0;
-	padding-bottom:0;
+	padding-top: 0px;
+	padding-bottom:0px;
 }
 
 .col-sm-10 {
@@ -258,4 +253,10 @@ body {
 	padding-bottom: 1px;
 }
 
+#error {
+	color: red;
+	font-weight: bold;
+	font-size: 20px;
+	text-align: center;
+}
 
