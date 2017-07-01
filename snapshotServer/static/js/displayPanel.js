@@ -20,24 +20,35 @@ function getIntValue(strValue) {
 	return parseInt(number, 10);
 }
 
-function getCanvasRatio() {
-	canvasHeight = document.getElementById("stepSnapshot").clientHeight;
-    canvasWidth = document.getElementById("stepSnapshot").clientWidth;
-    return getIntValue(canvas.getAttribute("width")) / getIntValue(canvasWidth);
-}
+
 
 function initDraw(canvas, excludeTable, excludeIndex) {
-
+	
     function setMousePosition(e) {
         var ev = e || window.event; //Moz || IE
         if (ev.pageX) { //Moz
-            mouse.x = ev.pageX + window.pageXOffset;
-            mouse.y = ev.pageY + window.pageYOffset;
+            mouse.x = ev.pageX;
+            mouse.y = ev.pageY;
         } else if (ev.clientX) { //IE
             mouse.x = ev.clientX + document.body.scrollLeft;
             mouse.y = ev.clientY + document.body.scrollTop;
         }
     };
+    
+    function getCanvasRatio() {
+        canvasWidth = document.getElementById("stepSnapshot").clientWidth;
+        return getIntValue(canvas.getAttribute("width")) / getIntValue(canvasWidth);
+    };
+
+    function getCanvasCoords() {
+    	return $('#canvas').offset();
+    };
+    
+    function updateSizeAndCoords() {
+    	canvasCoords = getCanvasCoords();
+    	canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
+    	canvasRatio = getCanvasRatio();
+    }
 
     var mouse = {
         x: 0,
@@ -46,31 +57,29 @@ function initDraw(canvas, excludeTable, excludeIndex) {
         startY: 0
     };
     
-    var canvasCoords = canvas.getBoundingClientRect();
+    var canvasCoords = null;
     var element = null;
-   
-    var canvasRatio = getCanvasRatio();
-
+    var canvasRatio = null;
+    
+    updateSizeAndCoords();
+    
+    $( window ).resize(function() {
+    	updateSizeAndCoords();
+    });
+    
     canvas.onmousemove = function (e) {
     	
-    	canvasCoords = canvas.getBoundingClientRect();
-    	canvasRatio = getCanvasRatio();
-    	
         setMousePosition(e);
-        // TODO: mettre les tailles en pourcentage
         if (element !== null) {
             element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
             element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
-            element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - canvasCoords.x  + 'px' : mouse.startX - canvasCoords.x + 'px';
-            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - canvasCoords.y + 'px' : mouse.startY - canvasCoords.y + 'px';
+            element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - canvasCoords.left  + 'px' : mouse.startX - canvasCoords.left + 'px';
+            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - canvasCoords.top + 'px' : mouse.startY - canvasCoords.top + 'px';
 
         }
     }
 
     canvas.onclick = function (e) {
-    	
-    	canvasCoords = canvas.getBoundingClientRect();
-    	canvasRatio = getCanvasRatio();
     	
         if (element !== null) {
             
@@ -82,6 +91,12 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             var realTop = Math.round(getIntValue(element.style.top) * canvasRatio);
             var realWidth = Math.round(getIntValue(element.style.width) * canvasRatio);
             var realHeight = Math.round(getIntValue(element.style.height) * canvasRatio);
+            
+            // change coordinates in pixels to coordinates in percentages, so that rectangles are resized when browser window is also resized
+            element.style.width = getIntValue(element.style.width) * 100 / canvas.clientWidth + '%';
+            element.style.height = getIntValue(element.style.height) * 100 / canvas.clientHeight + '%';
+            element.style.left = getIntValue(element.style.left) * 100 / canvas.clientWidth + '%';
+            element.style.top = getIntValue(element.style.top) * 100 / canvas.clientHeight + '%';
 
             // add line to exclude excludeTable
             row = document.createElement('tr');
@@ -105,7 +120,8 @@ function initDraw(canvas, excludeTable, excludeIndex) {
             element = null;
             
         } else {
-        	console.log(mouse.x);
+        	        	
+        	
             excludeIndex++;
             console.log("begun.");
             mouse.startX = mouse.x;
@@ -125,25 +141,24 @@ function initDraw(canvas, excludeTable, excludeIndex) {
 
 function drawExistingExcludeZones() {
 
-	// TODO: mettre les tailles en pourcentage de la fenêtre
-	
 	var canvas = document.getElementById('canvas');
+	canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
 	var canvasRatio = getIntValue(canvas.clientWidth) / getIntValue(canvas.getAttribute("width"));
-	console.log(canvasRatio);
-	
 	var currentExcludes = document.getElementsByName('exclude');
 
-	console.log(currentExcludes);
 	for(var i= 0; i < currentExcludes.length; i++) {
 		if (currentExcludes[i].checked) {
 			var idx = getIntValue(currentExcludes[i].id) 
 			element = document.createElement('div');
 		    element.className = 'rectangle'
 		    element.id = 'exclude_' + idx;
-		    element.style.left = Math.round(getIntValue(currentExcludes[i].getAttribute('r_x')) * canvasRatio) + 'px';
-		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) + 'px';
-		    element.style.width = Math.round(getIntValue(currentExcludes[i].getAttribute('r_w')) * canvasRatio) + 'px';
-		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) + 'px';
+		    
+		    
+		     element.style.left = Math.round(getIntValue(currentExcludes[i].getAttribute('r_x')) * canvasRatio) * 100 / canvas.clientWidth + '%';
+		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) * 100 / canvas.clientHeight + '%';
+		    element.style.width = Math.round(getIntValue(currentExcludes[i].getAttribute('r_w')) * canvasRatio) * 100 / canvas.clientWidth + '%';
+		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) * 100 / canvas.clientHeight + '%';
+		     
 		    canvas.appendChild(element);
 		}
 	}
