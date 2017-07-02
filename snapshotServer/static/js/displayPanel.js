@@ -1,7 +1,5 @@
 function displayDifference(pointList) {
 	var canvas = document.getElementById("diff");
-	//canvas.style.height = document.getElementById("stepSnapshot").clientHeight;
-	//canvas.style.width = document.getElementById("stepSnapshot").clientWidth;
 	var ctx = canvas.getContext("2d");
 	ctx.fillStyle = "#FF0000";
 	ctx.save();

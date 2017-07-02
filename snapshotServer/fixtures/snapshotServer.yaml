@@ -58,6 +58,7 @@
     fields:
         sessionId: '1236'
         date: 2017-05-05
+        version: 1
         browser: firefox
         environment: 1
         testCases: [2]

@@ -2,7 +2,7 @@
 	<table class="table table-striped">
 		{% for testStep, status in object_list.items %}
 		<tr>
-			<td class="{% if status %}itemSuccess{% else %}itemFailure{% endif %}">
+			<td class="{% if status %}itemSuccess{% else %}itemFailure{% endif %} menuButton">
 				<a href='#' onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStep.id %}', 'display')">
 				{{ testStep }}
 				</a>

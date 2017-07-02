@@ -19,7 +19,6 @@ from datetime import datetime
     
 class ApplicationVersionList(ListView):
     template_name = "snapshotServer/home.html"
-#     model = Version
     
     def get_queryset(self):
         return Version.objects.all()
@@ -36,8 +35,6 @@ class ApplicationVersionList(ListView):
 
 class SessionList(TemplateView):
     template_name = "snapshotServer/compare.html"
-    
-#     TODO: TU des vues
 
     def get(self, request, versionId):
         try:
@@ -79,8 +76,11 @@ class SessionList(TemplateView):
             errors.append("Choose at least one browser")
         if not list(self.request.GET.getlist('environment')):
             errors.append("Choose at least one environment")
+        if not list(self.request.GET.getlist('testcase')):
+            errors.append("Choose at least one test case")
         
-        context['error'] = ', '.join(errors)
+        if errors:
+            context['error'] = ', '.join(errors)
         
         # filter session according to request parameters
         context['sessions'] = sessions
