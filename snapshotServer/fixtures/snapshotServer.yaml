@@ -151,3 +151,14 @@
     pk: 10
     fields: {step: 4, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 7}
  
+ 
+    model: snapshotServer.testsession
+    pk: 8
+    fields:
+        sessionId: '1252'
+        version: 1
+        date: 2017-05-06
+        browser: firefox
+        environment: 1
+        testCases: [1, 2]
+    

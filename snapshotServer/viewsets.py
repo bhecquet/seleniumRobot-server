@@ -14,6 +14,7 @@ from rest_framework import viewsets
 from snapshotServer.models import Snapshot, Application, TestEnvironment, \
     TestCase, TestStep, Version, TestSession, ExcludeZone
 from rest_framework.utils.serializer_helpers import ReturnDict
+from django.db.models.aggregates import Count
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -25,8 +26,10 @@ class BaseViewSet(viewsets.ModelViewSet):
         objects = self.serializer_class.Meta.model.objects.all()
         for key, value in serializer.validated_data.items():
             if type(value) == list:
-                
-                objects = objects.filter(**{key + '__in': value})
+                objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
+                if len(value) > 0:
+                    for v in value:
+                        objects = objects.filter(**{key: v})
             else:
                 objects = objects.filter(**{key: value})
     
