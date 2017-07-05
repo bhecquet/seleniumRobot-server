@@ -99,7 +99,7 @@ class TestStep(models.Model):
     
 class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
-    sessionId = models.CharField(max_length=32)
+    sessionId = models.CharField(max_length=50)
     date = models.DateField()
     testCases = models.ManyToManyField("TestCase", related_name='testsession', blank=True)
     version = models.ForeignKey(Version, related_name='testsession')

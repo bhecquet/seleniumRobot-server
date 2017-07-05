@@ -36,7 +36,7 @@ class VersionSerializer(serializers.ModelSerializer):
 class TestEnvironmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestEnvironment
-        fields = ('name',)
+        fields = ('id', 'name',)
 
 class TestSessionSerializer(serializers.ModelSerializer):
     
@@ -45,12 +45,12 @@ class TestSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TestSession
-        fields = ('sessionId', 'date', 'testCases', 'browser', 'environment')
+        fields = ('id', 'sessionId', 'date', 'testCases', 'browser', 'environment', 'version')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestStep
-        fields = ('name', 'testCase')
+        fields = ('id', 'name', 'testCase')
 
 class TestCaseSerializer(serializers.ModelSerializer):
     
@@ -58,7 +58,7 @@ class TestCaseSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TestCase
-        fields = ('name', 'version')
+        fields = ('id', 'name', 'version')
         
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     

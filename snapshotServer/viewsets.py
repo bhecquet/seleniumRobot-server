@@ -25,6 +25,7 @@ class BaseViewSet(viewsets.ModelViewSet):
         objects = self.serializer_class.Meta.model.objects.all()
         for key, value in serializer.validated_data.items():
             if type(value) == list:
+                
                 objects = objects.filter(**{key + '__in': value})
             else:
                 objects = objects.filter(**{key: value})
