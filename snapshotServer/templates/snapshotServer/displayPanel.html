@@ -19,7 +19,12 @@
 		<div class="snapshotInfo step">
 			{% if stepSnapshot.refSnapshot %}
 			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
-			<button type="submit" class="btn btn-primary" onclick="toggleElement('diff');">Toggle differences</button>
+				{% if not stepSnapshot.tooManyDiffs %}
+				<button type="submit" class="btn btn-primary" onclick="toggleElement('diff');">Toggle differences</button>
+				{% else %}
+				<br/>Too many differences for display (> 10%)
+				{% endif %}
+			
 			{% else %}
 			This step is a reference
 			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
@@ -59,7 +64,11 @@
 	console.log("displaying diff")
 	setTimeout(function(){
 		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable').getElementsByTagName('tbody')[0], 0);
-		displayDifference({{ diff }});
+		
+		<!-- do not display differences when there are too many -->
+		{% if not stepSnapshot.tooManyDiffs %}
+			displayDifference({{ diff }});
+		{% endif %}
 	}, 500);
 	
 </script>

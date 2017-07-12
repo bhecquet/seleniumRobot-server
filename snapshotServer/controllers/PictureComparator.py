@@ -21,6 +21,8 @@ logger = logging.getLogger(__name__)
 
 class PictureComparator:
     
+    MAX_DIFF_THRESHOLD = 0.1
+    
     def __init__(self):
         pass
     
@@ -74,15 +76,22 @@ class PictureComparator:
         diff = cv2.absdiff(referenceImg, imageImg)
         
         pixels = []
+        nbDiffs = 0
+        maxDiffs = len(referenceImg) * len(referenceImg[0]) * PictureComparator.MAX_DIFF_THRESHOLD
         
+        # get coordinates for diff pixels
+        # stops if more than 10% of pixels are different
         for y, row in enumerate(diff):
             if sum(row) == 0:
                 continue
             for x, value in enumerate(row):
+                if nbDiffs > maxDiffs:
+                    return pixels, True
                 if value != 0 and Pixel(x, y) not in excludedPixels:
+                    nbDiffs += 1
                     pixels.append(Pixel(x, y))
 
-        return pixels
+        return pixels, False
     
     def _buildListOfExcludedPixels(self, excludeZones):
         """

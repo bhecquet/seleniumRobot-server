@@ -182,7 +182,7 @@ body {
 .snapshotInfo {
 	width:100%;
 	position:absolute;
-	padding-top: 53px;
+	padding-top: 5px;
 	padding-bottom: 10px;
 	background: linear-gradient(to bottom, #00888D, #69B18EE6);
 	text-align: center;
@@ -195,7 +195,7 @@ body {
 }
 
 .step {
-	padding-top: 50px;
+	padding-top: 5px;
 }
 
 #new_exclude_2 {

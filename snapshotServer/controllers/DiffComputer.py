@@ -96,9 +96,10 @@ class DiffComputer(threading.Thread):
                 # get the list of exclude zones
                 excludeZones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=refSnapshot)]
                 
-                pixelDiffs = PictureComparator().getChangedPixels(refSnapshot.image.path, stepSnapshot.image.path, excludeZones)
+                pixelDiffs, tooManyDiffs = PictureComparator().getChangedPixels(refSnapshot.image.path, stepSnapshot.image.path, excludeZones)
                 binPixels = pickle.dumps(pixelDiffs, protocol=3)
                 stepSnapshot.pixelsDiff = binPixels
+                stepSnapshot.tooManyDiffs = tooManyDiffs
             else:
                 stepSnapshot.pixelsDiff = None
                 

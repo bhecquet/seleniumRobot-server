@@ -63,5 +63,4 @@ class test_viewset(django.test.TestCase):
         self.assertEqual(response.status_code, 201)
         self.assertTrue('id' in eval(response.content))
         self.assertEqual(eval(response.content)['id'], 2)
-        
-    # TODO: test when parameter is an empty list because the current approach does not an 'equal' on list. Chaining filter may help
+    

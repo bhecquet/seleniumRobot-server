@@ -118,6 +118,7 @@ class Snapshot(models.Model):
     testCase = models.ForeignKey(TestCase)
     refSnapshot = models.ForeignKey('self', default=None, null=True)
     pixelsDiff = models.BinaryField(null=True)
+    tooManyDiffs = models.BooleanField(default=False)
     
     def __str__(self):
         return "%s - %s - %s - %d" % (self.testCase.name, self.step.name, self.session.sessionId, self.id) 
