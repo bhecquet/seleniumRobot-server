@@ -38,9 +38,9 @@ function displaySelected(url) {
 }
 
 $(document).ready(function () {
-    $("#browsers").ultraselect({autoListSelected: true});
-    $("#environments").ultraselect({autoListSelected: true});
-    $("#testCases").ultraselect({autoListSelected: true});
+    $("#browsers").ultraselect({autoListSelected: true, maxWidth: "90px"});
+    $("#environments").ultraselect({autoListSelected: true, maxWidth: "90px"});
+    $("#testCases").ultraselect({autoListSelected: true, maxWidth: "90px"});
     
     $('#sessionFrom').datepicker({
     	format: 'dd-mm-yyyy',
