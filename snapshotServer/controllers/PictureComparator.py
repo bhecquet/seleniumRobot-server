@@ -7,11 +7,13 @@ Created on 8 mars 2017
 import collections
 import logging
 import os
+import numpy
 
 
 import cv2 
 
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+import math
 
 
 Rectangle = collections.namedtuple("Rectangle", ['x', 'y', 'width', 'height'])
@@ -76,22 +78,39 @@ class PictureComparator:
         diff = cv2.absdiff(referenceImg, imageImg)
         
         pixels = []
-        nbDiffs = 0
-        maxDiffs = len(referenceImg) * len(referenceImg[0]) * PictureComparator.MAX_DIFF_THRESHOLD
+        tooManyDiffs = False
+        maxDiffs = math.floor(len(referenceImg) * len(referenceImg[0]) * PictureComparator.MAX_DIFF_THRESHOLD)
         
-        # get coordinates for diff pixels
-        # stops if more than 10% of pixels are different
-        for y, row in enumerate(diff):
-            if sum(row) == 0:
-                continue
-            for x, value in enumerate(row):
-                if nbDiffs > maxDiffs:
-                    return pixels, True
-                if value != 0 and Pixel(x, y) not in excludedPixels:
-                    nbDiffs += 1
-                    pixels.append(Pixel(x, y))
-
-        return pixels, False
+        # ignore excluded pixels
+        for x, y in excludedPixels:
+            diff[y][x] = 0
+        
+        matDiff = numpy.matrix(diff)
+        diffPixels = numpy.transpose(matDiff.nonzero());
+        
+        if len(diffPixels) > maxDiffs:
+            diffPixels = diffPixels[:maxDiffs]
+            tooManyDiffs = True
+        
+        for y, x in diffPixels:
+            pixels.append(Pixel(x, y))
+            
+        return pixels, tooManyDiffs
+        
+#         
+#         # get coordinates for diff pixels
+#         # stops if more than 10% of pixels are different
+#         for y, row in enumerate(diff):
+#             if sum(row) == 0:
+#                 continue
+#             for x, value in enumerate(row):
+#                 if nbDiffs > maxDiffs:
+#                     return pixels, True
+#                 if value != 0 and Pixel(x, y) not in excludedPixels:
+#                     nbDiffs += 1
+#                     pixels.append(Pixel(x, y))
+# 
+#         return pixels, False
     
     def _buildListOfExcludedPixels(self, excludeZones):
         """
