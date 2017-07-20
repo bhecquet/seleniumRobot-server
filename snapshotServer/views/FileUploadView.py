@@ -1,16 +1,11 @@
-import pickle
-import threading
-import time
-
 from rest_framework import views
-from rest_framework.parsers import FileUploadParser, MultiPartParser
+from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from snapshotServer.controllers.PictureComparator import PictureComparator
+from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.forms import ImageUploadForm
 from snapshotServer.models import Snapshot, TestStep, TestSession, \
     TestCase
-from snapshotServer.controllers.DiffComputer import DiffComputer
 
 
 # Create your views here.

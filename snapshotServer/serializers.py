@@ -53,12 +53,10 @@ class TestStepSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'testCase')
 
 class TestCaseSerializer(serializers.ModelSerializer):
-    
-    version = serializers.SlugRelatedField(slug_field='name', queryset=Version.objects.all())
-    
+
     class Meta:
         model = TestCase
-        fields = ('id', 'name', 'version')
+        fields = ('id', 'name', 'version', 'testSteps')
         
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     
