@@ -14,7 +14,10 @@ class Version(snapshotServer.models.Version):
     class Meta:
         proxy = True
 
-# Create your models here.
+class TestCase(snapshotServer.models.TestCase):
+    class Meta:
+        proxy = True
+
 class Variable(models.Model):
     
     class Meta:

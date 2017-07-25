@@ -10,7 +10,7 @@ from snapshotServer.models import Version, TestEnvironment, Application,\
 
 def copyVariables(request):
     """
-    Copie un ensemble de variable et modifie le/les paramètres sélectionnés
+    Copy a set of variables and change some of the parameters
     """
     
     variableIds = [int(id) for id in request.POST['ids'].split(',')]
@@ -35,11 +35,11 @@ def copyVariables(request):
     except:
         application = None
     
-    # initialisation du message   
+    # init message   
     from variableServer.admin import VariableAdmin 
     varAdmin = VariableAdmin(Variable, admin.site)
    
-    # pour chaque variable, on va copier son contenu dans une nouvelle variable
+    # copy content of each variable in a new variable
     for variableId in variableIds:
         try:
             variable = Variable.objects.get(id=variableId)
@@ -54,16 +54,16 @@ def copyVariables(request):
                                    internal=variable.internal,
                                    description=variable.description)
             newVariable.save()
-            varAdmin.message_user(request, "la variable %s a été copiée" % (variable.name,), level=messages.INFO)
+            varAdmin.message_user(request, "Variable %s has been copied" % (variable.name,), level=messages.INFO)
             
         except Exception as e:
-            varAdmin.message_user(request, "la variable d'id %d n'a pas été copiée: %s" % (variableId, str(e)), level=messages.ERROR)
+            varAdmin.message_user(request, "Variable with id %d has not been copied: %s" % (variableId, str(e)), level=messages.ERROR)
         
     return HttpResponseRedirect(request.POST['nexturl'])
 
 def changeVariables(request):
     """
-    modifie un ensemble de variables avec le/les paramètres sélectionnés
+    Change a set of variables with the given parameters
     """
     
     variableIds = [int(id) for id in request.POST['ids'].split(',')]
@@ -88,11 +88,11 @@ def changeVariables(request):
     except:
         application = None
     
-    # initialisation du message    
+    # init message     
     from variableServer.admin import VariableAdmin
     varAdmin = VariableAdmin(Variable, admin.site)
    
-    # pour chaque variable, on va copier son contenu dans une nouvelle variable
+    # update each variable with the new parameters
     for variableId in variableIds:
         try:
             variable = Variable.objects.get(id=variableId)
@@ -103,10 +103,10 @@ def changeVariables(request):
             variable.test = test
             
             variable.save()
-            varAdmin.message_user(request, "la variable %s a été modifiée" % (variable.name,), level=messages.INFO)
+            varAdmin.message_user(request, "Variable %s has been modified" % (variable.name,), level=messages.INFO)
             
         except Exception as e:
-            varAdmin.message_user(request, "la variable d'id %d n'a pas été modifiée: %s" % (variableId, str(e)), level=messages.ERROR)
+            varAdmin.message_user(request, "Variable with id %d has not been modified: %s" % (variableId, str(e)), level=messages.ERROR)
         
     return HttpResponseRedirect(request.POST['nexturl'])
 

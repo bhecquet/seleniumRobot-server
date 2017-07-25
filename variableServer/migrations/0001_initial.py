@@ -60,6 +60,16 @@ class Migration(migrations.Migration):
             },
             bases=('snapshotServer.version',),
         ),
+        migrations.CreateModel(
+            name='TestCase',
+            fields=[
+            ],
+            options={
+                'proxy': True,
+                'indexes': [],
+            },
+            bases=('snapshotServer.testcase',),
+        ),
         migrations.AddField(
             model_name='variable',
             name='application',
