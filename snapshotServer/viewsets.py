@@ -6,13 +6,13 @@ Created on 4 mai 2017
 from snapshotServer.serializers import UserSerializer, GroupSerializer, \
     SnapshotSerializer, ApplicationSerializer, TestEnvironmentSerializer, \
     TestCaseSerializer, TestStepSerializer, VersionSerializer, \
-    TestSessionSerializer, ExcludeZoneSerializer
+    TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer
 from django.contrib.auth.models import User, Group
 from django.core.files.storage import FileSystemStorage
 from django.shortcuts import render
 from rest_framework import viewsets
 from snapshotServer.models import Snapshot, Application, TestEnvironment, \
-    TestCase, TestStep, Version, TestSession, ExcludeZone
+    TestCase, TestStep, Version, TestSession, ExcludeZone, TestCaseInSession
 from rest_framework.utils.serializer_helpers import ReturnDict
 from django.db.models.aggregates import Count
 
@@ -72,6 +72,10 @@ class TestSessionViewSet(BaseViewSet):
 class TestCaseViewSet(BaseViewSet):
     queryset = TestCase.objects.all()
     serializer_class = TestCaseSerializer
+    
+class TestCaseInSessionViewSet(BaseViewSet):
+    queryset = TestCaseInSession.objects.all()
+    serializer_class = TestCaseInSessionSerializer
     
 class TestStepViewSet(BaseViewSet):
     queryset = TestStep.objects.all()

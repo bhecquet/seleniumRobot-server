@@ -1,6 +1,6 @@
 from django import forms
 
-from snapshotServer.models import TestSession, TestStep, TestCase
+from snapshotServer.models import TestSession, TestStep, TestCaseInSession
 
 
 class ImageUploadForm(forms.Form):
@@ -22,6 +22,6 @@ class ImageUploadForm(forms.Form):
         try:
             TestSession.objects.get(sessionId=self.cleaned_data['sessionId']) 
             TestStep.objects.get(id=self.cleaned_data['step'])
-            TestCase.objects.get(id=self.cleaned_data['testCase'])
+            TestCaseInSession.objects.get(id=self.cleaned_data['testCase'])
         except Exception as e:
             raise forms.ValidationError("session, testCase or step not found")

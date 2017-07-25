@@ -4,8 +4,8 @@ from rest_framework.response import Response
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.forms import ImageUploadForm
-from snapshotServer.models import Snapshot, TestStep, TestSession, \
-    TestCase
+from snapshotServer.models import Snapshot, TestStep, TestSession,\
+    TestCaseInSession
 
 
 # Create your views here.
@@ -24,7 +24,7 @@ class FileUploadView(views.APIView):
         if form.is_valid():
             step = TestStep.objects.get(id=form.cleaned_data['step'])
             session = TestSession.objects.get(sessionId=form.cleaned_data['sessionId'])
-            testCase = TestCase.objects.get(id=form.cleaned_data['testCase'])
+            testCase = TestCaseInSession.objects.get(id=form.cleaned_data['testCase'])
             image = form.cleaned_data['image']
             
             # check if a reference exists for this step in the same test case / same application / same version
@@ -32,8 +32,8 @@ class FileUploadView(views.APIView):
             
             # check for a reference in previous versions
             if not referenceSnapshots:
-                for appVersion in reversed(testCase.version.previousVersions()):
-                    referenceSnapshots = Snapshot.objects.filter(step=step, testCase__name=testCase.name, testCase__version=appVersion, refSnapshot=None)
+                for appVersion in reversed(testCase.session.version.previousVersions()):
+                    referenceSnapshots = Snapshot.objects.filter(step=step, testCase__testCase__name=testCase.testCase.name, testCase__session__version=appVersion, refSnapshot=None)
                     if referenceSnapshots:
                         break
             

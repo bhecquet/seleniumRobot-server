@@ -13,8 +13,8 @@ from django.views.generic.base import TemplateView, View
 from django.shortcuts import redirect, render_to_response
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import TestSession, TestCase, Snapshot, ExcludeZone, TestStep,\
-    TestEnvironment, Version
+from snapshotServer.models import TestSession, Snapshot, ExcludeZone, TestStep,\
+    TestEnvironment, Version, TestCaseInSession, TestCase
 from datetime import datetime
     
 class ApplicationVersionList(ListView):
@@ -58,9 +58,10 @@ class SessionList(TemplateView):
         context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
         
-        context['testCases'] = TestCase.objects.filter(version=self.kwargs['versionId'])
+        # build the list of TestCase objects which can be selected by user
+        context['testCases'] = list(set([tcs for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
         context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
-        sessions = sessions.filter(testCases__in=context['selectedTestCases'])
+        sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
         
         context['sessionFrom'] = self.request.GET.get('sessionFrom')
         if context['sessionFrom']:
@@ -91,8 +92,8 @@ class TestList(ListView):
     template_name = "snapshotServer/testList.html"
     
     def get_queryset(self):
-        testCases = TestCase.objects.filter(testsession=self.args[0])
-        return dict([(t, t.isOk(self.args[0])) for t in testCases])
+        testCases = TestCaseInSession.objects.filter(session=self.args[0])
+        return dict([(t, t.isOk()) for t in testCases])
     
     def get_context_data(self, **kwargs):
         context = super(TestList, self).get_context_data(**kwargs)
@@ -107,7 +108,7 @@ class StepList(ListView):
     
     def get_queryset(self):
         try:
-            testSteps = TestCase.objects.get(id=self.args[1]).testSteps.all()
+            testSteps = TestCaseInSession.objects.get(id=self.args[1]).testSteps.all()
             return dict([(s, s.isOk(self.args[0], self.args[1])) for s in testSteps])
         except:
             return []
@@ -129,7 +130,6 @@ class PictureView(TemplateView):
         
         stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(testCase=self.args[1]).filter(step=self.args[2]).last()
         
-        
         if stepSnapshot:
 
             if 'makeRef' in self.request.GET: 
@@ -145,7 +145,13 @@ class PictureView(TemplateView):
                     
                 elif self.request.GET['makeRef'] == 'False' and stepSnapshot.refSnapshot is None:
                     # search a reference with a lower id, meaning that it has been recorded before our step
-                    refSnapshots = Snapshot.objects.filter(testCase=self.args[1]) \
+                    # search with the same test case name and same step name on the same application version so that comparison
+                    # is done on same basis
+                    # TODO: reference could be searched in previous versions
+                    testCase = TestCaseInSession.objects.get(pk=self.args[1])
+                    session = TestSession.objects.get(pk=self.args[0])
+                    refSnapshots = Snapshot.objects.filter(testCase__testCase__name=testCase.testCase.name) \
+                                                .filter(session__version=session.version) \
                                                 .filter(step=self.args[2]) \
                                                 .filter(refSnapshot=None) \
                                                 .filter(id__lt=stepSnapshot.id)
@@ -226,7 +232,7 @@ class TestStatus(View):
     def get(self, request, sessionId, testCaseId, testStepId=None):
         try:
             session = TestSession.objects.get(pk=sessionId)
-            testCase = TestCase.objects.get(pk=testCaseId)
+            testCase = TestCaseInSession.objects.get(pk=testCaseId)
             
             if testStepId:
                 snapshots = Snapshot.objects.filter(session=session, testCase=testCase, step=testStepId)

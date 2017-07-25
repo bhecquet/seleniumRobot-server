@@ -13,7 +13,7 @@ from django.urls.base import reverse
 
 from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.models import TestCase, TestStep, TestSession, \
-    TestEnvironment, Version, Snapshot
+    TestEnvironment, Version, Snapshot, TestCaseInSession, Application
 
 
 class test_FileUploadView(django.test.TestCase):
@@ -28,18 +28,17 @@ class test_FileUploadView(django.test.TestCase):
         self.client.login(username='admin', password='admin')
         
         # test in a version
-        self.testCase = TestCase(name='test upload', version=Version.objects.get(id=1))
+        self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))
         self.testCase.save()
-        self.testCase.testSteps = [TestStep.objects.get(id=1)]
         
         self.session1 = TestSession(sessionId="8888", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session1.save()
-        self.session1.testCases = [self.testCase]
-        self.session1.save()
+        self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
+        self.tcs1.save()
         self.session2 = TestSession(sessionId="8889", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session2.save()
-        self.session2.testCases = [self.testCase]
-        self.session2.save()
+        self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
+        self.tcs2.save()
         
     def tearDown(self):
         """
@@ -55,10 +54,10 @@ class test_FileUploadView(django.test.TestCase):
         Check a reference is created when non is found
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'sessionId': '8888', 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'sessionId': '8888', 'image': fp})
             self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
             
-            uploadedSnapshot = Snapshot.objects.filter(session__sessionId='8888', testCase=self.testCase, step__id=1).last()
+            uploadedSnapshot = Snapshot.objects.filter(session__sessionId='8888', testCase=self.tcs1, step__id=1).last()
             self.assertIsNotNone(uploadedSnapshot, "the uploaded snapshot should be recorded")
             
     def test_postSnapshotExistingRef(self):
@@ -66,14 +65,14 @@ class test_FileUploadView(django.test.TestCase):
         Check we find the reference snapshot when it exists in the same version
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'sessionId': '8888', 'image': fp})
-            uploadedSnapshot1 = Snapshot.objects.filter(session__sessionId='8888', testCase=self.testCase, step__id=1).last()
+            self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'sessionId': '8888', 'image': fp})
+            uploadedSnapshot1 = Snapshot.objects.filter(session__sessionId='8888', testCase=self.tcs1, step__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'sessionId': '8889', 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'sessionId': '8889', 'image': fp})
             self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
             
-            uploadedSnapshot2 = Snapshot.objects.filter(session__sessionId='8889', testCase=self.testCase, step__id=1).last()
+            uploadedSnapshot2 = Snapshot.objects.filter(session__sessionId='8889', testCase=self.tcs1, step__id=1).last()
             self.assertIsNotNone(uploadedSnapshot2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploadedSnapshot2.refSnapshot, uploadedSnapshot1)
             
@@ -83,34 +82,32 @@ class test_FileUploadView(django.test.TestCase):
         """
         
         # same as self.testCase in a greater version
-        testCase2 = TestCase(name='test upload', version=Version.objects.get(id=2))
-        testCase2.save()
-        testCase2.testSteps = [TestStep.objects.get(id=1)]
-        
-        session3 = TestSession(sessionId="8890", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
+        session3 = TestSession(sessionId="8890", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=2), environment=TestEnvironment.objects.get(id=1))
         session3.save()
-        session3.testCases = [testCase2]
-        session3.save()
+        tcs3 = TestCaseInSession(testCase=self.testCase, session=session3)
+        tcs3.save()
+        tcs3.testSteps = [TestStep.objects.get(id=1)]
+        tcs3.save()
         
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'sessionId': '8888', 'image': fp})
-            uploadedSnapshot1 = Snapshot.objects.filter(session__sessionId='8888', testCase=self.testCase, step__id=1).last()
+            self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'sessionId': '8888', 'image': fp})
+            uploadedSnapshot1 = Snapshot.objects.filter(session__sessionId='8888', testCase=self.tcs1, step__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': testCase2.id, 'sessionId': '8890', 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': tcs3.id, 'sessionId': '8890', 'image': fp})
             self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
             
-            uploadedSnapshot2 = Snapshot.objects.filter(session__sessionId='8890', testCase=testCase2, step__id=1).last()
+            uploadedSnapshot2 = Snapshot.objects.filter(session__sessionId='8890', testCase=tcs3, step__id=1).last()
             self.assertIsNotNone(uploadedSnapshot2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploadedSnapshot2.refSnapshot, uploadedSnapshot1)
         
     def test_postSnapshotNoPicture(self):
-        response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'sessionId': '8888'})
+        response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'sessionId': '8888'})
         self.assertEqual(response.status_code, 500, 'status code should be 500')
         
     def test_postSnapshotMissingStep(self):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'testCase': self.testCase.id, 'sessionId': '8888', 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'testCase': self.tcs1.id, 'sessionId': '8888', 'image': fp})
             self.assertEqual(response.status_code, 500, 'status code should be 500')
         
     def test_postSnapshotMissingTestCase(self):
@@ -120,5 +117,5 @@ class test_FileUploadView(django.test.TestCase):
         
     def test_postSnapshotMissingSession(self):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.testCase.id, 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'step': 1, 'testCase': self.tcs1.id, 'image': fp})
             self.assertEqual(response.status_code, 500, 'status code should be 500')

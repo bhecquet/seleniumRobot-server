@@ -6,7 +6,7 @@ Created on 11 mai 2017
 import django.test
 
 from snapshotServer.models import Snapshot, Application, Version, TestStep, \
-    TestSession, TestEnvironment, TestCase
+    TestSession, TestEnvironment, TestCase, TestCaseInSession
 
 
 class TestSnapshots(django.test.TestCase):
@@ -21,61 +21,67 @@ class TestSnapshots(django.test.TestCase):
         self.v2.save()
         env = TestEnvironment(name='DEV')
         env.save()
-        self.session1 = TestSession(sessionId="1234", date="2017-05-05", browser="firefox", environment=env)
+        self.session1 = TestSession(sessionId="1234", date="2017-05-05", browser="firefox", environment=env, version=self.v1)
         self.session1.save()
-        self.session2 = TestSession(sessionId="1235", date="2017-05-05", browser="firefox", environment=env)
+        self.session2 = TestSession(sessionId="1235", date="2017-05-05", browser="firefox", environment=env, version=self.v1)
         self.session2.save()
-        self.session3 = TestSession(sessionId="1236", date="2017-05-05", browser="firefox", environment=env)
+        self.session3 = TestSession(sessionId="1236", date="2017-05-05", browser="firefox", environment=env, version=self.v2)
         self.session3.save()
-        self.session4 = TestSession(sessionId="1237", date="2017-05-05", browser="firefox", environment=env)
+        self.session4 = TestSession(sessionId="1237", date="2017-05-05", browser="firefox", environment=env, version=self.v2)
         self.session4.save()
         self.step = TestStep(name="step1")
         self.step.save()
-        self.tc1 = TestCase(name="case1", version=self.v1)
+        self.tc1 = TestCase(name="case1", application=self.app)
         self.tc1.save()
-        self.tc2 = TestCase(name="case1", version=self.v2)
-        self.tc2.save()
-        self.tc1.testSteps = [self.step]
-        self.tc1.save()
-        self.tc2.testSteps = [self.step]
-        self.tc2.save()
+        self.tcs1 = TestCaseInSession(testCase=self.tc1, session=self.session1)
+        self.tcs1.save()
+        self.tcs2 = TestCaseInSession(testCase=self.tc1, session=self.session2)
+        self.tcs2.save()
+        self.tcs3 = TestCaseInSession(testCase=self.tc1, session=self.session3)
+        self.tcs3.save()
+        self.tcs4 = TestCaseInSession(testCase=self.tc1, session=self.session4)
+        self.tcs4.save()
+        self.tcs1.testSteps = [self.step]
+        self.tcs1.save()
+        self.tcs2.testSteps = [self.step]
+        self.tcs2.save()
     
     def test_noNextSnapshots(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc1, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         self.assertEqual(s2.snapshotsUntilNextRef(s2.refSnapshot), [], "No next snapshot should be found")
     
     def test_nextSnapshotsWithNoRef(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc1, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")
     
     def test_nextSnapshotsWithRef(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc1, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tc2, refSnapshot=s1, pixelsDiff=None)
+        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=s1, pixelsDiff=None)
         s3.save()
-        s4 = Snapshot(step=self.step, image=None, session=self.session4, testCase=self.tc2, refSnapshot=None, pixelsDiff=None)
+        s4 = Snapshot(step=self.step, image=None, session=self.session4, testCase=self.tcs4, refSnapshot=None, pixelsDiff=None)
         s4.save()
-        self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2, s3], "One snapshot should be found")
+        self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2, s3], "2 snapshots should be found")
     
     def test_nextSnapshotsWithLowerVersion(self):
         """
         We should not give snapshots from a lower version
         """
-        s0 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tc1, refSnapshot=None, pixelsDiff=None)
+        s0 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=None, pixelsDiff=None)
         s0.save()
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tc2, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tc2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tc1, refSnapshot=s0, pixelsDiff=None)
+        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=s0, pixelsDiff=None)
         s3.save()
 
         self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")

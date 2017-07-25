@@ -54,20 +54,28 @@ class TestEnvironment(models.Model):
 class TestCase(models.Model):
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100)
-    version = models.ForeignKey(Version, related_name='testCase')
-    testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
+    application = models.ForeignKey(Application, related_name='testCase')
     
     def __str__(self):
-        return "%s - %s" % (self.name, self.version.name)
+        return "%s - %s" % (self.name, self.application.name)
     
-    def isOk(self, testSessionId):
+    
+class TestCaseInSession(models.Model):
+    """
+    The test case in a test session
+    """
+    __test__= False  # avoid detecting it as a test class
+    testCase = models.ForeignKey(TestCase, related_name="testCaseInSession")
+    session = models.ForeignKey('TestSession')
+    testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
+    
+    def isOk(self):
         """
         Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
         show a diff
-        @param testSessionId: testSessionId
         """
         
-        snapshots = Snapshot.objects.filter(session=testSessionId, testCase=self)
+        snapshots = Snapshot.objects.filter(session=self.session, testCase=self)
         result = True 
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
@@ -77,6 +85,9 @@ class TestCase(models.Model):
             result = result and not bool(pixels)
             
         return result
+    
+    def __str__(self):
+        return "%s - %s" % (self.testCase.name, self.session.version.name)
     
 class TestStep(models.Model):
     __test__= False  # avoid detecting it as a test class
@@ -109,21 +120,19 @@ class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=50)
     date = models.DateField()
-    testCases = models.ManyToManyField("TestCase", related_name='testsession', blank=True)
     version = models.ForeignKey(Version, related_name='testsession')
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession')
     
     def __str__(self):
-        
-        return "Session %s testing %s with %s" % (self.sessionId, str([t.name for t in self.testCases.all()]), self.browser)
+        return "Session %s with %s" % (self.sessionId, self.browser)
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
     step = models.ForeignKey(TestStep, related_name='snapshots')
     image = models.ImageField(upload_to='documents/')
     session = models.ForeignKey(TestSession)
-    testCase = models.ForeignKey(TestCase)
+    testCase = models.ForeignKey(TestCaseInSession)
     refSnapshot = models.ForeignKey('self', default=None, null=True)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
@@ -133,12 +142,11 @@ class Snapshot(models.Model):
     
     def snapshotsUntilNextRef(self, refSnapshot):
         """
-        get all snapshot until the next reference for the same testCase / testStep
-        Filter by the same reference snapshot
+        get all snapshots, sharing the same reference snapshot, until the next reference for the same testCase / testStep
         """
         nextSnapshots = Snapshot.objects.filter(step=self.step, 
-                                            testCase__name=self.testCase.name, 
-                                            testCase__version__in=self.testCase.version.nextVersions(),
+                                            testCase__testCase__name=self.testCase.testCase.name, 
+                                            testCase__session__version__in=self.testCase.session.version.nextVersions(),
                                             refSnapshot=refSnapshot,
                                             id__gt=self.id) \
                                         .order_by('id')
@@ -161,7 +169,7 @@ class Snapshot(models.Model):
             return []
         
         snapshots = Snapshot.objects.filter(step=self.step, 
-                                            testCase__name=self.testCase.name, 
+                                            testCase__testCase__name=self.testCase.testCase.name, 
                                             refSnapshot=self.refSnapshot) \
                                         .order_by('id')
                           

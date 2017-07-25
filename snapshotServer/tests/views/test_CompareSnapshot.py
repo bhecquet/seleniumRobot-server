@@ -18,7 +18,7 @@ from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.controllers.Tools import isTestMode
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
-    TestEnvironment, Version
+    TestEnvironment, Version, TestCaseInSession
 from snapshotServer.controllers.PictureComparator import Pixel
 
 
@@ -37,12 +37,12 @@ class test_CompareSnapshot(django.test.TestCase):
         
         self.session1 = TestSession(sessionId="1237", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session1.save()
-        self.session1.testCases = [self.testCase]
-        self.session1.save()
+        self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
+        self.tcs1.save()
         self.session2 = TestSession(sessionId="1238", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session2.save()
-        self.session2.testCases = [self.testCase]
-        self.session2.save()
+        self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
+        self.tcs2.save()
     
     def tearDown(self):
         """
@@ -66,7 +66,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.post(reverse('home'), data={'application': 1})
         self.assertEqual(response.status_code, 302)
-        self.assertEqual(response.url, '/compare/1/')
+        self.assertEqual(response.url, '/snapshot/compare/1/')
 
     def test_ApplicationList_noApplicationSelected(self):
         """
@@ -103,10 +103,10 @@ class test_CompareSnapshot(django.test.TestCase):
 
     def test_SessionList_allFilter(self):
         """
-        Filtering when not all select box are chosen lead to empty session list and error message
+        Filtering done when all fields are filled
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [1]})
-        self.assertEqual(len(response.context['sessions']), 3)
+        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
+        self.assertEqual(len(response.context['sessions']), 2)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
@@ -115,14 +115,14 @@ class test_CompareSnapshot(django.test.TestCase):
 
     def test_SessionList_allFilterWithDate(self):
         """
-        When date are selected, we should get only session from the 07th may
+        When date are selected, we should get only session from the 06th may
         """
         response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 
                                                                                               'environment': [1], 
-                                                                                              'testcase': [1],
+                                                                                              'testcase': [4],
                                                                                               'sessionFrom': '06-05-2017',
-                                                                                              'sessionTo': '07-05-2017'})
-        self.assertEqual(len(response.context['sessions']), 2)
+                                                                                              'sessionTo': '06-05-2017'})
+        self.assertEqual(len(response.context['sessions']), 1)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
@@ -135,7 +135,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.get(reverse('testlistView', args=[1]))
         self.assertEqual(len(response.context['object_list']), 1)
-        self.assertEqual(list(response.context['object_list'])[0].name, "test1")
+        self.assertEqual(list(response.context['object_list'])[0].testCase.name, "test1")
   
     def test_TestList_sessionIdAdded(self):
         """
@@ -199,17 +199,17 @@ class test_CompareSnapshot(django.test.TestCase):
         """
           
       
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.testCase, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.tcs1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
         s1.save()
         img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.testCase, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.tcs2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()
           
-        response = self.client.get(reverse('pictureView', args=[self.session1.id, 1, 1]) + "?makeRef=True")
+        response = self.client.get(reverse('pictureView', args=[self.session1.id, self.tcs1.id, 1]) + "?makeRef=True")
           
         # check display
         self.assertIsNone(response.context['reference'], "new reference should be the snapshot itself")
@@ -266,17 +266,17 @@ class test_CompareSnapshot(django.test.TestCase):
         reference available
         """
   
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.testCase, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
         s1.save()
         img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.testCase, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()
           
-        response = self.client.get(reverse('pictureView', args=[self.session1.id, 1, 1]) + "?makeRef=False")
+        response = self.client.get(reverse('pictureView', args=[self.session1.id, self.tcs1.id, 1]) + "?makeRef=False")
           
         # check display
         self.assertEqual(response.context['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
@@ -318,7 +318,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.get(reverse('testStatusView', kwargs={'sessionId': 6, 'testCaseId': 4}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), 'UTF-8')
+        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
         self.assertTrue(data['5'])
           
     def test_TestStatus_sessionStatusOkOnNonReference(self):
@@ -338,7 +338,7 @@ class test_CompareSnapshot(django.test.TestCase):
           
         response = self.client.get(reverse('testStatusView', kwargs={'sessionId': 7, 'testCaseId': 4}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), 'UTF-8')
+        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
         self.assertTrue(data['8'])
           
     def test_TestStatus_sessionStatusKo(self):
@@ -358,7 +358,7 @@ class test_CompareSnapshot(django.test.TestCase):
           
         response = self.client.get(reverse('testStatusView', kwargs={'sessionId': 7, 'testCaseId': 4}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), 'UTF-8')
+        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
         self.assertTrue(data['8'])
         self.assertTrue(data['9'])
         self.assertFalse(data['10'])
@@ -369,7 +369,7 @@ class test_CompareSnapshot(django.test.TestCase):
         """
         response = self.client.get(reverse('testStepStatusView', kwargs={'sessionId': 6, 'testCaseId': 4, 'testStepId': 2}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), 'UTF-8')
+        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
         self.assertTrue(data['5'])
         
         

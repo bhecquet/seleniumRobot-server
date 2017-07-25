@@ -12,7 +12,8 @@ from django.core.files.images import ImageFile
 import django.test
 
 from seleniumRobotServer.settings import MEDIA_ROOT
-from snapshotServer.models import Snapshot, TestStep, TestSession, TestCase
+from snapshotServer.models import Snapshot, TestStep, TestSession, TestCase,\
+    TestCaseInSession
 from snapshotServer.controllers.DiffComputer import DiffComputer
 
 
@@ -50,11 +51,11 @@ class TestDiffComputer(django.test.TestCase):
         Check thread is not started when computing is requested to be done now
         """
         img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s1.save()
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()
@@ -70,7 +71,7 @@ class TestDiffComputer(django.test.TestCase):
         Check no error is raised when reference is None. Nothing happens for the stepSnapshot
         """
         img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=b'')
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=b'')
         s2.save()
         s2.image.save("img", img)
         s2.save()
@@ -86,9 +87,9 @@ class TestDiffComputer(django.test.TestCase):
         Check no error is raised when image data is missing
         """
         img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=b'')
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=b'')
         s2.save()
         s2.image.save("img", img)
         s2.save()
@@ -104,15 +105,15 @@ class TestDiffComputer(django.test.TestCase):
         Check we can ass jobs and they get computed
         """
         img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s1.save()
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()
-        s3 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=3), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s3 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=3), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s3.save()
         s3.image.save("img", img)
         s3.save()
@@ -131,9 +132,9 @@ class TestDiffComputer(django.test.TestCase):
         """
         Check that if an error occurs during computing, 
         """
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=1), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCase.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        s2 = Snapshot(step=TestStep.objects.get(id=1), session=TestSession.objects.get(id=2), testCase=TestCaseInSession.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
         s2.save()
         diffComputer = DiffComputer.getInstance()
         diffComputer._computeDiff = MagicMock(side_effect=Exception("error while computing"))
