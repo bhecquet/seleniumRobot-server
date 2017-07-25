@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'snapshotServer.app.SnapshotServerConfig',
+    'variableServer.app.VariableserverConfig',
     'django_nose',
 ]
 

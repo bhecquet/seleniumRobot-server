@@ -37,11 +37,19 @@ class Version(models.Model):
         return versions
     
 class TestEnvironment(models.Model):
+    """
+    An environment can be linked to an other one
+    For example, NonReg1 is a NonReg environment from which it will get all variables
+    """
+    
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=20)
     
     def __str__(self):
         return self.name
+    
+    genericEnvironment = models.ForeignKey('self', null=True)
+    genericEnvironment.short_description = 'generic environnement'
 
 class TestCase(models.Model):
     __test__= False  # avoid detecting it as a test class
