@@ -45,7 +45,7 @@ class TestSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TestSession
-        fields = ('id', 'sessionId', 'date', 'testCases', 'browser', 'environment', 'version')
+        fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,7 +62,7 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCaseInSession
-        fields = ('id', 'session', 'testSteps')
+        fields = ('id', 'session', 'testCase', 'testSteps')
         
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     
