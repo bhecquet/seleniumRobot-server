@@ -28,7 +28,7 @@ class FileUploadView(views.APIView):
             image = form.cleaned_data['image']
             
             # check if a reference exists for this step in the same test case / same application / same version
-            referenceSnapshots = Snapshot.objects.filter(step=step, testCase=testCase, refSnapshot=None)
+            referenceSnapshots = Snapshot.objects.filter(step=step, testCase__testCase__name=testCase.testCase.name, refSnapshot=None)
             
             # check for a reference in previous versions
             if not referenceSnapshots:

@@ -59,7 +59,7 @@ class SessionList(TemplateView):
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
         
         # build the list of TestCase objects which can be selected by user
-        context['testCases'] = list(set([tcs for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
+        context['testCases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
         context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
         sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
         

@@ -50,7 +50,7 @@ class TestSessionSerializer(serializers.ModelSerializer):
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestStep
-        fields = ('id', 'name', 'testCase')
+        fields = ('id', 'name')
 
 class TestCaseSerializer(serializers.ModelSerializer):
 
