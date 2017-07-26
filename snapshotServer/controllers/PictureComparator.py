@@ -96,21 +96,6 @@ class PictureComparator:
             pixels.append(Pixel(x, y))
             
         return pixels, tooManyDiffs
-        
-#         
-#         # get coordinates for diff pixels
-#         # stops if more than 10% of pixels are different
-#         for y, row in enumerate(diff):
-#             if sum(row) == 0:
-#                 continue
-#             for x, value in enumerate(row):
-#                 if nbDiffs > maxDiffs:
-#                     return pixels, True
-#                 if value != 0 and Pixel(x, y) not in excludedPixels:
-#                     nbDiffs += 1
-#                     pixels.append(Pixel(x, y))
-# 
-#         return pixels, False
     
     def _buildListOfExcludedPixels(self, excludeZones):
         """

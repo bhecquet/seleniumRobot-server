@@ -68,8 +68,9 @@ class TestCaseInSession(models.Model):
     testCase = models.ForeignKey(TestCase, related_name="testCaseInSession")
     session = models.ForeignKey('TestSession')
     testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
+    stacktrace = models.TextField(null=True)
     
-    def isOk(self):
+    def isOkWithSnapshots(self):
         """
         Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
         show a diff
@@ -86,6 +87,19 @@ class TestCaseInSession(models.Model):
             
         return result
     
+    def isOkWithResult(self):
+        """
+        Returns True if test is OK for the session in parameter. Look at each step. None of the steps should be KO (look at StepResult object)
+        """
+        
+        stepResults = StepResult.objects.filter(testCase=self)
+
+        for stepResult in stepResults:
+            if not stepResult.result:
+                return False
+            
+        return True
+    
     def __str__(self):
         return "%s - %s" % (self.testCase.name, self.session.version.name)
     
@@ -97,7 +111,7 @@ class TestStep(models.Model):
         return self.name 
     
     
-    def isOk(self, testSessionId, testCaseId):
+    def isOkWithSnapshots(self, testSessionId, testCaseId):
         """
         Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
         show a diff
@@ -180,6 +194,11 @@ class Snapshot(models.Model):
                 
         return newSnapshots
         
+class StepResult(models.Model):
+    step = models.ForeignKey(TestStep, related_name='stepresult')
+    testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult')
+    result = models.BooleanField(null=False)
+    stacktrace = models.TextField(null=True)
     
 class ExcludeZone(models.Model):
     x = models.IntegerField()
