@@ -4,6 +4,7 @@ $(document).ready(function () {
     $("#environments").ultraselect({autoListSelected: true, maxWidth: "90px"});
     $("#testCases").ultraselect({autoListSelected: true, maxWidth: "90px"});
     
+    // https://vitalets.github.io/bootstrap-datepicker/
     $('#sessionFrom').datepicker({
     	format: 'dd-mm-yyyy',
         todayBtn: 'linked',

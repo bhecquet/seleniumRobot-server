@@ -26,6 +26,7 @@ from snapshotServer.views.SessionListView import SessionListView
 from snapshotServer.views.StepListView import StepListView
 from snapshotServer.views.TestListView import TestListView
 from snapshotServer.views.TestStatusView import TestStatusView
+from snapshotServer.views.TestResultTableView import TestResultTableView
 
 
 router = routers.DefaultRouter()
@@ -46,8 +47,11 @@ urlpatterns = [
     url(r'^api/', include(router.urls), name='api'),
     url(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
     url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    
+    url(r'^$', ApplicationVersionListView.as_view(), name='home'),
+    
+    url(r'^testResults/(?P<versionId>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
 
-    url(r'^compare/$', ApplicationVersionListView.as_view(), name='home'),
     url(r'^compare/(?P<versionId>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
     url(r'^compare/testList/([0-9]+)/$', TestListView.as_view(), name="testlistView"),  # /sessionId/

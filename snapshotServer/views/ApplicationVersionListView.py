@@ -17,4 +17,9 @@ class ApplicationVersionListView(ListView):
             return render_to_response(self.template_name, {'error': "Application version %s does not exist" % request.POST.get('application'),
                                                            'object_list': self.get_queryset()})
 
-        return redirect('sessionListView', request.POST.get('application'))
+        displayType = request.POST.get('display')
+
+        if displayType == 'snapshot':
+            return redirect('sessionListView', request.POST.get('application'))
+        else:
+            return redirect('testResultTableView', request.POST.get('application'))

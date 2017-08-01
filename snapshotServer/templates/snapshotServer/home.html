@@ -11,6 +11,10 @@
 				<option value={{ applicationVersion.id }}>{{ applicationVersion }}</option>
 				{% endfor %}
 			</select>
+			<select id="displayType" name="display">
+				<option value="snapshot">Compare snapshot</options>
+				<option value="result">Test results</options>
+			</select>
 			<input type="submit" value="Select">
 		</form>
 	</div>
