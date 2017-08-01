@@ -18,7 +18,7 @@ from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.controllers.Tools import isTestMode
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
-    TestEnvironment, Version, TestCaseInSession
+    TestEnvironment, Version, TestCaseInSession, StepResult
 from snapshotServer.controllers.PictureComparator import Pixel
 
 
@@ -43,6 +43,11 @@ class Test_Views(django.test.TestCase):
         self.session2.save()
         self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
         self.tcs2.save()
+        self.step1 = TestStep.objects.get(id=1)
+        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1)
+        self.sr1.save()
+        self.sr2 = StepResult(step=self.step1, testCase=self.tcs2)
+        self.sr2.save()
     
     def tearDown(self):
         """

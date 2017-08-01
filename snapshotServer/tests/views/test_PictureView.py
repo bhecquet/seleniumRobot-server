@@ -40,12 +40,12 @@ class Test_PictureView(Test_Views):
         """
           
       
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.tcs1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+        s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
         s1.save()
         img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.tcs2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.sr2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()
@@ -107,12 +107,12 @@ class Test_PictureView(Test_Views):
         reference available
         """
   
-        s1 = Snapshot(step=TestStep.objects.get(id=1), session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
         s1.save()
         img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
         s1.image.save("img", img)
         s1.save()
-        s2 = Snapshot(step=TestStep.objects.get(id=1), session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.sr2, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         s2.image.save("img", img)
         s2.save()

@@ -25,9 +25,9 @@ class TestStatusView(View):
             testCase = TestCaseInSession.objects.get(pk=testCaseId)
             
             if testStepId:
-                snapshots = Snapshot.objects.filter(session=session, testCase=testCase, step=testStepId)
+                snapshots = Snapshot.objects.filter(stepResult__testCase=testCase, stepResult__step=testStepId)
             else:
-                snapshots = Snapshot.objects.filter(session=session, testCase=testCase)
+                snapshots = Snapshot.objects.filter(stepResult__testCase=testCase)
             
             results = {} 
             for snapshot in snapshots:
