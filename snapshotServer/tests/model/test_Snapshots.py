@@ -6,7 +6,7 @@ Created on 11 mai 2017
 import django.test
 
 from snapshotServer.models import Snapshot, Application, Version, TestStep, \
-    TestSession, TestEnvironment, TestCase, TestCaseInSession
+    TestSession, TestEnvironment, TestCase, TestCaseInSession, StepResult
 
 
 class TestSnapshots(django.test.TestCase):
@@ -45,29 +45,43 @@ class TestSnapshots(django.test.TestCase):
         self.tcs1.save()
         self.tcs2.testSteps = [self.step]
         self.tcs2.save()
+        self.tsr1 = StepResult(step=self.step, testCase=self.tcs1, result=True)
+        self.tsr1.save()
+        self.tsr2 = StepResult(step=self.step, testCase=self.tcs2, result=True)
+        self.tsr2.save()
+        self.tsr3 = StepResult(step=self.step, testCase=self.tcs3, result=True)
+        self.tsr3.save()
+        self.tsr4 = StepResult(step=self.step, testCase=self.tcs4, result=True)
+        self.tsr4.save()
     
     def test_noNextSnapshots(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
+        """
+        check that we do not look at ourself when searching next snapshots
+        """
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.tsr2, image=None, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         self.assertEqual(s2.snapshotsUntilNextRef(s2.refSnapshot), [], "No next snapshot should be found")
     
     def test_nextSnapshotsWithNoRef(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.tsr2, image=None, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")
     
     def test_nextSnapshotsWithRef(self):
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
+        """
+        Check that the next reference snapshot (s4) is not rendered but pictures from the next version are
+        """
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.tsr2, image=None, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=s1, pixelsDiff=None)
+        s3 = Snapshot(stepResult=self.tsr3, image=None, refSnapshot=s1, pixelsDiff=None)
         s3.save()
-        s4 = Snapshot(step=self.step, image=None, session=self.session4, testCase=self.tcs4, refSnapshot=None, pixelsDiff=None)
+        s4 = Snapshot(stepResult=self.tsr4, image=None, refSnapshot=None, pixelsDiff=None)
         s4.save()
         self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2, s3], "2 snapshots should be found")
     
@@ -75,13 +89,13 @@ class TestSnapshots(django.test.TestCase):
         """
         We should not give snapshots from a lower version
         """
-        s0 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=None, pixelsDiff=None)
+        s0 = Snapshot(stepResult=self.tsr3, image=None, refSnapshot=None, pixelsDiff=None)
         s0.save()
-        s1 = Snapshot(step=self.step, image=None, session=self.session1, testCase=self.tcs1, refSnapshot=None, pixelsDiff=None)
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=self.step, image=None, session=self.session2, testCase=self.tcs2, refSnapshot=s1, pixelsDiff=None)
+        s2 = Snapshot(stepResult=self.tsr2, image=None, refSnapshot=s1, pixelsDiff=None)
         s2.save()
-        s3 = Snapshot(step=self.step, image=None, session=self.session3, testCase=self.tcs3, refSnapshot=s0, pixelsDiff=None)
+        s3 = Snapshot(stepResult=self.tsr3, image=None, refSnapshot=s0, pixelsDiff=None)
         s3.save()
 
         self.assertEqual(s1.snapshotsUntilNextRef(s1), [s2], "One snapshot should be found")

@@ -43,12 +43,12 @@ class TestTestCases(TestCase):
     
     def test_isOkWithAllSnapshotOk(self):
         tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = TestStep.objects.get(pk=2)
-        s2 = TestStep.objects.get(pk=3)
+        s1 = StepResult.objects.get(pk=5)
+        s2 = StepResult.objects.get(pk=6)
         initialRefSnapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(step=s1, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=None)
+        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(step=s2, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=None)
+        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=None)
         s2.save()
         
         self.assertTrue(tcs.isOkWithSnapshots())
@@ -59,8 +59,8 @@ class TestTestCases(TestCase):
         Same as above but content of pixelDiffs is an empty list
         """
         tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = TestStep.objects.get(pk=2)
-        s2 = TestStep.objects.get(pk=3)
+        s1 = TestStep.objects.get(pk=5)
+        s2 = TestStep.objects.get(pk=6)
         initialRefSnapshot = Snapshot.objects.get(id=1)
         s1 = Snapshot(step=s1, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
         s1.save()
@@ -71,8 +71,8 @@ class TestTestCases(TestCase):
     
     def test_isOkWithAllASnapshotKo(self):
         tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = TestStep.objects.get(pk=2)
-        s2 = TestStep.objects.get(pk=3)
+        s1 = TestStep.objects.get(pk=5)
+        s2 = TestStep.objects.get(pk=6)
         initialRefSnapshot = Snapshot.objects.get(id=1)
         
         # some diffs for first picture

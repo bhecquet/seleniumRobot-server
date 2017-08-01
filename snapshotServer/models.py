@@ -76,7 +76,7 @@ class TestCaseInSession(models.Model):
         show a diff
         """
         
-        snapshots = Snapshot.objects.filter(session=self.session, testCase=self)
+        snapshots = Snapshot.objects.filter(stepResult__testCase=self)
         result = True 
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
@@ -143,24 +143,29 @@ class TestSession(models.Model):
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
-    step = models.ForeignKey(TestStep, related_name='snapshots')
+#     step = models.ForeignKey(TestStep, related_name='snapshots')
+#     image = models.ImageField(upload_to='documents/')
+#     session = models.ForeignKey(TestSession)
+#     testCase = models.ForeignKey(TestCaseInSession)
+#     refSnapshot = models.ForeignKey('self', default=None, null=True)
+#     pixelsDiff = models.BinaryField(null=True)
+#     tooManyDiffs = models.BooleanField(default=False)
+    stepResult = models.ForeignKey('StepResult', related_name='snapshots')
     image = models.ImageField(upload_to='documents/')
-    session = models.ForeignKey(TestSession)
-    testCase = models.ForeignKey(TestCaseInSession)
     refSnapshot = models.ForeignKey('self', default=None, null=True)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
     
     def __str__(self):
-        return "%s - %s - %s - %d" % (self.testCase.name, self.step.name, self.session.sessionId, self.id) 
+        return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.session.sessionId, self.id) 
     
     def snapshotsUntilNextRef(self, refSnapshot):
         """
         get all snapshots, sharing the same reference snapshot, until the next reference for the same testCase / testStep
         """
-        nextSnapshots = Snapshot.objects.filter(step=self.step, 
-                                            testCase__testCase__name=self.testCase.testCase.name, 
-                                            testCase__session__version__in=self.testCase.session.version.nextVersions(),
+        nextSnapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
+                                            stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
+                                            stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.nextVersions(),
                                             refSnapshot=refSnapshot,
                                             id__gt=self.id) \
                                         .order_by('id')
@@ -182,8 +187,8 @@ class Snapshot(models.Model):
         if not self.refSnapshot:
             return []
         
-        snapshots = Snapshot.objects.filter(step=self.step, 
-                                            testCase__testCase__name=self.testCase.testCase.name, 
+        snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
+                                            stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
                                             refSnapshot=self.refSnapshot) \
                                         .order_by('id')
                           

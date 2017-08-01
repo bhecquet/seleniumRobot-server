@@ -17,10 +17,13 @@ class PictureView(TemplateView):
     def get_context_data(self, **kwargs):
         """
         Look for the snapshot of our session
+        @param sessionId
+        @param testCaseId
+        @param testStepId
         """
         context = super(PictureView, self).get_context_data(**kwargs)
         
-        stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(testCase=self.args[1]).filter(step=self.args[2]).last()
+        stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(stepResult__testCase=self.args[1]).filter(stepResult__step=self.args[2]).last()
         
         if stepSnapshot:
 
@@ -42,9 +45,9 @@ class PictureView(TemplateView):
                     # TODO: reference could be searched in previous versions
                     testCase = TestCaseInSession.objects.get(pk=self.args[1])
                     session = TestSession.objects.get(pk=self.args[0])
-                    refSnapshots = Snapshot.objects.filter(testCase__testCase__name=testCase.testCase.name) \
-                                                .filter(session__version=session.version) \
-                                                .filter(step=self.args[2]) \
+                    refSnapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=testCase.testCase.name) \
+                                                .filter(stepResult__testCase__session__version=session.version) \
+                                                .filter(stepResult__step=self.args[2]) \
                                                 .filter(refSnapshot=None) \
                                                 .filter(id__lt=stepSnapshot.id)
                     

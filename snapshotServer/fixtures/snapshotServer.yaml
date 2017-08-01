@@ -23,6 +23,12 @@
         testCase: 1
         session: 1
         testSteps: [1]
+-   model: snapshotServer.testcaseinsession
+    pk: 100
+    fields:
+        testCase: 1
+        session: 2
+        testSteps: [1]
 -   model: snapshotServer.testsession
     pk: 1
     fields:
@@ -34,12 +40,28 @@
 -   model: snapshotServer.teststep
     pk: 1
     fields: {name: Step 1}
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: 
+        step: 1
+        testCase: 1
+        result: true
 -   model: snapshotServer.snapshot
     pk: 1
-    fields: {step: 1, image: documents/test_Image1.png, testCase: 1, session: 1}
+    fields: 
+        stepResult: 1
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields: 
+        step: 1
+        testCase: 100
+        result: true
 -   model: snapshotServer.snapshot
     pk: 2
-    fields: {step: 1, image: documents/test_Image1Mod.png, testCase: 1, refSnapshot: 1, session: 1}
+    fields: 
+        stepResult: 2
+        image: documents/test_Image1Mod.png
     
 # corner cases for testing model
 -   model: snapshotServer.testcase
@@ -104,12 +126,29 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+-   model: snapshotServer.stepresult
+    pk: 3
+    fields: 
+        step: 1
+        testCase: 3
+        result: true
 -   model: snapshotServer.snapshot
     pk: 3
-    fields: {step: 1, image: documents/test_Image1.png, testCase: 3, session: 4}
+    fields: 
+        stepResult: 3
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepresult
+    pk: 4
+    fields: 
+        step: 1
+        testCase: 4
+        result: true
 -   model: snapshotServer.snapshot
     pk: 4
-    fields: {step: 1, image: documents/test_Image1Mod.png, testCase: 3, refSnapshot: 3, session: 5}
+    fields: 
+        stepResult: 4
+        image: documents/test_Image1Mod.png
+        refSnapshot: 3
     
 # A complete example of test session. 2 sessions of 1 test with 3 steps
 -   model: snapshotServer.teststep
@@ -155,25 +194,75 @@
         browser: firefox
         environment: 1
         
+-   model: snapshotServer.stepresult
+    pk: 5
+    fields: 
+        step: 2
+        testCase: 5
+        result: true
 -   model: snapshotServer.snapshot
     pk: 5
-    fields: {step: 2, image: documents/test_Image1.png, testCase: 4, session: 6}
+    fields: 
+        stepResult: 5
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepresult
+    pk: 6
+    fields: 
+        step: 3
+        testCase: 5
+        result: true
 -   model: snapshotServer.snapshot
     pk: 6
-    fields: {step: 3, image: documents/test_Image1.png, testCase: 4, session: 6}
+    fields: 
+        stepResult: 6
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepresult
+    pk: 7
+    fields: 
+        step: 4
+        testCase: 5
+        result: true
 -   model: snapshotServer.snapshot
     pk: 7
-    fields: {step: 4, image: documents/test_Image1.png, testCase: 4, session: 6}
+    fields: 
+        stepResult: 7
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepresult
+    pk: 8
+    fields: 
+        step: 2
+        testCase: 6
+        result: true
 -   model: snapshotServer.snapshot
     pk: 8
-    fields: {step: 2, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 5}
+    fields: 
+        stepResult: 8
+        image: documents/test_Image1.png
+        refSnapshot: 5
+-   model: snapshotServer.stepresult
+    pk: 9
+    fields: 
+        step: 3
+        testCase: 6
+        result: true
 -   model: snapshotServer.snapshot
     pk: 9
-    fields: {step: 3, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 6}
+    fields: 
+        stepResult: 9
+        image: documents/test_Image1.png
+        refSnapshot: 6
+-   model: snapshotServer.stepresult
+    pk: 10
+    fields: 
+        step: 4
+        testCase: 6
+        result: true
 -   model: snapshotServer.snapshot
     pk: 10
-    fields: {step: 4, image: documents/test_Image1Mod.png, testCase: 4, session: 7, refSnapshot: 7}
- 
+    fields: 
+        stepResult: 10
+        image: documents/test_Image1.png
+        refSnapshot: 7 
 -   model: snapshotServer.testcaseinsession
     pk: 7
     fields:
