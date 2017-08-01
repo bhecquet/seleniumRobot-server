@@ -59,26 +59,26 @@ class TestTestCases(TestCase):
         Same as above but content of pixelDiffs is an empty list
         """
         tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = TestStep.objects.get(pk=5)
-        s2 = TestStep.objects.get(pk=6)
+        s1 = StepResult.objects.get(pk=5)
+        s2 = StepResult.objects.get(pk=6)
         initialRefSnapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(step=s1, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
         s1.save()
-        s2 = Snapshot(step=s2, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
         s2.save()
         
         self.assertTrue(tcs.isOkWithSnapshots())
     
     def test_isOkWithAllASnapshotKo(self):
         tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = TestStep.objects.get(pk=5)
-        s2 = TestStep.objects.get(pk=6)
+        s1 = StepResult.objects.get(pk=5)
+        s2 = StepResult.objects.get(pk=6)
         initialRefSnapshot = Snapshot.objects.get(id=1)
         
         # some diffs for first picture
-        s1 = Snapshot(step=s1, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([(1,1)]))
+        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([(1,1)]))
         s1.save()
-        s2 = Snapshot(step=s2, session=tcs.session, testCase=tcs, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
         s2.save()
         
         self.assertFalse(tcs.isOkWithSnapshots())

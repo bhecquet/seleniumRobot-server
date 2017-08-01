@@ -23,7 +23,7 @@ class PictureView(TemplateView):
         """
         context = super(PictureView, self).get_context_data(**kwargs)
         
-        stepSnapshot = Snapshot.objects.filter(session=self.args[0]).filter(stepResult__testCase=self.args[1]).filter(stepResult__step=self.args[2]).last()
+        stepSnapshot = Snapshot.objects.filter(stepResult__testCase__session=self.args[0]).filter(stepResult__testCase=self.args[1]).filter(stepResult__step=self.args[2]).last()
         
         if stepSnapshot:
 

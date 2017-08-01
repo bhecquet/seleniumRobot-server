@@ -44,9 +44,9 @@ class Test_Views(django.test.TestCase):
         self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
         self.tcs2.save()
         self.step1 = TestStep.objects.get(id=1)
-        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1)
+        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
         self.sr1.save()
-        self.sr2 = StepResult(step=self.step1, testCase=self.tcs2)
+        self.sr2 = StepResult(step=self.step1, testCase=self.tcs2, result=True)
         self.sr2.save()
     
     def tearDown(self):

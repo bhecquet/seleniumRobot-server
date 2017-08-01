@@ -40,9 +40,10 @@ class test_FileUploadView(django.test.TestCase):
         self.session2.save()
         self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
         self.tcs2.save()
-        self.sr1 = StepResult(step=1, testCase=self.tcs1)
+        self.step1 = TestStep.objects.get(id=1)
+        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
         self.sr1.save()
-        self.sr2 = StepResult(step=1, testCase=self.tcs2)
+        self.sr2 = StepResult(step=self.step1, testCase=self.tcs2, result=True)
         self.sr2.save()
         
     def tearDown(self):
@@ -93,7 +94,7 @@ class test_FileUploadView(django.test.TestCase):
         tcs3.save()
         tcs3.testSteps = [TestStep.objects.get(id=1)]
         tcs3.save()
-        sr3 = StepResult(step=1, testCase=tcs3)
+        sr3 = StepResult(step=TestStep.objects.get(id=1), testCase=tcs3)
         sr3.save()
         
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
