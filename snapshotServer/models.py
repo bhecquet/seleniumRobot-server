@@ -111,7 +111,7 @@ class TestStep(models.Model):
         return self.name 
     
     
-    def isOkWithSnapshots(self, testSessionId, testCaseId):
+    def isOkWithSnapshots(self, testCaseId):
         """
         Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
         show a diff
@@ -119,7 +119,7 @@ class TestStep(models.Model):
         @param testCaseIdparam: the test case this step belongs
         """
         
-        snapshots = Snapshot.objects.filter(session=testSessionId, testCase=testCaseId, step=self)
+        snapshots = Snapshot.objects.filter(stepResult__testCase=testCaseId, stepResult__step=self)
         result = True 
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
@@ -143,13 +143,7 @@ class TestSession(models.Model):
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
-#     step = models.ForeignKey(TestStep, related_name='snapshots')
-#     image = models.ImageField(upload_to='documents/')
-#     session = models.ForeignKey(TestSession)
-#     testCase = models.ForeignKey(TestCaseInSession)
-#     refSnapshot = models.ForeignKey('self', default=None, null=True)
-#     pixelsDiff = models.BinaryField(null=True)
-#     tooManyDiffs = models.BooleanField(default=False)
+
     stepResult = models.ForeignKey('StepResult', related_name='snapshots')
     image = models.ImageField(upload_to='documents/')
     refSnapshot = models.ForeignKey('self', default=None, null=True)
@@ -157,7 +151,7 @@ class Snapshot(models.Model):
     tooManyDiffs = models.BooleanField(default=False)
     
     def __str__(self):
-        return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.session.sessionId, self.id) 
+        return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 
     
     def snapshotsUntilNextRef(self, refSnapshot):
         """

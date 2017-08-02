@@ -7,6 +7,7 @@ Created on 16 mai 2017
 import django.test
 from django.test.client import Client
 from django.contrib.auth.models import User
+import json
 
 class test_viewset(django.test.TestCase):
     fixtures = ['snapshotServer.yaml']
@@ -23,8 +24,8 @@ class test_viewset(django.test.TestCase):
         """
         response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in eval(response.content))
-        self.assertEqual(eval(response.content)['name'], 'test')
+        self.assertTrue('id' in json.loads(response.content))
+        self.assertEqual(json.loads(response.content)['name'], 'test')
     
     def test_noCreationWhenExist(self):
         """
@@ -33,9 +34,9 @@ class test_viewset(django.test.TestCase):
         """
         response = self.client.post('/snapshot/api/application/', data={'name': 'infotel'})
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in eval(response.content))
-        self.assertEqual(eval(response.content)['name'], 'infotel')
-        self.assertEqual(eval(response.content)['id'], 1)
+        self.assertTrue('id' in json.loads(response.content))
+        self.assertEqual(json.loads(response.content)['name'], 'infotel')
+        self.assertEqual(json.loads(response.content)['id'], 1)
     
     def test_creationWhenExistWithManyToManyFields(self):
         """
@@ -43,8 +44,8 @@ class test_viewset(django.test.TestCase):
         """
         response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4})
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in eval(response.content))
-        self.assertNotEqual(eval(response.content)['id'], 1)
+        self.assertTrue('id' in json.loads(response.content))
+        self.assertNotEqual(json.loads(response.content)['id'], 1)
         
     def test_noCreationWhenExistWithManyToManyFields(self):
         """
@@ -52,8 +53,8 @@ class test_viewset(django.test.TestCase):
         """
         response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 6, 'testCase': 4, 'testSteps': [1, 2, 3]})
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in eval(response.content))
-        self.assertEqual(eval(response.content)['id'], 5)
+        self.assertTrue('id' in json.loads(response.content))
+        self.assertEqual(json.loads(response.content)['id'], 5)
         
     def test_noCreationWhenExistWithManyToManyFieldsEmpty(self):
         """
@@ -61,6 +62,6 @@ class test_viewset(django.test.TestCase):
         """
         response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 2, 'testSteps': []})
         self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in eval(response.content))
-        self.assertEqual(eval(response.content)['id'], 8)
+        self.assertTrue('id' in json.loads(response.content))
+        self.assertEqual(json.loads(response.content)['id'], 8)
     

@@ -17,18 +17,9 @@
     fields:
         name: test1
         application: 1
--   model: snapshotServer.testcaseinsession
+-   model: snapshotServer.teststep
     pk: 1
-    fields:
-        testCase: 1
-        session: 1
-        testSteps: [1]
--   model: snapshotServer.testcaseinsession
-    pk: 100
-    fields:
-        testCase: 1
-        session: 2
-        testSteps: [1]
+    fields: {name: Step 1}
 -   model: snapshotServer.testsession
     pk: 1
     fields:
@@ -37,9 +28,21 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
--   model: snapshotServer.teststep
+-   model: snapshotServer.testsession
+    pk: 2
+    fields:
+        sessionId: '1235'
+        version: 1
+        date: 2017-05-05
+        browser: firefox
+        environment: 1
+        
+-   model: snapshotServer.testcaseinsession
     pk: 1
-    fields: {name: Step 1}
+    fields:
+        testCase: 1
+        session: 1
+        testSteps: [1]
 -   model: snapshotServer.stepresult
     pk: 1
     fields: 
@@ -51,6 +54,13 @@
     fields: 
         stepResult: 1
         image: documents/test_Image1.png
+        
+-   model: snapshotServer.testcaseinsession
+    pk: 100
+    fields:
+        testCase: 1
+        session: 2
+        testSteps: [1]
 -   model: snapshotServer.stepresult
     pk: 2
     fields: 
@@ -62,6 +72,7 @@
     fields: 
         stepResult: 2
         image: documents/test_Image1Mod.png
+        refSnapshot: 1
     
 # corner cases for testing model
 -   model: snapshotServer.testcase
@@ -75,14 +86,6 @@
         testCase: 2
         session: 3
         testSteps: []
--   model: snapshotServer.testsession
-    pk: 2
-    fields:
-        sessionId: '1235'
-        version: 1
-        date: 2017-05-05
-        browser: firefox
-        environment: 1
 -   model: snapshotServer.testsession
     pk: 3
     fields:
@@ -98,18 +101,6 @@
     fields:
         name: test3
         application: 1
--   model: snapshotServer.testcaseinsession
-    pk: 3
-    fields:
-        testCase: 3
-        session: 4
-        testSteps: [1]
--   model: snapshotServer.testcaseinsession
-    pk: 4
-    fields:
-        testCase: 3
-        session: 5
-        testSteps: [1]
 -   model: snapshotServer.testsession
     pk: 4
     fields:
@@ -126,6 +117,13 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        
+-   model: snapshotServer.testcaseinsession
+    pk: 3
+    fields:
+        testCase: 3
+        session: 4
+        testSteps: [1]
 -   model: snapshotServer.stepresult
     pk: 3
     fields: 
@@ -137,6 +135,13 @@
     fields: 
         stepResult: 3
         image: documents/test_Image1.png
+        
+-   model: snapshotServer.testcaseinsession
+    pk: 4
+    fields:
+        testCase: 3
+        session: 5
+        testSteps: [1]
 -   model: snapshotServer.stepresult
     pk: 4
     fields: 
@@ -165,18 +170,6 @@
     fields:
         name: test login
         application: 1
--   model: snapshotServer.testcaseinsession
-    pk: 5
-    fields:
-        testCase: 4
-        session: 6
-        testSteps: [1, 2, 3]
--   model: snapshotServer.testcaseinsession
-    pk: 6
-    fields:
-        testCase: 4
-        session: 7
-        testSteps: [1, 2, 3]
 -   model: snapshotServer.testsession
     pk: 6
     fields:
@@ -194,6 +187,13 @@
         browser: firefox
         environment: 1
         
+# --- 3 steps for this test ---
+-   model: snapshotServer.testcaseinsession
+    pk: 5
+    fields:
+        testCase: 4
+        session: 6
+        testSteps: [1, 2, 3]
 -   model: snapshotServer.stepresult
     pk: 5
     fields: 
@@ -227,6 +227,14 @@
     fields: 
         stepResult: 7
         image: documents/test_Image1.png
+        
+# --- 3 steps for this test ---
+-   model: snapshotServer.testcaseinsession
+    pk: 6
+    fields:
+        testCase: 4
+        session: 7
+        testSteps: [1, 2, 3]
 -   model: snapshotServer.stepresult
     pk: 8
     fields: 
@@ -237,7 +245,7 @@
     pk: 8
     fields: 
         stepResult: 8
-        image: documents/test_Image1.png
+        image: documents/test_Image1Mod.png
         refSnapshot: 5
 -   model: snapshotServer.stepresult
     pk: 9
@@ -249,7 +257,7 @@
     pk: 9
     fields: 
         stepResult: 9
-        image: documents/test_Image1.png
+        image: documents/test_Image1Mod.png
         refSnapshot: 6
 -   model: snapshotServer.stepresult
     pk: 10
@@ -261,8 +269,9 @@
     pk: 10
     fields: 
         stepResult: 10
-        image: documents/test_Image1.png
+        image: documents/test_Image1Mod.png
         refSnapshot: 7 
+        
 -   model: snapshotServer.testcaseinsession
     pk: 7
     fields:
@@ -279,6 +288,14 @@
     pk: 8
     fields:
         sessionId: '1252'
+        version: 1
+        date: 2017-05-06
+        browser: firefox
+        environment: 1
+-   model: snapshotServer.testsession
+    pk: 9
+    fields:
+        sessionId: '1253'
         version: 1
         date: 2017-05-06
         browser: firefox

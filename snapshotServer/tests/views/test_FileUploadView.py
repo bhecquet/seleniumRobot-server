@@ -78,7 +78,7 @@ class test_FileUploadView(django.test.TestCase):
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr2.id, 'image': fp})
             self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
             
-            uploadedSnapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploadedSnapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs2, stepResult__step__id=1).last()
             self.assertIsNotNone(uploadedSnapshot2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploadedSnapshot2.refSnapshot, uploadedSnapshot1)
             
@@ -94,7 +94,7 @@ class test_FileUploadView(django.test.TestCase):
         tcs3.save()
         tcs3.testSteps = [TestStep.objects.get(id=1)]
         tcs3.save()
-        sr3 = StepResult(step=TestStep.objects.get(id=1), testCase=tcs3)
+        sr3 = StepResult(step=TestStep.objects.get(id=1), testCase=tcs3, result=True)
         sr3.save()
         
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -102,7 +102,7 @@ class test_FileUploadView(django.test.TestCase):
             uploadedSnapshot1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': sr3, 'image': fp})
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': sr3.id, 'image': fp})
             self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
             
             uploadedSnapshot2 = Snapshot.objects.filter(stepResult__testCase=tcs3, stepResult__step__id=1).last()

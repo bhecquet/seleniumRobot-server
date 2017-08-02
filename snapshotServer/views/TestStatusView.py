@@ -9,7 +9,7 @@ import pickle
 from django.http.response import HttpResponse
 from django.views.generic.base import View
 
-from snapshotServer.models import TestSession, TestCaseInSession, Snapshot
+from snapshotServer.models import TestCaseInSession, Snapshot
 
 
 class TestStatusView(View):
@@ -17,11 +17,12 @@ class TestStatusView(View):
     API to get the test session status according to comparison results
     If only session and test are passed, the test is marked as KO when at least one step has a difference
     If moreover, test step is given, returns the comparison result of the step only
+    @return: dict {<snapshotId>: <differences_or_not>}
     """
         
-    def get(self, request, sessionId, testCaseId, testStepId=None):
+    def get(self, request, testCaseId, testStepId=None):
         try:
-            session = TestSession.objects.get(pk=sessionId)
+
             testCase = TestCaseInSession.objects.get(pk=testCaseId)
             
             if testStepId:

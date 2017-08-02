@@ -18,8 +18,9 @@ class Test_PictureView(Test_Views):
     def test_picturesExist(self):
         """
         Check that reference and snapshot are found and correct
+        With this Test Step, reference should be found (snapshot.id = 2)
         """
-        response = self.client.get(reverse('pictureView', args=[1, 1, 1]))
+        response = self.client.get(reverse('pictureView', args=[2, 100, 1]))
         self.assertIsNotNone(response.context['reference'])
         self.assertIsNotNone(response.context['stepSnapshot'])
           
@@ -39,7 +40,6 @@ class Test_PictureView(Test_Views):
         From a picture which is not a reference (s1), make it a new ref
         """
           
-      
         s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
         s1.save()
         img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
@@ -94,7 +94,7 @@ class Test_PictureView(Test_Views):
         From a picture which is not a reference, send makeRef=False. Nothing should happen
         """
           
-        response = self.client.get(reverse('pictureView', args=[5, 3, 1]) + "?makeRef=False")
+        response = self.client.get(reverse('pictureView', args=[5, 4, 1]) + "?makeRef=False")
           
         # check display
         self.assertIsNotNone(response.context['reference'], "picture is still not a reference")

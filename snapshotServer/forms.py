@@ -1,6 +1,6 @@
 from django import forms
 
-from snapshotServer.models import TestSession, TestStep, TestCaseInSession
+from snapshotServer.models import StepResult
 
 
 class ImageUploadForm(forms.Form):
@@ -16,6 +16,6 @@ class ImageUploadForm(forms.Form):
             raise forms.ValidationError("stepResult must be specified")
           
         try:
-            TestStep.objects.get(id=self.cleaned_data['stepResult'])
+            StepResult.objects.get(id=self.cleaned_data['stepResult'])
         except Exception as e:
             raise forms.ValidationError("stepResult not found")

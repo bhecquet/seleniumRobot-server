@@ -9,12 +9,17 @@ from snapshotServer.models import TestCaseInSession
 
 
 class StepListView(ListView):
+    """
+    @param sessionId: 
+    @param testCaseInSessionId
+    """
+    
     template_name = "snapshotServer/stepList.html"
     
     def get_queryset(self):
         try:
             testSteps = TestCaseInSession.objects.get(id=self.args[1]).testSteps.all()
-            return dict([(s, s.isOkWithSnapshots(self.args[0], self.args[1])) for s in testSteps])
+            return dict([(s, s.isOkWithSnapshots(self.args[1])) for s in testSteps])
         except:
             return []
         

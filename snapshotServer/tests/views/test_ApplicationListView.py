@@ -21,7 +21,7 @@ class Test_ApplicationListView(Test_Views):
         """
         Redirect as we selected an application
         """
-        response = self.client.post(reverse('home'), data={'application': 1})
+        response = self.client.post(reverse('home'), data={'application': 1, 'display': 'snapshot'})
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, '/snapshot/compare/1/')
 

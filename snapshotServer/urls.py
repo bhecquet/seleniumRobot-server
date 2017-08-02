@@ -60,7 +60,7 @@ urlpatterns = [
     url(r'^compare/excludeList/([0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
-    url(r'^status/(?P<sessionId>[0-9]+)/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), # /sessionId/testCase
-    url(r'^status/(?P<sessionId>[0-9]+)/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), # /sessionId/testCase/testStep
+    url(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), # /testCaseInSession
+    url(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), # /testCaseInSession/testStep
     
 ]

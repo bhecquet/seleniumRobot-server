@@ -18,12 +18,14 @@ class PictureView(TemplateView):
         """
         Look for the snapshot of our session
         @param sessionId
-        @param testCaseId
-        @param testStepId
+        @param testCaseId    a TestCaseInSession object id
+        @param testStepId    a TestStep object id
         """
         context = super(PictureView, self).get_context_data(**kwargs)
         
-        stepSnapshot = Snapshot.objects.filter(stepResult__testCase__session=self.args[0]).filter(stepResult__testCase=self.args[1]).filter(stepResult__step=self.args[2]).last()
+        stepSnapshot = Snapshot.objects.filter(stepResult__testCase__session=self.args[0], 
+                                               stepResult__testCase=self.args[1], 
+                                               stepResult__step=self.args[2]).last()
         
         if stepSnapshot:
 

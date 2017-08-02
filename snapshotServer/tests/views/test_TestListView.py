@@ -30,5 +30,5 @@ class Test_TestListView(Test_Views):
         """
         Test no error raised when no test exist in session
         """
-        response = self.client.get(reverse('testlistView', args=[2]))
+        response = self.client.get(reverse('testlistView', args=[9]))
         self.assertEqual(len(response.context['object_list']), 0)
