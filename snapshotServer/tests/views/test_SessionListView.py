@@ -40,9 +40,11 @@ class Test_SessionListView(Test_Views):
     def test_allFilter(self):
         """
         Filtering done when all fields are filled
+        3 sessions correspond to input parameters but one 2 them (id=7) has the compareSnapshot flag set to false
+        Only one session should be returned
         """
         response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
-        self.assertEqual(len(response.context['sessions']), 2)
+        self.assertEqual(len(response.context['sessions']), 2)      
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data

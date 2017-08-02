@@ -28,6 +28,7 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        compareSnapshot: true
 -   model: snapshotServer.testsession
     pk: 2
     fields:
@@ -36,6 +37,7 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        compareSnapshot: true
         
 -   model: snapshotServer.testcaseinsession
     pk: 1
@@ -94,6 +96,7 @@
         version: 1
         browser: firefox
         environment: 1
+        compareSnapshot: true
         
 # A reference and a step snapshot, each in its own session
 -   model: snapshotServer.testcase
@@ -109,6 +112,7 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        compareSnapshot: true
 -   model: snapshotServer.testsession
     pk: 5
     fields:
@@ -117,6 +121,7 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        compareSnapshot: true
         
 -   model: snapshotServer.testcaseinsession
     pk: 3
@@ -178,6 +183,7 @@
         date: 2017-05-05
         browser: firefox
         environment: 1
+        compareSnapshot: true
 -   model: snapshotServer.testsession
     pk: 7
     fields:
@@ -186,6 +192,23 @@
         date: 2017-05-06
         browser: firefox
         environment: 1
+        compareSnapshot: true
+-   model: snapshotServer.testsession
+    pk: 107
+    fields:
+        sessionId: '1254'
+        version: 1
+        date: 2017-05-06
+        browser: firefox
+        environment: 1
+        compareSnapshot: false
+        
+-   model: snapshotServer.testcaseinsession
+    pk: 105
+    fields:
+        testCase: 4
+        session: 107
+        testSteps: [1, 2, 3]
         
 # --- 3 steps for this test ---
 -   model: snapshotServer.testcaseinsession
@@ -292,6 +315,7 @@
         date: 2017-05-06
         browser: firefox
         environment: 1
+        compareSnapshot: true
 -   model: snapshotServer.testsession
     pk: 9
     fields:
@@ -300,4 +324,5 @@
         date: 2017-05-06
         browser: firefox
         environment: 1
+        compareSnapshot: true
     

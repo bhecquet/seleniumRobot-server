@@ -28,7 +28,7 @@ class SessionListView(TemplateView):
         
         context = super(SessionListView, self).get_context_data(**kwargs)
         
-        sessions = TestSession.objects.filter(version=self.kwargs['versionId'])
+        sessions = TestSession.objects.filter(version=self.kwargs['versionId'], compareSnapshot=True)
 
         context['browsers'] = list(set([s.browser for s in TestSession.objects.all()]))
         context['selectedBrowser'] = self.request.GET.getlist('browser')

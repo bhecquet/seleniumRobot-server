@@ -162,7 +162,7 @@ function drawExistingExcludeZones() {
 	}
 }
 
-function updateExcludeZones(snapshotId, refSnapshotId, sessionId, testCaseId, testStepId) {
+function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	var diff = document.getElementById('diff');
 
 	var newExcludes = document.getElementsByName('new_exclude');
@@ -171,7 +171,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, sessionId, testCaseId, te
 	for(var i= 0; i < newExcludes.length; i++) {
 		if (newExcludes[i].checked) {
 			$.post({
-				url: '/api/exclude/',
+				url: '/snapshot/api/exclude/',
 				data: "x=" + newExcludes[i].getAttribute('r_x')
 					+ "&y=" + newExcludes[i].getAttribute('r_y')
 					+ "&width=" + newExcludes[i].getAttribute('r_w')
@@ -189,7 +189,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, sessionId, testCaseId, te
 		if (!currentExcludes[i].checked) {
 			$.ajax({
 				type: 'DELETE',
-				url: '/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
+				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
 				async: false	
 			});
 		}
@@ -198,12 +198,12 @@ function updateExcludeZones(snapshotId, refSnapshotId, sessionId, testCaseId, te
 	// recompute difference
 	$.ajax({
 		type: 'POST',
-		url: '/compare/compute/' + snapshotId + '/',
+		url: '/snapshot/compare/compute/' + snapshotId + '/',
 		async: false	
 	});
 	
 	// reload page
-	updatePanel('/compare/picture/' + sessionId + '/' + testCaseId + '/' + testStepId, 'display');
+	updatePanel('/snapshot/compare/picture/' + testCaseId + '/' + testStepId, 'display');
 	
 
 }

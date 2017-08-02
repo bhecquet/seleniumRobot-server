@@ -18,7 +18,7 @@
 		{% if stepSnapshot %}
 		<div class="snapshotInfo step">
 			{% if stepSnapshot.refSnapshot %}
-			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
+			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
 				{% if not stepSnapshot.tooManyDiffs %}
 				<button type="submit" class="btn btn-primary" onclick="toggleElement('diff');">Toggle differences</button>
 				{% else %}
@@ -27,7 +27,7 @@
 			
 			{% else %}
 			This step is a reference
-			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" sessionId testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
+			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
 			{% endif %}
 		</div>
 		<div class="snapshot">
@@ -45,7 +45,7 @@
 	                </div>
 	            </div>
 	            
-	            <button type="submit" class="btn btn-primary" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ sessionId }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
+	            <button type="submit" class="btn btn-primary" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
 			</div>
 		</div>
 		

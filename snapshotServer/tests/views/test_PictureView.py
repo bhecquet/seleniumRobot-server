@@ -20,7 +20,7 @@ class Test_PictureView(Test_Views):
         Check that reference and snapshot are found and correct
         With this Test Step, reference should be found (snapshot.id = 2)
         """
-        response = self.client.get(reverse('pictureView', args=[2, 100, 1]))
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
         self.assertIsNotNone(response.context['reference'])
         self.assertIsNotNone(response.context['stepSnapshot'])
           
@@ -31,7 +31,7 @@ class Test_PictureView(Test_Views):
         """
         Check that no error is raised when one of step / test case / session does not exist
         """
-        response = self.client.get(reverse('pictureView', args=[1, 1, 2]))
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 1, 'testStepId': 2}))
         self.assertIsNone(response.context['reference'])
         self.assertIsNone(response.context['stepSnapshot'])
           
@@ -50,7 +50,7 @@ class Test_PictureView(Test_Views):
         s2.image.save("img", img)
         s2.save()
           
-        response = self.client.get(reverse('pictureView', args=[self.session1.id, self.tcs1.id, 1]) + "?makeRef=True")
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True")
           
         # check display
         self.assertIsNone(response.context['reference'], "new reference should be the snapshot itself")
@@ -67,7 +67,7 @@ class Test_PictureView(Test_Views):
         From a picture which is a reference, send makeRef=True. Nothing should happen
         """
           
-        response = self.client.get(reverse('pictureView', args=[4, 3, 1]) + "?makeRef=True")
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 3, 'testStepId': 1}) + "?makeRef=True")
           
         # check display
         self.assertIsNone(response.context['reference'], "picture is still a reference")
@@ -81,7 +81,7 @@ class Test_PictureView(Test_Views):
         It should not be possible
         """
           
-        response = self.client.get(reverse('pictureView', args=[4, 3, 1]) + "?makeRef=False")
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 3, 'testStepId': 1}) + "?makeRef=False")
           
         # check display
         self.assertIsNone(response.context['reference'], "picture is still a reference")
@@ -94,7 +94,7 @@ class Test_PictureView(Test_Views):
         From a picture which is not a reference, send makeRef=False. Nothing should happen
         """
           
-        response = self.client.get(reverse('pictureView', args=[5, 4, 1]) + "?makeRef=False")
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 4, 'testStepId': 1}) + "?makeRef=False")
           
         # check display
         self.assertIsNotNone(response.context['reference'], "picture is still not a reference")
@@ -117,7 +117,7 @@ class Test_PictureView(Test_Views):
         s2.image.save("img", img)
         s2.save()
           
-        response = self.client.get(reverse('pictureView', args=[self.session1.id, self.tcs1.id, 1]) + "?makeRef=False")
+        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False")
           
         # check display
         self.assertEqual(response.context['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")

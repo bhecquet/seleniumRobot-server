@@ -137,6 +137,7 @@ class TestSession(models.Model):
     version = models.ForeignKey(Version, related_name='testsession')
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession')
+    compareSnapshot = models.BooleanField(default=False)                            # if True, this session will be displayed in snapshot comparator
     
     def __str__(self):
         return "Session %s with %s" % (self.sessionId, self.browser)

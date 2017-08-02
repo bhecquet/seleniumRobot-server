@@ -23,9 +23,8 @@ class PictureView(TemplateView):
         """
         context = super(PictureView, self).get_context_data(**kwargs)
         
-        stepSnapshot = Snapshot.objects.filter(stepResult__testCase__session=self.args[0], 
-                                               stepResult__testCase=self.args[1], 
-                                               stepResult__step=self.args[2]).last()
+        stepSnapshot = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
+                                               stepResult__step=self.kwargs['testStepId']).last()
         
         if stepSnapshot:
 
@@ -45,11 +44,10 @@ class PictureView(TemplateView):
                     # search with the same test case name and same step name on the same application version so that comparison
                     # is done on same basis
                     # TODO: reference could be searched in previous versions
-                    testCase = TestCaseInSession.objects.get(pk=self.args[1])
-                    session = TestSession.objects.get(pk=self.args[0])
+                    testCase = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
                     refSnapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=testCase.testCase.name) \
-                                                .filter(stepResult__testCase__session__version=session.version) \
-                                                .filter(stepResult__step=self.args[2]) \
+                                                .filter(stepResult__testCase__session__version=testCase.session.version) \
+                                                .filter(stepResult__step=self.kwargs['testStepId']) \
                                                 .filter(refSnapshot=None) \
                                                 .filter(id__lt=stepSnapshot.id)
                     
@@ -83,7 +81,6 @@ class PictureView(TemplateView):
         context['reference'] = refSnapshot
         context['stepSnapshot'] = stepSnapshot
         context['diff'] = str([[p.x, p.y] for p in diffPixels])
-        context['testCaseId'] = self.args[1]
-        context['sessionId'] = self.args[0]
-        context['testStepId'] = self.args[2]
+        context['testCaseId'] = self.kwargs['testCaseInSessionId']
+        context['testStepId'] = self.kwargs['testStepId']
         return context

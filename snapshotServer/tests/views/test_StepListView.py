@@ -16,7 +16,7 @@ class Test_StepListView(Test_Views):
         """
         Test that steps are found for our test case
         """
-        response = self.client.get(reverse('steplistView', args=[1, 1]))
+        response = self.client.get(reverse('steplistView', kwargs={'testCaseInSessionId': 1}))
         self.assertEqual(len(response.context['object_list']), 1)
         self.assertEqual(list(response.context['object_list'])[0].name, "Step 1")
   
@@ -24,14 +24,13 @@ class Test_StepListView(Test_Views):
         """
         Test that no steps are found for our test case
         """
-        response = self.client.get(reverse('steplistView', args=[1, 20]))
+        response = self.client.get(reverse('steplistView', kwargs={'testCaseInSessionId': 20}))
         self.assertEqual(len(response.context['object_list']), 0)
           
     def test_contextComplete(self):
         """
         Test that extra information are added to the context
         """
-        response = self.client.get(reverse('steplistView', args=[1, 1]))
-        self.assertEqual(response.context['sessionId'], '1')
+        response = self.client.get(reverse('steplistView', kwargs={'testCaseInSessionId': 1}))
         self.assertEqual(response.context['testCaseId'], '1')
           
