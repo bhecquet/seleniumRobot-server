@@ -85,7 +85,7 @@
 				{% if testCaseInSession is None %}
 				<td/>
 				{% else %}
-				<td class={% if result %}"success"{% else %}"danger"{% endif %}>{{ testCaseInSession }}</td>
+				<td class={% if result %}"success"{% else %}"danger"{% endif %}><a href="{% url 'testResultView' testCaseInSession.id %}">{{ testCaseInSession }}</a></td>
 				{% endif %}
 			{% endfor %}
 		</tr>

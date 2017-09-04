@@ -1,0 +1,81 @@
+{% extends "snapshotServer/base.html" %}
+{% load static %}
+
+{% block head %}
+	<link rel="stylesheet" type="text/css" href="{% static 'css/AdminLTE.min.css' %}">
+    <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot_solo.css' %}">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster+Two"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
+ 
+	<script type="text/javascript" src="{% static 'js/AdminLTE.min.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/seleniumRobot.js' %}"></script>
+
+{% endblock %}
+
+{% block body %}
+<div class="row">
+	<div class="col-sm-2 " style="background-color:#006266;height: 40px;"></div>
+	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">Back</div>
+	<div  class="col-sm-2 " style="margin-left: -15px;height: 40px;background-color:#006266;" >&nbsp;  </div>
+</div>
+
+<div class="row">
+	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center;height: 25px;"></div>
+	<div  class="col-sm-10" style="background-color:#33414a; text-align: center;height: 25px;">&nbsp;</div>
+	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center; padding-left:0px;margin-left: -15px;height: 25px;"></div>
+</div>
+
+<div id="testResultDetails">
+	<div class="container">
+		<section class="content">
+		  	<div class="row">
+		    	<div class="col-xs-12">
+		    		<h4> Test Details - {{ currentTest.testCase.name }}</h4>
+		      		<p><b>Browser : </b> {{ currentTest.session.browser }}<br/></p>
+		      		
+		      		{% for stepResult, snapshot in object_list.items %}
+		      			<div class="box collapsed-box {% if stepResult.result %}success{% else %}failed{% endif %}">
+						<div class="box-header with-border">
+							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> {{ stepResult.step.name }}  - {{ stepResult.duration }} secs
+						</div>
+						<div class="box-body">
+							{{ stepResult.stacktrace }}
+							<!--<ul>
+										
+									<li>openPage with args: (https://www.qwant.com, )</li>
+									<ul>
+										<li>maximizeWindow on page QwantHomePage </li>
+							    			<li>setWindowToRequestedSize on page QwantHomePage </li>
+							    			<div class="message-log">Output: Qwant - Le moteur de recherche qui respecte votre vie privée: <a href='https://www.qwant.com/' target=url>Application URL</a> | <a href='htmls/7d31c1a4c09d373f607eabd7c0b0e0df.html' target=html>Application HTML Source</a> | <a href='screenshots/7d31c1a4c09d373f607eabd7c0b0e0df.png' class='lightbox'>Application Snapshot</a></div>
+													<li>isElementPresent on TextFieldElement search Text Box, by={By.className: search_bar__form__input} with args: (15, )</li>
+							    			<li>isElementPresent on TextFieldElement search Text Box, by={By.className: search_bar__form__input} </li>
+					    			</ul>
+								</ul>-->
+								<div>
+									{% if snapshot %}
+										<img src={{ snapshot.image.url }} height="300px">
+									{% endif %}
+								</div>
+							</div>
+						</div>
+		      	
+		      		{% endfor %}
+		
+					<div class="box collapsed-box success">
+						<div class="box-header with-border">
+							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Execution logs
+						</div>
+						<div class="box-body logs">
+							<br/>
+							{% for line in stacktrace %}
+								<div>{{ line }}</div>
+							{% endfor %}
+							
+						</div>
+					</div>				
+				</div>
+			</div>
+		</section>
+	</div>		
+</div>
+{% endblock %}

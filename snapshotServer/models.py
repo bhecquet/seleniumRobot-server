@@ -198,6 +198,7 @@ class StepResult(models.Model):
     step = models.ForeignKey(TestStep, related_name='stepresult')
     testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult')
     result = models.BooleanField(null=False)
+    duration = models.FloatField(default=0.0)
     stacktrace = models.TextField(null=True)
     
 class ExcludeZone(models.Model):

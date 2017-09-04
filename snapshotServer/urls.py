@@ -27,6 +27,7 @@ from snapshotServer.views.StepListView import StepListView
 from snapshotServer.views.TestListView import TestListView
 from snapshotServer.views.TestStatusView import TestStatusView
 from snapshotServer.views.TestResultTableView import TestResultTableView
+from snapshotServer.views.TestResultView import TestResultView
 
 
 router = routers.DefaultRouter()
@@ -51,6 +52,7 @@ urlpatterns = [
     url(r'^$', ApplicationVersionListView.as_view(), name='home'),
     
     url(r'^testResults/(?P<versionId>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
+    url(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
 
     url(r'^compare/(?P<versionId>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
