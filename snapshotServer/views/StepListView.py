@@ -10,12 +10,15 @@ from snapshotServer.models import TestCaseInSession
 
 class StepListView(ListView):
     """
-    @param testCaseInSessionId
+    View displaying the list of steps for a test case in a session
     """
     
     template_name = "snapshotServer/stepList.html"
     
     def get_queryset(self):
+        """
+        @param testCaseInSessionId
+        """
         try:
             testSteps = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId']).testSteps.all()
             return dict([(s, s.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])) for s in testSteps])

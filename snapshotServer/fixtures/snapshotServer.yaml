@@ -208,7 +208,7 @@
     fields:
         testCase: 4
         session: 107
-        testSteps: [1, 2, 3]
+        testSteps: [2, 3, 4]
         
 # --- 3 steps for this test ---
 -   model: snapshotServer.testcaseinsession
@@ -216,7 +216,7 @@
     fields:
         testCase: 4
         session: 6
-        testSteps: [1, 2, 3]
+        testSteps: [2, 3, 4]
 -   model: snapshotServer.stepresult
     pk: 5
     fields: 
@@ -257,7 +257,7 @@
     fields:
         testCase: 4
         session: 7
-        testSteps: [1, 2, 3]
+        testSteps: [2, 3, 4]
 -   model: snapshotServer.stepresult
     pk: 8
     fields: 

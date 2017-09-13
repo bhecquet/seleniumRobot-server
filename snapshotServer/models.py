@@ -195,6 +195,10 @@ class Snapshot(models.Model):
         return newSnapshots
         
 class StepResult(models.Model):
+    
+    def __str__(self):
+        return "result %d " % self.id
+    
     step = models.ForeignKey(TestStep, related_name='stepresult')
     testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult')
     result = models.BooleanField(null=False)

@@ -9,6 +9,10 @@ from snapshotServer.models import ExcludeZone
 
 
 class ExclusionZoneListView(ListView):
+    """
+    View displaying list of exclusion zones for a picture
+    """
+    
     template_name = "snapshotServer/excludeList.html"
     
     def get_queryset(self):

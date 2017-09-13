@@ -11,6 +11,9 @@ from datetime import datetime, timedelta
 from django.shortcuts import render_to_response
 
 class TestResultTableView(TemplateView):
+    """
+    View displaying a table with results of all tests for the sessions selected by user
+    """
     
     template_name = "snapshotServer/testResults.html"
 

@@ -4,6 +4,10 @@ from django.shortcuts import render_to_response, redirect
 
 
 class ApplicationVersionListView(ListView):
+    """
+    View displaying the application / version list and entry point for snapshot view or test result view
+    """
+    
     template_name = "snapshotServer/home.html"
     
     def get_queryset(self):

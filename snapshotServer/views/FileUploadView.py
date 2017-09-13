@@ -10,6 +10,11 @@ from snapshotServer.models import Snapshot, TestStep, TestSession,\
 
 # Create your views here.
 class FileUploadView(views.APIView):
+    """
+    View of the API to upload a file with snapshot informations
+    It creates the snapshot and detects if a reference already exists for this snapshot
+    """
+    
     parser_classes = (MultiPartParser,)
     queryset = Snapshot.objects.all()
 

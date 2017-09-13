@@ -7,6 +7,9 @@ from django.views.generic.list import ListView
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot
 
 class TestResultView(ListView):
+    """
+    View displaying a single test result
+    """
     
     template_name = "snapshotServer/testResult.html"
     

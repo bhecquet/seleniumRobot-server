@@ -66,3 +66,4 @@ class Test_SessionListView(Test_Views):
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('error' not in response.context)
+        

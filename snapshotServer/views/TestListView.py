@@ -9,6 +9,10 @@ from snapshotServer.models import TestCaseInSession
 
 
 class TestListView(ListView):
+    """
+    View displaying the list of test corresponding to a ssession
+    """
+    
     template_name = "snapshotServer/testList.html"
     
     def get_queryset(self):

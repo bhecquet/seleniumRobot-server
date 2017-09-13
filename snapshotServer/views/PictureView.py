@@ -12,6 +12,10 @@ from snapshotServer.models import Snapshot, TestCaseInSession, TestSession
 
 
 class PictureView(TemplateView):
+    """
+    View displaying the comparison between pictures (the current and the reference)
+    """
+    
     template_name = "snapshotServer/displayPanel.html"
 
     def get_context_data(self, **kwargs):

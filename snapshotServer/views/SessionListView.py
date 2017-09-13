@@ -14,6 +14,10 @@ from snapshotServer.views.ApplicationVersionListView import ApplicationVersionLi
 
 
 class SessionListView(TemplateView):
+    """
+    View displaying the session list depending on filters given by user
+    """
+    
     template_name = "snapshotServer/compare.html"
 
     def get(self, request, versionId):
