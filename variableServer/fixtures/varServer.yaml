@@ -1,36 +1,243 @@
 -   model: variableServer.application
     pk: 1
     fields: {name: app1}
--   model: variableServer.application
-    pk: 2
-    fields: {name: app2}
 -   model: variableServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
 -   model: variableServer.version
     pk: 2
     fields: {application: 1, name: '2.5'}
+    
+-   model: variableServer.application
+    pk: 2
+    fields: {name: app2}
+
 -   model: variableServer.testenvironment
     pk: 1
     fields: {name: DEV}
+-   model: variableServer.testenvironment
+    pk: 2
+    fields: {name: ASS}
+-   model: variableServer.testenvironment
+    pk: 3
+    fields: 
+        name: DEV1
+        genericEnvironment: 1
 -   model: variableServer.testcase
     pk: 1
     fields:
         name: test1
         application: 1
+        
 # global variable
--   fields: {application: null, description: null, environment: null, internal: false,
-        name: proxyAddress, protected: false, releaseDate: null, test: null,
-        value: proxy.fr, version: null}
+-   fields: 
+        name: proxyAddress
+        value: proxy.fr
+        application: null
+        version: null
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
     model: variableServer.variable
     pk: 1
--   fields: {application: null, description: null, environment: 1, internal: false,
-        name: varWithEnv, protected: false, releaseDate: null,
-        test: null, value: '2002', version: null}
+    
+# global variable
+-   fields: 
+        name: proxyPassword
+        value: azerty
+        application: null
+        version: null
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 101
+    
+# variable specific to an environment
+-   fields: 
+        name: logs
+        value: logs_dev
+        application: null
+        version: null
+        environment: 1
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
     model: variableServer.variable
     pk: 2
--   fields: {application: 1, description: null, environment: 1, internal: false, name: varWithEnvAndApp,
-        protected: false, releaseDate: null, test: null, value: '2003',
-        version: 1}
+    
+# variable with same name as a global variable. Helps to test the overriding
+-   fields: 
+        name: proxyPassword
+        value: devPassword
+        application: null
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 201
+
+    
+# variable specific to an environment
+-   fields: 
+        name: logs
+        value: logs_ass
+        application: null
+        version: null
+        environment: 2
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 202
+    
+# variable specific to an application (any version)
+-   fields: 
+        name: appName
+        value: myApp
+        application: 1
+        version: null
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
     model: variableServer.variable
     pk: 3
+    
+# variable specific to an application (any version)
+-   fields: 
+        name: appName
+        value: myOtherApp
+        application: 2
+        version: null
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 301
+        
+# variable specific to an application / version
+-   fields: 
+        name: version
+        value: v1
+        application: 1
+        version: 2
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 4
+        
+# variable specific to an application / version
+-   fields: 
+        name: version
+        value: v0
+        application: 1
+        version: 1
+        environment: null
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 401
+        
+# variable specific to an application / version / environment
+-   fields: 
+        name: url
+        value: http://myapp-staging1.company.com
+        application: 1
+        version: 2
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 5
+        
+# variable specific to an application / version / environment
+-   fields: 
+        name: url
+        value: http://myapp-staging2.company.com
+        application: 1
+        version: 2
+        environment: 2
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 6
+        
+# variable specific to an application / version / environment / test
+-   fields: 
+        name: login
+        value: myAccount
+        application: 1
+        version: 2
+        environment: 3
+        test: 1
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 7
+           
+# variable specific to an application / environment
+-   fields: 
+        name: user
+        value: appUserDev
+        application: 1
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 8
+    
+        
+# variable specific to a test (should never been get)
+-   fields: 
+        name: user
+        value: appUserDev
+        application: null
+        version: null
+        environment: null
+        test: 1
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 9
+    

@@ -79,5 +79,5 @@ class SnapshotSerializer(serializers.ModelSerializer):
 class StepResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepResult
-        fields = ('id', 'step', 'testCase', 'result', 'stacktrace')
+        fields = ('id', 'step', 'testCase', 'result', 'duration', 'stacktrace')
         

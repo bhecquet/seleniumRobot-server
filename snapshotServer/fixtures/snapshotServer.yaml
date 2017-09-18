@@ -223,6 +223,8 @@
         step: 2
         testCase: 5
         result: true
+        duration: 10
+        stacktrace: {"Login":{"type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"subStep":{"type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}}]}}
 -   model: snapshotServer.snapshot
     pk: 5
     fields: 
@@ -234,6 +236,8 @@
         step: 3
         testCase: 5
         result: true
+        duration: 11
+        stacktrace: {"Logged":{"type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"subStep":{"type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}}]}}
 -   model: snapshotServer.snapshot
     pk: 6
     fields: 
@@ -245,6 +249,8 @@
         step: 4
         testCase: 5
         result: true
+        duration: 12
+        stacktrace: {"Logged out":{"type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"subStep":{"type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}}]}}
 -   model: snapshotServer.snapshot
     pk: 7
     fields: 
