@@ -4,7 +4,7 @@ Created on 15 sept. 2017
 @author: s047432
 '''
 from rest_framework import mixins, generics
-
+ 
 from variableServer.views.serializers import VariableSerializer
 from variableServer.models import Variable, TestEnvironment, Version, TestCase
 from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE,\

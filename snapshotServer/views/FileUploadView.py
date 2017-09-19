@@ -8,7 +8,7 @@ from snapshotServer.models import Snapshot, TestStep, TestSession,\
     TestCaseInSession, StepResult
 
 
-# Create your views here.
+
 class FileUploadView(views.APIView):
     """
     View of the API to upload a file with snapshot informations
