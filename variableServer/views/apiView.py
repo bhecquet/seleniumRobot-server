@@ -13,6 +13,8 @@ from django.db.models import Q
 from rest_framework.exceptions import ValidationError
 from seleniumRobotServer.wsgi import application
 from django.shortcuts import get_object_or_404
+import datetime
+import time
 
 class VariableList(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
@@ -20,6 +22,12 @@ class VariableList(mixins.ListModelMixin,
                   generics.GenericAPIView):
     
     serializer_class = VariableSerializer
+    
+    def _resetPastReleaseDates(self):
+        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S')):
+            var.releaseDate = None
+            var.save()
+        
     
     def get_queryset(self):
         """
@@ -58,20 +66,23 @@ class VariableList(mixins.ListModelMixin,
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=None, test=test))
         
         # more precise variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=None))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=genericEnvironment, test=None))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=environment, test=None))
+        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
+        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=None))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=test))
-       
-        return variables
+        
+        return variables.filter(releaseDate=None)
         
 
     def get(self, request, *args, **kwargs):
         """
         Get all variables corresponding to requested args
         """
+        # reset 
+        self._resetPastReleaseDates()
+        
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):

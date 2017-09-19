@@ -1,12 +1,18 @@
 -   model: variableServer.application
     pk: 1
     fields: {name: app1}
+-   model: variableServer.application
+    pk: 2
+    fields: {name: app2}
 -   model: variableServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
 -   model: variableServer.version
     pk: 2
     fields: {application: 1, name: '2.5'}
+-   model: variableServer.version
+    pk: 3
+    fields: {application: 2, name: '1.0'}
     
 -   model: variableServer.application
     pk: 2
