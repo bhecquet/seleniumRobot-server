@@ -4,7 +4,7 @@ Created on 19 sept. 2017
 @author: worm
 '''
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 
 from variableServer.models import TestCase
 from commonsServer.views.serializers import TestCaseSerializer
@@ -19,6 +19,6 @@ class TestCaseView(RetrieveAPIView):
         if not testCaseName:
             raise ValidationError("name parameter is mandatory")
         
-        testCase = TestCase.objects.get(name=testCaseName)
+        testCase = get_object_or_404(TestCase, name=testCaseName)
         return testCase
         

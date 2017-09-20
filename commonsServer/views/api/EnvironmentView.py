@@ -4,7 +4,7 @@ Created on 19 sept. 2017
 @author: worm
 '''
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 
 from variableServer.models import TestEnvironment
 from commonsServer.views.serializers import TestEnvironmentSerializer
@@ -19,6 +19,6 @@ class EnvironmentView(RetrieveAPIView):
         if not environmentName:
             raise ValidationError("name parameter is mandatory")
         
-        environment = TestEnvironment.objects.get(name=environmentName)
+        environment = get_object_or_404(TestEnvironment, name=environmentName)
         return environment
         

@@ -4,10 +4,10 @@ Created on 19 sept. 2017
 @author: worm
 '''
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import RetrieveAPIView
+from rest_framework.generics import RetrieveAPIView, get_object_or_404
 
-from variableServer.models import Version
 from commonsServer.views.serializers import VersionSerializer
+from variableServer.models import Version
 
 
 class VersionView(RetrieveAPIView):
@@ -19,6 +19,6 @@ class VersionView(RetrieveAPIView):
         if not versionName:
             raise ValidationError("name parameter is mandatory")
         
-        version = Version.objects.get(name=versionName)
+        version = get_object_or_404(Version, name=versionName)
         return version
         
