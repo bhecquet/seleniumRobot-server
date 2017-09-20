@@ -31,17 +31,11 @@ from snapshotServer.views.TestResultView import TestResultView
 
 
 router = routers.DefaultRouter()
-router.register(r'users', viewsets.UserViewSet)
 router.register(r'snapshot', viewsets.SnapshotViewSet)
-router.register(r'application', viewsets.ApplicationViewSet)
-router.register(r'version', viewsets.VersionViewSet)
-router.register(r'testcase', viewsets.TestCaseViewSet) 
-router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet) 
-router.register(r'environment', viewsets.TestEnvironmentViewSet)
+router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
 router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'stepresult', viewsets.StepResultViewSet)
 router.register(r'exclude', viewsets.ExcludeZoneViewSet)
-router.register(r'groups', viewsets.GroupViewSet)
 router.register(r'session', viewsets.TestSessionViewSet)
 
 urlpatterns = [

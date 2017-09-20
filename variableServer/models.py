@@ -1,20 +1,20 @@
 from django.db import models
 from snapshotServer.models import TestCase
-import snapshotServer
+import commonsServer
 
-class TestEnvironment(snapshotServer.models.TestEnvironment):
+class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
         proxy = True
 
-class Application(snapshotServer.models.Application):
+class Application(commonsServer.models.Application):
     class Meta:
         proxy = True
 
-class Version(snapshotServer.models.Version):
+class Version(commonsServer.models.Version):
     class Meta:
         proxy = True
 
-class TestCase(snapshotServer.models.TestCase):
+class TestCase(commonsServer.models.TestCase):
     class Meta:
         proxy = True
 

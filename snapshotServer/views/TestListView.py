@@ -10,7 +10,7 @@ from snapshotServer.models import TestCaseInSession
 
 class TestListView(ListView):
     """
-    View displaying the list of test corresponding to a ssession
+    View displaying the list of test corresponding to a session
     """
     
     template_name = "snapshotServer/testList.html"

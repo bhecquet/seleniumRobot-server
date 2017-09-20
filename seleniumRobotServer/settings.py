@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
+    'commonsServer.apps.CommonsserverConfig',
     'django_nose',
 ]
 
