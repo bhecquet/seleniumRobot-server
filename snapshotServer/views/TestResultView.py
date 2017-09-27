@@ -14,7 +14,8 @@ class TestResultView(ListView):
     
     template_name = "snapshotServer/testResult.html"
     
-    def buildLogStringFromJson(self, jsonString):
+    @classmethod
+    def buildLogStringFromJson(cls, jsonString):
         """
         {"name":"Login","type":"step","actions":[
             {"messageType":"INFO","name":"everything OK","type":"message"},
@@ -36,28 +37,37 @@ class TestResultView(ListView):
             </ul>
         </ul>
         """
-        logsDict = json.loads(jsonString)
         logStr = ""
-        parseStep(logsDict)
         
-        
-        def parseStep(step):
-            logStr += "<ul>"
-            logStr += "<li>%s</li>" % step['name']
-            logStr += "<ul>"
+        def parseStep(step, firstCall=False):
+            
+            nonlocal logStr
+            
+            # do not reprint the main step name as test report will print it
+            if not firstCall:
+                logStr += "<li>%s</li>\n" % step['name']
+                
+            logStr += "<ul>\n"
             for action in step['actions']:
                 if action['type'] == 'message':
-                    logStr += "<li>%s %s</li>" % (action['messageType'], action['name'])
+                    logStr += "<div class='message-%s'>%s: %s</div>\n" % (action['messageType'].lower(), action['messageType'], action['name'])
                 elif action['type'] == 'action':
                     if action['failed']:
-                        logStr += "<li class='failed'>%s %s</li>" % (action['name'],)
+                        logStr += "<li class='action-failed'>%s</li>\n" % (action['name'],)
                     else:
-                        logStr += "<li class='success'>%s %s</li>" % (action['name'],)
+                        logStr += "<li class='action-success'>%s</li>\n" % (action['name'],)
                 elif action['type'] == 'step':
                     parseStep(action)
                     
-            logStr += "</ul>"
-            logStr += "</ul>"
+            logStr += "</ul>\n"
+            
+
+        logsDict = json.loads(jsonString)
+        
+        parseStep(logsDict, True)
+        
+        return logStr
+        
         
     
     def get_queryset(self):
@@ -72,8 +82,8 @@ class TestResultView(ListView):
                 if stepResult.stacktrace:
                     logs = self.buildLogStringFromJson(stepResult.stacktrace)
                 else:
-                    logs = ""
-                
+                    logs = None
+                stepResult.formattedLogs = logs
                 
                 try:
                     stepSnapshots[stepResult] = Snapshot.objects.get(stepResult = stepResult)

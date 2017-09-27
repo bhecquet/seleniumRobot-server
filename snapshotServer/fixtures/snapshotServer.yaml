@@ -232,7 +232,8 @@
         testCase: 5
         result: true
         duration: 10
-        stacktrace: {"name":"Login","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
+        stacktrace: >
+                      {"name":"Login","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
 -   model: snapshotServer.snapshot
     pk: 5
     fields: 
@@ -245,7 +246,8 @@
         testCase: 5
         result: true
         duration: 11
-        stacktrace: {"name":"Logged","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
+        stacktrace: >
+                      {"name":"Logged","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
 -   model: snapshotServer.snapshot
     pk: 6
     fields: 
@@ -258,7 +260,8 @@
         testCase: 5
         result: true
         duration: 12
-        stacktrace: {"name":"Logged out","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
+        stacktrace: >
+                      {"name":"Logged out","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
 -   model: snapshotServer.snapshot
     pk: 7
     fields: 
@@ -272,14 +275,6 @@
         testCase: 4
         session: 7
         testSteps: [2, 3, 4]
-        stacktrace: |
-                      INFO  2017-09-20 20:51:49,135 [pool-2-thread-1] StubParentClass: Start method test2
-                      INFO  2017-09-20 20:51:49,136 [pool-2-thread-1] StubTestClassWithWait: test2 starting
-                      INFO  2017-09-20 20:51:49,137 [pool-2-thread-1] StubTestClassWithWait: test2 finished
-                      WARN  2017-09-20 20:51:49,138 [pool-2-thread-1] ConfigReader: no valid config.ini file for this application
-                      WARN  2017-09-20 20:51:49,139 [pool-2-thread-1] ConfigReader: no valid config.ini file for this application
-                      INFO  2017-09-20 20:51:49,140 [pool-2-thread-1] TestLogging: Test is OK
-                      INFO  2017-09-20 20:51:49,140 [pool-2-thread-1] StubParentClass: Finish method test2
 -   model: snapshotServer.stepresult
     pk: 8
     fields: 
