@@ -24,7 +24,7 @@ class VariableList(mixins.ListModelMixin,
     serializer_class = VariableSerializer
     
     def _resetPastReleaseDates(self):
-        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S')):
+        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
             var.releaseDate = None
             var.save()
         
