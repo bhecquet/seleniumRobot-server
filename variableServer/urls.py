@@ -7,6 +7,7 @@ from variableServer.views.apiView import VariableList
 
 urlpatterns = [
     url(r'^api/variable', VariableList.as_view(), name='variableApi'),
+    url(r'^api', apiView.ping, name='variableApi'),
     
     url(r'copyVariables', varActionView.copyVariables, name='copyVariables'),
     url(r'changeVariables', varActionView.changeVariables, name='changeVariables'),

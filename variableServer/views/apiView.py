@@ -15,6 +15,10 @@ from seleniumRobotServer.wsgi import application
 from django.shortcuts import get_object_or_404
 import datetime
 import time
+from django.http.response import HttpResponse
+
+def ping(request):
+    return HttpResponse("OK")
 
 class VariableList(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
