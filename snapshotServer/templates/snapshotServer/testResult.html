@@ -39,7 +39,7 @@
 							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> {{ stepResult.step.name }}  - {{ stepResult.duration }} secs
 						</div>
 						<div class="box-body">
-							{{ stepResult.stacktrace }}
+							{{ stepResult.formattedLogs|safe }}
 							<!--<ul>
 										
 									<li>openPage with args: (https://www.qwant.com, )</li>
