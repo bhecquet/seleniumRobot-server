@@ -61,7 +61,7 @@ def createDistFile(fileList):
     with ZipFile('seleniumrobot-server.zip', 'w') as srsZip:
         for f in fileList:
             srsZip.write(f, f.replace(root, '', ZIP_DEFLATED))
-        zfi = ZipInfo('logs/')
+        zfi = ZipInfo('log/')
         srsZip.writestr(zfi, '')
         zfi = ZipInfo('media/documents/')
         srsZip.writestr(zfi, '')
