@@ -243,7 +243,6 @@ class ApplicationAdmin(admin.ModelAdmin):
 class VersionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(VersionForm, self).__init__(*args, **kwargs)
-        self.fields['linkedVersions'].required = False
         
 class VersionAdmin(admin.ModelAdmin):
     list_display = ('name', 'application')
