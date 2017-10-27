@@ -194,7 +194,6 @@ class TestCaseForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
         super(TestCaseForm, self).__init__(*args, **kwargs)
-        self.fields['variables'].required = False
 
 class TestCaseAdmin(admin.ModelAdmin):
     list_display = ('name', 'application')
