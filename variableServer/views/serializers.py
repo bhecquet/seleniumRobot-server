@@ -12,4 +12,4 @@ from variableServer.models import Variable
 class VariableSerializer(serializers.ModelSerializer):
     class Meta:
         model = Variable
-        fields = ('id', 'name', 'value', 'environment', 'version', 'test', 'releaseDate', 'internal', 'protected', 'description')
+        fields = ('id', 'name', 'value', 'environment', 'version', 'test', 'releaseDate', 'internal', 'protected', 'description', 'application')
