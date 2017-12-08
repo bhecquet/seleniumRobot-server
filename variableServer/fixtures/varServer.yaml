@@ -4,6 +4,9 @@
 -   model: variableServer.application
     pk: 2
     fields: {name: app2}
+-   model: variableServer.application
+    pk: 3
+    fields: {name: app3}
 -   model: variableServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
@@ -13,6 +16,9 @@
 -   model: variableServer.version
     pk: 3
     fields: {application: 2, name: '1.0'}
+-   model: variableServer.version
+    pk: 4
+    fields: {application: 3, name: '1.0'}
     
 -   model: variableServer.application
     pk: 2
@@ -246,4 +252,62 @@
         description: null
     model: variableServer.variable
     pk: 9
+    
+ # 2 variables specific to an application / environment sharing the same name but different values
+-   fields: 
+        name: dupVariable
+        value: value1
+        application: 3
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 10
+-   fields: 
+        name: dupVariable
+        value: value2
+        application: 3
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+    model: variableServer.variable
+    pk: 11
+    
+ # 2 reservable variables specific to an application / environment sharing the same name but different values
+-   fields: 
+        name: login
+        value: user1
+        application: 3
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        reservable: true
+    model: variableServer.variable
+    pk: 12
+-   fields: 
+        name: login
+        value: user2
+        application: 3
+        version: null
+        environment: 3
+        test: null
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        reservable: true
+    model: variableServer.variable
+    pk: 13
     

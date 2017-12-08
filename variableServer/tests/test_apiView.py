@@ -5,6 +5,7 @@ from variableServer.models import Variable, Application, Version,\
     TestEnvironment, TestCase
 import time
 import datetime
+from datetime import timezone
 
 class test_FileUploadView(django.test.TestCase):
     fixtures = ['varServer.yaml']
@@ -54,7 +55,7 @@ class test_FileUploadView(django.test.TestCase):
         
         # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
         for variable in response.data:
-            self.assertTrue(variable['environment'] in [1, 3, None], "variable %s should not be get as environment is different from 1 and None" % variable['name'])
+            self.assertTrue(variable['environment'] in [1, 3, None], "variable %s should not be get as environment is different from 1, 3 and None" % variable['name'])
             self.assertTrue(variable['version'] in [2, None], "variable %s should not be get as version is different from 2 and None" % variable['name'])
             self.assertTrue(variable['test'] in [1, None], "variable %s should not be get as test is different from 1 and None" % variable['name'])
             
@@ -65,7 +66,6 @@ class test_FileUploadView(django.test.TestCase):
         else:
             self.fail("No variable from generic environment get");
         
-        # check overriding of variables
         
         
     def test_getAllVariablesWithReleaseDate(self):
@@ -77,8 +77,8 @@ class test_FileUploadView(django.test.TestCase):
         """
         version = Version.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, version=version).save()
-        Variable(name='var1', value='value1', application=version.application, version=version, releaseDate=datetime.datetime.now() + datetime.timedelta(seconds=60)).save()
-        Variable(name='var2', value='value2', application=version.application, version=version, releaseDate=datetime.datetime.now() - datetime.timedelta(seconds=60)).save()
+        Variable(name='var1', value='value1', application=version.application, version=version, releaseDate=datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(seconds=60)).save()
+        Variable(name='var2', value='value2', application=version.application, version=version, releaseDate=datetime.datetime.now(tz=timezone.utc) - datetime.timedelta(seconds=60)).save()
         
         response = self.client.get(reverse('variableApi'), data={'version': 3, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -267,6 +267,45 @@ class test_FileUploadView(django.test.TestCase):
         
         # check overriding of variables
         self.assertEqual(allVariables['var0']['value'], 'value1')
+        
+    def test_getAllVariablesWithSameName(self):
+        """
+        Check we get only one value for the variable 'dupVariable'
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'dupVariable']), "Only one value should be get")
+        
+        allVariables = self._convertToDict(response.data)
+        self.assertEqual(None, allVariables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
+            
+    def test_reserveVariable(self):
+        """
+        Check we get only one value for the variable 'login' and this is marked as reserved (release date not null)
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+      
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+        allVariables = self._convertToDict(response.data)
+        self.assertNotEqual(None, allVariables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        
+    def test_reservableStateCorrection(self):
+        version = Version.objects.get(pk=3)
+        Variable(name='var0', value='value0', application=version.application, reservable=True).save()
+        
+        response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+        self.assertEqual(response.status_code, 201, 'status code should be 200: ' + str(response.content))
+      
+        for v in Variable.objects.filter(name='var0'):
+            self.assertFalse(v.reservable)
+         
+    # - reserve variable when reservable
+    # - no reserving if no variable can be reserved
+    # - if one variable is set to reservable, all variables of the same name will get the same configuration
+    # - check that reservable state is unique for the same variable name (if not, server should correct it: if one variable
+    #   is reservable, all with the same name will get this state (GUI should already do this and also API)
         
         
         
