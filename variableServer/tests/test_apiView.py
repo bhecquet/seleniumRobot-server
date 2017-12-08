@@ -313,5 +313,6 @@ class test_FileUploadView(django.test.TestCase):
         self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 423, 'status code should be 423: ' + str(response.content))
+        self.assertTrue(b'login' in response.content)
       
         

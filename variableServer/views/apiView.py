@@ -88,7 +88,7 @@ class VariableList(mixins.ListModelMixin,
         # check we still have all variables after filtering. Else test may fail
         filteredVariableNames = list(set([v.name for v in uniqueVariableList]))
         if (len(filteredVariableNames) < len(variableNames)):
-            raise AllVariableAlreadyReservedException()
+            raise AllVariableAlreadyReservedException([v for v in variableNames if v not in filteredVariableNames])
         
         return self._reserveReservableVariables(uniqueVariableList)
         
