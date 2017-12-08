@@ -69,6 +69,7 @@ class VariableAdmin(admin.ModelAdmin):
     list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'test', 'releaseDate')
     list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'test', 'releaseDate')
     list_filter = ('application', 'version', 'environment', 'internal')
+    search_fields = ['name', 'value']
     form = VariableForm
     actions = ['copyTo', 'changeValuesAtOnce', 'unreserveVariable']
     

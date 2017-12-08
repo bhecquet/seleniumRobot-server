@@ -301,11 +301,6 @@ class test_FileUploadView(django.test.TestCase):
         for v in Variable.objects.filter(name='var0'):
             self.assertFalse(v.reservable)
          
-    # - reserve variable when reservable
-    # - no reserving if no variable can be reserved
-    # - if one variable is set to reservable, all variables of the same name will get the same configuration
-    # - check that reservable state is unique for the same variable name (if not, server should correct it: if one variable
-    #   is reservable, all with the same name will get this state (GUI should already do this and also API)
         
         
         

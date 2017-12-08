@@ -3,19 +3,22 @@ Created on 15 sept. 2017
 
 @author: s047432
 '''
-from rest_framework import mixins, generics
- 
-from variableServer.views.serializers import VariableSerializer
-from variableServer.models import Variable, TestEnvironment, Version, TestCase
-from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE,\
-    updateVariables
-from django.db.models import Q
-from rest_framework.exceptions import ValidationError
-from seleniumRobotServer.wsgi import application
-from django.shortcuts import get_object_or_404
+from datetime import timezone
 import datetime
 import time
+
+from django.db.models import Q
 from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import mixins, generics
+from rest_framework.exceptions import ValidationError
+
+from seleniumRobotServer.wsgi import application
+from variableServer.models import Variable, TestEnvironment, Version, TestCase
+from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE, \
+    updateVariables
+from variableServer.views.serializers import VariableSerializer
+
 
 def ping(request):
     return HttpResponse("OK")
@@ -77,8 +80,32 @@ class VariableList(mixins.ListModelMixin,
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=test))
         
-        return variables.filter(releaseDate=None)
+        uniqueVariableList = self._uniqueVariable(variables.filter(releaseDate=None))
+        return self._reserveReservableVariables(uniqueVariableList)
         
+    def _uniqueVariable(self, variableQuerySet):
+        """
+        render a list where each variable is unique (according to it's name)
+        """
+        existingVariableNames = []
+        uniqueVariableList = []
+        for variable in variableQuerySet:
+            if variable.name not in existingVariableNames:
+                uniqueVariableList.append(variable)
+                existingVariableNames.append(variable.name)
+        return uniqueVariableList
+    
+    def _reserveReservableVariables(self, variableList):
+        """
+        among all variables of the queryset, mark all variables as reserved (releaseDate not null) when the are flagged as reservable
+        Release will occur 15 mins after now
+        """
+        for variable in variableList:
+            if variable.reservable:
+                variable.releaseDate = datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(seconds=900)
+                variable.save()
+                
+        return variableList
 
     def get(self, request, *args, **kwargs):
         """
@@ -90,7 +117,8 @@ class VariableList(mixins.ListModelMixin,
         return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        response = self.create(request, *args, **kwargs)
+        return response
     
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
