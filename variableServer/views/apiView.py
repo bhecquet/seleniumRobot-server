@@ -18,6 +18,7 @@ from variableServer.models import Variable, TestEnvironment, Version, TestCase
 from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE, \
     updateVariables
 from variableServer.views.serializers import VariableSerializer
+from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 
 
 def ping(request):
@@ -80,7 +81,15 @@ class VariableList(mixins.ListModelMixin,
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=test))
         
+        variableNames = list(set([v.name for v in variables]))
+        
         uniqueVariableList = self._uniqueVariable(variables.filter(releaseDate=None))
+        
+        # check we still have all variables after filtering. Else test may fail
+        filteredVariableNames = list(set([v.name for v in uniqueVariableList]))
+        if (len(filteredVariableNames) < len(variableNames)):
+            raise AllVariableAlreadyReservedException()
+        
         return self._reserveReservableVariables(uniqueVariableList)
         
     def _uniqueVariable(self, variableQuerySet):
@@ -94,6 +103,11 @@ class VariableList(mixins.ListModelMixin,
                 uniqueVariableList.append(variable)
                 existingVariableNames.append(variable.name)
         return uniqueVariableList
+    
+    def _filterNotReservedVariables(self, variableList):
+        """
+        Remove all variables which are reserved
+        """
     
     def _reserveReservableVariables(self, variableList):
         """

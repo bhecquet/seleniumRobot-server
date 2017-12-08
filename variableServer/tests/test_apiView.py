@@ -78,16 +78,18 @@ class test_FileUploadView(django.test.TestCase):
         version = Version.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, version=version).save()
         Variable(name='var1', value='value1', application=version.application, version=version, releaseDate=datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(seconds=60)).save()
-        Variable(name='var2', value='value2', application=version.application, version=version, releaseDate=datetime.datetime.now(tz=timezone.utc) - datetime.timedelta(seconds=60)).save()
+        Variable(name='var1', value='value2', application=version.application, version=version, releaseDate=datetime.datetime.now(tz=timezone.utc) - datetime.timedelta(seconds=60)).save()
         
         response = self.client.get(reverse('variableApi'), data={'version': 3, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'var1']), "Only one value should be get")
+        
         allVariables = self._convertToDict(response.data)
         
         # check we only get variable where release date is before now and variables without release date
-        self.assertTrue('var2' in allVariables)                 # release date in the past, should be removed
-        self.assertIsNone(allVariables['var2']['releaseDate'])  # release date should be reset
-        self.assertFalse('var1' in allVariables)                # release date in the future  
+        self.assertTrue('var1' in allVariables)                 # release date in the past, should be removed
+        self.assertEquals("value2", allVariables['var1']['value'])
+        self.assertIsNone(allVariables['var1']['releaseDate'])  # release date should be reset 
         self.assertTrue('var0' in allVariables)                 # no release date
         
     def test_getVariablesOverrideGlobal(self):
@@ -278,7 +280,7 @@ class test_FileUploadView(django.test.TestCase):
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'dupVariable']), "Only one value should be get")
         
         allVariables = self._convertToDict(response.data)
-        self.assertEqual(None, allVariables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
+        self.assertIsNone(allVariables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
             
     def test_reserveVariable(self):
         """
@@ -289,7 +291,7 @@ class test_FileUploadView(django.test.TestCase):
       
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
         allVariables = self._convertToDict(response.data)
-        self.assertNotEqual(None, allVariables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        self.assertIsNotNone(allVariables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
         
     def test_reservableStateCorrection(self):
         version = Version.objects.get(pk=3)
@@ -301,6 +303,15 @@ class test_FileUploadView(django.test.TestCase):
         for v in Variable.objects.filter(name='var0'):
             self.assertFalse(v.reservable)
          
-        
-        
+     
+    def test_variableAlreadyReserved(self):
+        """
+        When variable cannot be reserved because all are alrealdy taken by other test, an error should be raised
+        """
+        # login variable is defined twice, reserve it 3 times
+        self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 423, 'status code should be 423: ' + str(response.content))
+      
         
