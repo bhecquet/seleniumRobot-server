@@ -13,10 +13,11 @@ deployment process:
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
     - mod_wsgi, same bitness as python
-- install python requirements
-- deploy files
-- database migration
-- create super user on first deploy
+- deploy files: unzip seleniumRobotServer.zip
+- install python requirements: pip install -r requirements.txt
+- database migration: python manage.py syncdb
+- database fix: python manage.py fix_permissions
+- create super user on first deploy ONLY: python manage.py createsuperuser
 """
 
 def getFileList():
