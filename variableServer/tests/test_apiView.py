@@ -100,6 +100,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -121,6 +122,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -142,6 +144,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -164,6 +167,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -187,6 +191,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -210,6 +215,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -233,6 +239,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -255,6 +262,7 @@ class test_FileUploadView(django.test.TestCase):
         - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
         - specific to tuple (application / environment)
         - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
         version = Version.objects.get(pk=3)
@@ -262,6 +270,30 @@ class test_FileUploadView(django.test.TestCase):
         test = TestCase.objects.get(pk=1)
         Variable(name='var0', value='value0', application=version.application, version=version, environment=env).save()
         Variable(name='var0', value='value1', application=version.application, version=version, environment=env, test=test).save()
+        
+        response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        allVariables = self._convertToDict(response.data)
+        
+        # check overriding of variables
+        self.assertEqual(allVariables['var0']['value'], 'value1')
+            
+    def test_getVariablesOverrideAppEnvTest(self):
+        """
+        Check that application/version/env specific variables are overriden by application/env/test specific
+        Order is (bottom take precedence):
+        - global (no app, no env, no version, no test)
+        - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
+        - specific to tuple (application / environment)
+        - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
+        - specific to tuple (application / version / environment / test)
+        """
+        version = Version.objects.get(pk=3)
+        env = TestEnvironment.objects.get(pk=3)
+        test = TestCase.objects.get(pk=1)
+        Variable(name='var0', value='value0', application=version.application, version=version, environment=env).save()
+        Variable(name='var0', value='value1', application=version.application, environment=env, test=test).save()
         
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))

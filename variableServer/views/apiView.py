@@ -69,15 +69,27 @@ class VariableList(mixins.ListModelMixin,
         else:
             genericEnvironment = environment
         
+        # environment specific variables
         variables = updateVariables(variables, Variable.objects.filter(application=None, version=None, test=None, environment=genericEnvironment))
         variables = updateVariables(variables, Variable.objects.filter(application=None, version=None, test=None, environment=environment))
+        
+        # application / test specific variables
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=None, test=test))
         
         # more precise variables
+        # application / environment specific variables
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=genericEnvironment, test=None))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=environment, test=None))
+        
+        # application / version/ environment specific variables
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=None))
+        
+        # application / environment / test specific variables
+        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
+        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=environment, test=test))
+        
+        # application / version / environment / test specific variables
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
         variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=test))
         
