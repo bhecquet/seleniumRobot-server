@@ -42,16 +42,21 @@ class VariableList(mixins.ListModelMixin,
 
         """
         versionId = self.request.query_params.get('version', None)
+        environmentId = self.request.query_params.get('environment', None)
+        testId = self.request.query_params.get('test', None)
+        
+        # return all variables if no filter is provided
+        if not (versionId or environmentId or testId):
+            return Variable.objects.all()
+        
         if not versionId:
             raise ValidationError("version parameter is mandatory")
         version = get_object_or_404(Version, pk=versionId)
         
-        environmentId = self.request.query_params.get('environment', None)
         if not environmentId:
             raise ValidationError("environment parameter is mandatory")
         environment = get_object_or_404(TestEnvironment, pk=environmentId)
         
-        testId = self.request.query_params.get('test', None)
         if not testId:
             raise ValidationError("test parameter is mandatory")
         test = get_object_or_404(TestCase, pk=testId)
@@ -148,5 +153,8 @@ class VariableList(mixins.ListModelMixin,
     
     def delete(self, request, *args, **kwargs):
         return self.destroy(request, *args, **kwargs)
+    
+    def patch(self, request, *args, **kwargs):
+        return self.partial_update(request, *args, **kwargs)
     
     

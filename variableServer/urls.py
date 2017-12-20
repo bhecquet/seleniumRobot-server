@@ -6,6 +6,7 @@ from variableServer.views import varActionView, apiView
 from variableServer.views.apiView import VariableList
 
 urlpatterns = [
+    url(r'^api/variable/(?P<pk>[0-9]+)/$', VariableList.as_view(), name='variableApiPut'),
     url(r'^api/variable', VariableList.as_view(), name='variableApi'),
     url(r'^api', apiView.ping, name='variablePing'),
     
