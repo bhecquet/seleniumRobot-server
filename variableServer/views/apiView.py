@@ -44,10 +44,10 @@ class VariableList(mixins.ListModelMixin,
         versionId = self.request.query_params.get('version', None)
         environmentId = self.request.query_params.get('environment', None)
         testId = self.request.query_params.get('test', None)
-        
+         
         # return all variables if no filter is provided
-        if not (versionId or environmentId or testId):
-            return Variable.objects.all()
+        if 'pk' in self.kwargs:
+            return Variable.objects.filter(pk=self.kwargs['pk'])
         
         if not versionId:
             raise ValidationError("version parameter is mandatory")
