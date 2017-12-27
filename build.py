@@ -15,7 +15,7 @@ deployment process:
     - mod_wsgi, same bitness as python
 - deploy files: unzip seleniumRobotServer.zip
 - install python requirements: pip install -r requirements.txt
-- database migration: python manage.py syncdb
+- database migration: python manage.py migrate
 - database fix: python manage.py fix_permissions
 - create super user on first deploy ONLY: python manage.py createsuperuser
 """
