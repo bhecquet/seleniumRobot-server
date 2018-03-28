@@ -20,7 +20,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '=y2v$6)efr14kk4#n@jl3avrtklc*#l_c%0bffu21k%d6w&89m'
+SECRET_KEY = '${secret.key}'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'django_nose',
+    'django_python3_ldap',
 ]
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
@@ -81,6 +82,8 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = ("django_python3_ldap.auth.LDAPBackend",)
 
 WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 
@@ -208,6 +211,10 @@ LOGGING = {
         'py.warnings': {
             'handlers': ['console','development_logfile'],
         },
+        "django_python3_ldap": {
+            "handlers": ["console"],
+            "level": "INFO",
+        },
     }
 }
 
@@ -215,4 +222,29 @@ LOGGING = {
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
 
+# https://github.com/etianen/django-python3-ldap
+# The URL of the LDAP server.
+LDAP_AUTH_URL = "${ldap.url}"
 
+# The LDAP search base for looking up users.
+LDAP_AUTH_SEARCH_BASE = "${ldap.base}"
+
+# The LDAP class that represents a user.
+LDAP_AUTH_OBJECT_CLASS = "${ldap.object.class}"
+
+# A tuple of django model fields used to uniquely identify a user.
+LDAP_AUTH_USER_LOOKUP_FIELDS = ("username",)
+
+# Path to a callable that takes a dict of {model_field_name: value}, and returns
+# a string of the username to bind to the LDAP server.
+# Use this to support different types of LDAP server.
+LDAP_AUTH_FORMAT_USERNAME = "django_python3_ldap.utils.format_username_active_directory"
+
+# Sets the login domain for Active Directory users.
+LDAP_AUTH_ACTIVE_DIRECTORY_DOMAIN = "${ldap.domain}"
+
+# The LDAP username and password of a user for querying the LDAP database for user
+# details. If None, then the authenticated user will be used for querying, and
+# the `ldap_sync_users` command will perform an anonymous query.
+LDAP_AUTH_CONNECTION_USERNAME = "${ldap.user}"
+LDAP_AUTH_CONNECTION_PASSWORD = "${ldap.password}"
