@@ -1,0 +1,7 @@
+*.pyc
+*.pyo
+__pycache__/
+dist/
+static/
+/seleniumrobot-server.zip
+/db.sqlite3

@@ -1,9 +1,11 @@
-from django.contrib import admin
+from django.contrib import admin, messages
+from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django import forms
 from variableServer.models import Variable, TestCase, Application, Version
 from django.template.context_processors import csrf
 from django.shortcuts import render_to_response
 from variableServer.models import TestEnvironment
+from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
 
 def isUserAuthorized(user):
     """
@@ -19,6 +21,58 @@ def isUserAuthorized(user):
         return True
     else:
         return False
+    
+class BaseServerModelAdmin(admin.ModelAdmin):
+    """
+    Base class to restrict access to application objects the user has rights to see
+    
+    TODO: unit tests not created!!!
+    """
+    
+    def _has_app_permission(self, global_permission, request, obj=None):
+        """
+        Whether user has rights on this application
+        """
+        if not FLAG_RESTRICT_APP:
+            return global_permission
+        
+        if global_permission and request.method == 'POST' and request.POST.get('application'):
+            application = Application.objects.get(pk=int(request.POST['application']))
+            if not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+                return False
+            
+        elif global_permission and obj and obj.application and not request.user.has_perm('commonsServer.can_view_application_' + obj.application.name):
+            return False
+            
+        return global_permission
+    
+    def has_add_permission(self, request):
+        """
+        Returns True if the given request has permission to add an object.
+        """
+        perm = super(BaseServerModelAdmin, self).has_add_permission(request)
+
+        return perm and self._has_app_permission(perm, request)
+
+    def has_change_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+        """
+        perm = super(BaseServerModelAdmin, self).has_change_permission(request, obj)
+        
+        return perm and self._has_app_permission(perm, request, obj)
+
+    def has_delete_permission(self, request, obj=None):
+        """
+        Returns True if the given request has permission to change the given
+        Django model instance, the default implementation doesn't examine the
+        `obj` parameter.
+        """
+        perm = super(BaseServerModelAdmin, self).has_change_permission(request, obj)
+                
+        return perm and self._has_app_permission(perm, request, obj)
 
 class VariableForm(forms.ModelForm):
 
@@ -65,19 +119,34 @@ class VariableForm2(forms.ModelForm):
         model = Variable
         fields = ['application', 'version', 'environment', 'test']
 
-class VariableAdmin(admin.ModelAdmin):
+class VariableAdmin(BaseServerModelAdmin): 
     list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'test', 'releaseDate')
     list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'test', 'releaseDate')
     list_filter = ('application', 'version', 'environment', 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
-    actions = ['copyTo', 'changeValuesAtOnce', 'unreserveVariable']
+    actions = ['delete_selected', 'copyTo', 'changeValuesAtOnce', 'unreserveVariable']
     
     def get_list_display(self, request):
         if isUserAuthorized(request.user):
             return self.list_display
         else:
             return self.list_display_protected
+        
+    def get_queryset(self, request):
+        """
+        Filter the returned variables with the application user is allowed to see
+        """
+        qs = super(VariableAdmin, self).get_queryset(request)
+        
+        if not FLAG_RESTRICT_APP:
+            return qs
+         
+        for application in Application.objects.all():
+            if not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+                qs = qs.exclude(application__name=application.name)
+                 
+        return qs
 
     def save_model(self, request, obj, form, change):
         """
@@ -165,6 +234,21 @@ class VariableAdmin(admin.ModelAdmin):
         return render_to_response("variableServer/admin/changeTo.html", args)
     changeValuesAtOnce.short_description = 'modifier les variables'
     
+    def delete_selected(self, request, queryset):
+        """
+        Same name as the method we override as we use it. Else django complains about an action that does not exists
+        """
+        
+        if FLAG_RESTRICT_APP:
+            # prevent deleting objects we do not have right for
+            for application in Application.objects.all():
+                if queryset.filter(application__name=application.name) and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+                    queryset = queryset.exclude(application__name=application.name)
+                    self.message_user(request, "You do not have right to delete variables from application %s" % (application.name,), level=messages.ERROR)
+      
+        return django_delete_selected(self, request, queryset)
+    delete_selected.short_description = 'supprimer les variables'
+    
     def unreserveVariable(self, request, queryset):
         """
         action permettant de déreserver les variables (enlever l'information de releaseDate)
@@ -188,6 +272,7 @@ class EnvironmentForm(forms.ModelForm):
 class EnvironmentAdmin(admin.ModelAdmin):
     list_filter = ('genericEnvironment', )
     list_display = ('name', 'genericEnvironment')
+    actions = ['delete_selected']
     form = EnvironmentForm
     
     
@@ -196,14 +281,30 @@ class TestCaseForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(TestCaseForm, self).__init__(*args, **kwargs)
 
-class TestCaseAdmin(admin.ModelAdmin):
+class TestCaseAdmin(BaseServerModelAdmin): 
     list_display = ('name', 'application')
     list_filter = ('application',)
     form = TestCaseForm
+    actions = ['delete_selected']
+
+    def get_queryset(self, request):
+        """
+        Filter the returned versions with the application user is allowed to see
+        """
+        qs = super(TestCaseAdmin, self).get_queryset(request)
+        
+        if not FLAG_RESTRICT_APP:
+            return qs
+         
+        for application in Application.objects.all():
+            if not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+                qs = qs.exclude(application__name=application.name)
+                 
+        return qs  
     
 class ApplicationAdmin(admin.ModelAdmin):
     list_display = ('name', )
-    
+
     # deactivate all actions so that deleting an application must be done from detailed view
     actions = None
     
@@ -244,7 +345,7 @@ class VersionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(VersionForm, self).__init__(*args, **kwargs)
         
-class VersionAdmin(admin.ModelAdmin):
+class VersionAdmin(BaseServerModelAdmin): 
     list_display = ('name', 'application')
     list_filter = ('application',)
     form = VersionForm
@@ -285,9 +386,25 @@ class VersionAdmin(admin.ModelAdmin):
         if len(Variable.objects.filter(version=obj)):
             return False
         else:
-            return True and canDelete    
+            return True and canDelete  
+        
+    def get_queryset(self, request):
+        """
+        Filter the returned versions with the application user is allowed to see
+        """
+        qs = super(VersionAdmin, self).get_queryset(request)
+        
+        if not FLAG_RESTRICT_APP:
+            return qs
+         
+        for application in Application.objects.all():
+            if not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+                qs = qs.exclude(application__name=application.name)
+                 
+        return qs  
 
 # Register your models here.
+admin.site.disable_action('delete_selected')
 admin.site.register(Application, ApplicationAdmin)
 admin.site.register(TestCase, TestCaseAdmin)
 admin.site.register(Version, VersionAdmin)

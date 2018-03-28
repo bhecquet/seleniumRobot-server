@@ -7,6 +7,8 @@ from django.http.response import HttpResponseRedirect
 from django.contrib import admin, messages
 from snapshotServer.models import Version, TestEnvironment, Application,\
     TestCase
+from variableServer.exceptions.VariableSetException import VariableSetException
+from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
 
 def copyVariables(request):
     """
@@ -38,6 +40,11 @@ def copyVariables(request):
     # init message   
     from variableServer.admin import VariableAdmin 
     varAdmin = VariableAdmin(Variable, admin.site)
+    
+    if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+        varAdmin.message_user(request, "You don't have right to copy variable to application %s" % (application.name,), level=messages.ERROR)
+        return HttpResponseRedirect(request.POST['nexturl'])
+
    
     # copy content of each variable in a new variable
     for variableId in variableIds:
@@ -91,11 +98,18 @@ def changeVariables(request):
     # init message     
     from variableServer.admin import VariableAdmin
     varAdmin = VariableAdmin(Variable, admin.site)
+    
+    if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
+        varAdmin.message_user(request, "You don't have right to update variable to application %s" % (application.name,), level=messages.ERROR)
+        return HttpResponseRedirect(request.POST['nexturl'])
    
     # update each variable with the new parameters
     for variableId in variableIds:
         try:
             variable = Variable.objects.get(id=variableId)
+            
+            if FLAG_RESTRICT_APP and variable.application and not request.user.has_perm('commonsServer.can_view_application_' + variable.application.name):
+                raise VariableSetException("No right to change variable belonging to application %s" % variable.application.name)
             
             variable.application = application
             variable.version = version

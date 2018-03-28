@@ -4,6 +4,7 @@ Created on 8 dec. 2017
 
 @author: S047432
 '''
+from commonsServer.models import Application
 
 """Add permissions for proxy model.
 This is needed because of the bug https://code.djangoproject.com/ticket/11154
@@ -42,3 +43,12 @@ class Command(BaseCommand):
                     defaults={'name': name})
                 if created:
                     sys.stdout.write('Adding permission {}\n'.format(p))
+
+        # add application specific rights
+        for app in Application.objects.all():
+            content_type = ContentType.objects.get_for_model(Application)
+            Permission.objects.get_or_create(
+                codename=Application.appPermissionCode + app.name,
+                name='Can view application and related variables and versions for ' + app.name,
+                content_type=content_type,
+                )

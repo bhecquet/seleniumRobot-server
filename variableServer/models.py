@@ -13,7 +13,7 @@ class Application(commonsServer.models.Application):
     class Meta:
         default_permissions = ('add', 'change', 'delete')
         proxy = True
-
+        
 class Version(commonsServer.models.Version):
     class Meta:
         proxy = True

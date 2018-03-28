@@ -1,11 +1,31 @@
-from django.db import models
 from distutils.version import LooseVersion
 
+from django.contrib.contenttypes.models import ContentType
+from django.db import models
+from django.contrib.auth.models import Permission
+
+
 class Application(models.Model):
+    
+    appPermissionCode = 'can_view_application_'
+
     name = models.CharField(max_length=50)
     
     def __str__(self):
         return self.name
+     
+    def save(self, *args, **kwargs):
+        super(Application, self).save(*args, **kwargs)
+        content_type = ContentType.objects.get_for_model(Application)
+        Permission.objects.create(
+            codename=Application.appPermissionCode + self.name,
+            name='Can view application and related variables and versions for ' + self.name,
+            content_type=content_type,
+            )
+        
+    def delete(self, *args, **kwargs):
+        super(Application, self).delete(*args, **kwargs)
+        Permission.objects.get(codename=Application.appPermissionCode + self.name).delete()
     
 class Version(models.Model):
     application = models.ForeignKey(Application, related_name='version')
