@@ -14,11 +14,20 @@ For now, build is done through the python script `build.py`. Ite generates a zip
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
     - mod_wsgi, same bitness as python
+- install Postgre database (if not using a centralized database or SQLite)
 - deploy files: unzip seleniumRobotServer.zip
 - install python requirements: `pip install -r requirements.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
-- create super user on first deploy **ONLY**: `python manage.py createsuperuser`
+- create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
+
+
+# Configuration # 
+
+- change settings accordingly into settings.py (replace `${var}` variables)
+- to use AD/LDAP authentication, uncomment `AUTHENTICATION_BACKENDS = ("django_python3_ldap.auth.LDAPBackend",)` and configure LDAP values
+- to use SQLite instead of Postgre: comment the right default database in `DATABASES`
+
 
 # Usage #
 

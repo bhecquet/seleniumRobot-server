@@ -16,3 +16,4 @@ six==1.10.0
 django-nose==1.4.4
 coverage==4.4
 django-python3-ldap==0.11.1
+psycopg2==2.7.4
