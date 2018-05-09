@@ -9,12 +9,40 @@ Features:
 For now, build is done through the python script `build.py`. Ite generates a zip file which you only need to unzip
 
 # Installation #
-- python install
+- python3 install
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
     - mod_wsgi, same bitness as python
+- configure Apache server with
+
+	LoadFile "<path_to_python_dll>"
+	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp36-win32.pyd"
+	WSGIPythonHome "<python_dir>"
+	
+	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
+	WSGIPythonPath <path_to_selenium_server>
+	
+	<Directory "<path_to_selenium_server>/seleniumRobotServer">
+	<Files wsgi.py>
+	Require all granted 	
+	</Files>
+	</Directory>
+	
+	Alias /media/ <path_to_selenium_server>/media/
+	Alias /static/ <path_to_selenium_server>/static/
+	
+	<Directory "<path_to_selenium_server>/static">
+	Require all granted
+	</Directory>
+	
+	<Directory "<path_to_selenium_server>/media">
+	Require all granted
+	</Directory>
+	
+	
 - install Postgre database (if not using a centralized database or SQLite)
+- for linux (RHE7 here), install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`
 - deploy files: unzip seleniumRobotServer.zip
 - install python requirements: `pip install -r requirements.txt` 
 - database migration: `python manage.py migrate`
