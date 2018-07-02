@@ -41,6 +41,35 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	</Directory>
 	
 	
+for linux (RHE7)
+
+	LoadFile "/opt/rh/rh-python34/root/lib64/libpython3.so.rh-python34"
+	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python34-wsgi.so"
+	WSGIPythonHome "/opt/selenium-server/venv"
+	
+	WSGIScriptAlias / /opt/selenium-server/seleniumRobotServer/wsgi.py
+	WSGIPythonPath /opt/selenium-server/venv/lib/python3.4/site-packages/:/opt/selenium-server
+	
+	<Directory "/opt/selenium-server/seleniumRobotServer">
+	<Files wsgi.py>
+	Require all granted
+	</Files>
+	</Directory>
+	
+	Alias /media/ /opt/selenium-server/media/
+	Alias /static/ /opt/selenium-server/static/
+	
+	<Directory "/opt/selenium-server/static">
+	Require all granted
+	</Directory>
+	
+	<Directory "/opt/selenium-server/media">
+	Require all granted
+	</Directory>
+	
+	
+	
+	
 - install Postgre database (if not using a centralized database or SQLite)
 - for linux (RHE7 here), install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`
 - deploy files: unzip seleniumRobotServer.zip

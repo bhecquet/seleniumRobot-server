@@ -1,5 +1,4 @@
 from django.db import models
-from snapshotServer.models import TestCase
 import commonsServer
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.management import _get_all_permissions

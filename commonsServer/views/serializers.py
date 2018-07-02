@@ -6,7 +6,7 @@ Created on 25 janv. 2017
 
 from rest_framework import serializers
 
-from snapshotServer.models import Application, TestEnvironment, Version, TestCase
+from commonsServer.models import Application, TestEnvironment, Version, TestCase
 
 class ApplicationSerializer(serializers.ModelSerializer):
     class Meta:

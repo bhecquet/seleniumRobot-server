@@ -5,7 +5,7 @@ Created on 4 mai 2017
 '''
 
 from rest_framework import viewsets
-from snapshotServer.models import Application, TestEnvironment, \
+from commonsServer.models import Application, TestEnvironment, \
     TestCase, Version
 from django.db.models.aggregates import Count
 from commonsServer.views.serializers import ApplicationSerializer,\

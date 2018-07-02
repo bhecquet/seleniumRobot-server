@@ -5,7 +5,7 @@
 from variableServer.models import Variable
 from django.http.response import HttpResponseRedirect
 from django.contrib import admin, messages
-from snapshotServer.models import Version, TestEnvironment, Application,\
+from variableServer.models import Version, TestEnvironment, Application,\
     TestCase
 from variableServer.exceptions.VariableSetException import VariableSetException
 from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
