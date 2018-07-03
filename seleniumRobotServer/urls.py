@@ -20,10 +20,12 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    url(r'^snapshot/', include('snapshotServer.urls')),
+    #url(r'^snapshot/', include('snapshotServer.urls')),
     url(r'^variable/', include('variableServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
     
     # add media directory
-    *static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT),
-]
+] +   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+if ('snapshotServer.app.SnapshotServerConfig' in settings.INSTALLED_APPS):
+    urlpatterns.append(url(r'^snapshot/', include('snapshotServer.urls')))

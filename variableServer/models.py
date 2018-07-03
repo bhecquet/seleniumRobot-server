@@ -1,5 +1,6 @@
 from django.db import models
 import commonsServer
+from commonsServer.models import TestEnvironment as TE
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.management import _get_all_permissions
 from django.contrib.auth.models import Permission
