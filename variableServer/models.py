@@ -4,6 +4,8 @@ from commonsServer.models import TestEnvironment as TE
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.management import _get_all_permissions
 from django.contrib.auth.models import Permission
+import datetime
+from django.utils import timezone
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -73,4 +75,7 @@ class Variable(models.Model):
     internal = models.BooleanField(default=False)
     protected = models.BooleanField(default=False)
     description = models.CharField(max_length=500, default="", null=True)
+    creationDate = models.DateTimeField(default=timezone.now)
+    destroyAfterDays = models.IntegerField(default=-1)
+    
     

@@ -53,6 +53,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 1
     
@@ -68,6 +69,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 101
     
@@ -83,6 +85,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 2
     
@@ -98,6 +101,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 201
 
@@ -114,6 +118,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 202
     
@@ -129,6 +134,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 3
     
@@ -144,6 +150,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 301
         
@@ -159,6 +166,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 4
         
@@ -174,6 +182,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 401
         
@@ -189,6 +198,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 5
         
@@ -204,6 +214,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 6
         
@@ -219,6 +230,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 7
            
@@ -234,6 +246,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 8
     
@@ -250,6 +263,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 9
     
@@ -265,6 +279,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 10
 -   fields: 
@@ -278,6 +293,7 @@
         protected: false
         releaseDate: null
         description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 11
     
@@ -294,6 +310,7 @@
         releaseDate: null
         description: null
         reservable: true
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 12
 -   fields: 
@@ -308,6 +325,7 @@
         releaseDate: null
         description: null
         reservable: true
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 13
     

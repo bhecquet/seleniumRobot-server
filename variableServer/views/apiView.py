@@ -3,7 +3,6 @@ Created on 15 sept. 2017
 
 @author: s047432
 '''
-from datetime import timezone
 import datetime
 import time
 
@@ -19,6 +18,7 @@ from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE, \
     updateVariables
 from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
+from django.utils import timezone
 
 
 def ping(request):
@@ -36,6 +36,13 @@ class VariableList(mixins.ListModelMixin,
             var.releaseDate = None
             var.save()
         
+    def _deleteOldVariables(self):
+        """
+        Delete variables which contains a positive value for 'destroyAfterDays' and which are still whereas they expired
+        """
+        for var in Variable.objects.filter(destroyAfterDays__gt=0):
+            if timezone.now() - datetime.timedelta(var.destroyAfterDays) > var.creationDate:
+                var.delete()
     
     def get_queryset(self):
         """
@@ -44,6 +51,7 @@ class VariableList(mixins.ListModelMixin,
         versionId = self.request.query_params.get('version', None)
         environmentId = self.request.query_params.get('environment', None)
         testId = self.request.query_params.get('test', None)
+        olderThan = int(self.request.query_params.get('olderThan', '0'))
          
         # return all variables if no filter is provided
         if 'pk' in self.kwargs:
@@ -61,11 +69,13 @@ class VariableList(mixins.ListModelMixin,
             raise ValidationError("test parameter is mandatory")
         test = get_object_or_404(TestCase, pk=testId)
         
-        variables = Variable.objects.filter(application=None, version=None, environment=None, test=None)
+        allVariables = Variable.objects.filter(destroyAfterDays__lte=0) | Variable.objects.filter(destroyAfterDays__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
+        
+        variables = allVariables.filter(application=None, version=None, environment=None, test=None)
         
         # variables specific to one of the parameters, the other remain null
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=None, test=None))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=None, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=None, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=None, test=None))
         
         # for each queryset depending on environment, we will first get the generic environment related variable and then update them
         # with the specific environment ones
@@ -75,28 +85,28 @@ class VariableList(mixins.ListModelMixin,
             genericEnvironment = environment
         
         # environment specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=None, version=None, test=None, environment=genericEnvironment))
-        variables = updateVariables(variables, Variable.objects.filter(application=None, version=None, test=None, environment=environment))
+        variables = updateVariables(variables, allVariables.filter(application=None, version=None, test=None, environment=genericEnvironment))
+        variables = updateVariables(variables, allVariables.filter(application=None, version=None, test=None, environment=environment))
         
         # application / test specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=None, test=test))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=None, test=test))
         
         # more precise variables
         # application / environment specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=genericEnvironment, test=None))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=environment, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=None))
         
         # application / version/ environment specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=None))
         
         # application / environment / test specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=None, environment=environment, test=test))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=test))
         
         # application / version / environment / test specific variables
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
-        variables = updateVariables(variables, Variable.objects.filter(application=version.application, version=version, environment=environment, test=test))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
+        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=test))
         
         variableNames = list(set([v.name for v in variables]))
         
@@ -133,7 +143,7 @@ class VariableList(mixins.ListModelMixin,
         """
         for variable in variableList:
             if variable.reservable:
-                variable.releaseDate = datetime.datetime.now(tz=timezone.utc) + datetime.timedelta(seconds=900)
+                variable.releaseDate = timezone.now() + datetime.timedelta(seconds=900)
                 variable.save()
                 
         return variableList
@@ -144,6 +154,9 @@ class VariableList(mixins.ListModelMixin,
         """
         # reset 
         self._resetPastReleaseDates()
+        
+        # remove old variables
+        self._deleteOldVariables()
         
         return self.list(request, *args, **kwargs)
 
