@@ -48,6 +48,7 @@ INSTALLED_APPS = [
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
+    '--with-xunit',
     '--cover-package=snapshotServer',
     '--cover-branches',
     '--cover-inclusive',
@@ -158,6 +159,7 @@ REST_FRAMEWORK = {
     ]
 }
 
+os.makedirs(os.path.join(BASE_DIR, 'log'), exist_ok=True)
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': True,

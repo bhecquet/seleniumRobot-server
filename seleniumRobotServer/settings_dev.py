@@ -45,9 +45,10 @@ INSTALLED_APPS = [
     'django_python3_ldap',
 ]
 
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
+    '--with-xunit',
     '--cover-package=snapshotServer',
     '--cover-branches',
     '--cover-inclusive',
