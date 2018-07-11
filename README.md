@@ -159,9 +159,44 @@ Usage is the same for all API (example for version)
 
 ### variables ###
 
+#### get all variables ####
+
 To get variables from server: `http://<server>:<port>/variable/api/variable?version=7&environment=1&test=8&format=json`
 
 Ids can be found through user interface. 
 
 `format=json` is mandatory so that getting variable list is not done twice, thus reserving variables twice
+
+#### create variable ####
+
+	POST http://<server>:<port>/variable/api/variable?name=<name>&value=<value>&reservable=<true_or_false>&environment=<env_id>&application=<app_id>&internal=<true_or_false>&destroyAfterDays=<time_to_live_in_days>
+	
+- `name`: name of the variable
+- `value`: value assigned to variable
+- `reservable`: (optional) if true, variable will be reserved by server when getting the list. This means that during 15 minutes, it won't be usable for other test if not released
+- `destroyAfterDays`: (optional) if value is greater than 0, variable will be destroyed after N days
+- `environment`: (optional) id of the environment this variable is assigned to
+- `application`: (optional) id of the application this variable is assigned to
+- `version`: (optional) id of the version this variable is assigned to
+- `test`: (optional) id of the test case this variable is assigned to
+- `internal`: (optional) true or false. If true, indicates that this variable has been created by test scenarios for reuse only. These are not test datav
+#### get only old variable ####
+
+It's possible to get variables older than X days using olderThan parameter:
+
+	GET http://<server>:<port>/variable/api/variable?version=7&environment=1&test=8&olderThan=2&format=json
+
+This is useful when robot creates variables during a test, for reuse in an other one and created variable cannot be used directly. Concrete case:
+
+- you create a user
+- store this user id in variable server, but your application won't allow you to consult this user immediately (e.g: it needs some batch to be fully integrated in database)
+- have a test that needs a valid user, created some days before
+
+#### destroy temp variables automatically ####
+
+When test creates variables, it may be useful to destroy these variables after some time to avoid a database growth.
+You can set a time to live to a variable using the `destroyAfterDays` parameterng  
+
+	
+
 
