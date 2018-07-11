@@ -169,7 +169,7 @@ Ids can be found through user interface.
 
 #### create variable ####
 
-	POST http://<server>:<port>/variable/api/variable?name=<name>&value=<value>&reservable=<true_or_false>&environment=<env_id>&application=<app_id>&internal=<true_or_false>&destroyAfterDays=<time_to_live_in_days>
+	POST http://<server>:<port>/variable/api/variable?name=<name>&value=<value>&reservable=<true_or_false>&environment=<env_id>&application=<app_id>&internal=<true_or_false>&timeToLive=<time_to_live_in_days>
 	
 - `name`: name of the variable
 - `value`: value assigned to variable
