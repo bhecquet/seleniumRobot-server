@@ -76,6 +76,6 @@ class Variable(models.Model):
     protected = models.BooleanField(default=False)
     description = models.CharField(max_length=500, default="", null=True)
     creationDate = models.DateTimeField(default=timezone.now)
-    destroyAfterDays = models.IntegerField(default=-1)
+    timeToLive = models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever")
     
     

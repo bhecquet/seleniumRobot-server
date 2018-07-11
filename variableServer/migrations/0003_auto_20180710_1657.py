@@ -24,8 +24,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='variable',
-            name='destroyAfterDays',
-            field=models.IntegerField(default=-1),
+            name='timeToLive',
+            field=models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever"),
         ),
         migrations.AlterField(
             model_name='variable',

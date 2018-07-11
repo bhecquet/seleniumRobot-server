@@ -357,7 +357,7 @@ class test_FileUploadView(django.test.TestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(2), 
-                 destroyAfterDays=1).save()
+                 timeToLive=1).save()
          
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
          
@@ -376,7 +376,7 @@ class test_FileUploadView(django.test.TestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(1), 
-                 destroyAfterDays=1).save()
+                 timeToLive=1).save()
          
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
          
@@ -395,10 +395,10 @@ class test_FileUploadView(django.test.TestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(2), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(1), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
           
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 1})
           
@@ -418,10 +418,10 @@ class test_FileUploadView(django.test.TestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(2), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(1), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
  
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
           
@@ -442,10 +442,10 @@ class test_FileUploadView(django.test.TestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
                  creationDate=timezone.now(), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
                  creationDate=datetime.datetime.now() - datetime.timedelta(1), 
-                 destroyAfterDays=5).save()
+                 timeToLive=5).save()
 
         time.sleep(0.5) # wait so that comparing variable time is not a problem
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 0})

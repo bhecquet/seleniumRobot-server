@@ -174,7 +174,7 @@ Ids can be found through user interface.
 - `name`: name of the variable
 - `value`: value assigned to variable
 - `reservable`: (optional) if true, variable will be reserved by server when getting the list. This means that during 15 minutes, it won't be usable for other test if not released
-- `destroyAfterDays`: (optional) if value is greater than 0, variable will be destroyed after N days
+- `timeToLive`: (optional) if value is greater than 0, variable will be destroyed after N days
 - `environment`: (optional) id of the environment this variable is assigned to
 - `application`: (optional) id of the application this variable is assigned to
 - `version`: (optional) id of the version this variable is assigned to

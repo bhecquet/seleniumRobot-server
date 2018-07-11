@@ -38,10 +38,10 @@ class VariableList(mixins.ListModelMixin,
         
     def _deleteOldVariables(self):
         """
-        Delete variables which contains a positive value for 'destroyAfterDays' and which are still whereas they expired
+        Delete variables which contains a positive value for 'timeToLive' and which are still whereas they expired
         """
-        for var in Variable.objects.filter(destroyAfterDays__gt=0):
-            if timezone.now() - datetime.timedelta(var.destroyAfterDays) > var.creationDate:
+        for var in Variable.objects.filter(timeToLive__gt=0):
+            if timezone.now() - datetime.timedelta(var.timeToLive) > var.creationDate:
                 var.delete()
     
     def get_queryset(self):
@@ -69,7 +69,7 @@ class VariableList(mixins.ListModelMixin,
             raise ValidationError("test parameter is mandatory")
         test = get_object_or_404(TestCase, pk=testId)
         
-        allVariables = Variable.objects.filter(destroyAfterDays__lte=0) | Variable.objects.filter(destroyAfterDays__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
+        allVariables = Variable.objects.filter(timeToLive__lte=0) | Variable.objects.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
         
         variables = allVariables.filter(application=None, version=None, environment=None, test=None)
         
