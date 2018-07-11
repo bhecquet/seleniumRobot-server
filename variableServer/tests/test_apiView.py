@@ -435,7 +435,7 @@ class test_FileUploadView(django.test.TestCase):
 
     def test_returnAllVariablesIfOlderThan0Days(self):
         """
-        Check that we get all variables if 'olderThan' param is not provided
+        Check that we get all variables if 'olderThan' param is 0
         """
          
         version = Version.objects.get(pk=2)
@@ -449,6 +449,31 @@ class test_FileUploadView(django.test.TestCase):
 
         time.sleep(0.5) # wait so that comparing variable time is not a problem
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 0})
+         
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+         
+        allVariables = self._convertToDict(response.data)
+         
+        self.assertIn('oldVar', allVariables, "oldVar should be get as it's older than requested")
+        self.assertIn('oldVar2', allVariables, "oldVar2 should not be get as it's younger than requested")
+        
+
+    def test_returnAllVariablesIfOlderThanNegativeDays(self):
+        """
+        Check that we get all variables if 'olderThan' param is negative
+        """
+         
+        version = Version.objects.get(pk=2)
+        env = TestEnvironment.objects.get(pk=3)
+        Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
+                 creationDate=timezone.now(), 
+                 timeToLive=5).save()
+        Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
+                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 timeToLive=5).save()
+
+        time.sleep(0.5) # wait so that comparing variable time is not a problem
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': -1})
          
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
          
