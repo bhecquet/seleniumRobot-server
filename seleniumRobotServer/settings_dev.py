@@ -50,6 +50,7 @@ NOSE_ARGS = [
     '--with-coverage',
     '--with-xunit',
     '--cover-package=snapshotServer',
+    '--cover-package=variableServer',
     '--cover-branches',
     '--cover-inclusive',
     '--cover-erase',
