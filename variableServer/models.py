@@ -77,5 +77,5 @@ class Variable(models.Model):
     description = models.CharField(max_length=500, default="", null=True)
     creationDate = models.DateTimeField(default=timezone.now)
     timeToLive = models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever")
-    
+    # When adding a field, don't forget to add it in serializers.py
     
