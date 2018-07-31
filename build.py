@@ -35,7 +35,7 @@ def getFileList():
                                                     )]
         
         for fileName in fileList:
-            if os.path.splitext(fileName)[1].lower() in [".py", ".md", ".txt", ".yaml", ".css", ".js", ".png", ".jpg", ".html", "svg"]:
+            if os.path.splitext(fileName)[1].lower() in [".py", ".md", ".txt", ".yaml", ".css", ".js", ".png", ".jpg", ".html", ".svg", ".woff"]:
                 distFileList.append(dirName + os.sep + fileName)
                 
     return distFileList
