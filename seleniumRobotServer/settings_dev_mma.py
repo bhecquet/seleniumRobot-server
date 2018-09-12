@@ -8,13 +8,8 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
-
-/!\ THIS FILE aims at being processed by a tool which will replace all variables ('${var}')
-    by their values
 """
-
-
-
+# Login/ mdp: admin / adminServer
 import os
 from django_auth_ldap.config import LDAPSearch
 import ldap
@@ -27,10 +22,10 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '${django.secret.key}'
+SECRET_KEY = '=y2v$6)efr14kk4#n@jl3avrtklc*#l_c%0bffu21k%d6w&89m'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
@@ -45,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'snapshotServer.app.SnapshotServerConfig',
+#     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'django_nose',
@@ -57,6 +52,7 @@ NOSE_ARGS = [
     '--with-coverage',
     '--with-xunit',
     '--cover-package=snapshotServer',
+    '--cover-package=variableServer',
     '--cover-branches',
     '--cover-inclusive',
     '--cover-erase',
@@ -92,9 +88,9 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    "${ldap.backends}",
+    "seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3",
     'django.contrib.auth.backends.ModelBackend',
-    )
+)
 
 WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 
@@ -102,24 +98,20 @@ WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-if ("${database.name}"): 
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
-            'NAME': '${database.name}',
-            'USER': '${database.user}',
-            'PASSWORD': '${database.password}',
-            'HOST': '${database.host}',
-            'PORT': '${database.port}',
-        }
-    }
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        } 
-    }
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.sqlite3',
+         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+     }
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': 'seleniumServer',
+#         'USER': 'seleniumRobot',
+#         'PASSWORD': 'robotDb',
+#         'HOST': '',
+#         'PORT': '',
+#     }
+}
 
 
 # Password validation
@@ -235,9 +227,9 @@ LOGGING = {
         'py.warnings': {
             'handlers': ['console','development_logfile'],
         },
-        "django_python3_ldap": {
-            "handlers": ["console"],
-            "level": "INFO",
+        'django_auth_ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
         },
     }
 }
@@ -245,21 +237,22 @@ LOGGING = {
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
-
+ 
 # first LDAP server configuration
-AUTH_LDAP_1_SERVER_URI = "${ldap.url}"
-AUTH_LDAP_1_BIND_DN = '${ldap.user}'
-AUTH_LDAP_1_BIND_PASSWORD = '${ldap.password}'
-AUTH_LDAP_1_USER_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(${ldap.object.class}=%(user)s)")
+AUTH_LDAP_1_SERVER_URI = "ldap://societe.mma.fr:389"
+AUTH_LDAP_1_BIND_DN = 'CN=zpsmojenkins,OU=ComptesDeService,DC=societe,DC=mma,DC=fr'
+AUTH_LDAP_1_BIND_PASSWORD = 'WzUCO6nfahcpV0b1GVP2'
+AUTH_LDAP_1_USER_SEARCH = LDAPSearch("OU=MMA,DC=societe,DC=mma,DC=fr", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
 # second LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend2" in AUTHENTICATION_BACKENDS to use it)
-AUTH_LDAP_2_SERVER_URI = "${ldap.2.url}"
-AUTH_LDAP_2_BIND_DN = '${ldap.2.user}'
-AUTH_LDAP_2_BIND_PASSWORD = '${ldap.2.password}'
-AUTH_LDAP_2_USER_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(${ldap.2.object.class}=%(user)s)")
+AUTH_LDAP_2_SERVER_URI = "ldap://maafprod.e-corail.com:389"
+AUTH_LDAP_2_BIND_DN = 'CN=Ldap_Git,OU=Comptes LDAP AD,OU=Administration,DC=maafprod,DC=e-corail,DC=com'
+AUTH_LDAP_2_BIND_PASSWORD = 'TH1Tonb20d5cqW'
+AUTH_LDAP_2_USER_SEARCH = LDAPSearch("OU=utilisateurs,DC=maafprod,DC=e-corail,DC=com", ldap.SCOPE_SUBTREE, "(cn=%(user)s)")
 
 # third LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend3" in AUTHENTICATION_BACKENDS to use it)
-AUTH_LDAP_3_SERVER_URI = "${ldap.3.url}"
-AUTH_LDAP_3_BIND_DN = '${ldap.3.user}'
-AUTH_LDAP_3_BIND_PASSWORD = '${ldap.3.password}'
-AUTH_LDAP_3_USER_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(${ldap.3.object.class}=%(user)s)")
+AUTH_LDAP_3_SERVER_URI = "ldap://ads01.priv:389"
+AUTH_LDAP_3_BIND_DN = 'CN=Compte applicatif GIT (app_git_p),OU=CPTES_SRV,OU=OBJETS_ADMIN,OU=InfraTech,DC=ads01,DC=priv'
+AUTH_LDAP_3_BIND_PASSWORD = 'qIbLJEfNJCn0yy'
+AUTH_LDAP_3_USER_SEARCH = LDAPSearch("OU=Users,OU=LEV,DC=ads01,DC=priv", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
