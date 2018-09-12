@@ -8,9 +8,16 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
+
+/!\ THIS FILE aims at being processed by a tool which will replace all variables ('${var}')
+    by their values
 """
-# Login/ mdp: admin / adminServer
+
+
+
 import os
+from django_auth_ldap.config import LDAPSearch
+import ldap
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-#     'snapshotServer.app.SnapshotServerConfig',
+    'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'django_nose',
@@ -84,7 +91,10 @@ TEMPLATES = [
     },
 ]
 
-AUTHENTICATION_BACKENDS = ("django_python3_ldap.auth.LDAPBackend",)
+AUTHENTICATION_BACKENDS = (
+    "${ldap.backends}",
+    'django.contrib.auth.backends.ModelBackend',
+    )
 
 WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 
@@ -92,20 +102,24 @@ WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-DATABASES = {
-#     'default': {
-#         'ENGINE': 'django.db.backends.sqlite3',
-#         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-#     }
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': '${database.name}',
-        'USER': '${database.user}',
-        'PASSWORD': '${database.password}',
-        'HOST': '${database.host}',
-        'PORT': '${database.port}',
+if ("${database.name}"): 
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'NAME': '${database.name}',
+            'USER': '${database.user}',
+            'PASSWORD': '${database.password}',
+            'HOST': '${database.host}',
+            'PORT': '${database.port}',
+        }
     }
-}
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        } 
+    }
 
 
 # Password validation
@@ -232,29 +246,20 @@ LOGGING = {
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
 
-# https://github.com/etianen/django-python3-ldap
-# The URL of the LDAP server.
-LDAP_AUTH_URL = "${ldap.url}"
+# first LDAP server configuration
+AUTH_LDAP_1_SERVER_URI = "${ldap.url}"
+AUTH_LDAP_1_BIND_DN = '${ldap.user}'
+AUTH_LDAP_1_BIND_PASSWORD = '${ldap.password}'
+AUTH_LDAP_1_USER_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(${ldap.object.class}=%(user)s)")
 
-# The LDAP search base for looking up users.
-LDAP_AUTH_SEARCH_BASE = "${ldap.base}"
+# second LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend2" in AUTHENTICATION_BACKENDS to use it)
+AUTH_LDAP_2_SERVER_URI = "${ldap.2.url}"
+AUTH_LDAP_2_BIND_DN = '${ldap.2.user}'
+AUTH_LDAP_2_BIND_PASSWORD = '${ldap.2.password}'
+AUTH_LDAP_2_USER_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(${ldap.2.object.class}=%(user)s)")
 
-# The LDAP class that represents a user.
-LDAP_AUTH_OBJECT_CLASS = "${ldap.object.class}"
-
-# A tuple of django model fields used to uniquely identify a user.
-LDAP_AUTH_USER_LOOKUP_FIELDS = ("username",)
-
-# Path to a callable that takes a dict of {model_field_name: value}, and returns
-# a string of the username to bind to the LDAP server.
-# Use this to support different types of LDAP server.
-LDAP_AUTH_FORMAT_USERNAME = "django_python3_ldap.utils.format_username_active_directory"
-
-# Sets the login domain for Active Directory users.
-LDAP_AUTH_ACTIVE_DIRECTORY_DOMAIN = "${ldap.domain}"
-
-# The LDAP username and password of a user for querying the LDAP database for user
-# details. If None, then the authenticated user will be used for querying, and
-# the `ldap_sync_users` command will perform an anonymous query.
-LDAP_AUTH_CONNECTION_USERNAME = "${ldap.user}"
-LDAP_AUTH_CONNECTION_PASSWORD = "${ldap.password}"
+# third LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend3" in AUTHENTICATION_BACKENDS to use it)
+AUTH_LDAP_3_SERVER_URI = "${ldap.3.url}"
+AUTH_LDAP_3_BIND_DN = '${ldap.3.user}'
+AUTH_LDAP_3_BIND_PASSWORD = '${ldap.3.password}'
+AUTH_LDAP_3_USER_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(${ldap.3.object.class}=%(user)s)")

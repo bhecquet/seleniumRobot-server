@@ -9,11 +9,24 @@ Features:
 For now, build is done through the python script `build.py`. Ite generates a zip file which you only need to unzip
 
 # Installation #
-- python3 install
+
+## Windows ##
+	
+- Install python 3 (tested with Python 3.4 & 3.6)
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
     - mod_wsgi, same bitness as python
+
+- install Postgre database (if not using a centralized database or SQLite)
+- deploy files: unzip seleniumRobotServer.zip
+- create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
+- go into virtual environment: `cd <path_to_selenium_server>/venv && Scripts\activate.bat`
+- install `python-ldap` from wheel found at [https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap): `pip instal python_ldap-3.1.0-cp36-cp36m-win_amd64.whl`
+- install python requirements: `pip install -r requirements.txt` 
+- database migration: `python manage.py migrate`
+- database fix: `python manage.py fix_permissions`
+- create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
 - configure Apache server with
 
 	LoadFile "<path_to_python_dll>"
@@ -39,44 +52,44 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	<Directory "<path_to_selenium_server>/media">
 	Require all granted
 	</Directory>
-	
-	
-for linux (RHE7)
+    
+## Linux (RHE) ##
+- Install python 3 (tested with Python 3.4 & 3.6)
+- apache install (Linux): `yum install mod_wsgi httpd24-httpd`
+- Install Postgre database (if not using a centralized database or SQLite)
+- Install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`,  `openldap-devel`,  so that dependencies can be compiled
+- deploy files: unzip seleniumRobotServer.zip
+- create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
+- go into virtual environment: `cd <path_to_selenium_server>/venv && source bin/activate`
+- install python requirements: `pip install -r requirements.txt` 
+- database migration: `python manage.py migrate`
+- database fix: `python manage.py fix_permissions`
+- create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
+- configure Apache server with  
 
 	LoadFile "/opt/rh/rh-python34/root/lib64/libpython3.so.rh-python34"
 	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python34-wsgi.so"
-	WSGIPythonHome "/opt/selenium-server/venv"
+	WSGIPythonHome "<path_to_selenium_server>/venv"
 	
-	WSGIScriptAlias / /opt/selenium-server/seleniumRobotServer/wsgi.py
-	WSGIPythonPath /opt/selenium-server/venv/lib/python3.4/site-packages/:/opt/selenium-server
+	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
+	WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.4/site-packages/:<path_to_selenium_server>
 	
-	<Directory "/opt/selenium-server/seleniumRobotServer">
+	<Directory "<path_to_selenium_server>/seleniumRobotServer">
 	<Files wsgi.py>
 	Require all granted
 	</Files>
 	</Directory>
 	
-	Alias /media/ /opt/selenium-server/media/
-	Alias /static/ /opt/selenium-server/static/
+	Alias /media/ <path_to_selenium_server>/media/
+	Alias /static/ <path_to_selenium_server>/static/
 	
-	<Directory "/opt/selenium-server/static">
+	<Directory "<path_to_selenium_server>/static">
 	Require all granted
 	</Directory>
 	
-	<Directory "/opt/selenium-server/media">
+	<Directory "<path_to_selenium_server>/media">
 	Require all granted
 	</Directory>
-	
-	
-	
-	
-- install Postgre database (if not using a centralized database or SQLite)
-- for linux (RHE7 here), install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`
-- deploy files: unzip seleniumRobotServer.zip
-- install python requirements: `pip install -r requirements.txt` 
-- database migration: `python manage.py migrate`
-- database fix: `python manage.py fix_permissions`
-- create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
 
 
 # Configuration # 
