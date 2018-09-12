@@ -49,7 +49,6 @@ INSTALLED_APPS = [
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'django_nose',
-    'django_python3_ldap',
 ]
 
 #TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
