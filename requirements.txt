@@ -15,4 +15,5 @@ PyYAML==3.12
 six==1.10.0
 django-nose==1.4.4
 coverage==4.4
+https://download.lfd.uci.edu/pythonlibs/o4uhg4xd/python_ldap-3.1.0-cp36-cp36m-win_amd64.whl; platform_system == 'Windows'
 django_auth_ldap==1.7.0
