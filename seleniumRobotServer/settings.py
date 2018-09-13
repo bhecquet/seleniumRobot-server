@@ -101,7 +101,7 @@ WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
-if ("${database.name}"): 
+if ("${database.host}"): 
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -116,7 +116,8 @@ else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+            'NAME': "${database.name}",
+#             'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
         } 
     }
 
@@ -234,9 +235,9 @@ LOGGING = {
         'py.warnings': {
             'handlers': ['console','development_logfile'],
         },
-        "django_python3_ldap": {
-            "handlers": ["console"],
-            "level": "INFO",
+        'django_auth_ldap': {
+            'level': 'DEBUG',
+            'handlers': ['console', 'development_logfile'],
         },
     }
 }
