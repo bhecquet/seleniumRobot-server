@@ -29,6 +29,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
 - configure Apache server with
 
+
 	LoadFile "<path_to_python_dll>"
 	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp36-win32.pyd"
 	WSGIPythonHome "<python_dir>"
@@ -53,6 +54,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	Require all granted
 	</Directory>
     
+    
 ## Linux (RHE) ##
 - Install python 3 (tested with Python 3.4 & 3.6)
 - apache install (Linux): `yum install mod_wsgi httpd24-httpd`
@@ -66,6 +68,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
 - configure Apache server with  
+
 
 	LoadFile "/opt/rh/rh-python34/root/lib64/libpython3.so.rh-python34"
 	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python34-wsgi.so"
@@ -92,10 +95,17 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	</Directory>
 
 
+
 # Configuration # 
 
 - change settings accordingly into settings.py (replace `${var}` variables)
-- to use AD/LDAP authentication, uncomment `AUTHENTICATION_BACKENDS = ("django_python3_ldap.auth.LDAPBackend",)` and configure LDAP values
+- to use AD/LDAP authentication, uncomment `AUTHENTICATION_BACKENDS = ("seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3", 'django.contrib.auth.backends.ModelBackend',)` and configure LDAP (the example above uses 3 LDAP so you will have 3 sets of variables) values
+
+	AUTH_LDAP_1_SERVER_URI = "ldap://my.company.com:389"
+	AUTH_LDAP_1_BIND_DN = 'CN=user,OU=branch,DC=my,DC=company,DC=com'
+	AUTH_LDAP_1_BIND_PASSWORD = 'pwd'
+	AUTH_LDAP_1_USER_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+
 - to use SQLite instead of Postgre: comment the right default database in `DATABASES`
 
 
