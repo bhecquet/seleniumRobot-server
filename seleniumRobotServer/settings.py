@@ -16,7 +16,8 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 
 
 import os
-from django_auth_ldap.config import LDAPSearch
+from django_auth_ldap.config import LDAPSearch, LDAPGroupQuery,\
+    ActiveDirectoryGroupType
 import ldap
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -251,15 +252,39 @@ AUTH_LDAP_1_SERVER_URI = "${ldap.url}"
 AUTH_LDAP_1_BIND_DN = '${ldap.user}'
 AUTH_LDAP_1_BIND_PASSWORD = '${ldap.password}'
 AUTH_LDAP_1_USER_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(${ldap.object.class}=%(user)s)")
+AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
+AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
+    "is_active": (LDAPGroupQuery("${ldap.group.admin}") |
+                  LDAPGroupQuery("${ldap.group.edit}")),
+    "is_staff": "${ldap.group.edit}",
+    "is_superuser": "${ldap.group.admin}"
+}
 
 # second LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend2" in AUTHENTICATION_BACKENDS to use it)
 AUTH_LDAP_2_SERVER_URI = "${ldap.2.url}"
 AUTH_LDAP_2_BIND_DN = '${ldap.2.user}'
 AUTH_LDAP_2_BIND_PASSWORD = '${ldap.2.password}'
 AUTH_LDAP_2_USER_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(${ldap.2.object.class}=%(user)s)")
-
+AUTH_LDAP_2_GROUP_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+AUTH_LDAP_2_GROUP_TYPE = ActiveDirectoryGroupType()
+AUTH_LDAP_2_USER_FLAGS_BY_GROUP = {
+    "is_active": (LDAPGroupQuery("${ldap.2.group.admin}") |
+                  LDAPGroupQuery("${ldap.2.group.edit}")),
+    "is_staff": "${ldap.2.group.edit}",
+    "is_superuser": "${ldap.2.group.admin}"
+}
+                                   
 # third LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend3" in AUTHENTICATION_BACKENDS to use it)
 AUTH_LDAP_3_SERVER_URI = "${ldap.3.url}"
 AUTH_LDAP_3_BIND_DN = '${ldap.3.user}'
 AUTH_LDAP_3_BIND_PASSWORD = '${ldap.3.password}'
 AUTH_LDAP_3_USER_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(${ldap.3.object.class}=%(user)s)")
+AUTH_LDAP_3_GROUP_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+AUTH_LDAP_3_GROUP_TYPE = ActiveDirectoryGroupType()
+AUTH_LDAP_3_USER_FLAGS_BY_GROUP = {
+    "is_active": (LDAPGroupQuery("${ldap.3.group.admin}") |
+                  LDAPGroupQuery("${ldap.3.group.edit}")),
+    "is_staff": "${ldap.3.group.edit}",
+    "is_superuser": "${ldap.3.group.admin}"
+}
