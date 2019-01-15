@@ -38,7 +38,7 @@
 -   model: variableServer.testcase
     pk: 1
     fields:
-        name: test1
+        name: test1 with some spaces
         application: 1
         
 # global variable
