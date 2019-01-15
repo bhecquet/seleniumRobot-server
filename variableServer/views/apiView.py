@@ -13,12 +13,14 @@ from rest_framework import mixins, generics
 from rest_framework.exceptions import ValidationError
 
 from seleniumRobotServer.wsgi import application
-from variableServer.models import Variable, TestEnvironment, Version, TestCase
+from variableServer.models import Variable, TestEnvironment, Version, TestCase,\
+    Application
 from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE, \
     updateVariables
 from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from django.utils import timezone
+from builtins import ValueError
 
 
 def ping(request):
@@ -48,7 +50,9 @@ class VariableList(mixins.ListModelMixin,
         """
 
         """
+        
         versionId = self.request.query_params.get('version', None)
+        applicationId = self.request.query_params.get('application', None)
         environmentId = self.request.query_params.get('environment', None)
         testId = self.request.query_params.get('test', None)
         olderThan = int(self.request.query_params.get('olderThan', '0'))
@@ -58,16 +62,28 @@ class VariableList(mixins.ListModelMixin,
             return Variable.objects.filter(pk=self.kwargs['pk'])
         
         if not versionId:
-            raise ValidationError("version parameter is mandatory")
-        version = get_object_or_404(Version, pk=versionId)
+            raise ValidationError("version parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
+        try:
+            version = get_object_or_404(Version, pk=versionId)
+        except ValueError as e:
+            if not applicationId:
+                raise ValidationError("application parameter is mandatory when version is given as its name. Typical request is http://<host>:<port>/variable/api/variable?application=<app_name>&version=<version_name>&environment=<id_env>&test=<id_test>")
+            version = get_object_or_404(Version, name=versionId, application__name=applicationId)
         
         if not environmentId:
-            raise ValidationError("environment parameter is mandatory")
-        environment = get_object_or_404(TestEnvironment, pk=environmentId)
+            raise ValidationError("environment parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
+        try:
+            environment = get_object_or_404(TestEnvironment, pk=environmentId)
+        except ValueError as e:
+            environment = get_object_or_404(TestEnvironment, name=environmentId)
         
-        if not testId:
-            raise ValidationError("test parameter is mandatory")
-        test = get_object_or_404(TestCase, pk=testId)
+        if testId:
+            try:
+                test = get_object_or_404(TestCase, pk=testId)
+            except ValueError as e:
+                test = get_object_or_404(TestCase, name=testId)
+        else:
+            test = None
         
         allVariables = Variable.objects.filter(timeToLive__lte=0) | Variable.objects.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
         
@@ -100,13 +116,14 @@ class VariableList(mixins.ListModelMixin,
         variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
         variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=None))
         
-        # application / environment / test specific variables
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=test))
+        if test:
+            # application / environment / test specific variables
+            variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
+            variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=test))
         
-        # application / version / environment / test specific variables
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=test))
+            # application / version / environment / test specific variables
+            variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
+            variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=test))
         
         variableNames = list(set([v.name for v in variables]))
         
