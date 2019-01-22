@@ -15,11 +15,11 @@ class CommonLDAPBackend(LDAPBackend):
         
         
         if user:
-            variablesGroup = Group.objects.get(name='Variable Users') 
-            if variablesGroup:
+            try:
+                variablesGroup = Group.objects.get(name='Variable Users')
                 variablesGroup.user_set.add(user)
-                logging.info("User %s added to group 'Variable Users'" % user.name)
-            else:
+                logging.info("User %s added to group 'Variable Users'" % user.username)
+            except:
                 logging.warn("Group 'Variable Users' should be created ")
         
         return user
