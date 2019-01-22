@@ -246,6 +246,10 @@ LOGGING = {
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
+ 
+AUTH_LDAP_GLOBAL_OPTIONS = {
+    ldap.OPT_REFERRALS: 0
+}
 
 # first LDAP server configuration
 AUTH_LDAP_1_SERVER_URI = "${ldap.url}"
