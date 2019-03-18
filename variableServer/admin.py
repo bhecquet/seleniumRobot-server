@@ -114,10 +114,11 @@ class VariableForm2(forms.ModelForm):
         self.fields['version'].required = False
         self.fields['test'].required = False
         self.fields['environment'].required = False
+        self.fields['reservable'].required = False
 
     class Meta:
         model = Variable
-        fields = ['application', 'version', 'environment', 'test']
+        fields = ['application', 'version', 'environment', 'test', 'reservable']
 
 class VariableAdmin(BaseServerModelAdmin): 
     list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'test', 'releaseDate')
@@ -190,6 +191,7 @@ class VariableAdmin(BaseServerModelAdmin):
                          'application': refVariable.application,
                          'test': refVariable.test,
                          'version': refVariable.version,
+                         'reservable': refVariable.reservable
                          }
         
         for variableId in selectedVariables[1:]:
@@ -202,6 +204,8 @@ class VariableAdmin(BaseServerModelAdmin):
                 defaultValues['test'] = None
             if variable.version != refVariable.version:
                 defaultValues['version'] = None
+            if variable.reservable != refVariable.reservable:
+                defaultValues['reservable'] = False
             
         return defaultValues
     
