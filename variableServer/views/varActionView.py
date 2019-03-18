@@ -36,6 +36,11 @@ def copyVariables(request):
         application = Application.objects.get(id=int(request.POST['application']))
     except:
         application = None
+        
+    try:
+        reservable = request.POST['reservable'] == 'on'
+    except:
+        reservable = False
     
     # init message   
     from variableServer.admin import VariableAdmin 
@@ -55,6 +60,7 @@ def copyVariables(request):
                                    value=variable.value, 
                                    application=application,
                                    environment=environment, 
+                                   reservable=reservable,
                                    version=version, 
                                    test=test, 
                                    releaseDate=None,
@@ -94,6 +100,11 @@ def changeVariables(request):
         application = Application.objects.get(id=int(request.POST['application']))
     except:
         application = None
+        
+    try:
+        reservable = request.POST['reservable'] == 'on'
+    except:
+        reservable = False
     
     # init message     
     from variableServer.admin import VariableAdmin
@@ -115,6 +126,7 @@ def changeVariables(request):
             variable.version = version
             variable.environment = environment
             variable.test = test
+            variable.reservable = reservable
             
             variable.save()
             varAdmin.message_user(request, "Variable %s has been modified" % (variable.name,), level=messages.INFO)
