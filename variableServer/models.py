@@ -65,7 +65,7 @@ class Variable(models.Model):
     
     
     name = models.CharField(max_length=100)
-    value = models.CharField(max_length=300)
+    value = models.CharField(max_length=300, blank=True)
     application = models.ForeignKey(Application, null=True) 
     environment = models.ForeignKey(TestEnvironment, null=True)
     version = models.ForeignKey(Version, null=True)
