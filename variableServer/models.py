@@ -58,18 +58,20 @@ class Variable(models.Model):
         """
         Make sure that all variable of the same scope have the same reservable state as the new/updated variable
         """
-        similarVariables = Variable.objects.filter(name=self.name, application=self.application, version=self.version, environment=self.environment, test=self.test).exclude(reservable=self.reservable)
+        similarVariables = Variable.objects.filter(name=self.name, application=self.application, version=self.version, environment=self.environment, test__in=self.test.all()).exclude(reservable=self.reservable)
         for var in similarVariables:
             var.reservable = self.reservable
             var.save()
     
+    def allTests(self):
+        return ",".join([t.name for t in self.test.all()])
     
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=300, blank=True)
     application = models.ForeignKey(Application, null=True) 
     environment = models.ForeignKey(TestEnvironment, null=True)
     version = models.ForeignKey(Version, null=True)
-    test = models.ForeignKey(TestCase, null=True)
+    test = models.ManyToManyField(TestCase)
     releaseDate = models.DateTimeField(null=True)
     reservable = models.BooleanField(default=False, help_text="tick it if this variable should be reserved when used to prevent other tests to use it at the same time. Default is false")
     internal = models.BooleanField(default=False)
