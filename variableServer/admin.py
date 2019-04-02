@@ -115,13 +115,22 @@ class VariableForm2(forms.ModelForm):
         self.fields['test'].required = False
         self.fields['environment'].required = False
         self.fields['reservable'].required = False
+        
+    def get_initial_for_field(self, field, field_name):
+        """
+        Methode permettant de prendre en charge le ManyToManyFields. Sinon, on avait une KeyError lors de la modification d'une variable
+        """
+        if field_name == 'test':
+            return self.initial.get(field_name).all()
+        else:
+            return super(VariableForm2, self).get_initial_for_field(field, field_name)
 
     class Meta:
         model = Variable
         fields = ['application', 'version', 'environment', 'test', 'reservable']
 
 class VariableAdmin(BaseServerModelAdmin): 
-    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'test', 'releaseDate')
+    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate')
     list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'test', 'releaseDate')
     list_filter = ('application', 'version', 'environment', 'internal')
     search_fields = ['name', 'value']
