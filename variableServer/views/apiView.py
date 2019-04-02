@@ -21,6 +21,7 @@ from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from django.utils import timezone
 from builtins import ValueError
+import random
 
 
 def ping(request):
@@ -139,10 +140,14 @@ class VariableList(mixins.ListModelMixin,
     def _uniqueVariable(self, variableQuerySet):
         """
         render a list where each variable is unique (according to it's name)
+        list is randomized, so that when several variables have the same name, we do not render always the same
         """
         existingVariableNames = []
         uniqueVariableList = []
-        for variable in variableQuerySet:
+        initialList = list(variableQuerySet)
+        random.shuffle(initialList)
+        
+        for variable in initialList:
             if variable.name not in existingVariableNames:
                 uniqueVariableList.append(variable)
                 existingVariableNames.append(variable.name)
