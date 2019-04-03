@@ -58,10 +58,11 @@ class Variable(models.Model):
         """
         Make sure that all variable of the same scope have the same reservable state as the new/updated variable
         """
-        similarVariables = Variable.objects.filter(name=self.name, application=self.application, version=self.version, environment=self.environment, test__in=self.test.all()).exclude(reservable=self.reservable)
+        similarVariables = Variable.objects.filter(name=self.name, application=self.application, version=self.version, environment=self.environment).exclude(reservable=self.reservable)
         for var in similarVariables:
-            var.reservable = self.reservable
-            var.save()
+            if list(var.test.all()) == list(self.test.all()):
+                var.reservable = self.reservable
+                var.save()
     
     def allTests(self):
         return ",".join([t.name for t in self.test.all()])

@@ -18,9 +18,9 @@ def copyVariables(request):
     variableIds = [int(id) for id in request.POST['ids'].split(',')]
     
     try:
-        test = TestCase.objects.get(id=int(request.POST['test']))
+        tests = TestCase.objects.filter(id__in=request.POST.getlist('test'))
     except:
-        test = None
+        tests = []
         
     try:
         environment = TestEnvironment.objects.get(id=int(request.POST['environment']))
@@ -62,11 +62,12 @@ def copyVariables(request):
                                    environment=environment, 
                                    reservable=reservable,
                                    version=version, 
-                                   test=test, 
                                    releaseDate=None,
                                    internal=variable.internal,
                                    description=variable.description)
             newVariable.save()
+            for test in tests:
+                newVariable.test.add(test)
             varAdmin.message_user(request, "Variable %s has been copied" % (variable.name,), level=messages.INFO)
             
         except Exception as e:
@@ -82,9 +83,9 @@ def changeVariables(request):
     variableIds = [int(id) for id in request.POST['ids'].split(',')]
     
     try:
-        test = TestCase.objects.get(id=int(request.POST['test']))
+        tests = TestCase.objects.filter(id__in=request.POST.getlist('test'))
     except:
-        test = None
+        tests = []
         
     try:
         environment = TestEnvironment.objects.get(id=int(request.POST['environment']))
@@ -125,10 +126,13 @@ def changeVariables(request):
             variable.application = application
             variable.version = version
             variable.environment = environment
-            variable.test = test
             variable.reservable = reservable
-            
             variable.save()
+            
+            variable.test.clear()
+            for test in tests:
+                variable.test.add(test)
+            
             varAdmin.message_user(request, "Variable %s has been modified" % (variable.name,), level=messages.INFO)
             
         except Exception as e:
