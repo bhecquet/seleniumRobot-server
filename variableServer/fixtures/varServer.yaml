@@ -40,6 +40,11 @@
     fields:
         name: test1 with some spaces
         application: 1
+-   model: variableServer.testcase
+    pk: 2
+    fields:
+        name: test2 with some spaces
+        application: 1
         
 # global variable
 -   fields: 
@@ -48,7 +53,7 @@
         application: null
         version: null
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -64,7 +69,7 @@
         application: null
         version: null
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -80,7 +85,7 @@
         application: null
         version: null
         environment: 1
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -96,7 +101,7 @@
         application: null
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -113,7 +118,7 @@
         application: null
         version: null
         environment: 2
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -129,7 +134,7 @@
         application: 1
         version: null
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -145,7 +150,7 @@
         application: 2
         version: null
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -161,7 +166,7 @@
         application: 1
         version: 2
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -177,7 +182,7 @@
         application: 1
         version: 1
         environment: null
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -193,7 +198,7 @@
         application: 1
         version: 2
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -209,7 +214,7 @@
         application: 1
         version: 2
         environment: 2
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -225,7 +230,7 @@
         application: 1
         version: 2
         environment: 3
-        test: 1
+        test: [1]
         internal: false
         protected: false
         releaseDate: null
@@ -241,7 +246,7 @@
         application: 1
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -258,7 +263,7 @@
         application: null
         version: null
         environment: null
-        test: 1
+        test: [1]
         internal: false
         protected: false
         releaseDate: null
@@ -274,7 +279,7 @@
         application: 3
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -288,7 +293,7 @@
         application: 3
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -304,7 +309,7 @@
         application: 3
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
@@ -319,7 +324,7 @@
         application: 3
         version: null
         environment: 3
-        test: null
+        test: []
         internal: false
         protected: false
         releaseDate: null
