@@ -28,7 +28,7 @@ class Application(models.Model):
         Permission.objects.get(codename=Application.appPermissionCode + self.name).delete()
     
 class Version(models.Model):
-    application = models.ForeignKey(Application, related_name='version')
+    application = models.ForeignKey(Application, related_name='version', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     
     def __str__(self):
@@ -62,13 +62,13 @@ class TestEnvironment(models.Model):
     def __str__(self):
         return self.name
     
-    genericEnvironment = models.ForeignKey('self', null=True)
+    genericEnvironment = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
     genericEnvironment.short_description = 'generic environnement'
 
 class TestCase(models.Model):
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100)
-    application = models.ForeignKey(Application, related_name='testCase')
+    application = models.ForeignKey(Application, related_name='testCase', on_delete=models.CASCADE)
     
     def __str__(self):
         return "%s - %s" % (self.name, self.application.name)

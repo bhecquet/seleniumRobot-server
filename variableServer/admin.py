@@ -15,7 +15,7 @@ def isUserAuthorized(user):
     if not user:
         return False
     if (user 
-        and user.is_authenticated() 
+        and user.is_authenticated 
         and (user.is_superuser 
              or user.has_perm('variableServer.see_protected_var'))):
         return True
