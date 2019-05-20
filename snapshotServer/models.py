@@ -26,8 +26,8 @@ class TestCaseInSession(models.Model):
     The test case in a test session
     """
     __test__= False  # avoid detecting it as a test class
-    testCase = models.ForeignKey(TestCase, related_name="testCaseInSession")
-    session = models.ForeignKey('TestSession')
+    testCase = models.ForeignKey(TestCase, related_name="testCaseInSession", on_delete=models.CASCADE)
+    session = models.ForeignKey('TestSession', on_delete=models.CASCADE)
     testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     stacktrace = models.TextField(null=True)
     
@@ -95,9 +95,9 @@ class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=50)
     date = models.DateField()
-    version = models.ForeignKey(Version, related_name='testsession')
+    version = models.ForeignKey(Version, related_name='testsession', on_delete=models.CASCADE)
     browser = models.CharField(max_length=20)
-    environment = models.ForeignKey(TestEnvironment, related_name='testsession')
+    environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)
     compareSnapshot = models.BooleanField(default=False)                            # if True, this session will be displayed in snapshot comparator
     
     def __str__(self):
@@ -106,9 +106,9 @@ class TestSession(models.Model):
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
 
-    stepResult = models.ForeignKey('StepResult', related_name='snapshots')
+    stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='documents/')
-    refSnapshot = models.ForeignKey('self', default=None, null=True)
+    refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.CASCADE)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
     
@@ -160,8 +160,8 @@ class StepResult(models.Model):
     def __str__(self):
         return "result %d " % self.id
     
-    step = models.ForeignKey(TestStep, related_name='stepresult')
-    testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult')
+    step = models.ForeignKey(TestStep, related_name='stepresult', on_delete=models.CASCADE)
+    testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult', on_delete=models.CASCADE)
     result = models.BooleanField(null=False)
     duration = models.FloatField(default=0.0)
     stacktrace = models.TextField(null=True)
@@ -171,7 +171,7 @@ class ExcludeZone(models.Model):
     y = models.IntegerField()
     width = models.IntegerField()
     height = models.IntegerField()
-    snapshot = models.ForeignKey(Snapshot)
+    snapshot = models.ForeignKey(Snapshot, on_delete=models.CASCADE)
     
     def __str__(self):
         return "(x, y, width, height) = (%d, %d, %d, %d)" % (self.x, self.y, self.width, self.height)

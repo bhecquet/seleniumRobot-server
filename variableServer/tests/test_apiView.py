@@ -29,7 +29,7 @@ class test_FileUploadView(APITestCase):
 #         
 #         resultingQS = updateVariables(sourceQuerySet, additionalQuerySet)
 #         
-#         self.assertEquals(resultingQS.get(name='proxyPassword').value, 'devPassword')
+#         self.assertEqual(resultingQS.get(name='proxyPassword').value, 'devPassword')
 #     
 #     def test_severalUpdateVariables(self):
 #         """
@@ -42,8 +42,8 @@ class test_FileUploadView(APITestCase):
 #         otherQuerySet = Variable.objects.filter(application=2, version=None, environment=None, test=None)
 #         resultingQS = updateVariables(resultingQS, otherQuerySet)
 #         
-#         self.assertEquals(resultingQS.get(name='proxyPassword').value, 'devPassword')
-#         self.assertEquals(resultingQS.get(name='appName').value, 'myApp')
+#         self.assertEqual(resultingQS.get(name='proxyPassword').value, 'devPassword')
+#         self.assertEqual(resultingQS.get(name='appName').value, 'myApp')
 
     def _convertToDict(self, responseData):
         variableDict = {}
@@ -155,7 +155,7 @@ class test_FileUploadView(APITestCase):
              
         # check we only get variable where release date is before now and variables without release date
         self.assertTrue('var1' in allVariables)                 # release date in the past, should be removed
-        self.assertEquals("value2", allVariables['var1']['value'])
+        self.assertEqual("value2", allVariables['var1']['value'])
         self.assertIsNone(allVariables['var1']['releaseDate'])  # release date should be reset 
         self.assertTrue('var0' in allVariables)                 # no release date
              

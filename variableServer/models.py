@@ -69,9 +69,9 @@ class Variable(models.Model):
     
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=300, blank=True)
-    application = models.ForeignKey(Application, null=True) 
-    environment = models.ForeignKey(TestEnvironment, null=True)
-    version = models.ForeignKey(Version, null=True)
+    application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
+    environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
+    version = models.ForeignKey(Version, null=True, on_delete=models.CASCADE)
     test = models.ManyToManyField(TestCase)
     releaseDate = models.DateTimeField(null=True)
     reservable = models.BooleanField(default=False, help_text="tick it if this variable should be reserved when used to prevent other tests to use it at the same time. Default is false")
