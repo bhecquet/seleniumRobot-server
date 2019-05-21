@@ -24,7 +24,7 @@ class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestStep
         fields = ('id', 'name')
- 
+
 class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:

@@ -92,7 +92,7 @@ class test_FileUploadView(django.test.TestCase):
         session3.save()
         tcs3 = TestCaseInSession(testCase=self.testCase, session=session3)
         tcs3.save()
-        tcs3.testSteps = [TestStep.objects.get(id=1)]
+        tcs3.testSteps.set([TestStep.objects.get(id=1)])
         tcs3.save()
         sr3 = StepResult(step=TestStep.objects.get(id=1), testCase=tcs3, result=True)
         sr3.save()
