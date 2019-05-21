@@ -34,6 +34,8 @@ class VariableList(mixins.ListModelMixin,
     
     serializer_class = VariableSerializer
     
+    queryset = Variable.objects.none()
+    
     def _resetPastReleaseDates(self):
         for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
             var.releaseDate = None
@@ -141,17 +143,23 @@ class VariableList(mixins.ListModelMixin,
         """
         render a list where each variable is unique (according to it's name)
         list is randomized, so that when several variables have the same name, we do not render always the same
+        
+        There is a better way to return queryset than filtering on pk, using 'variableQuerySet.order_by().distinct("name")'
+        but
+            - there is still ordering
+            - unittest won't be possible due to the fact that distinct(field) is postgre only
         """
+
         existingVariableNames = []
         uniqueVariableList = []
         initialList = list(variableQuerySet)
         random.shuffle(initialList)
-        
+         
         for variable in initialList:
             if variable.name not in existingVariableNames:
                 uniqueVariableList.append(variable)
                 existingVariableNames.append(variable.name)
-        return uniqueVariableList
+        return variableQuerySet.filter(pk__in=[v.pk for v in uniqueVariableList])
     
     def _filterNotReservedVariables(self, variableList):
         """
