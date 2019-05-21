@@ -9,6 +9,7 @@ from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
 from rest_framework import viewsets
 from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult
 from commonsServer.views.viewsets import BaseViewSet
+from commonsServer.views.serializers import ApplicationSerializer
 
 class TestSessionViewSet(BaseViewSet):
     queryset = TestSession.objects.all()
@@ -25,7 +26,7 @@ class TestStepViewSet(BaseViewSet):
 class SnapshotViewSet(viewsets.ModelViewSet):
     queryset = Snapshot.objects.all()
     serializer_class = SnapshotSerializer
-    
+
 class StepResultViewSet(viewsets.ModelViewSet):
     queryset = StepResult.objects.all()
     serializer_class = StepResultSerializer

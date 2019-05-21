@@ -41,9 +41,9 @@ class TestSnapshots(django.test.TestCase):
         self.tcs3.save()
         self.tcs4 = TestCaseInSession(testCase=self.tc1, session=self.session4)
         self.tcs4.save()
-        self.tcs1.testSteps = [self.step]
+        self.tcs1.testSteps.set([self.step])
         self.tcs1.save()
-        self.tcs2.testSteps = [self.step]
+        self.tcs2.testSteps.set([self.step])
         self.tcs2.save()
         self.tsr1 = StepResult(step=self.step, testCase=self.tcs1, result=True)
         self.tsr1.save()

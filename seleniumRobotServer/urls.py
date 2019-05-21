@@ -20,7 +20,7 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
-    #url(r'^snapshot/', include('snapshotServer.urls')),
+    url(r'^snapshot/', include('snapshotServer.urls')),
     url(r'^variable/', include('variableServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
     

@@ -29,9 +29,11 @@ from snapshotServer.views.TestStatusView import TestStatusView
 from snapshotServer.views.TestResultTableView import TestResultTableView
 from snapshotServer.views.TestResultView import TestResultView
 
+from commonsServer.views.viewsets import ApplicationViewSet
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
+router.register(r'application', ApplicationViewSet)
 router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
 router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'stepresult', viewsets.StepResultViewSet)

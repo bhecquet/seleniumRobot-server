@@ -51,10 +51,10 @@ class test_viewset(django.test.TestCase):
         """
         New testCaseInSession should not be created as it does match an existing testCaseInSession
         """
-        response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 6, 'testCase': 4, 'testSteps': [1, 2, 3]})
+        response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 7, 'testCase': 4, 'testSteps': [2, 3, 4]})
         self.assertEqual(response.status_code, 201)
         self.assertTrue('id' in json.loads(response.content))
-        self.assertEqual(json.loads(response.content)['id'], 5)
+        self.assertEqual(json.loads(response.content)['id'], 6)
         
     def test_noCreationWhenExistWithManyToManyFieldsEmpty(self):
         """

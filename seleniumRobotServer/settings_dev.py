@@ -40,7 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-#     'snapshotServer.app.SnapshotServerConfig',
+    'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'django_nose',
