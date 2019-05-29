@@ -13,6 +13,7 @@ from commonsServer.views.serializers import TestCaseSerializer
 class TestCaseView(RetrieveAPIView):
     
     serializer_class = TestCaseSerializer
+    queryset = TestCase.objects.none()
     
     def get_object(self):
         testCaseName = self.request.query_params.get('name', None)

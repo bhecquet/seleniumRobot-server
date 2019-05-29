@@ -50,9 +50,9 @@ class VariableList(mixins.ListModelMixin,
                 var.delete()
     
     def get_queryset(self):
-        """
-
-        """
+        return Variable.objects.all()
+    
+    def filter_queryset(self, queryset):
         
         versionId = self.request.query_params.get('version', None)
         applicationId = self.request.query_params.get('application', None)
@@ -62,7 +62,7 @@ class VariableList(mixins.ListModelMixin,
          
         # return all variables if no filter is provided
         if 'pk' in self.kwargs:
-            return Variable.objects.filter(pk=self.kwargs['pk'])
+            return queryset.filter(pk=self.kwargs['pk'])
         
         if not versionId:
             raise ValidationError("version parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
@@ -88,7 +88,7 @@ class VariableList(mixins.ListModelMixin,
         else:
             test = None
         
-        allVariables = Variable.objects.filter(timeToLive__lte=0) | Variable.objects.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
+        allVariables = queryset.filter(timeToLive__lte=0) | queryset.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
         
         variables = allVariables.filter(application=None, version=None, environment=None, test=None)
         

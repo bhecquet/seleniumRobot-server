@@ -14,6 +14,7 @@ class ExclusionZoneListView(ListView):
     """
     
     template_name = "snapshotServer/excludeList.html"
+    queryset = ExcludeZone.objects.none()
     
     def get_queryset(self):
         return ExcludeZone.objects.filter(snapshot=self.kwargs['snapshotId'])
