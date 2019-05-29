@@ -13,6 +13,7 @@ from commonsServer.views.serializers import TestEnvironmentSerializer
 class EnvironmentView(RetrieveAPIView):
     
     serializer_class = TestEnvironmentSerializer
+    queryset = TestEnvironment.objects.none()
     
     def get_object(self):
         environmentName = self.request.query_params.get('name', None)

@@ -13,6 +13,10 @@ from snapshotServer.models import TestCaseInSession, Snapshot
 
 
 class TestStatusView(View):
+    
+    
+    queryset = TestCaseInSession.objects.none()
+    
     """
     API to get the test session status according to comparison results
     If only session and test are passed, the test is marked as KO when at least one step has a difference

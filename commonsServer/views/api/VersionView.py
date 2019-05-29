@@ -13,6 +13,7 @@ from variableServer.models import Version
 class VersionView(RetrieveAPIView):
     
     serializer_class = VersionSerializer
+    queryset = Version.objects.none()
     
     def get_object(self):
         versionName = self.request.query_params.get('name', None)

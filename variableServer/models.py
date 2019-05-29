@@ -1,5 +1,5 @@
 from django.db import models
-import commonsServer
+import commonsServer.models
 from django.utils import timezone
 
 class TestEnvironment(commonsServer.models.TestEnvironment):

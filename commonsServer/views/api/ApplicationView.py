@@ -13,6 +13,7 @@ from commonsServer.views.serializers import ApplicationSerializer
 class ApplicationView(RetrieveAPIView):
     
     serializer_class = ApplicationSerializer
+    queryset = Application.objects.none()
     
     def get_object(self):
         applicationName = self.request.query_params.get('name', None)

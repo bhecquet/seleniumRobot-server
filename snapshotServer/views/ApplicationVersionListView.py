@@ -9,6 +9,7 @@ class ApplicationVersionListView(ListView):
     """
     
     template_name = "snapshotServer/home.html"
+    queryset = Version.objects.none()
     
     def get_queryset(self):
         return Version.objects.all()

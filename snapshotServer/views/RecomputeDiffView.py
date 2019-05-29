@@ -15,6 +15,8 @@ class RecomputeDiffView(View):
     API to compute diff from a REST request
     """
     
+    queryset = Snapshot.objects.none()
+    
     def post(self, request, *args, **kwargs):
         try:
             stepSnapshot = Snapshot.objects.get(pk=args[0])
