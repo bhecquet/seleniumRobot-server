@@ -121,7 +121,11 @@ class VariableForm2(forms.ModelForm):
         Methode permettant de prendre en charge le ManyToManyFields. Sinon, on avait une KeyError lors de la modification d'une variable
         """
         if field_name == 'test':
-            return self.initial.get(field_name).all()
+            initialValue = self.initial.get(field_name, field.initial)
+            if initialValue:
+                return initialValue.all()
+            else:
+                return None
         else:
             return super(VariableForm2, self).get_initial_for_field(field, field_name)
 
@@ -209,7 +213,8 @@ class VariableAdmin(BaseServerModelAdmin):
                 defaultValues['environment'] = None
             if variable.application != refVariable.application:
                 defaultValues['application'] = None
-            if variable.test != refVariable.test:
+            # take ManyToMany relationship for test into account
+            if not (variable.test and refVariable.test) or list(variable.test.all()) != list(refVariable.test.all()):
                 defaultValues['test'] = None
             if variable.version != refVariable.version:
                 defaultValues['version'] = None
