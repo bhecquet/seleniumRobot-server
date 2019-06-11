@@ -166,17 +166,23 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-REST_FRAMEWORK = {
-    # Use Django's standard `django.contrib.auth` permissions,
-    # or allow read-only access for unauthenticated users.
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissions'
-#         'rest_framework.permissions.AllowAny'
-    ],
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication'
-    ]
-}
+if ("${security.api}"):
+    REST_FRAMEWORK = {
+        # Use Django's standard `django.contrib.auth` permissions,
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.DjangoModelPermissions'
+        ],
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            'rest_framework.authentication.TokenAuthentication'
+        ]
+    }
+else:
+    REST_FRAMEWORK = {
+        # allow read-only access for unauthenticated users.
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.AllowAny'
+        ]
+    }
 
 os.makedirs(os.path.join(BASE_DIR, 'log'), exist_ok=True)
 LOGGING = {
