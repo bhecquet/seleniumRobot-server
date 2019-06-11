@@ -17,8 +17,11 @@ from django.conf import settings
 from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
+from commonsServer.views.api import CustomAuthToken
 
 urlpatterns = [
+    
+    url(r'^api-token-auth/', CustomAuthToken.obtain_auth_token),
     url(r'^admin/', admin.site.urls),
     url(r'^snapshot/', include('snapshotServer.urls')),
     url(r'^variable/', include('variableServer.urls')),

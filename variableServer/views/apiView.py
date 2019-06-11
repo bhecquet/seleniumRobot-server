@@ -22,10 +22,15 @@ from variableServer.exceptions.AllVariableAlreadyReservedException import AllVar
 from django.utils import timezone
 from builtins import ValueError
 import random
+from rest_framework.views import APIView
+from rest_framework.response import Response
 
-
-def ping(request):
-    return HttpResponse("OK")
+class Ping(APIView):
+    
+    queryset = Variable.objects.none()
+    
+    def get(self, request, *args, **kwargs):
+        return Response("OK")
 
 class VariableList(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
