@@ -20,39 +20,39 @@ class test_FileUploadView(APITestCase):
     def setUp(self):
         pass
     
-#     def test__updateVariables(self):
-#         """
-#         check that updateVariable keeps the variable from additionalQuerySet parameters when it overrides one from sourceQuerySet
-#         """
-#         sourceQuerySet = Variable.objects.filter(application=None, version=None, environment=None, test=None)
-#         additionalQuerySet = Variable.objects.filter(application=None, version=None, environment=1, test=None)
-#         
-#         resultingQS = updateVariables(sourceQuerySet, additionalQuerySet)
-#         
-#         self.assertEqual(resultingQS.get(name='proxyPassword').value, 'devPassword')
-#     
-#     def test_severalUpdateVariables(self):
-#         """
-#         check that several updateVariables calls can be chained
-#         """
-#         sourceQuerySet = Variable.objects.filter(application=None, version=None, environment=None, test=None)
-#         additionalQuerySet = Variable.objects.filter(application=None, version=None, environment=1, test=None)
-#         
-#         resultingQS = updateVariables(sourceQuerySet, additionalQuerySet)
-#         otherQuerySet = Variable.objects.filter(application=2, version=None, environment=None, test=None)
-#         resultingQS = updateVariables(resultingQS, otherQuerySet)
-#         
-#         self.assertEqual(resultingQS.get(name='proxyPassword').value, 'devPassword')
-#         self.assertEqual(resultingQS.get(name='appName').value, 'myApp')
+    def test__updateVariables(self):
+        """
+        check that updateVariable keeps the variable from additional_query_set parameters when it overrides one from source_query_set
+        """
+        source_query_set = Variable.objects.filter(application=None, version=None, environment=None, test=None)
+        additional_query_set = Variable.objects.filter(application=None, version=None, environment=1, test=None)
+         
+        resulting_qs = updateVariables(source_query_set, additional_query_set)
+         
+        self.assertEquals(resulting_qs.get(name='proxyPassword').value, 'azerty')
+     
+    def test_severalUpdateVariables(self):
+        """
+        check that several updateVariables calls can be chained
+        """
+        source_query_set = Variable.objects.filter(application=None, version=None, environment=None, test=None)
+        additional_query_set = Variable.objects.filter(application=None, version=None, environment=1, test=None)
+         
+        resulting_qs = updateVariables(source_query_set, additional_query_set)
+        other_query_set = Variable.objects.filter(application=2, version=None, environment=None, test=None)
+        resulting_qs = updateVariables(resulting_qs, other_query_set)
+         
+        self.assertEquals(resulting_qs.get(name='proxyPassword').value, 'azerty')
+        self.assertEquals(resulting_qs.get(name='appName').value, 'myOtherApp')
 
     def _convertToDict(self, responseData):
-        variableDict = {}
+        variable_dict = {}
         for variable in responseData:
-            variableDict[variable['name']] = variable
+            variable_dict[variable['name']] = variable
              
-        return variableDict
+        return variable_dict
      
-    def test_getAllVariables(self):
+    def test_get_all_variables(self):
         """
         Check a reference is created when none is found
         """
@@ -71,6 +71,65 @@ class test_FileUploadView(APITestCase):
                 break
         else:
             self.fail("No variable from generic environment get")
+            
+        print("taille ---" + str(len(response.data)))
+        self.assertTrue(len(response.data) > 5)
+            
+         
+    def test_get_all_variables_with_name(self):
+        """
+        Check we filter variables by name and get only one variable
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'proxyPassword'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+             
+        # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
+        for variable in response.data:
+            self.assertEquals(variable['name'], 'proxyPassword')
+        
+        self.assertEquals(len(response.data), 1)
+        
+    def test_get_all_variables_with_value(self):
+        """
+        Check we filter variables by value and get only one variable
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'value': 'logs_dev'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+             
+        # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
+        for variable in response.data:
+            self.assertEquals(variable['value'], 'logs_dev')
+            self.assertEquals(variable['name'], 'logs')
+        
+        self.assertEquals(len(response.data), 1)
+    
+    def test_get_all_variables_with_name_and_value(self):
+        """
+        Check we filter variables by value/name and get only one variable
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'logs', 'value': 'logs_dev'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+             
+        # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
+        for variable in response.data:
+            self.assertEquals(variable['value'], 'logs_dev')
+            self.assertEquals(variable['name'], 'logs')
+        
+        self.assertEquals(len(response.data), 1)
+    
+    def test_get_all_variables_with_name_and_value_reserved(self):
+        """
+        Check we filter variables by value/name and get only one variable
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'login'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+             
+        # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
+        for variable in response.data:
+            self.assertEquals(variable['name'], 'login')
+            
+        self.assertTrue(Variable.objects.get(pk=response.data[0]['id']), "returned variable should be reserved")
+
              
     def test_getAllVariablesWithoutTest(self):
         """
@@ -151,13 +210,13 @@ class test_FileUploadView(APITestCase):
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'var1']), "Only one value should be get")
              
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check we only get variable where release date is before now and variables without release date
-        self.assertTrue('var1' in allVariables)                 # release date in the past, should be removed
-        self.assertEqual("value2", allVariables['var1']['value'])
-        self.assertIsNone(allVariables['var1']['releaseDate'])  # release date should be reset 
-        self.assertTrue('var0' in allVariables)                 # no release date
+        self.assertTrue('var1' in all_variables)                 # release date in the past, should be removed
+        self.assertEqual("value2", all_variables['var1']['value'])
+        self.assertIsNone(all_variables['var1']['releaseDate'])  # release date should be reset 
+        self.assertTrue('var0' in all_variables)                 # no release date
              
     def test_getVariablesOverrideGlobal(self):
         """
@@ -176,10 +235,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
              
     def test_getVariablesOverrideAppSpecific(self):
         """
@@ -198,10 +257,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
              
     def test_getVariablesOverrideVersionSpecific(self):
         """
@@ -221,10 +280,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
     def test_getVariablesOverrideGenericEnvironment(self):
         """
@@ -239,16 +298,16 @@ class test_FileUploadView(APITestCase):
         """
         version = Version.objects.get(pk=3)
         env = TestEnvironment.objects.get(pk=3)
-        genEnv = TestEnvironment.objects.get(pk=1)
-        Variable(name='var0', value='value0', environment=genEnv).save()
+        gen_env = TestEnvironment.objects.get(pk=1)
+        Variable(name='var0', value='value0', environment=gen_env).save()
         Variable(name='var0', value='value1', environment=env).save()
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
     def test_getVariablesOverrideEnvironment(self):
         """
@@ -271,10 +330,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
     def test_getVariablesOverrideTest(self):
         """
@@ -297,10 +356,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
     def test_getVariablesOverrideAppEnv(self):
         """
@@ -320,10 +379,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
     def test_getVariablesOverrideAppVersionEnv(self):
         """
@@ -372,10 +431,10 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
              
     def test_getAllVariablesWithSameName(self):
         """
@@ -386,8 +445,8 @@ class test_FileUploadView(APITestCase):
              
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'dupVariable']), "Only one value should be get")
              
-        allVariables = self._convertToDict(response.data)
-        self.assertIsNone(allVariables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
+        all_variables = self._convertToDict(response.data)
+        self.assertIsNone(all_variables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
                  
     def test_reserveVariable(self):
         """
@@ -397,8 +456,8 @@ class test_FileUploadView(APITestCase):
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
            
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
-        allVariables = self._convertToDict(response.data)
-        self.assertIsNotNone(allVariables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        all_variables = self._convertToDict(response.data)
+        self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
              
     def test_reservable_state_correction(self):
         """
@@ -478,9 +537,9 @@ class test_FileUploadView(APITestCase):
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
            
-        self.assertNotIn('oldVar', allVariables, "oldVar should be removed, as it's too old")
+        self.assertNotIn('oldVar', all_variables, "oldVar should be removed, as it's too old")
             
     def test_doNotdestroyNotsoOldVariables(self):
         """
@@ -497,9 +556,9 @@ class test_FileUploadView(APITestCase):
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
            
-        self.assertIn('oldVar', allVariables, "oldVar should not be removed, as it's not old enough")
+        self.assertIn('oldVar', all_variables, "oldVar should not be removed, as it's not old enough")
     
     def test_returnVariablesOlderThanXDays(self):
         """
@@ -519,10 +578,10 @@ class test_FileUploadView(APITestCase):
              
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
             
-        self.assertIn('oldVar', allVariables, "oldVar should be get as it's older than requested")
-        self.assertNotIn('oldVar2', allVariables, "oldVar2 should not be get as it's younger than requested")
+        self.assertIn('oldVar', all_variables, "oldVar should be get as it's older than requested")
+        self.assertNotIn('oldVar2', all_variables, "oldVar2 should not be get as it's younger than requested")
     
     def test_returnAllVariablesIfNoOlderThanProvided(self):
         """
@@ -542,10 +601,10 @@ class test_FileUploadView(APITestCase):
              
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
-        self.assertIn('oldVar', allVariables, "oldVar should be get as it's older than requested")
-        self.assertIn('oldVar2', allVariables, "oldVar2 should not be get as it's younger than requested")
+        self.assertIn('oldVar', all_variables, "oldVar should be get as it's older than requested")
+        self.assertIn('oldVar2', all_variables, "oldVar2 should not be get as it's younger than requested")
            
    
     def test_returnAllVariablesIfOlderThan0Days(self):
@@ -567,10 +626,10 @@ class test_FileUploadView(APITestCase):
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
             
-        self.assertIn('oldVar', allVariables, "oldVar should be get as it's older than requested")
-        self.assertIn('oldVar2', allVariables, "oldVar2 should not be get as it's younger than requested")
+        self.assertIn('oldVar', all_variables, "oldVar should be get as it's older than requested")
+        self.assertIn('oldVar2', all_variables, "oldVar2 should not be get as it's younger than requested")
            
    
     def test_returnAllVariablesIfOlderThanNegativeDays(self):
@@ -592,8 +651,8 @@ class test_FileUploadView(APITestCase):
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
             
-        self.assertIn('oldVar', allVariables, "oldVar should be get as it's older than requested")
-        self.assertIn('oldVar2', allVariables, "oldVar2 should not be get as it's younger than requested")
+        self.assertIn('oldVar', all_variables, "oldVar should be get as it's older than requested")
+        self.assertIn('oldVar2', all_variables, "oldVar2 should not be get as it's younger than requested")
            

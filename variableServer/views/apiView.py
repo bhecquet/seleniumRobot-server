@@ -59,90 +59,100 @@ class VariableList(mixins.ListModelMixin,
     
     def filter_queryset(self, queryset):
         
-        versionId = self.request.query_params.get('version', None)
-        applicationId = self.request.query_params.get('application', None)
-        environmentId = self.request.query_params.get('environment', None)
-        testId = self.request.query_params.get('test', None)
-        olderThan = int(self.request.query_params.get('olderThan', '0'))
+        version_id = self.request.query_params.get('version', None)
+        application_id = self.request.query_params.get('application', None)
+        environment_id = self.request.query_params.get('environment', None)
+        test_id = self.request.query_params.get('test', None)
+        older_than = int(self.request.query_params.get('olderThan', '0'))
+        variable_name = self.request.query_params.get('name', None)
+        variable_value = self.request.query_params.get('value', None)
          
         # return all variables if no filter is provided
         if 'pk' in self.kwargs:
             return queryset.filter(pk=self.kwargs['pk'])
         
-        if not versionId:
+        if not version_id:
             raise ValidationError("version parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
         try:
-            version = get_object_or_404(Version, pk=versionId)
+            version = get_object_or_404(Version, pk=version_id)
         except ValueError as e:
-            if not applicationId:
+            if not application_id:
                 raise ValidationError("application parameter is mandatory when version is given as its name. Typical request is http://<host>:<port>/variable/api/variable?application=<app_name>&version=<version_name>&environment=<id_env>&test=<id_test>")
-            version = get_object_or_404(Version, name=versionId, application__name=applicationId)
+            version = get_object_or_404(Version, name=version_id, application__name=application_id)
         
-        if not environmentId:
+        if not environment_id:
             raise ValidationError("environment parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
         try:
-            environment = get_object_or_404(TestEnvironment, pk=environmentId)
+            environment = get_object_or_404(TestEnvironment, pk=environment_id)
         except ValueError as e:
-            environment = get_object_or_404(TestEnvironment, name=environmentId)
+            environment = get_object_or_404(TestEnvironment, name=environment_id)
         
-        if testId:
+        if test_id:
             try:
-                test = get_object_or_404(TestCase, pk=testId)
+                test = get_object_or_404(TestCase, pk=test_id)
             except ValueError as e:
-                test = get_object_or_404(TestCase, name=testId)
+                test = get_object_or_404(TestCase, name=test_id)
         else:
             test = None
         
-        allVariables = queryset.filter(timeToLive__lte=0) | queryset.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(olderThan))
+        all_variables = queryset.filter(timeToLive__lte=0) | queryset.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(older_than))
         
-        variables = allVariables.filter(application=None, version=None, environment=None, test=None)
+        variables = all_variables.filter(application=None, version=None, environment=None, test=None)
         
         # variables specific to one of the parameters, the other remain null
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=None, test=None))
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=None, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=None, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=None, test=None))
         
         # for each queryset depending on environment, we will first get the generic environment related variable and then update them
         # with the specific environment ones
         if environment.genericEnvironment:
-            genericEnvironment = environment.genericEnvironment
+            generic_environment = environment.genericEnvironment
         else:
-            genericEnvironment = environment
+            generic_environment = environment
         
         # environment specific variables
-        variables = updateVariables(variables, allVariables.filter(application=None, version=None, test=None, environment=genericEnvironment))
-        variables = updateVariables(variables, allVariables.filter(application=None, version=None, test=None, environment=environment))
+        variables = updateVariables(variables, all_variables.filter(application=None, version=None, test=None, environment=generic_environment))
+        variables = updateVariables(variables, all_variables.filter(application=None, version=None, test=None, environment=environment))
         
         # application / test specific variables
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=None, test=test))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=None, test=test))
         
         # more precise variables
         # application / environment specific variables
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=None))
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=generic_environment, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=environment, test=None))
         
         # application / version/ environment specific variables
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=None))
-        variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=generic_environment, test=None))
+        variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=environment, test=None))
         
         if test:
             # application / environment / test specific variables
-            variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=genericEnvironment, test=test))
-            variables = updateVariables(variables, allVariables.filter(application=version.application, version=None, environment=environment, test=test))
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=generic_environment, test=test))
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=environment, test=test))
         
             # application / version / environment / test specific variables
-            variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=genericEnvironment, test=test))
-            variables = updateVariables(variables, allVariables.filter(application=version.application, version=version, environment=environment, test=test))
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=generic_environment, test=test))
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=environment, test=test))
         
-        variableNames = list(set([v.name for v in variables]))
+        # in case name is provided, filter variables
+        if variable_name:
+            variables = variables.filter(name=variable_name)
+            
+        # in case value is provided, filter variables
+        if variable_value:
+            variables = variables.filter(value=variable_value)
         
-        uniqueVariableList = self._uniqueVariable(variables.filter(releaseDate=None))
+        variable_names = list(set([v.name for v in variables]))
+        
+        unique_variable_list = self._uniqueVariable(variables.filter(releaseDate=None))
         
         # check we still have all variables after filtering. Else test may fail
-        filteredVariableNames = list(set([v.name for v in uniqueVariableList]))
-        if (len(filteredVariableNames) < len(variableNames)):
-            raise AllVariableAlreadyReservedException([v for v in variableNames if v not in filteredVariableNames])
+        filtered_variable_names = list(set([v.name for v in unique_variable_list]))
+        if (len(filtered_variable_names) < len(variable_names)):
+            raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
         
-        return self._reserveReservableVariables(uniqueVariableList)
+        return self._reserveReservableVariables(unique_variable_list)
         
     def _uniqueVariable(self, variableQuerySet):
         """
@@ -155,16 +165,16 @@ class VariableList(mixins.ListModelMixin,
             - unittest won't be possible due to the fact that distinct(field) is postgre only
         """
 
-        existingVariableNames = []
-        uniqueVariableList = []
-        initialList = list(variableQuerySet)
-        random.shuffle(initialList)
+        existing_variable_names = []
+        unique_variable_list = []
+        initial_list = list(variableQuerySet)
+        random.shuffle(initial_list)
          
-        for variable in initialList:
-            if variable.name not in existingVariableNames:
-                uniqueVariableList.append(variable)
-                existingVariableNames.append(variable.name)
-        return variableQuerySet.filter(pk__in=[v.pk for v in uniqueVariableList])
+        for variable in initial_list:
+            if variable.name not in existing_variable_names:
+                unique_variable_list.append(variable)
+                existing_variable_names.append(variable.name)
+        return variableQuerySet.filter(pk__in=[v.pk for v in unique_variable_list])
     
     def _filterNotReservedVariables(self, variableList):
         """
