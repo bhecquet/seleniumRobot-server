@@ -41,12 +41,12 @@ class VariableList(mixins.ListModelMixin,
     
     queryset = Variable.objects.none()
     
-    def _resetPastReleaseDates(self):
+    def _reset_past_release_dates(self):
         for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
             var.releaseDate = None
             var.save()
         
-    def _deleteOldVariables(self):
+    def _delete_old_variables(self):
         """
         Delete variables which contains a positive value for 'timeToLive' and which are still whereas they expired
         """
@@ -66,6 +66,7 @@ class VariableList(mixins.ListModelMixin,
         older_than = int(self.request.query_params.get('olderThan', '0'))
         variable_name = self.request.query_params.get('name', None)
         variable_value = self.request.query_params.get('value', None)
+        reserve_reservable_variables = self.request.query_params.get('reserve', 'true') == 'true'
          
         # return all variables if no filter is provided
         if 'pk' in self.kwargs:
@@ -145,21 +146,24 @@ class VariableList(mixins.ListModelMixin,
         
         variable_names = list(set([v.name for v in variables]))
         
-        unique_variable_list = self._uniqueVariable(variables.filter(releaseDate=None))
+        unique_variable_list = self._unique_variable(variables.filter(releaseDate=None))
         
         # check we still have all variables after filtering. Else test may fail
         filtered_variable_names = list(set([v.name for v in unique_variable_list]))
         if (len(filtered_variable_names) < len(variable_names)):
             raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
         
-        return self._reserveReservableVariables(unique_variable_list)
+        if reserve_reservable_variables:
+            return self._reserve_reservable_variables(unique_variable_list)
+        else:
+            return unique_variable_list
         
-    def _uniqueVariable(self, variableQuerySet):
+    def _unique_variable(self, variable_query_set):
         """
         render a list where each variable is unique (according to it's name)
         list is randomized, so that when several variables have the same name, we do not render always the same
         
-        There is a better way to return queryset than filtering on pk, using 'variableQuerySet.order_by().distinct("name")'
+        There is a better way to return queryset than filtering on pk, using 'variable_query_set.order_by().distinct("name")'
         but
             - there is still ordering
             - unittest won't be possible due to the fact that distinct(field) is postgre only
@@ -167,41 +171,36 @@ class VariableList(mixins.ListModelMixin,
 
         existing_variable_names = []
         unique_variable_list = []
-        initial_list = list(variableQuerySet)
+        initial_list = list(variable_query_set)
         random.shuffle(initial_list)
          
         for variable in initial_list:
             if variable.name not in existing_variable_names:
                 unique_variable_list.append(variable)
                 existing_variable_names.append(variable.name)
-        return variableQuerySet.filter(pk__in=[v.pk for v in unique_variable_list])
-    
-    def _filterNotReservedVariables(self, variableList):
-        """
-        Remove all variables which are reserved
-        """
-    
-    def _reserveReservableVariables(self, variableList):
+        return variable_query_set.filter(pk__in=[v.pk for v in unique_variable_list])
+
+    def _reserve_reservable_variables(self, variable_list):
         """
         among all variables of the queryset, mark all variables as reserved (releaseDate not null) when the are flagged as reservable
         Release will occur 15 mins after now
         """
-        for variable in variableList:
+        for variable in variable_list:
             if variable.reservable:
                 variable.releaseDate = timezone.now() + datetime.timedelta(seconds=900)
                 variable.save()
                 
-        return variableList
+        return variable_list
 
     def get(self, request, *args, **kwargs):
         """
         Get all variables corresponding to requested args
         """
         # reset 
-        self._resetPastReleaseDates()
+        self._reset_past_release_dates()
         
         # remove old variables
-        self._deleteOldVariables()
+        self._delete_old_variables()
         
         return self.list(request, *args, **kwargs)
 
