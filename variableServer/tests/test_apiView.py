@@ -218,7 +218,7 @@ class test_FileUploadView(APITestCase):
         self.assertIsNone(all_variables['var1']['releaseDate'])  # release date should be reset 
         self.assertTrue('var0' in all_variables)                 # no release date
              
-    def test_getVariablesOverrideGlobal(self):
+    def test_get_variables_override_global(self):
         """
         Check that global variables are overriden by application specific variables
         Order is (bottom take precedence):
@@ -240,7 +240,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
              
-    def test_getVariablesOverrideAppSpecific(self):
+    def test_get_variables_override_app_specific(self):
         """
         Check that application specific variables are overriden by application/version specific
         Order is (bottom take precedence):
@@ -262,7 +262,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
              
-    def test_getVariablesOverrideVersionSpecific(self):
+    def test_get_variables_override_version_specific(self):
         """
         Check that application/version specific variables are overriden by environment specific
         Order is (bottom take precedence):
@@ -285,7 +285,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideGenericEnvironment(self):
+    def test_get_variables_override_generic_environment(self):
         """
         Check that application/version specific variables are overriden by environment specific
         Order is (bottom take precedence):
@@ -309,7 +309,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideEnvironment(self):
+    def test_get_variables_override_environment(self):
         """
         Check that environment specific variables are overriden by test specific
         Order is (bottom take precedence):
@@ -335,7 +335,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideTest(self):
+    def test_get_variables_override_test(self):
         """
         Check that test specific variables are overriden by application/env specific
         Order is (bottom take precedence):
@@ -361,7 +361,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideAppEnv(self):
+    def test_get_variables_override_app_env(self):
         """
         Check that application/env specific variables are overriden by application/version/env specific
         Order is (bottom take precedence):
@@ -384,7 +384,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideAppVersionEnv(self):
+    def test_get_variables_override_app_version_env(self):
         """
         Check that application/version/env specific variables are overriden by application/version/env/test specific
         Order is (bottom take precedence):
@@ -405,12 +405,12 @@ class test_FileUploadView(APITestCase):
              
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        allVariables = self._convertToDict(response.data)
+        all_variables = self._convertToDict(response.data)
              
         # check overriding of variables
-        self.assertEqual(allVariables['var0']['value'], 'value1')
+        self.assertEqual(all_variables['var0']['value'], 'value1')
                  
-    def test_getVariablesOverrideAppEnvTest(self):
+    def test_get_variables_override_app_env_test(self):
         """
         Check that application/version/env specific variables are overriden by application/env/test specific
         Order is (bottom take precedence):
@@ -436,7 +436,7 @@ class test_FileUploadView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
              
-    def test_getAllVariablesWithSameName(self):
+    def test_get_all_variables_with_same_name(self):
         """
         Check we get only one value for the variable 'dupVariable'
         """
@@ -448,9 +448,10 @@ class test_FileUploadView(APITestCase):
         all_variables = self._convertToDict(response.data)
         self.assertIsNone(all_variables['dupVariable']['releaseDate'], 'releaseDate should be null as variable is not reservable')
                  
-    def test_reserveVariable(self):
+    def test_reserve_variable(self):
         """
         Check we get only one value for the variable 'login' and this is marked as reserved (release date not null)
+        This is the default behaviour when 'reserve' parameter is not given
         """
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -458,6 +459,29 @@ class test_FileUploadView(APITestCase):
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
         all_variables = self._convertToDict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+             
+    def test_reserve_variable_with_parameter(self):
+        """
+        Check we get only one value for the variable 'login' and this is marked as reserved (release date not null)
+        We request to reserve it via 'reserve=True' parameter
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reserve': 'true'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+           
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+        all_variables = self._convertToDict(response.data)
+        self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+             
+    def test_do_not_reserve_variable(self):
+        """
+        Check we get only one value for the variable 'login' and this is marked not reserved if we request not to reserve it via 'reserve=False' parameter
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reserve': 'false'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+           
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+        all_variables = self._convertToDict(response.data)
+        self.assertIsNone(all_variables['login']['releaseDate'], 'releaseDate should be null as variable should not be reserved')
              
     def test_reservable_state_correction(self):
         """
@@ -510,7 +534,7 @@ class test_FileUploadView(APITestCase):
             self.assertFalse(v.reservable)
               
           
-    def test_variableAlreadyReserved(self):
+    def test_variable_already_reserved(self):
         """
         When variable cannot be reserved because all are alrealdy taken by other test, an error should be raised
         """
