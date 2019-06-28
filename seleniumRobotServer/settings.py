@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
+    'elementInfoServer.app.ElementinfoserverConfig',
     'django_nose',
 ]
 

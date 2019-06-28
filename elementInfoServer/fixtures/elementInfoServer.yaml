@@ -1,0 +1,95 @@
+-   model: elementInfoServer.application
+    pk: 1
+    fields: {name: app1}
+-   model: elementInfoServer.application
+    pk: 2
+    fields: {name: app2}
+-   model: elementInfoServer.application
+    pk: 3
+    fields: {name: app3}
+-   model: elementInfoServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+-   model: elementInfoServer.version
+    pk: 2
+    fields: {application: 1, name: '2.5'}
+-   model: elementInfoServer.version
+    pk: 3
+    fields: {application: 2, name: '1.0'}
+-   model: elementInfoServer.version
+    pk: 4
+    fields: {application: 3, name: '1.0'}
+       
+-   fields: 
+        application: null
+        version: null
+        uuid: MyPage.my_element
+        name: my element
+        locator: By.id("touch")
+        tagName: div
+        text: ''
+        width: 0
+        height: 0
+        coordX: 0
+        coordY: 0
+        lastUpdate: '2019-06-28T10:15:58.891504Z'
+        b64Image: null
+        attributes: "{}"
+        totalSearch: 0
+        tagStability: 0
+        textStability: 0
+        rectangleStability: 0
+        b64ImageStability: 0
+        attributesStability: "{}"
+    model: elementInfoServer.elementInfo
+    pk: 1
+    
+-   fields: 
+        application: 1
+        version: null
+        uuid: MyPage.my_element2
+        name: my element2
+        locator: By.id("touch")
+        tagName: span
+        text: ''
+        width: 0
+        height: 0
+        coordX: 0
+        coordY: 0
+        lastUpdate: '2019-06-28T10:15:58.891504Z'
+        b64Image: null
+        attributes: "{}"
+        totalSearch: 0
+        tagStability: 0
+        textStability: 0
+        rectangleStability: 0
+        b64ImageStability: 0
+        attributesStability: "{}"
+    model: elementInfoServer.elementInfo
+    pk: 2
+    
+# old variable
+-   fields: 
+        application: 1
+        version: null
+        uuid: MyPage.my_element3
+        name: my element3
+        locator: By.id("touch")
+        tagName: span
+        text: ''
+        width: 0
+        height: 0
+        coordX: 0
+        coordY: 0
+        lastUpdate: '2019-04-28T10:15:58.891504Z'
+        b64Image: null
+        attributes: "{}"
+        totalSearch: 0
+        tagStability: 0
+        textStability: 0
+        rectangleStability: 0
+        b64ImageStability: 0
+        attributesStability: "{}"
+    model: elementInfoServer.elementInfo
+    pk: 3
+  

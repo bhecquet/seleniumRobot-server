@@ -43,15 +43,17 @@ INSTALLED_APPS = [
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
+    'elementInfoServer.app.ElementinfoserverConfig',
     'django_nose',
 ]
 
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
 NOSE_ARGS = [
     '--with-coverage',
     '--with-xunit',
     '--cover-package=snapshotServer',
     '--cover-package=variableServer',
+    '--cover-package=elementInfServer',
     '--cover-branches',
     '--cover-inclusive',
     '--cover-erase',
@@ -258,7 +260,7 @@ AUTH_LDAP_2_BIND_PASSWORD = 'pwd'
 AUTH_LDAP_2_USER_SEARCH = LDAPSearch("OU=ou,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
 
 # third LDAP server configuration (uncomment "seleniumRobotServer.ldapbackends.LDAPBackend3" in AUTHENTICATION_BACKENDS to use it)
-AUTH_LDAP_3_SERVER_URI = "ldap://ads01.priv:389"
+AUTH_LDAP_3_SERVER_URI = "ldap://mycompany.com:389"
 AUTH_LDAP_3_BIND_DN = 'CN=user,OU=ou,DC=company,DC=com'
 AUTH_LDAP_3_BIND_PASSWORD = 'pwd'
 AUTH_LDAP_3_USER_SEARCH = LDAPSearch("OU=ou,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")

@@ -25,6 +25,7 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^snapshot/', include('snapshotServer.urls')),
     url(r'^variable/', include('variableServer.urls')),
+    url(r'^elementinfo/', include('elementInfoServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
     
     # add media directory
