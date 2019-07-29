@@ -5,6 +5,7 @@ Created on 15 sept. 2017
 '''
 import datetime
 import time
+import logging
 
 from django.db.models import Q
 from django.http.response import HttpResponse
@@ -24,6 +25,8 @@ from builtins import ValueError
 import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
+
+logger = logging.getLogger(__name__)
 
 class Ping(APIView):
     
@@ -45,6 +48,7 @@ class VariableList(mixins.ListModelMixin,
         for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
             var.releaseDate = None
             var.save()
+            logger.info("unreserve variable [%d] automatically %s=%s " % (var.id, var.name, var.value))
         
     def _delete_old_variables(self):
         """
@@ -67,6 +71,11 @@ class VariableList(mixins.ListModelMixin,
         variable_name = self.request.query_params.get('name', None)
         variable_value = self.request.query_params.get('value', None)
         reserve_reservable_variables = self.request.query_params.get('reserve', 'true') == 'true'
+        
+        version_name = 'N/A'
+        application_name = 'N/A'
+        environment_name = 'N/A'
+        test_name = 'N/A'
          
         # return all variables if no filter is provided
         if 'pk' in self.kwargs:
@@ -76,26 +85,35 @@ class VariableList(mixins.ListModelMixin,
             raise ValidationError("version parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
         try:
             version = get_object_or_404(Version, pk=version_id)
+            version_name = version.name
+            application_name = version.application.name
         except ValueError as e:
             if not application_id:
                 raise ValidationError("application parameter is mandatory when version is given as its name. Typical request is http://<host>:<port>/variable/api/variable?application=<app_name>&version=<version_name>&environment=<id_env>&test=<id_test>")
             version = get_object_or_404(Version, name=version_id, application__name=application_id)
+            version_name = version.name
+            application_name = application_id
         
         if not environment_id:
             raise ValidationError("environment parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
         try:
             environment = get_object_or_404(TestEnvironment, pk=environment_id)
+            environment_name = environment.name
         except ValueError as e:
             environment = get_object_or_404(TestEnvironment, name=environment_id)
+            environment_name = environment.name
         
         if test_id:
             try:
                 test = get_object_or_404(TestCase, pk=test_id)
+                test_name = test.name
             except ValueError as e:
                 test = get_object_or_404(TestCase, name=test_id)
+                test_name = test.name
         else:
             test = None
-        
+            
+            
         all_variables = queryset.filter(timeToLive__lte=0) | queryset.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(older_than))
         
         variables = all_variables.filter(application=None, version=None, environment=None, test=None)
@@ -153,8 +171,8 @@ class VariableList(mixins.ListModelMixin,
         if (len(filtered_variable_names) < len(variable_names)):
             raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
         
-        if reserve_reservable_variables:
-            return self._reserve_reservable_variables(unique_variable_list)
+        if reserve_reservable_variables:            
+            return self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name)
         else:
             return unique_variable_list
         
@@ -180,7 +198,7 @@ class VariableList(mixins.ListModelMixin,
                 existing_variable_names.append(variable.name)
         return variable_query_set.filter(pk__in=[v.pk for v in unique_variable_list])
 
-    def _reserve_reservable_variables(self, variable_list):
+    def _reserve_reservable_variables(self, variable_list, application, version, environment, test):
         """
         among all variables of the queryset, mark all variables as reserved (releaseDate not null) when the are flagged as reservable
         Release will occur 15 mins after now
@@ -189,6 +207,7 @@ class VariableList(mixins.ListModelMixin,
             if variable.reservable:
                 variable.releaseDate = timezone.now() + datetime.timedelta(seconds=900)
                 variable.save()
+                logger.info("reserve variable [%d] %s=%s for (application=%s, version=%s, environment=%s, test=%s)" % (variable.id, variable.name, variable.value, application, version, environment, test))
                 
         return variable_list
 
@@ -212,6 +231,15 @@ class VariableList(mixins.ListModelMixin,
         return self.destroy(request, *args, **kwargs)
     
     def patch(self, request, *args, **kwargs):
+        
+        release_date = request.data.get('releaseDate', None)
+        if release_date == '':
+            try:
+                variable = get_object_or_404(Variable, pk=int(kwargs['pk']))
+                logger.info("unreserve variable [%d] %s=%s " % (variable.id, variable.name, variable.value))
+            except:
+                pass
+        
         return self.partial_update(request, *args, **kwargs)
     
     
