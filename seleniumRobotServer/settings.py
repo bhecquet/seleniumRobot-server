@@ -228,6 +228,12 @@ LOGGING = {
             'filename': BASE_DIR + '/log/django_production.log',
             'formatter': 'simple'
         },
+        'variableReservation_logfile': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR + '/log/variable_reservation.log',
+            'formatter': 'simple'
+        },
         'dba_logfile': {
             'level': 'DEBUG',
             'filters': ['require_debug_false','require_debug_true'],
@@ -237,6 +243,10 @@ LOGGING = {
         },
     },
     'loggers': {
+        'variableServer.views.apiView': {
+            'handlers': ['console', 'variableReservation_logfile'],
+            'level': 'INFO',
+         },
         'snapshotServer': {
             'handlers': ['console','development_logfile','production_logfile'],
             'level': 'DEBUG',
