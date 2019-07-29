@@ -217,29 +217,37 @@ LOGGING = {
         'development_logfile': {
             'level': 'DEBUG',
             'filters': ['require_debug_true'],
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + '/log/django_dev.log',
+            'maxBytes': 5000000,
+            'backupCount': 3,
             'formatter': 'verbose'
         },
         'production_logfile': {
             'level': 'ERROR',
             'filters': ['require_debug_false'],
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + '/log/django_production.log',
+            'maxBytes': 5000000,
+            'backupCount': 3,
             'formatter': 'simple'
         },
         'variableReservation_logfile': {
             'level': 'INFO',
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + '/log/variable_reservation.log',
-            'formatter': 'simple'
+            'formatter': 'simple',
+            'maxBytes': 5000000,
+            'backupCount': 3
         },
         'dba_logfile': {
             'level': 'DEBUG',
             'filters': ['require_debug_false','require_debug_true'],
-            'class': 'logging.FileHandler',
+            'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + '/log/django_dba.log', 
-            'formatter': 'simple'
+            'formatter': 'simple',
+            'maxBytes': 5000000,
+            'backupCount': 3,
         },
     },
     'loggers': {
