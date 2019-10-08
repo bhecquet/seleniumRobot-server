@@ -134,8 +134,8 @@ class VariableForm2(forms.ModelForm):
         fields = ['application', 'version', 'environment', 'test', 'reservable']
 
 class VariableAdmin(BaseServerModelAdmin): 
-    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate')
-    list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'test', 'releaseDate')
+    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = ('application', 'version', 'environment', 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
