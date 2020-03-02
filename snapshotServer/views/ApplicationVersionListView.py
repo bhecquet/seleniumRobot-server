@@ -1,6 +1,6 @@
 from django.views.generic.list import ListView
 from snapshotServer.models import Version
-from django.shortcuts import render_to_response, redirect
+from django.shortcuts import render, redirect
 
 
 class ApplicationVersionListView(ListView):
@@ -19,7 +19,7 @@ class ApplicationVersionListView(ListView):
         try:
             Version.objects.get(pk=request.POST.get('application'))
         except:
-            return render_to_response(self.template_name, {'error': "Application version %s does not exist" % request.POST.get('application'),
+            return render(request, self.template_name, {'error': "Application version %s does not exist" % request.POST.get('application'),
                                                            'object_list': self.get_queryset()})
 
         displayType = request.POST.get('display')

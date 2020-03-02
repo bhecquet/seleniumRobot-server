@@ -50,83 +50,87 @@ class TestDiffComputer(django.test.TestCase):
         """
         Check thread is not started when computing is requested to be done now
         """
-        img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-        s1.save()
-        s1.image.save("img", img)
-        s1.save()
-        s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-
-        DiffComputer.getInstance().computeNow(s1, s2)
-
-        # something has been computed
-        self.assertIsNotNone(s2.pixelsDiff)
-        self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile)
+            s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+            s1.save()
+            s1.image.save("img", img)
+            s1.save()
+            s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+    
+            DiffComputer.getInstance().computeNow(s1, s2)
+    
+            # something has been computed
+            self.assertIsNotNone(s2.pixelsDiff)
+            self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
         
     def test_refIsNone(self):
         """
         Check no error is raised when reference is None. Nothing happens for the stepSnapshot
         """
-        img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=b'')
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-
-        DiffComputer.getInstance().computeNow(None, s2)
-
-        # something has been computed
-        self.assertIsNone(s2.pixelsDiff)
-        self.assertIsNone(s2.refSnapshot, "refSnapshot should have not been updated")
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile)
+            s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=b'')
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+    
+            DiffComputer.getInstance().computeNow(None, s2)
+    
+            # something has been computed
+            self.assertIsNone(s2.pixelsDiff)
+            self.assertIsNone(s2.refSnapshot, "refSnapshot should have not been updated")
         
     def test_refImageIsNone(self):
         """
         Check no error is raised when image data is missing
         """
-        img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-        s1.save()
-        s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=b'')
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-
-        DiffComputer.getInstance().computeNow(s1, s2)
-
-        # something has been computed
-        self.assertIsNone(s2.pixelsDiff)
-        self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile)
+            s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+            s1.save()
+            s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=b'')
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+    
+            DiffComputer.getInstance().computeNow(s1, s2)
+    
+            # something has been computed
+            self.assertIsNone(s2.pixelsDiff)
+            self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
         
     def test_addJobs(self):
         """
         Check we can add jobs and they get computed
         """
-        img = ImageFile(open("snapshotServer/tests/data/test_Image1.png", 'rb'))
-        s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-        s1.save()
-        s1.image.save("img", img)
-        s1.save()
-        s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-        s3 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-        s3.save()
-        s3.image.save("img", img)
-        s3.save()
-
-        diffComputer = DiffComputer.getInstance()
-        diffComputer.addJobs(s1, s2, checkTestMode=False)
-        diffComputer.addJobs(s1, s3, checkTestMode=False)
-        time.sleep(1)
-        diffComputer.stopThread()
-        
-        # something has been computed
-        self.assertIsNotNone(s2.pixelsDiff)
-        self.assertIsNotNone(s3.pixelsDiff)
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile)
+            s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+            s1.save()
+            s1.image.save("img", img)
+            s1.save()
+            s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+            s3 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+            s3.save()
+            s3.image.save("img", img)
+            s3.save()
+    
+            diffComputer = DiffComputer.getInstance()
+            diffComputer.addJobs(s1, s2, checkTestMode=False)
+            diffComputer.addJobs(s1, s3, checkTestMode=False)
+            time.sleep(1)
+            diffComputer.stopThread()
+            
+            # something has been computed
+            self.assertIsNotNone(s2.pixelsDiff)
+            self.assertIsNotNone(s3.pixelsDiff)
         
     def test_errorWhileComputing(self):
         """

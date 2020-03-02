@@ -39,28 +39,28 @@ class Test_PictureView(Test_Views):
         """
         From a picture which is not a reference (s1), make it a new ref
         """
-          
-        s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
-        s1.save()
-        img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
-        s1.image.save("img", img)
-        s1.save()
-        s2 = Snapshot(stepResult=self.sr2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-          
-        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True")
-          
-        # check display
-        self.assertIsNone(response.context['reference'], "new reference should be the snapshot itself")
-        self.assertIsNone(response.context['stepSnapshot'].refSnapshot, "new reference should be the snapshot itself")
-        self.assertIsNone(response.context['stepSnapshot'].pixelsDiff)
-        DiffComputer.stopThread()
-          
-        # check s2 ref as been changed
-        self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, s1, "ref snapshot for s2 should have changed to s1")
-        self.assertEqual(Snapshot.objects.get(id=2).refSnapshot, self.initialRefSnapshot, "snapshot previous to s1 should not have change")
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
+            s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+            s1.save()
+            img = ImageFile(imgFile)
+            s1.image.save("img", img)
+            s1.save()
+            s2 = Snapshot(stepResult=self.sr2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+              
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True")
+              
+            # check display
+            self.assertIsNone(response.context['reference'], "new reference should be the snapshot itself")
+            self.assertIsNone(response.context['stepSnapshot'].refSnapshot, "new reference should be the snapshot itself")
+            self.assertIsNone(response.context['stepSnapshot'].pixelsDiff)
+            DiffComputer.stopThread()
+              
+            # check s2 ref as been changed
+            self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, s1, "ref snapshot for s2 should have changed to s1")
+            self.assertEqual(Snapshot.objects.get(id=2).refSnapshot, self.initialRefSnapshot, "snapshot previous to s1 should not have change")
           
     def test_makeRefWhenAlreadyRef(self):
         """
@@ -106,25 +106,25 @@ class Test_PictureView(Test_Views):
         From a picture which is a reference (s1), remove the reference flag. Next snpashots (s2) should then refere to the last 
         reference available
         """
-  
-        s1 = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
-        s1.save()
-        img = ImageFile(open(self.dataDir + "test_Image1.png", 'rb'))
-        s1.image.save("img", img)
-        s1.save()
-        s2 = Snapshot(stepResult=self.sr2, refSnapshot=s1, pixelsDiff=None)
-        s2.save()
-        s2.image.save("img", img)
-        s2.save()
-          
-        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False")
-          
-        # check display
-        self.assertEqual(response.context['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
-        self.assertEqual(response.context['stepSnapshot'].refSnapshot, self.initialRefSnapshot, "new reference should be the first snapshot")
-        self.assertIsNotNone(response.context['stepSnapshot'].pixelsDiff)
-        DiffComputer.stopThread()
-          
-        # check s2 ref as been changed
-        self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for s2 should have changed to first snapshot")
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
+            s1 = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
+            s1.save()
+            img = ImageFile(imgFile)
+            s1.image.save("img", img)
+            s1.save()
+            s2 = Snapshot(stepResult=self.sr2, refSnapshot=s1, pixelsDiff=None)
+            s2.save()
+            s2.image.save("img", img)
+            s2.save()
+              
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False")
+              
+            # check display
+            self.assertEqual(response.context['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertEqual(response.context['stepSnapshot'].refSnapshot, self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertIsNotNone(response.context['stepSnapshot'].pixelsDiff)
+            DiffComputer.stopThread()
+              
+            # check s2 ref as been changed
+            self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for s2 should have changed to first snapshot")
    

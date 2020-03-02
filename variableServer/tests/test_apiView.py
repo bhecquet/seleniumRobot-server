@@ -29,7 +29,7 @@ class test_FileUploadView(APITestCase):
          
         resulting_qs = updateVariables(source_query_set, additional_query_set)
          
-        self.assertEquals(resulting_qs.get(name='proxyPassword').value, 'azerty')
+        self.assertEqual(resulting_qs.get(name='proxyPassword').value, 'azerty')
      
     def test_several_update_variables(self):
         """
@@ -42,8 +42,8 @@ class test_FileUploadView(APITestCase):
         other_query_set = Variable.objects.filter(application=2, version=None, environment=None, test=None)
         resulting_qs = updateVariables(resulting_qs, other_query_set)
          
-        self.assertEquals(resulting_qs.get(name='proxyPassword').value, 'azerty')
-        self.assertEquals(resulting_qs.get(name='appName').value, 'myOtherApp')
+        self.assertEqual(resulting_qs.get(name='proxyPassword').value, 'azerty')
+        self.assertEqual(resulting_qs.get(name='appName').value, 'myOtherApp')
 
     def _convert_to_dict(self, responseData):
         variable_dict = {}
@@ -84,9 +84,9 @@ class test_FileUploadView(APITestCase):
              
         # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
         for variable in response.data:
-            self.assertEquals(variable['name'], 'proxyPassword')
+            self.assertEqual(variable['name'], 'proxyPassword')
         
-        self.assertEquals(len(response.data), 1)
+        self.assertEqual(len(response.data), 1)
         
     def test_get_all_variables_with_value(self):
         """
@@ -97,10 +97,10 @@ class test_FileUploadView(APITestCase):
              
         # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
         for variable in response.data:
-            self.assertEquals(variable['value'], 'logs_dev')
-            self.assertEquals(variable['name'], 'logs')
+            self.assertEqual(variable['value'], 'logs_dev')
+            self.assertEqual(variable['name'], 'logs')
         
-        self.assertEquals(len(response.data), 1)
+        self.assertEqual(len(response.data), 1)
     
     def test_get_all_variables_with_name_and_value(self):
         """
@@ -111,10 +111,10 @@ class test_FileUploadView(APITestCase):
              
         # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
         for variable in response.data:
-            self.assertEquals(variable['value'], 'logs_dev')
-            self.assertEquals(variable['name'], 'logs')
+            self.assertEqual(variable['value'], 'logs_dev')
+            self.assertEqual(variable['name'], 'logs')
         
-        self.assertEquals(len(response.data), 1)
+        self.assertEqual(len(response.data), 1)
     
     def test_get_all_variables_with_name_and_value_reserved(self):
         """
@@ -125,7 +125,7 @@ class test_FileUploadView(APITestCase):
              
         # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
         for variable in response.data:
-            self.assertEquals(variable['name'], 'login')
+            self.assertEqual(variable['name'], 'login')
             
         self.assertTrue(Variable.objects.get(pk=response.data[0]['id']), "returned variable should be reserved")
 
@@ -553,7 +553,7 @@ class test_FileUploadView(APITestCase):
         version = Version.objects.get(pk=2)
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(2), 
+                 creationDate=timezone.now() - datetime.timedelta(2), 
                  timeToLive=1).save()
             
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
@@ -572,7 +572,7 @@ class test_FileUploadView(APITestCase):
         version = Version.objects.get(pk=2)
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 creationDate=timezone.now() - datetime.timedelta(0, 23 * 60 * 60), 
                  timeToLive=1).save()
             
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
@@ -591,10 +591,10 @@ class test_FileUploadView(APITestCase):
         version = Version.objects.get(pk=2)
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(2), 
+                 creationDate=timezone.now() - datetime.timedelta(2), 
                  timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 creationDate=timezone.now() - datetime.timedelta(seconds=23 * 60 * 60), # almost 1 day
                  timeToLive=5).save()
              
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 1})
@@ -614,10 +614,10 @@ class test_FileUploadView(APITestCase):
         version = Version.objects.get(pk=2)
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='oldVar', value='oldValue1', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(2), 
+                 creationDate=timezone.now() - datetime.timedelta(2), 
                  timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 creationDate=timezone.now() - datetime.timedelta(1), 
                  timeToLive=5).save()
     
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
@@ -641,7 +641,7 @@ class test_FileUploadView(APITestCase):
                  creationDate=timezone.now(), 
                  timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 creationDate=timezone.now() - datetime.timedelta(1), 
                  timeToLive=5).save()
    
         time.sleep(0.5) # wait so that comparing variable time is not a problem
@@ -666,7 +666,7 @@ class test_FileUploadView(APITestCase):
                  creationDate=timezone.now(), 
                  timeToLive=5).save()
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
-                 creationDate=datetime.datetime.now() - datetime.timedelta(1), 
+                 creationDate=timezone.now() - datetime.timedelta(1), 
                  timeToLive=5).save()
    
         time.sleep(0.5) # wait so that comparing variable time is not a problem
