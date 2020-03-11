@@ -3,6 +3,7 @@
 
 {% block head %}
 <script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
 {% endblock %}
 
 {% block body %}
@@ -10,75 +11,107 @@
 	<div class="col-sm-2 " style="background-color:#006266;height: 40px;"></div>
 	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">
 		<form>
-			<div  class="btn" id="btnMenu"  >Browser&nbsp;
-				<select id="browsers" multiple="multiple" name="browser">
-					{% for browser in browsers %}
-						{% if browser in selectedBrowser %}
-							<option value="{{ browser }}" selected="selected">{{ browser }}</option>
-						{% else %}
-							<option value="{{ browser }}">{{ browser }}</option>
-						{% endif %}
-					{% endfor %}
-				</select>
+			<div class="btn-group">
+			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnBrowser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Browser
+			  </button>
+				<div class="dropdown-menu" >
+					<div class="form-group">
+						{% for browser in browsers %}
+							<div class="form-check">
+								{% if browser in selectedBrowser %}
+						 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" checked="checked" />
+						 		{% else %}
+						 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" />
+						 		{% endif %}
+									<label class="form-check-label" for="{{ browser }}">{{ browser }}</label>
+						  	</div>
+						{% endfor %}
+					</div>
+						
+				</div>
 			</div>
-			
-			<div  class="btn" id="btnMenu">Environment&nbsp;
-				<select id="environments" multiple="multiple" name="environment">
-					{% for environment in environments %}
-						{% if environment in selectedEnvironments %}
-							<option value="{{ environment.id }}" selected="selected">{{ environment.name }}</option>
-						{% else %}
-							<option value="{{ environment.id }}">{{ environment.name }}</option>
-						{% endif %}
-					{% endfor %}
-				</select>
+			<div class="btn-group">
+			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnEnvironment" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Environment
+			  </button>
+				<div class="dropdown-menu" >
+					<div class="form-group">
+						{% for environment in environments %}
+							<div class="form-check">
+								{% if environment in selectedEnvironments %}
+						 			<input type="checkbox" class="form-check-input" value="{{ environment.id }}" name="environment" checked="checked" />
+						 		{% else %}
+						 			<input type="checkbox" class="form-check-input" value="{{ environment.id }}" name="environment" />
+						 		{% endif %}
+									<label class="form-check-label" for="{{ environment.id }}">{{ environment.name }}</label>
+						  	</div>
+						{% endfor %}
+					</div>
+						
+				</div>
 			</div>
 			
 			<!--  these are TestCase instances -->
-			<div  class="btn" id="btnMenu">Test Cases&nbsp;
-				<select id="testCases" multiple="multiple" name="testcase">
-					{% for testCase in testCases %}
-						{% if testCase in selectedTestCases %}
-							<option value="{{ testCase.id }}" selected="selected">{{ testCase.name }}</option>
-						{% else %}
-							<option value="{{ testCase.id }}">{{ testCase.name }}</option>
-						{% endif %}
-					{% endfor %}
-				</select>
+			<div class="btn-group">
+			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnTestCase" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+				Test Cases
+			  </button>
+				<div class="dropdown-menu" >
+					<div class="form-group">
+						{% for testCase in testCases %}
+							<div class="form-check">
+								{% if testCase in selectedTestCases %}
+						 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" checked="checked" />
+						 		{% else %}
+						 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" />
+						 		{% endif %}
+									<label class="form-check-label" for="{{ testCase.id }}">{{ testCase.name }}</label>
+						  	</div>
+						{% endfor %}
+					</div>
+						
+				</div>
 			</div>
 			
-			<div class="btn" id="btnMenu"  >Starting&nbsp;
-				<input type="text" value="{{ sessionFrom }}" id="sessionFrom" name="sessionFrom" style="color: black;"/>
+			<div class="input-group w-25 input-group-sm d-inline-flex">
+			  <div class="input-group-prepend">
+				<span class="input-group-text" id="basic-addon3">Starting</span>
+			  </div>
+			  <input type="text" class="form-control" value="{{ sessionFrom }}" id="sessionFrom" name="sessionFrom" aria-describedby="basic-addon3">
 			</div>
 			
-			<div class="btn" id="btnMenu"  >Ending&nbsp;
-				<input type="text" value="{{ sessionTo }}" id="sessionTo" name="sessionTo" style="color: black;" />
+			<div class="input-group w-25 input-group-sm d-inline-flex">
+			  <div class="input-group-prepend">
+				<span class="input-group-text" id="basic-addon3">Ending</span>
+			  </div>
+			  <input type="text" class="form-control" value="{{ sessionTo }}" id="sessionTo" name="sessionTo" aria-describedby="basic-addon3">
 			</div>
 			
-			<input type="submit" class="btn" value="Filter" style="background-color:#1E4F51;">
+			<input type="submit" class="btn btn-info" value="Filter">
 		</form>
 	</div>
 	<div  class="col-sm-2 " style="margin-left: -15px;height: 40px;background-color:#006266;" >&nbsp;  </div>
 </div>
 
 <div class="row">
-	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center;height: 25px;">
-		<div type="button" value="Display" onclick="toggleElement('sessionListMenu');" class="btn " id="btnMenu" >TEST &nbsp;
-			<img src="{% static 'img/down.png' %}"  class="img-circle" alt="" id="down" width="14">
+	<div class="col-lg-4" style="background-color:#33414a; text-align: center;height: 25px;" >&nbsp;</div>
+	<div class="col-lg-3" style="background-color:#33414a;color: white; text-align: center;height: 25px;" >Reference</div>
+	<div class="col-lg-1" style="background-color:#33414a; text-align: center;height: 25px;" >&nbsp;</div>
+	<div class="col-lg-3" style="background-color:#33414a;color: white; text-align: center;height: 25px;" >Step</div>
+	<div class="col-lg-1" style="background-color:#33414a; text-align: center;height: 25px;" >&nbsp;</div>
+</div>
+
+<div class="row">
+	<div id="sessionListMenu" class="col-lg-4" style="">
+		<div id="selection" class="leftPane">		
+			{% include "snapshotServer/selectionPanel.html" %}	
 		</div>
 	</div>
-	<div  class="col-sm-10" style="background-color:#33414a; text-align: center;height: 25px;">&nbsp;</div>
-	<div  class="col-sm-1"  style="background-color:#33414a;color: white; text-align: center; padding-left:0px;margin-left: -15px;height: 25px;">
-		<div type="button" value="Display" onclick="toggleElement('a_masquer2');" class="btn" id="btnMenu" >EXCLUDE ZONE &nbsp; 
-			<img src="{% static 'img/down.png' %}"  class="img-circle" alt="" id="down" width="14">
-		</div>
+	
+	<div id="display" class="rightPane col-lg-7">
 	</div>
 </div>
-<div id="sessionListMenu" style="display:none">
-	<div id="selection" class="leftPane col-lg-1">
-	{% include "snapshotServer/selectionPanel.html" %}
-	</div>
-</div>
-	<div id="display" class="rightPane">
-	</div>
+
+
 {% endblock %}

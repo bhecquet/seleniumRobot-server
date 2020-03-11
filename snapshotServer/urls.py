@@ -52,13 +52,13 @@ urlpatterns = [
 
     url(r'^compare/(?P<versionId>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
-    url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  # /sessionId/
-    url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', StepListView.as_view(), name="steplistView"), # /testCaseInSession/
-    url(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), # /testCaseInSession/testStep
+    url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
+    url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', StepListView.as_view(), name="steplistView"), 
+    url(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
     url(r'^compare/excludeList/(?P<snapshotId>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
-    url(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), # /testCaseInSession
-    url(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), # /testCaseInSession/testStep
+    url(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
+    url(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
     
 ]

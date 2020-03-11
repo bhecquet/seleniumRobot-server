@@ -1,75 +1,148 @@
 {% load static %}
-<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
 
-<div>
-	<div class="maskRef">
-		<div class="title">Reference</div>
-	{% if reference %}
-		<div class="snapshotInfo">{{ reference.session }}</div>
-		<div class="snapshot"><img src="{{ reference.image.url }}" class="shadowBox" style="width:inherit"></div>
-	{% else %}
-		<div class="snapshotInfo">No Reference</div>
+<!-- be sure we load display exclusion zones only once image is loaded -->
+<script>;
+
+	{% if stepSnapshot and stepSnapshot.refSnapshot %}
+		var img = document.getElementById('stepSnapshotStatic_{{testStepId}}');
+		img.onload = function() {
+			updatePanel('{% url "excludeListView" stepSnapshot.refSnapshot.id %}', 'excludeZoneTable_{{testStepId}}');
+			drawExistingExcludeZones(document.getElementById('canvasStatic_{{testStepId}}'), 
+									document.getElementById("stepSnapshotStatic_{{testStepId}}").clientHeight, 
+									'Static',
+									{{testStepId}});
+		}
 	{% endif %}
-	</div>
 
-	<div class="maskStep">
-		<div class="title">Step</div>
-		
-		{% if stepSnapshot %}
-		<div class="snapshotInfo step">
-			{% if stepSnapshot.refSnapshot %}
-			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=True')">Make a reference</button>
-				{% if not stepSnapshot.tooManyDiffs %}
-				<button type="submit" class="btn btn-primary" onclick="toggleElement('diff');">Toggle differences</button>
-				{% else %}
-				<br/>Too many differences for display (> 10%)
-				{% endif %}
-			
+</script>
+
+<div class="container">
+	<div class="row no-gutters">
+		<div class="col-lg-5">
+			{% if reference %}
+				<div class="snapshot">
+					<figure>
+						<img src="{{ reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
+						<figcaption class="figure-caption">{{ reference.stepResult.testCase.session }}</figcaption>
+					</figure>
+				</div>
 			{% else %}
-			This step is a reference
-			<button type="submit" class="btn btn-primary" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False')">remove this reference</button>
+				<div class="snapshotInfo">No Reference</div>
 			{% endif %}
 		</div>
-		<div class="snapshot">
-			<canvas id="diff" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width: inherit;position:absolute;"></canvas> 
-			<img class="shadowBox" id="stepSnapshot" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;position:absolute;">
-			<div id="canvas" width="{{ stepSnapshot.image.width }}" height="{{ stepSnapshot.image.height }}" style="z-index:10;width: inherit;position:absolute;"></div>
+		<div class="col-lg-2 btn-group-vertical">
+			{% if stepSnapshot.refSnapshot %}
+				<button type="submit" class="btn btn-success mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True')">Make reference</button>
+				{% if not stepSnapshot.tooManyDiffs %}
+					<button type="button" class="btn btn-info mt-3 mb-3" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
+				{% else %}
+					<div>Too many differences for display (> 10%)</div>
+				{% endif %}
+				<button type="button" class="btn btn-primary mt-3 mb-3" data-toggle="modal" data-target="#editionModal_{{testStepId}}">Edit</button>
+			{% elif stepSnapshot %}
+				<button type="button" class="btn btn-success mt-3 mb-3" disabled>This step is a reference</button>
+				<button type="submit" class="btn btn-primary mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False')">Remove this reference</button>
+			{% endif %}
 		</div>
-		
-		<div id="a_masquer2" style="display:none">
-			<div id="excludeZone" class="col-lg-12" ><a></a> 
-	            <div id="excludeZoneTable">
-	            	<div id="titleZoneTable"> 
-	                    <img src="{% static 'img/exclude.png' %}"  class="img-circle" alt="" id="exclude" width="40"> Exclude zones 
-	                    <img src="{% static 'img/exclude.png' %}"  class="img-circle" alt="" id="exclude" width="40">
-	                </div>
-	            </div>
-	            
-	            <button type="submit" class="btn btn-primary" onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})">Save</button>
-			</div>
+		<div class="col-lg-5">
+			{% if stepSnapshot %}
+				<div class="snapshot">
+{#					<canvas id="diff_{{testStepId}}" #}
+{#						class="diffCanvas diffCanvas_{{testStepId}}" #}
+{#						width="{{ stepSnapshot.image.width }}" #}
+{#						height="{{ stepSnapshot.image.height }}" #}
+{#						style="z-index: 10; width: inherit; display: none;"></canvas>#}
+					<img class="shadowBox" 
+						id="stepSnapshotStatic_{{testStepId}}" 
+						src="{{ stepSnapshot.image.url }}" 
+						style="z-index:1;width:inherit;" 
+						>
+					<img class="diffCanvas diffCanvas_{{testStepId}}" 
+						id="diff_{{testStepId}}" 
+						img alt="diff" src="data:image/png;base64,{{diffB64}}"
+						style="z-index:10;width:inherit; display: none;" 
+						>
+					<div id="canvasStatic_{{testStepId}}" 
+						class="diffCanvas" 
+						width="{{ stepSnapshot.image.width }}" 
+						height="{{ stepSnapshot.image.height }}" 
+						style="z-index: 10; width: inherit;">
+					</div>
+				</div>
+			
+				<div class="modal fade" id="editionModal_{{testStepId}}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}" aria-hidden="true">
+					<div class="modal-dialog modal-xl" role="document">
+						<div class="modal-content">
+							<div class="modal-body">
+								<div class="snapshot">
+{#									<canvas id="diff2_{{testStepId}}" #}
+{#										class="diffCanvas diffCanvas_{{testStepId}}" #}
+{#										width="{{ stepSnapshot.image.width }}" #}
+{#										height="{{ stepSnapshot.image.height }}" #}
+{#										style="z-index: 10; width: inherit; display: none;"></canvas>#}
+									<img class="shadowBox" id="stepSnapshot_{{testStepId}}" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
+									<img class="diffCanvas diffCanvas_{{testStepId}}" 
+										id="diff2_{{testStepId}}" 
+										img alt="diff" src="data:image/png;base64,{{diffB64}}"
+										style="z-index:10;width:inherit; display: none;" 
+										>
+									<div id="canvas_{{testStepId}}"
+										class="diffCanvas"  
+										width="{{ stepSnapshot.image.width }}" 
+										height="{{ stepSnapshot.image.height }}" 
+										style="z-index: 10; width: inherit;">
+									</div>
+								</div>
+								<div id="excludeZoneTable_{{testStepId}}">
+								</div>
+							</div>
+							<div class="modal-footer">
+								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+								<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
+								<button type="submit" class="btn btn-primary" 
+										onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})" 
+										data-dismiss="modal">Save</button>
+							</div>
+						</div>
+					</div>
+				</div>
+			{% else %}
+				<div class="snapshotInfo step">No Snapshot for this step</div>
+			{% endif %}
 		</div>
-		
-		{% else %}
-		<div class="snapshotInfo step">No Snapshot for this step</div>
-		{% endif %}
 	</div>
 </div>
 
 <script>
-	{% if stepSnapshot and stepSnapshot.refSnapshot %}
-		updatePanel('{% url "excludeListView" stepSnapshot.refSnapshot.id %}', 'excludeZoneTable');
-		drawExistingExcludeZones();
-	{% endif %}
+	var exclusionDrawnOnModal_{{testStepId}} = false;
 
 	console.log("displaying diff")
 	setTimeout(function(){
-		initDraw(document.getElementById('canvas'), document.getElementById('excludeTable').getElementsByTagName('tbody')[0], 0);
-		
-		<!-- do not display differences when there are too many -->
+
+		// do not display differences when there are too many
 		{% if not stepSnapshot.tooManyDiffs %}
-			displayDifference({{ diff }});
+		
+{#			// draw differences#}
+{#			displayDifference({{ diff }}, '.diffCanvas_{{testStepId}}');#}
+			
+			// display them
+			toggleElement('diff_{{testStepId}}'); 
+			toggleElement('diff2_{{testStepId}}');
 		{% endif %}
 	}, 500);
+	
+	$('#editionModal_{{testStepId}}').on('shown.bs.modal', function (e) {
+	  
+		if (!exclusionDrawnOnModal_{{testStepId}}) {
+			drawExistingExcludeZones(document.getElementById('canvas_{{testStepId}}'), 
+									document.getElementById("stepSnapshot_{{testStepId}}").clientHeight, 
+									'',
+									{{testStepId}});
+			exclusionDrawnOnModal_{{testStepId}} = true;
+	  	}
+		initDraw(document.getElementById('excludeZoneTable_{{testStepId}}').getElementsByTagName('tbody')[0],
+					{{testStepId}});
+	})
 	
 </script>
 

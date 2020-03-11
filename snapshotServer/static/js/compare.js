@@ -1,8 +1,7 @@
 
 $(document).ready(function () {
-    $("#browsers").ultraselect({autoListSelected: true, maxWidth: "90px"});
-    $("#environments").ultraselect({autoListSelected: true, maxWidth: "90px"});
-    $("#testCases").ultraselect({autoListSelected: true, maxWidth: "90px"});
+	
+	var exclusionDrawnOnModal = false;
     
     $('#sessionFrom').datepicker({
     	format: 'dd-mm-yyyy',
@@ -18,5 +17,7 @@ $(document).ready(function () {
     	autoclose: true
     	
     })
+	
+	
     
 });

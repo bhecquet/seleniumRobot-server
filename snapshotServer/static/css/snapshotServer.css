@@ -1,15 +1,12 @@
 .leftPane {
-	display: inline-block;
-	width: 300px;
-	top:44px;
 	padding-top:10px;
 	padding-bottom: 120px;
 	padding-left:5px;
 	border-width:0px;
+	height: 100%;
 	border-style: solid solid solid hidden;
 	border-color: #33414a;
 	border-color: rgba(0,0,0,0.3);
-	color: #FFF;
 	text-align: center;
 	background-color:	#506876;
 	border-radius: 2%;
@@ -20,29 +17,14 @@
 	z-index: 3;
 }
 
-.rightPane {
-	display: inline-block;
-	min-width: 1000px;
-}
-
-.maskRef {
-	position: absolute;
-	left: 3%;
-	width: 47%;
-	top: 285px;
-}
-
-.maskStep {
-	position: absolute;
-	left: 51%;
-	width: 47%;
-	top: 285px;
+.form-group {
+	margin-bottom: 2px;
+	margin-left: 8px;
 }
 
 .snapshot {
 	width:100%;
-	position:absolute;
-	top:120px;
+	display: grid;
 }
 
 #excludeZone {
@@ -68,13 +50,6 @@
 	top: 20px;
 }
 
-.snapshotInfo {
-	width:100%;
-	position:absolute;
-	top:20px;
-	height: 90px;
-}
-
 .itemSuccess {
 	background-color: rgb(153, 255, 102) !important;
 	
@@ -84,11 +59,6 @@
 	background-color: rgb(255, 102, 102) !important;
 }
 
-#canvas {
-    width:400px;
-    height:400px;
-    /*border: 10px solid transparent;*/
-}
 .rectangle {
     border: 1px solid #FF0000;
     position: absolute;
@@ -105,31 +75,6 @@
 	box-shadow: 2px 3px 10px #428bca;
 }
 
-#glass { 
-	width: 300px;/* logo */
-	margin-top: -300;
-	margin-bottom: -100px ;
-	margin-left: -17px;
-	image-orientation: 90deg;
-}
-
-#glass2 { 
-	width: 300px;/* logo */
-	margin-top: -300px;
-	margin-bottom: -100px ;
-	/*margin-left: 1445px;*/
-	image-orientation: 240deg;
-	position: absolute;
-	right: 0px;
-}
-
-.btn {
-  font-size: 11px; /*Taille bouton*/
-  }
-  
-.btn:hover {
-	box-shadow: 2px 3px 10px #428bca;
-}
 
 
 body {	
@@ -157,10 +102,14 @@ body {
 
 .shadowBox {
 	box-shadow: 5px 5px 10px #aaa;	
+	grid-column: 1;
+	grid-row: 1;
 }
 
-.btn-primary {
-	background-image: linear-gradient(to bottom,#428bca 0,#0e1318 100%);
+.diffCanvas {
+	grid-column: 1;
+	grid-row: 1;
+	position: relative;
 }
 
 .title {
@@ -179,28 +128,9 @@ body {
     0 0 5px rgba(0, 0, 0, 0.4);
 }
 
-.snapshotInfo {
-	width:100%;
-	position:absolute;
-	padding-top: 5px;
-	padding-bottom: 10px;
-	background: linear-gradient(to bottom, #00888D, #69B18EE6);
-	text-align: center;
-	top: 20px;
-	font-size: 17px;
-	letter-spacing:0.5px;
-	box-shadow:
-    1px 6px 7px rgba(0, 0, 0, 0.5),
-    0 0 5px rgba(0, 0, 0, 0.4);
-}
-
 .step {
 	padding-top: 5px;
 }
-
-#new_exclude_2 {
-	margin-bottom: 100px;
-}	
 
 .table>tbody>tr>td {
 	padding: 4px;
@@ -208,21 +138,6 @@ body {
 
 #excludeZoneTable>table>tbody>tr {
 	font-size: 10px;
-}
-
-#excludeTable>tbody>tr>th {
-	text-transform: uppercase;
-	font-size: 10px;
-}
-		
-#titleZoneTable {
-	text-transform: uppercase;
-	font-size: 25px;
-	margin-bottom: 20px;
-}
-
-#excludeZone {
-	background: #aqua;
 }
 
 #selection {

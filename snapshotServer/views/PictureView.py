@@ -9,6 +9,7 @@ from django.views.generic.base import TemplateView
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestCaseInSession, TestSession
+import base64
 
 
 class PictureView(TemplateView):
@@ -54,7 +55,7 @@ class PictureView(TemplateView):
                                                 .filter(stepResult__step=self.kwargs['testStepId']) \
                                                 .filter(refSnapshot=None) \
                                                 .filter(id__lt=stepSnapshot.id)
-                    
+                     
                     # do not remove reference flag if our snapshot is the very first one
                     if len(refSnapshots) > 0:
                         stepSnapshot.refSnapshot = refSnapshots.last()
@@ -74,17 +75,26 @@ class PictureView(TemplateView):
                 
             if diffPixelsBin:
                 diffPixels = pickle.loads(diffPixelsBin)
+                diffPicture = base64.b64encode(DiffComputer.markDiff(stepSnapshot.image.width, stepSnapshot.image.height, diffPixels)).decode('ascii')
+                
             else:
                 diffPixels = []
+                diffPicture = None
                 
         # not snapshot has been recorded for this session
         else:
             refSnapshot = None
             diffPixels = []
+            diffPicture = None
+            
+        
          
         context['reference'] = refSnapshot
         context['stepSnapshot'] = stepSnapshot
         context['diff'] = str([[p.x, p.y] for p in diffPixels])
+        context['diffB64'] = diffPicture
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
         context['testStepId'] = self.kwargs['testStepId']
         return context
+    
+                

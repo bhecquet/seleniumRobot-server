@@ -9,9 +9,13 @@ import threading
 import time
 
 from snapshotServer.controllers import Tools
-from snapshotServer.controllers.PictureComparator import PictureComparator
+from snapshotServer.controllers.PictureComparator import PictureComparator,\
+    Pixel
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 from snapshotServer.models import ExcludeZone
+from builtins import staticmethod
+from PIL import Image, ImageDraw
+import io
 
 
 class DiffComputer(threading.Thread):
@@ -108,3 +112,20 @@ class DiffComputer(threading.Thread):
         except PictureComparatorError as e:
             pass
         logger.info('finished')
+
+    @staticmethod
+    def markDiff(width, height, diff_pixel):
+        
+
+        img = Image.new('RGBA', (width, height), (255, 0, 0, 0))
+        
+        draw = ImageDraw.Draw(img)
+        draw.point(diff_pixel, 'red')
+#         
+#         img.save('test.png', 'PNG')  
+        
+        with io.BytesIO() as output:
+            img.save(output, format="PNG")
+            return output.getvalue()     
+                
+                

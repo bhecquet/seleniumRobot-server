@@ -94,7 +94,7 @@ class TestStep(models.Model):
 class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=50)
-    date = models.DateField()
+    date = models.DateTimeField()
     version = models.ForeignKey(Version, related_name='testsession', on_delete=models.CASCADE)
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)

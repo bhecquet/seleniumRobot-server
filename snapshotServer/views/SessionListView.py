@@ -3,7 +3,7 @@ Created on 26 juil. 2017
 
 @author: worm
 '''
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.shortcuts import render_to_response
 from django.views.generic.base import TemplateView
@@ -53,7 +53,7 @@ class SessionListView(TemplateView):
             
         context['sessionTo'] = self.request.GET.get('sessionTo')
         if context['sessionTo']:
-            sessions = sessions.filter(date__lte=datetime.strptime(context['sessionTo'], '%d-%m-%Y'))
+            sessions = sessions.filter(date__lte=datetime.strptime(context['sessionTo'], '%d-%m-%Y') + timedelta(days=1))
 
         # display error when no option of one select list is choosen
         errors = []

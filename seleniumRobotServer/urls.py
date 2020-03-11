@@ -30,6 +30,3 @@ urlpatterns = [
     
     # add media directory
 ] +   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-if ('snapshotServer.app.SnapshotServerConfig' in settings.INSTALLED_APPS):
-    urlpatterns.append(url(r'^snapshot/', include('snapshotServer.urls')))

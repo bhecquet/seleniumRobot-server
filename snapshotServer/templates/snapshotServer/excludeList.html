@@ -5,13 +5,16 @@ Exclude zones
         <th>position</th>
     </tr>
     {% for exclude in object_list %}
-    <tr>
-		<td>
-			<input type="checkbox" name="exclude" id="existingExclude_{{ exclude.id }}" checked="checked" 
-			r_x="{{ exclude.x }}" r_y="{{ exclude.y }}" r_w="{{ exclude.width }}" r_h="{{ exclude.height }}"
-			onclick="toggleElement('exclude_{{ exclude.id }}');" />
-		</td>
-		<td>{{ exclude }}</td>
-	</tr>
+	    <tr>
+			<td>
+				<input type="checkbox" 
+						name="exclude" 
+						id="existingExclude_{{ exclude.id }}" 
+						checked="checked" 
+						r_x="{{ exclude.x }}" r_y="{{ exclude.y }}" r_w="{{ exclude.width }}" r_h="{{ exclude.height }}"
+						onclick="toggleElement('exclude_{{ exclude.id }}');toggleElement('exclude_{{ exclude.id }}Static');" />
+			</td>
+			<td>{{ exclude }}</td>
+		</tr>
     {% endfor %}
 </table>

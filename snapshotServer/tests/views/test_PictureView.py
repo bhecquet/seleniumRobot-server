@@ -128,3 +128,4 @@ class Test_PictureView(Test_Views):
             # check s2 ref as been changed
             self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for s2 should have changed to first snapshot")
    
+   

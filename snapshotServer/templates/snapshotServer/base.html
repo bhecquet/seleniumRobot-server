@@ -1,29 +1,25 @@
 {% load static %}
 <html>
 	<head>
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
-		<link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">
-		<link rel="stylesheet" href="{% static 'css/jquery.ultraselect.min.css' %}" type="text/css" />
+		<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.0/dist/umd/popper.min.js" integrity="sha384-Q6E9RHvbIyZFJoft+2mJbHaEWldlvI9IOYy5n3zV9zzTtmI3UksdQRVvoxMfooAo" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js" integrity="sha384-wfSDF2E50Y2D1uUdj0O3uMBJnjuUD4Ih7YwaYd1iqfktj0Uod8GCExl3Og8ifwB6" crossorigin="anonymous"></script>
+		
+	
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" type="text/css">
+		<!-- <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css">-->
 		<link rel="stylesheet" href="{% static 'css/datepicker.css' %}" type="text/css" />
-		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-		<script type="text/javascript" src="{% static 'js/jquery.ultraselect.min.js' %}"></script>
 		<script type="text/javascript" src="{% static 'js/bootstrap-datepicker.js' %}"></script>
 		<script type="text/javascript" src="{% static 'js/snapshotServer.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/snapshotServer.css' %}">
-		
-		<!--<script src="http://cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/src/js/bootstrap-datetimepicker.js"></script>
-		<link href="http://cdn.rawgit.com/Eonasdan/bootstrap-datetimepicker/e8bddc60e73c1ec2475f827be36e1957af72e2ea/build/css/bootstrap-datetimepicker.css" rel="stylesheet">-->
+		<link rel="stylesheet" href="{% static 'css/AdminLTE.min.css' %}">
+		<link rel="stylesheet" href="{% static 'css/snapshotServer.css' %}">
+		<link rel="stylesheet" href="{% static 'css/seleniumRobot_solo.css' %}">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		{% block head %}{% endblock %}
 		
 	</head>
 	<body>
-		<div class="container-fluid bg-1" >
-			<a > <img src='{% static "img/seleniumlogo_serverlow.png" %}' class="img-responsive center-block" alt="logo" id="logo" width="350"></a>
-			<a > <img src='{% static "img/glass.png" %}' class="img-circle" alt="" id="glass" width="350"></a>
-			<a > <img src='{% static "img/glass2.png" %}' class="img-circle" alt="" id="glass2" width="350"></a>
-		</div>
 		
 		<div class="col-sm-12" style="background-color:#00888d">
 			<div id="error">{{ error }}&nbsp;</div>

@@ -26,29 +26,29 @@ class FileUploadView(views.APIView):
         
         
         if form.is_valid():
-            stepResult = StepResult.objects.get(id=form.cleaned_data['stepResult'])
+            step_result = StepResult.objects.get(id=form.cleaned_data['stepResult'])
             image = form.cleaned_data['image']
             
             # check if a reference exists for this step in the same test case / same application / same version
-            referenceSnapshots = Snapshot.objects.filter(stepResult__step=stepResult.step, stepResult__testCase__testCase__name=stepResult.testCase.testCase.name, refSnapshot=None)
+            reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step, stepResult__testCase__testCase__name=step_result.testCase.testCase.name, refSnapshot=None)
             
             # check for a reference in previous versions
-            if not referenceSnapshots:
-                for appVersion in reversed(stepResult.testCase.session.version.previousVersions()):
-                    referenceSnapshots = Snapshot.objects.filter(stepResult__step=stepResult.step, stepResult__testCase__testCase__name=stepResult.testCase.testCase.name, testCase__session__version=appVersion, refSnapshot=None)
-                    if referenceSnapshots:
+            if not reference_snapshots:
+                for app_version in reversed(step_result.testCase.session.version.previousVersions()):
+                    reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step, stepResult__testCase__testCase__name=step_result.testCase.testCase.name, stepResult__testCase__session__version=app_version, refSnapshot=None)
+                    if reference_snapshots:
                         break
             
-            if referenceSnapshots:
-                stepSnapshot = Snapshot(stepResult=stepResult, image=image, refSnapshot=referenceSnapshots[0])
-                stepSnapshot.save()
+            if reference_snapshots:
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=reference_snapshots[0])
+                step_snapshot.save()
                 
                 # compute difference if a reference already exist
-                DiffComputer.addJobs(referenceSnapshots[0], stepSnapshot)
+                DiffComputer.addJobs(reference_snapshots[0], step_snapshot)
 
             else:
-                stepSnapshot = Snapshot(stepResult=stepResult, image=image, refSnapshot=None)
-                stepSnapshot.save()
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None)
+                step_snapshot.save()
                 
             return Response(status=204)
         

@@ -1,14 +1,17 @@
-<div>
-	<table class="table table-striped">
-		{% for testStep, status in object_list.items %}
-		<tr>
-			<td class="{% if status %}itemSuccess{% else %}itemFailure{% endif %} menuButton">
-				<a href='#' onclick="updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'display')">
-				{{ testStep }}
-				</a>
-			</td>
-		</tr>
-		{% endfor %}
-		
-	</table>
-</div>
+{% for testStep, status in object_list.items %}
+	<div class="box {% if status %}success{% else %}failed{% endif %}">
+		<script>
+			updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'step_{{testStep.id}}')
+		</script>
+		<div class="box-header with-border">
+			<button type="button" class="btn btn-box-tool" data-widget="collapse">
+				<i class="fa fa-minus"></i>
+			</button> 
+			{{ testStep }}
+		</div>
+		<div class="box-body" style="display: block;" id="step_{{testStep.id}}">
+			
+		</div>
+	</div>
+{% endfor %}
+

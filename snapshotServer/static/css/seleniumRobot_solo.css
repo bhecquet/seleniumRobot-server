@@ -2,11 +2,6 @@ body{
 	background-color: #ecf0f5;
 }
 
-@media (min-width:1600px) {
-	.container {
-		width:1400px
-	}
-} 
 
 .main-header{
 	min-height: 50px;
@@ -48,6 +43,10 @@ body{
 
 .message-warning {
 	background-color: #FFBF80;
+}
+
+.message-value {
+	background-color: #cce6ff;
 }
 
 

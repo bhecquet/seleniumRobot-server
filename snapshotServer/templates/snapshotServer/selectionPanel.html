@@ -1,13 +1,20 @@
 {% load static %}
 
-
-<select id="sessionList" class="btn btn-primary" onchange="clearTestList();updatePanel('{% url "testlistView" 0 %}'.replace (0, $( '#sessionList option:selected' ).val()), 'testList')" >
-	<option value=0>No session selected</option>
+<div class="accordion" id="sessionAccordion">
 	{% for session in sessions %}
-	<option value={{ session.id }}>{{ session.date }}</option>
+		<div class="card">
+			<div class="card-header" id="label{{ session.id }}">
+			  <h2 class="mb-0">
+				<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#session_{{ session.id }}" 
+						onclick="updatePanel('{% url "testlistView" session.id %}', 'session_{{ session.id }}')" 
+						aria-expanded="false" aria-controls="session_{{ session.id }}">
+				  {{ session.date }}
+				</button>
+			  </h2>
+			</div>
+			<div id="session_{{ session.id }}" class="collapse" aria-labelledby="label{{ session.id }}" data-parent="#sessionAccordion">
+				
+			</div>
+		</div>
 	{% endfor %}
-</select>
-<div id="testList">
-</div>
-<div id="stepList">
 </div>
