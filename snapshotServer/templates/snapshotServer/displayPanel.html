@@ -33,11 +33,7 @@
 		<div class="col-lg-2 btn-group-vertical">
 			{% if stepSnapshot.refSnapshot %}
 				<button type="submit" class="btn btn-success mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True')">Make reference</button>
-				{% if not stepSnapshot.tooManyDiffs %}
-					<button type="button" class="btn btn-info mt-3 mb-3" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
-				{% else %}
-					<div>Too many differences for display (> 10%)</div>
-				{% endif %}
+				<button type="button" class="btn btn-info mt-3 mb-3" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
 				<button type="button" class="btn btn-primary mt-3 mb-3" data-toggle="modal" data-target="#editionModal_{{testStepId}}">Edit</button>
 			{% elif stepSnapshot %}
 				<button type="button" class="btn btn-success mt-3 mb-3" disabled>This step is a reference</button>
@@ -47,11 +43,6 @@
 		<div class="col-lg-5">
 			{% if stepSnapshot %}
 				<div class="snapshot">
-{#					<canvas id="diff_{{testStepId}}" #}
-{#						class="diffCanvas diffCanvas_{{testStepId}}" #}
-{#						width="{{ stepSnapshot.image.width }}" #}
-{#						height="{{ stepSnapshot.image.height }}" #}
-{#						style="z-index: 10; width: inherit; display: none;"></canvas>#}
 					<img class="shadowBox" 
 						id="stepSnapshotStatic_{{testStepId}}" 
 						src="{{ stepSnapshot.image.url }}" 
@@ -75,11 +66,6 @@
 						<div class="modal-content">
 							<div class="modal-body">
 								<div class="snapshot">
-{#									<canvas id="diff2_{{testStepId}}" #}
-{#										class="diffCanvas diffCanvas_{{testStepId}}" #}
-{#										width="{{ stepSnapshot.image.width }}" #}
-{#										height="{{ stepSnapshot.image.height }}" #}
-{#										style="z-index: 10; width: inherit; display: none;"></canvas>#}
 									<img class="shadowBox" id="stepSnapshot_{{testStepId}}" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
 									<img class="diffCanvas diffCanvas_{{testStepId}}" 
 										id="diff2_{{testStepId}}" 
@@ -119,16 +105,10 @@
 	console.log("displaying diff")
 	setTimeout(function(){
 
-		// do not display differences when there are too many
-		{% if not stepSnapshot.tooManyDiffs %}
+		// display them
+		toggleElement('diff_{{testStepId}}'); 
+		toggleElement('diff2_{{testStepId}}');
 		
-{#			// draw differences#}
-{#			displayDifference({{ diff }}, '.diffCanvas_{{testStepId}}');#}
-			
-			// display them
-			toggleElement('diff_{{testStepId}}'); 
-			toggleElement('diff2_{{testStepId}}');
-		{% endif %}
 	}, 500);
 	
 	$('#editionModal_{{testStepId}}').on('shown.bs.modal', function (e) {
