@@ -25,7 +25,7 @@
     fields:
         sessionId: '1234'
         version: 1
-        date: 2017-05-05
+        date: '2017-05-05T11:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -34,7 +34,7 @@
     fields:
         sessionId: '1235'
         version: 1
-        date: 2017-05-05
+        date: '2017-05-05T12:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -92,7 +92,7 @@
     pk: 3
     fields:
         sessionId: '1236'
-        date: 2017-05-05
+        date: '2017-05-05T13:16:09.184106+01:00'
         version: 1
         browser: firefox
         environment: 1
@@ -109,7 +109,7 @@
     fields:
         sessionId: '1234bis'
         version: 1
-        date: 2017-05-05
+        date: '2017-05-05T14:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -118,7 +118,7 @@
     fields:
         sessionId: '1235bis'
         version: 1
-        date: 2017-05-05
+        date: '2017-05-05T15:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -180,7 +180,7 @@
     fields:
         sessionId: '1250'
         version: 1
-        date: 2017-05-05
+        date: '2017-05-05T16:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -189,7 +189,7 @@
     fields:
         sessionId: '1251'
         version: 1
-        date: 2017-05-06
+        date: '2017-05-06T17:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -198,7 +198,7 @@
     fields:
         sessionId: '1254'
         version: 1
-        date: 2017-05-06
+        date: '2017-05-06T18:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: false
@@ -329,7 +329,7 @@
     fields:
         sessionId: '1252'
         version: 1
-        date: 2017-05-06
+        date: '2017-05-06T22:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true
@@ -338,7 +338,7 @@
     fields:
         sessionId: '1253'
         version: 1
-        date: 2017-05-06
+        date: '2017-05-06T20:16:09.184106+01:00'
         browser: firefox
         environment: 1
         compareSnapshot: true

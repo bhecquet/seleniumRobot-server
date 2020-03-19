@@ -91,24 +91,24 @@ class DiffComputer(threading.Thread):
         DiffComputer._instance = None
           
     @staticmethod
-    def _computeDiff(refSnapshot, stepSnapshot): 
+    def _computeDiff(ref_snapshot, step_snapshot): 
         
         logger.info('computing') 
         try:
-            if refSnapshot and stepSnapshot and refSnapshot.image and stepSnapshot.image:
+            if ref_snapshot and step_snapshot and ref_snapshot.image and step_snapshot.image:
                 
                 # get the list of exclude zones
-                excludeZones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=refSnapshot)]
+                exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=ref_snapshot)]
                 
-                pixelDiffs, tooManyDiffs = PictureComparator().getChangedPixels(refSnapshot.image.path, stepSnapshot.image.path, excludeZones)
-                binPixels = pickle.dumps(pixelDiffs, protocol=3)
-                stepSnapshot.pixelsDiff = binPixels
-                stepSnapshot.tooManyDiffs = tooManyDiffs
+                pixel_diffs, too_many_diffs = PictureComparator().getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                bin_pixels = pickle.dumps(pixel_diffs, protocol=3)
+                step_snapshot.pixelsDiff = bin_pixels
+                step_snapshot.tooManyDiffs = too_many_diffs
             else:
-                stepSnapshot.pixelsDiff = None
+                step_snapshot.pixelsDiff = None
                 
-            stepSnapshot.refSnapshot = refSnapshot
-            stepSnapshot.save()
+            step_snapshot.refSnapshot = ref_snapshot
+            step_snapshot.save()
         except PictureComparatorError as e:
             pass
         logger.info('finished')
@@ -121,9 +121,7 @@ class DiffComputer(threading.Thread):
         
         draw = ImageDraw.Draw(img)
         draw.point(diff_pixel, 'red')
-#         
-#         img.save('test.png', 'PNG')  
-        
+
         with io.BytesIO() as output:
             img.save(output, format="PNG")
             return output.getvalue()     

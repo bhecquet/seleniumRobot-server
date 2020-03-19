@@ -17,86 +17,93 @@
 </script>
 
 <div class="container">
-	<div class="row no-gutters">
-		<div class="col-lg-5">
-			{% if reference %}
-				<div class="snapshot">
-					<figure>
-						<img src="{{ reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
-						<figcaption class="figure-caption">{{ reference.stepResult.testCase.session }}</figcaption>
-					</figure>
-				</div>
-			{% else %}
-				<div class="snapshotInfo">No Reference</div>
-			{% endif %}
-		</div>
-		<div class="col-lg-2 btn-group-vertical">
-			{% if stepSnapshot.refSnapshot %}
-				<button type="submit" class="btn btn-success mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True')">Make reference</button>
-				<button type="button" class="btn btn-info mt-3 mb-3" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
-				<button type="button" class="btn btn-primary mt-3 mb-3" data-toggle="modal" data-target="#editionModal_{{testStepId}}">Edit</button>
-			{% elif stepSnapshot %}
-				<button type="button" class="btn btn-success mt-3 mb-3" disabled>This step is a reference</button>
-				<button type="submit" class="btn btn-primary mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False')">Remove this reference</button>
-			{% endif %}
-		</div>
-		<div class="col-lg-5">
-			{% if stepSnapshot %}
-				<div class="snapshot">
-					<img class="shadowBox" 
-						id="stepSnapshotStatic_{{testStepId}}" 
-						src="{{ stepSnapshot.image.url }}" 
-						style="z-index:1;width:inherit;" 
-						>
-					<img class="diffCanvas diffCanvas_{{testStepId}}" 
-						id="diff_{{testStepId}}" 
-						img alt="diff" src="data:image/png;base64,{{diffB64}}"
-						style="z-index:10;width:inherit; display: none;" 
-						>
-					<div id="canvasStatic_{{testStepId}}" 
-						class="diffCanvas" 
-						width="{{ stepSnapshot.image.width }}" 
-						height="{{ stepSnapshot.image.height }}" 
-						style="z-index: 10; width: inherit;">
+	{% for namedSnapshot in captureList %}
+		{{ namedSnapshot.name }}<br>
+		<div class="row no-gutters">
+			<div class="col-lg-5">
+				{% if namedSnapshot.reference %}
+					<div class="snapshot">
+						<figure>
+							<img src="{{ namedSnapshot.reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
+							<figcaption class="figure-caption">{{ namedSnapshot.reference.stepResult.testCase.session }}</figcaption>
+						</figure>
 					</div>
-				</div>
-			
-				<div class="modal fade" id="editionModal_{{testStepId}}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}" aria-hidden="true">
-					<div class="modal-dialog modal-xl" role="document">
-						<div class="modal-content">
-							<div class="modal-body">
-								<div class="snapshot">
-									<img class="shadowBox" id="stepSnapshot_{{testStepId}}" src="{{ stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
-									<img class="diffCanvas diffCanvas_{{testStepId}}" 
-										id="diff2_{{testStepId}}" 
-										img alt="diff" src="data:image/png;base64,{{diffB64}}"
-										style="z-index:10;width:inherit; display: none;" 
-										>
-									<div id="canvas_{{testStepId}}"
-										class="diffCanvas"  
-										width="{{ stepSnapshot.image.width }}" 
-										height="{{ stepSnapshot.image.height }}" 
-										style="z-index: 10; width: inherit;">
+				{% else %}
+					<div class="snapshotInfo">No Reference</div>
+				{% endif %}
+			</div>
+			<div class="col-lg-2 btn-group-vertical">
+				{% if namedSnapshot.stepSnapshot.refSnapshot %}
+					<button type="submit" class="btn btn-success mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True')">Make reference</button>
+					<button type="button" class="btn btn-info mt-3 mb-3" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
+					<button type="button" class="btn btn-primary mt-3 mb-3" data-toggle="modal" data-target="#editionModal_{{testStepId}}">Edit</button>
+				{% elif namedSnapshot.stepSnapshot %}
+					<button type="button" class="btn btn-success mt-3 mb-3" disabled>This step is a reference</button>
+					<button type="submit" class="btn btn-primary mt-3 mb-3" onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False')">Remove this reference</button>
+				{% endif %}
+			</div>
+			<div class="col-lg-5">
+				{% if namedSnapshot.stepSnapshot %}
+					<div class="snapshot">
+						<img class="shadowBox" 
+							id="stepSnapshotStatic_{{testStepId}}" 
+							src="{{ namedSnapshot.stepSnapshot.image.url }}" 
+							style="z-index:1;width:inherit;" 
+							>
+						{% if diffB64 %}
+							<img class="diffCanvas diffCanvas_{{testStepId}}" 
+								id="diff_{{testStepId}}" 
+								alt="." src="data:image/png;base64,{{namedSnapshot.diffB64}}"
+								style="z-index:10;width:inherit; display: none;" 
+								>
+						{% endif %}
+						<div id="canvasStatic_{{testStepId}}" 
+							class="diffCanvas" 
+							width="{{ namedSnapshot.stepSnapshot.image.width }}" 
+							height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+							style="z-index: 10; width: inherit;">
+						</div>
+					</div>
+				
+					<div class="modal fade" id="editionModal_{{testStepId}}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}" aria-hidden="true">
+						<div class="modal-dialog modal-xl" role="document">
+							<div class="modal-content">
+								<div class="modal-body">
+									<div class="snapshot">
+										<img class="shadowBox" id="stepSnapshot_{{testStepId}}" src="{{ namedSnapshot.stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
+										{% if diffB64 %}
+											<img class="diffCanvas diffCanvas_{{testStepId}}" 
+												id="diff2_{{testStepId}}" 
+												src="data:image/png;base64,{{ namedSnapshot.diffB64 }}"
+												style="z-index:10;width:inherit; display: none;" 
+												>
+										{% endif %}
+										<div id="canvas_{{testStepId}}"
+											class="diffCanvas"  
+											width="{{ namedSnapshot.stepSnapshot.image.width }}" 
+											height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+											style="z-index: 10; width: inherit;">
+										</div>
+									</div>
+									<div id="excludeZoneTable_{{testStepId}}">
 									</div>
 								</div>
-								<div id="excludeZoneTable_{{testStepId}}">
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+									<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
+									<button type="submit" class="btn btn-primary" 
+											onclick="updateExcludeZones({{ namedSnapshot.stepSnapshot.id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})" 
+											data-dismiss="modal">Save</button>
 								</div>
-							</div>
-							<div class="modal-footer">
-								<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-								<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}');toggleElement('diff2_{{testStepId}}');">Toggle differences</button>
-								<button type="submit" class="btn btn-primary" 
-										onclick="updateExcludeZones({{ stepSnapshot.id }}, {{ stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})" 
-										data-dismiss="modal">Save</button>
 							</div>
 						</div>
 					</div>
-				</div>
-			{% else %}
-				<div class="snapshotInfo step">No Snapshot for this step</div>
-			{% endif %}
+				{% else %}
+					<div class="snapshotInfo step">No Snapshot for this step</div>
+				{% endif %}
+			</div>
 		</div>
-	</div>
+	{% endfor %}
 </div>
 
 <script>

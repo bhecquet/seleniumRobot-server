@@ -111,6 +111,8 @@ class Snapshot(models.Model):
     refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.CASCADE)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
+    name = models.CharField(max_length=100, default="") # name of the snapshot
+    compareOption = models.CharField(max_length=100, default="true") # options for comparison
     
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 

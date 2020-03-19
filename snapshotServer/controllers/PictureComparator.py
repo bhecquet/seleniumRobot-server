@@ -58,11 +58,11 @@ class PictureComparator:
         else:
             return None
         
-    def getChangedPixels(self, reference, image, excludeZones=[]):
+    def getChangedPixels(self, reference, image, exclude_zones=[]):
         """
         @param reference: reference picture
         @param image: image to compare with
-        @param excludeZones: list of zones (Rectangle objects) which should not be marked as differences.
+        @param exclude_zones: list of zones (Rectangle objects) which should not be marked as differences.
         @return: list of pixels which are different between reference and image
         """
         if not os.path.isfile(reference):
@@ -70,32 +70,46 @@ class PictureComparator:
         if not os.path.isfile(image):
             raise PictureComparatorError("Image file %s does not exist" % image)
         
-        excludedPixels = self._buildListOfExcludedPixels(excludeZones)
+        excluded_pixels = self._buildListOfExcludedPixels(exclude_zones)
         
-        referenceImg = cv2.imread(reference, 0)
-        imageImg = cv2.imread(image, 0)
+        reference_img = cv2.imread(reference, 0)
+        image_img = cv2.imread(image, 0)
         
-        diff = cv2.absdiff(referenceImg, imageImg)
+        reference_height = len(reference_img)
+        reference_width = len(reference_img[0])
+        image_height = len(image_img)
+        image_width = len(image_img[0])
+        
+        min_height = min(reference_height, image_height)
+        if min_height == 0:
+            min_width = 0
+        else:
+            min_width = min(reference_width, image_width)
+        
+        diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
         
         pixels = []
-        tooManyDiffs = False
-        maxDiffs = math.floor(len(referenceImg) * len(referenceImg[0]) * PictureComparator.MAX_DIFF_THRESHOLD)
+        too_many_diffs = False
         
         # ignore excluded pixels
-        for x, y in excludedPixels:
+        for x, y in excluded_pixels:
             diff[y][x] = 0
         
-        matDiff = numpy.matrix(diff)
-        diffPixels = numpy.transpose(matDiff.nonzero());
+        mat_diff = numpy.matrix(diff)
+        diff_pixels = numpy.transpose(mat_diff.nonzero());
         
-        if len(diffPixels) > maxDiffs:
-            diffPixels = diffPixels[:maxDiffs]
-            tooManyDiffs = True
-        
-        for y, x in diffPixels:
+        for y, x in diff_pixels:
             pixels.append(Pixel(x, y))
             
-        return pixels, tooManyDiffs
+        # step image is taller that reference image, add missing pixels from reference
+        for y in range(max(0, image_height - reference_height)):
+            for x in range(image_width):
+                pixels.append(Pixel(x, y + reference_height))
+        for x in range(max(0, image_width - reference_width)):
+            for y in range(reference_height):
+                pixels.append(Pixel(x + reference_width, y))
+            
+        return pixels, too_many_diffs
     
     def _buildListOfExcludedPixels(self, excludeZones):
         """

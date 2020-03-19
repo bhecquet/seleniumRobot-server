@@ -7,6 +7,8 @@ class ImageUploadForm(forms.Form):
     """Image upload form."""
     image = forms.ImageField()
     stepResult = forms.IntegerField()
+    name = forms.CharField()
+    compare = forms.CharField()
     
     def clean(self):
         super().clean()
