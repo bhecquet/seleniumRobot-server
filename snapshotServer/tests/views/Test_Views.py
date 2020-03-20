@@ -12,9 +12,11 @@ import django.test
 from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
     TestEnvironment, Version, TestCaseInSession, StepResult
+import datetime
+import pytz
 
 
-class Test_Views(django.test.TestCase):
+class TestViews(django.test.TestCase):
     
     fixtures = ['snapshotServer.yaml']
     dataDir = 'snapshotServer/tests/data/'
@@ -27,11 +29,11 @@ class Test_Views(django.test.TestCase):
         self.testCase = TestCase.objects.get(id=1)
         self.initialRefSnapshot = Snapshot.objects.get(id=1)
         
-        self.session1 = TestSession(sessionId="1237", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
+        self.session1 = TestSession(sessionId="1237", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session1.save()
         self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
         self.tcs1.save()
-        self.session2 = TestSession(sessionId="1238", date="2017-05-07", browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
+        self.session2 = TestSession(sessionId="1238", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1))
         self.session2.save()
         self.tcs2 = TestCaseInSession(testCase=self.testCase, session=self.session2)
         self.tcs2.save()

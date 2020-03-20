@@ -7,10 +7,10 @@ Created on 26 juil. 2017
 from django.urls.base import reverse
 
 from snapshotServer.models import TestEnvironment, TestCase
-from snapshotServer.tests.views.Test_Views import Test_Views
+from snapshotServer.tests.views.Test_Views import TestViews
 
 
-class Test_ResultTableView(Test_Views):
+class Test_ResultTableView(TestViews):
 
 
     def test_noFilter(self):

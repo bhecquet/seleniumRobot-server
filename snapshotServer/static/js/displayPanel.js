@@ -34,13 +34,13 @@ function getIntValue(strValue) {
  * @param testStepId		
  * @returns
  */
-function initDraw(excludeTable, testStepId) {
+function initDraw(excludeTable, testStepId, snapshotId) {
 	
-	var canvas = document.getElementById('canvas_' + testStepId);
-	var staticCanvas = document.getElementById('canvasStatic_' + testStepId);
+	var canvas = document.getElementById('canvas_' + testStepId + '_' + snapshotId);
+	var staticCanvas = document.getElementById('canvasStatic_' + testStepId + '_' + snapshotId);
 	
     function setMousePosition(e) {
-		let scrollPosition = $('#editionModal_' + testStepId).scrollTop();
+		let scrollPosition = $('#editionModal_' + testStepId + '_' + snapshotId).scrollTop();
         let ev = e || window.event; //Moz || IE
         /*if (ev.pageX) { //Moz
             mouse.x = ev.pageX;
@@ -52,17 +52,17 @@ function initDraw(excludeTable, testStepId) {
     }
     
     function getCanvasRatio() {
-        let canvasWidth = document.getElementById("stepSnapshot_" + testStepId).clientWidth;
+        let canvasWidth = document.getElementById("stepSnapshot_" + testStepId + '_' + snapshotId).clientWidth;
         return getIntValue(canvas.getAttribute("width")) / getIntValue(canvasWidth);
     }
 
     function getCanvasCoords() {
-    	return $('#canvas_' + testStepId).offset();
+    	return $('#canvas_' + testStepId + '_' + snapshotId).offset();
     }
     
     function updateSizeAndCoords() {
     	canvasCoords = getCanvasCoords();
-    	canvas.style.height = document.getElementById("stepSnapshot_" + testStepId).clientHeight;
+    	canvas.style.height = document.getElementById("stepSnapshot_" + testStepId + '_' + snapshotId).clientHeight;
     	canvasRatio = getCanvasRatio();
     }
 
@@ -84,13 +84,13 @@ function initDraw(excludeTable, testStepId) {
     });
 	
     canvas.onmousemove = function (e) {
-    	
+//    	console.log("scroll: " + $(document).scrollTop())
         setMousePosition(e);
         if (element !== null) {
             element.style.width = Math.abs(mouse.x - mouse.startX) + 'px';
             element.style.height = Math.abs(mouse.y - mouse.startY) + 'px';
             element.style.left = (mouse.x - mouse.startX < 0) ? mouse.x - canvasCoords.left  + 'px' : mouse.startX - canvasCoords.left + 'px';
-            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - canvasCoords.top + 'px' : mouse.startY - canvasCoords.top + 'px';
+            element.style.top = (mouse.y - mouse.startY < 0) ? mouse.y - canvasCoords.top + $(document).scrollTop() + 'px' : mouse.startY - canvasCoords.top + $(document).scrollTop() + 'px';
 
         }
     }
@@ -120,7 +120,7 @@ function initDraw(excludeTable, testStepId) {
             let activeBox = document.createElement('input')
             activeBox.type = 'checkbox';
             activeBox.checked = 'checked';
-            activeBox.setAttribute('name', 'new_exclude_' + testStepId);
+            activeBox.setAttribute('name', 'new_exclude_' + testStepId + '_' + snapshotId);
             activeBox.setAttribute('r_x', realLeft);
             activeBox.setAttribute('r_y', realTop);
             activeBox.setAttribute('r_w', realWidth);
@@ -170,11 +170,11 @@ function initDraw(excludeTable, testStepId) {
  * @param testStepId		
  * @returns
  */
-function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId) {
+function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, snapshotId) {
 
 	canvas.style.height = snapshotHeight;
 	var canvasRatio = getIntValue(canvas.clientWidth) / getIntValue(canvas.getAttribute("width"));
-	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + ' input');
+	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + '_' + snapshotId + ' input');
 
 	for(var i= 0; i < currentExcludes.length; i++) {
 		if (currentExcludes[i].checked) {
@@ -205,7 +205,7 @@ function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId) 
  * @returns
  */
 function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
-	var newExcludes = document.getElementsByName('new_exclude_' + testStepId);
+	var newExcludes = document.getElementsByName('new_exclude_' + testStepId + '_' + snapshotId);
 	
 	// add new exclude zones
 	for(let i= 0; i < newExcludes.length; i++) {
@@ -223,7 +223,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	}
 	
 	// remove exclude zones that should not be kept
-	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + ' input');
+	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + '_' + snapshotId + ' input');
 	console.log(currentExcludes);
 	for(let i= 0; i < currentExcludes.length; i++) {
 		if (!currentExcludes[i].checked) {
@@ -244,7 +244,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	});
 	
 	// hide modal explicitly because updatePanel blocks hiding
-	$('#editionModal_' + testStepId).modal('hide')
+	$('#editionModal_' + testStepId + '_' + snapshotId).modal('hide')
 	
 	// reload step
 	updatePanel('/snapshot/compare/picture/' + testCaseId + '/' + testStepId, 'step_' + testStepId);

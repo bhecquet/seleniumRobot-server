@@ -5,10 +5,10 @@ Created on 26 juil. 2017
 '''
 
 from django.urls.base import reverse
-from snapshotServer.tests.views.Test_Views import Test_Views
+from snapshotServer.tests.views.Test_Views import TestViews
 
 
-class Test_RecomputeDiffView(Test_Views):
+class Test_RecomputeDiffView(TestViews):
 
    
     def test_RecomputeDiff_snapshotExistNoRef(self):

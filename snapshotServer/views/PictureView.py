@@ -31,74 +31,76 @@ class PictureView(TemplateView):
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
         context['testStepId'] = self.kwargs['testStepId']
         
-        stepSnapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
+        step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
                                                stepResult__step=self.kwargs['testStepId'])
         
-        for stepSnapshot in stepSnapshots:
-            if stepSnapshot:
+        for step_snapshot in step_snapshots:
+            if step_snapshot:
     
-                if 'makeRef' in self.request.GET: 
-                    if self.request.GET['makeRef'] == 'True' and stepSnapshot.refSnapshot is not None:
-                        previousSnapshot = stepSnapshot.refSnapshot
-                        stepSnapshot.refSnapshot = None
-                        stepSnapshot.pixelsDiff = None
-                        stepSnapshot.save()
+                # request should contain the snapshotId when makeRef is sent. Filter on it
+                if 'makeRef' in self.request.GET and 'snapshotId' in self.request.GET and int(self.request.GET['snapshotId']) == step_snapshot.id:
+
+                    if self.request.GET['makeRef'] == 'True' and step_snapshot.refSnapshot is not None:
+                        previous_snapshot = step_snapshot.refSnapshot
+                        step_snapshot.refSnapshot = None
+                        step_snapshot.pixelsDiff = None
+                        step_snapshot.save()
                         
                         # Compute differences for the following snapshots as they will depend on this new ref
-                        for snap in stepSnapshot.snapshotsUntilNextRef(previousSnapshot):
-                            DiffComputer.addJobs(stepSnapshot, snap)
+                        for snap in step_snapshot.snapshotsUntilNextRef(previous_snapshot):
+                            DiffComputer.addJobs(step_snapshot, snap)
                         
-                    elif self.request.GET['makeRef'] == 'False' and stepSnapshot.refSnapshot is None:
+                    elif self.request.GET['makeRef'] == 'False' and step_snapshot.refSnapshot is None:
                         # search a reference with a lower id, meaning that it has been recorded before our step
                         # search with the same test case name / same step name / same application version / same image name so that comparison
                         # is done on same basis
                         # TODO: reference could be searched in previous versions
-                        testCase = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
-                        refSnapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=testCase.testCase.name, 
-                                                               stepResult__testCase__session__version=testCase.session.version,
+                        test_case = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
+                        ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name, 
+                                                               stepResult__testCase__session__version=test_case.session.version,
                                                                stepResult__step=self.kwargs['testStepId'], 
                                                                refSnapshot=None,
-                                                               id__lt=stepSnapshot.id,
-                                                               name=stepSnapshot.name)
+                                                               id__lt=step_snapshot.id,
+                                                               name=step_snapshot.name)
                          
                         # do not remove reference flag if our snapshot is the very first one
-                        if len(refSnapshots) > 0:
-                            stepSnapshot.refSnapshot = refSnapshots.last()
-                            stepSnapshot.save()
+                        if len(ref_snapshots) > 0:
+                            step_snapshot.refSnapshot = ref_snapshots.last()
+                            step_snapshot.save()
                             
                             # recompute diff pixels
-                            DiffComputer.computeNow(stepSnapshot.refSnapshot, stepSnapshot)
+                            DiffComputer.computeNow(step_snapshot.refSnapshot, step_snapshot)
                             
                             # recompute all following snapshot as they will depend on a previous ref
-                            for snap in stepSnapshot.snapshotsUntilNextRef(stepSnapshot):
-                                DiffComputer.addJobs(stepSnapshot.refSnapshot, snap)
+                            for snap in step_snapshot.snapshotsUntilNextRef(step_snapshot):
+                                DiffComputer.addJobs(step_snapshot.refSnapshot, snap)
         
-                refSnapshot = stepSnapshot.refSnapshot
+                ref_snapshot = step_snapshot.refSnapshot
                 
                 # extract difference pixel. Recompute in case this step is no more a reference
-                diffPixelsBin = stepSnapshot.pixelsDiff
+                diff_pixels_bin = step_snapshot.pixelsDiff
                     
-                if diffPixelsBin:
-                    diffPixels = pickle.loads(diffPixelsBin)
-                    diffPicture = base64.b64encode(DiffComputer.markDiff(stepSnapshot.image.width, stepSnapshot.image.height, diffPixels)).decode('ascii')
+                if diff_pixels_bin:
+                    diff_pixels = pickle.loads(diff_pixels_bin)
+                    diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
                     
                 else:
-                    diffPixels = []
-                    diffPicture = None
+                    diff_pixels = []
+                    diff_picture = None
                     
             # not snapshot has been recorded for this session
             else:
-                refSnapshot = None
-                diffPixels = []
-                diffPicture = None
+                ref_snapshot = None
+                diff_pixels = []
+                diff_picture = None
                 
-            stepSnapshotContext = {
-                'name': stepSnapshot.name,
-                'reference': refSnapshot,
-                'stepSnapshot': stepSnapshot,
-                'diffB64': diffPicture
+            step_snapshot_context = {
+                'name': step_snapshot.name,
+                'reference': ref_snapshot,
+                'stepSnapshot': step_snapshot,
+                'diffB64': diff_picture
                 }
-            context['captureList'].append(stepSnapshotContext)
+            context['captureList'].append(step_snapshot_context)
             
         return context
     

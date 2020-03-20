@@ -5,14 +5,14 @@ Created on 26 juil. 2017
 '''
 
 from django.urls.base import reverse
-from snapshotServer.tests.views.Test_Views import Test_Views
+from snapshotServer.tests.views.Test_Views import TestViews
 import json
 from snapshotServer.models import Snapshot
 import pickle
 from snapshotServer.controllers.PictureComparator import Pixel
 
 
-class Test_StatusView(Test_Views):
+class Test_StatusView(TestViews):
     
     def test_sessionStatusOkOnReference(self):
         """
