@@ -18,7 +18,11 @@
 
 <div class="container">
 	{% for namedSnapshot in captureList %}
-		{{ namedSnapshot.name }}<br>
+		<div class="row no-gutters header-picture">
+			<div class="header-picture">
+				{{ namedSnapshot.name }}
+			</div>
+		</div>
 		<div class="row no-gutters">
 			<div class="col-lg-5">
 				{% if namedSnapshot.reference %}

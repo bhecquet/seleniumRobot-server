@@ -50,6 +50,12 @@
 	top: 20px;
 }
 
+.header-picture {
+	background-color:	#aaa;
+	padding-left: 20%;
+	padding-right: 20%;
+}
+
 .itemSuccess {
 	background-color: rgb(153, 255, 102) !important;
 	
