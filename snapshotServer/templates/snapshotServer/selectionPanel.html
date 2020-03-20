@@ -3,8 +3,8 @@
 <div class="accordion" id="sessionAccordion">
 	{% for session in sessions %}
 		<div class="card">
-			<div class="card-header" id="label{{ session.id }}">
-			  <h2 class="mb-0">
+			<div class="card-header pt-0 pb-0" id="label{{ session.id }}">
+			  <h2 class="mb-0 pt-0 pb-0">
 				<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#session_{{ session.id }}" 
 						onclick="updatePanel('{% url "testlistView" session.id %}', 'session_{{ session.id }}')" 
 						aria-expanded="false" aria-controls="session_{{ session.id }}">
