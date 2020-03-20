@@ -18,7 +18,7 @@ class TestSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TestSession
-        fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version', 'compareSnapshot')
+        fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version', 'compareSnapshot', 'name', 'ttl')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:

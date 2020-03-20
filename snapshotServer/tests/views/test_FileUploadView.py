@@ -63,7 +63,7 @@ class test_FileUploadView(django.test.TestCase):
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
-            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
@@ -78,7 +78,7 @@ class test_FileUploadView(django.test.TestCase):
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr2.id, 'image': fp, 'name': 'img', 'compare': 'true'})
-            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs2, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
@@ -105,7 +105,7 @@ class test_FileUploadView(django.test.TestCase):
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': sr3.id, 'image': fp, 'name': 'img', 'compare': 'true'})
-            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=tcs3, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")

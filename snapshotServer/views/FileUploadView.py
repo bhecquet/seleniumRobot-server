@@ -6,6 +6,8 @@ from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.forms import ImageUploadForm
 from snapshotServer.models import Snapshot, TestStep, TestSession,\
     TestCaseInSession, StepResult
+import json
+from django.http.response import HttpResponse
 
 
 
@@ -59,7 +61,7 @@ class FileUploadView(views.APIView):
                 step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None, name=name, compareOption=compare_option)
                 step_snapshot.save()
                 
-            return Response(status=204)
+            return HttpResponse(json.dumps({'id': step_snapshot.id}), content_type='application/json', status=201)
         
         else:
             return Response(status=500, data=str(form.errors))

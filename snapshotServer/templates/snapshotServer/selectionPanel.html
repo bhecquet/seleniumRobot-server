@@ -8,7 +8,11 @@
 				<button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#session_{{ session.id }}" 
 						onclick="updatePanel('{% url "testlistView" session.id %}', 'session_{{ session.id }}')" 
 						aria-expanded="false" aria-controls="session_{{ session.id }}">
-				  {{ session.date }}
+				  {% if session.name %}
+				  	{{ session.name }} ({{ session.date }})
+				  {% else %}
+				  	{{ session.date }}
+				  {% endif %}
 				</button>
 			  </h2>
 			</div>

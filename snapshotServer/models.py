@@ -94,14 +94,19 @@ class TestStep(models.Model):
 class TestSession(models.Model):
     __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=50)
+    name = models.CharField(max_length=100, default="")
     date = models.DateTimeField()
     version = models.ForeignKey(Version, related_name='testsession', on_delete=models.CASCADE)
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)
     compareSnapshot = models.BooleanField(default=False)                            # if True, this session will be displayed in snapshot comparator
+    ttl = models.IntegerField(default=30) # time to live of the session, in days. After this delay, session may be deleted
     
     def __str__(self):
-        return "Session %s with %s" % (self.sessionId, self.browser)
+        if self.name:
+            return self.name
+        else:
+            return "Session %s with %s" % (self.sessionId, self.browser)
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
