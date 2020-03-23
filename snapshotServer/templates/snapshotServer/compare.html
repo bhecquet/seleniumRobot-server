@@ -12,26 +12,6 @@
 	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">
 		<form>
 			<div class="btn-group">
-			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnBrowser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Browser
-			  </button>
-				<div class="dropdown-menu" >
-					<div class="form-group">
-						{% for browser in browsers %}
-							<div class="form-check">
-								{% if browser in selectedBrowser %}
-						 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" checked="checked" />
-						 		{% else %}
-						 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" />
-						 		{% endif %}
-									<label class="form-check-label" for="{{ browser }}">{{ browser }}</label>
-						  	</div>
-						{% endfor %}
-					</div>
-						
-				</div>
-			</div>
-			<div class="btn-group">
 			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnEnvironment" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
 				Environment
 			  </button>
@@ -52,27 +32,73 @@
 				</div>
 			</div>
 			
-			<!--  these are TestCase instances -->
-			<div class="btn-group">
-			  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnTestCase" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-				Test Cases
-			  </button>
-				<div class="dropdown-menu" >
-					<div class="form-group">
-						{% for testCase in testCases %}
-							<div class="form-check">
-								{% if testCase in selectedTestCases %}
-						 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" checked="checked" />
-						 		{% else %}
-						 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" />
-						 		{% endif %}
-									<label class="form-check-label" for="{{ testCase.id }}">{{ testCase.name }}</label>
-						  	</div>
-						{% endfor %}
+			{% if selectedEnvironments %}
+				<div class="btn-group">
+				  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnSessionName" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+					Sessions
+				  </button>
+					<div class="dropdown-menu" >
+						<div class="form-group">
+							{% for sessionName in sessionNames %}
+								<div class="form-check">
+									{% if sessionName in selectedSessionNames %}
+							 			<input type="checkbox" class="form-check-input" value="{{ sessionName }}" name="sessionName" checked="checked" />
+							 		{% else %}
+							 			<input type="checkbox" class="form-check-input" value="{{ sessionName }}" name="sessionName" />
+							 		{% endif %}
+										<label class="form-check-label" for="{{ sessionName }}">{{ sessionName }}</label>
+							  	</div>
+							{% endfor %}
+						</div>
+							
 					</div>
-						
 				</div>
-			</div>
+				
+				{% if selectedSessionNames %} 
+					<div class="btn-group">
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnBrowser" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Browser
+					  </button>
+						<div class="dropdown-menu" >
+							<div class="form-group">
+								{% for browser in browsers %}
+									<div class="form-check">
+										{% if browser in selectedBrowser %}
+								 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" checked="checked" />
+								 		{% else %}
+								 			<input type="checkbox" class="form-check-input" value="{{ browser }}" name="browser" />
+								 		{% endif %}
+											<label class="form-check-label" for="{{ browser }}">{{ browser }}</label>
+								  	</div>
+								{% endfor %}
+							</div>
+								
+						</div>
+					</div>
+					
+					<!--  these are TestCase instances -->
+					<div class="btn-group">
+					  <button class="btn btn-secondary dropdown-toggle" type="button" id="btnTestCase" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+						Test Cases
+					  </button>
+						<div class="dropdown-menu" >
+							<div class="form-group">
+								{% for testCase in testCases %}
+									<div class="form-check">
+										{% if testCase in selectedTestCases %}
+								 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" checked="checked" />
+								 		{% else %}
+								 			<input type="checkbox" class="form-check-input" value="{{ testCase.id }}" name="testcase" />
+								 		{% endif %}
+											<label class="form-check-label" for="{{ testCase.id }}">{{ testCase.name }}</label>
+								  	</div>
+								{% endfor %}
+							</div>
+								
+						</div>
+					</div>
+				{% endif %}
+			{% endif %}
 			
 			<div class="input-group w-25 input-group-sm d-inline-flex">
 			  <div class="input-group-prepend">

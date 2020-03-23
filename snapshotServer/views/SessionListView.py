@@ -33,14 +33,18 @@ class SessionListView(TemplateView):
         context = super(SessionListView, self).get_context_data(**kwargs)
         
         sessions = TestSession.objects.filter(version=self.kwargs['versionId'], compareSnapshot=True)
-
-        context['browsers'] = list(set([s.browser for s in TestSession.objects.all()]))
-        context['selectedBrowser'] = self.request.GET.getlist('browser')
-        sessions = sessions.filter(browser__in=context['selectedBrowser'])
         
         context['environments'] = TestEnvironment.objects.all()
         context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
+
+        context['sessionNames'] = [s['name'] for s in sessions.values('name').order_by('name').distinct()]
+        context['selectedSessionNames'] = self.request.GET.getlist('sessionName')
+        sessions = sessions.filter(name__in=context['selectedSessionNames'])
+
+        context['browsers'] = list(set([s.browser for s in sessions]))
+        context['selectedBrowser'] = self.request.GET.getlist('browser')
+        sessions = sessions.filter(browser__in=context['selectedBrowser'])
         
         # build the list of TestCase objects which can be selected by user
         context['testCases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
