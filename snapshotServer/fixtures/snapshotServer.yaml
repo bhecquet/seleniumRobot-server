@@ -29,6 +29,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
 -   model: snapshotServer.testsession
     pk: 2
     fields:
@@ -38,6 +39,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session2
         
 -   model: snapshotServer.testcaseinsession
     pk: 1
@@ -97,6 +99,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
         
 # A reference and a step snapshot, each in its own session
 -   model: snapshotServer.testcase
@@ -122,6 +125,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
         
 -   model: snapshotServer.testcaseinsession
     pk: 3
@@ -184,6 +188,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
 -   model: snapshotServer.testsession
     pk: 7
     fields:
@@ -193,6 +198,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
 -   model: snapshotServer.testsession
     pk: 107
     fields:
@@ -202,6 +208,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: false
+        name: session1
         
 -   model: snapshotServer.testcaseinsession
     pk: 105
@@ -333,6 +340,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
 -   model: snapshotServer.testsession
     pk: 9
     fields:
@@ -342,4 +350,5 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        name: session1
     

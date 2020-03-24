@@ -4,6 +4,8 @@ from django.db import models
 from snapshotServer.controllers.PictureComparator import Rectangle
 import pickle
 import commonsServer.models
+from django.dispatch.dispatcher import receiver
+from django.db.models.signals import post_delete, pre_delete
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -113,12 +115,12 @@ class Snapshot(models.Model):
 
     stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='documents/')
-    refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.CASCADE)
+    refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.DO_NOTHING)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
     name = models.CharField(max_length=100, default="") # name of the snapshot
     compareOption = models.CharField(max_length=100, default="true") # options for comparison
-    
+  
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 
     
@@ -126,6 +128,8 @@ class Snapshot(models.Model):
         """
         get all snapshots, sharing the same reference snapshot, until the next reference for the same testCase / testStep
         """
+        
+        # get list of all snapshots following ourself, sharing 'refSnapshot'
         nextSnapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
                                             stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
                                             stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.nextVersions(),
@@ -142,6 +146,7 @@ class Snapshot(models.Model):
                 break
         
         return snapshots
+    
     
     def snapshotWithSameRef(self):
         """
@@ -161,6 +166,50 @@ class Snapshot(models.Model):
                 newSnapshots.append(snap)
                 
         return newSnapshots
+    
+
+@receiver(pre_delete, sender=Snapshot)
+def submission_delete(sender, instance, **kwargs):
+    """
+    When a snapshot is deleted, remove the associated picture
+    Also rebuild reference tree for snapshots that could have referenced this one
+    """
+
+    from snapshotServer.controllers.DiffComputer import DiffComputer
+    
+    # deletion of image file
+    instance.image.delete(False) 
+    
+    # recompute references if this snapshot is a reference for other
+    for snapshot in instance.snapshotsUntilNextRef(instance):
+    
+        test_case = instance.stepResult.testCase
+        
+        # search any reference snapshot that exists previously
+        ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name, 
+                                               stepResult__testCase__session__version=test_case.session.version,
+                                               stepResult__step=snapshot.stepResult.step, 
+                                               refSnapshot=None,
+                                               id__lt=snapshot.id,
+                                               name=snapshot.name).exclude(id=instance.id)
+         
+        # we find a reference snapshot, recompute diff
+        if len(ref_snapshots) > 0:
+            snapshot.refSnapshot = ref_snapshots.last()
+            snapshot.save()
+            
+            # recompute diff pixels
+            DiffComputer.computeNow(snapshot.refSnapshot, snapshot)
+            
+            # recompute all following snapshot as they will depend on a previous ref
+            for snap in snapshot.snapshotsUntilNextRef(snapshot):
+                DiffComputer.addJobs(snapshot.refSnapshot, snap)
+            
+        # no reference snapshot found, only remove information about reference which makes this snapshot a reference    
+        else:
+            snapshot.refSnapshot = None
+            snapshot.save()
+            
         
 class StepResult(models.Model):
     

@@ -10,6 +10,7 @@ from django.views.generic.base import TemplateView
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestCaseInSession, TestSession
 import base64
+import sys
 
 
 class PictureView(TemplateView):
@@ -79,6 +80,7 @@ class PictureView(TemplateView):
                 
                 # extract difference pixel. Recompute in case this step is no more a reference
                 diff_pixels_bin = step_snapshot.pixelsDiff
+                print(sys.getsizeof(diff_pixels_bin))
                     
                 if diff_pixels_bin:
                     diff_pixels = pickle.loads(diff_pixels_bin)

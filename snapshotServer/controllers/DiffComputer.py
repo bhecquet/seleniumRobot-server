@@ -51,8 +51,8 @@ class DiffComputer(threading.Thread):
             DiffComputer._jobLock.release()
         
     @classmethod
-    def computeNow(cls, refSnapshot, stepSnapshot):
-        DiffComputer._computeDiff(refSnapshot, stepSnapshot)
+    def computeNow(cls, ref_snapshot, step_snapshot):
+        DiffComputer._computeDiff(ref_snapshot, step_snapshot)
         
     @classmethod
     def stopThread(cls):

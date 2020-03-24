@@ -19,7 +19,7 @@ class Test_SessionListView(TestViews):
         """
         response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}))
         self.assertEqual(len(response.context['sessions']), 0)
-        self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
+        self.assertEqual(len(response.context['browsers']), 0)
         self.assertEqual(len(response.context['selectedBrowser']), 0)
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
         self.assertEqual(len(response.context['selectedEnvironments']), 0)
@@ -29,12 +29,24 @@ class Test_SessionListView(TestViews):
         """
         Filtering when not all select box are chosen lead to empty session list and error message
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox']})
+        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'environment': ['1'], 'browser': ['firefox'], 'sessionName': ['session1']})
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
-        self.assertEqual(len(response.context['selectedEnvironments']), 0)
+        self.assertEqual(len(response.context['selectedEnvironments']), 1)
+        self.assertTrue('error' in response.context)
+
+    def test_onlyEnvironmentFilter(self):
+        """
+        Filtering when not all select box are chosen lead to empty session list and error message
+        """
+        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'environment': ['1']})
+        self.assertEqual(len(response.context['sessions']), 0)
+        self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])    
+        self.assertEqual(len(response.context['browsers']), 0)     # only firefox in test data
+        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['selectedEnvironments']), 1)
         self.assertTrue('error' in response.context)
 
     def test_allFilter(self):
@@ -43,8 +55,9 @@ class Test_SessionListView(TestViews):
         3 sessions correspond to input parameters but one 2 them (id=7) has the compareSnapshot flag set to false
         Only one session should be returned
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
+        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4], 'sessionName': ['session1']})
         self.assertEqual(len(response.context['sessions']), 2)      
+        self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])      
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
         self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
@@ -59,7 +72,9 @@ class Test_SessionListView(TestViews):
                                                                                               'environment': [1], 
                                                                                               'testcase': [4],
                                                                                               'sessionFrom': '06-05-2017',
-                                                                                              'sessionTo': '06-05-2017'})
+                                                                                              'sessionTo': '06-05-2017', 
+                                                                                              'sessionName': ['session1']
+        })
         self.assertEqual(len(response.context['sessions']), 1)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
