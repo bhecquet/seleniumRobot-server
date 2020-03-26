@@ -101,8 +101,11 @@ class DiffComputer(threading.Thread):
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=ref_snapshot)]
                 
                 pixel_diffs, too_many_diffs = PictureComparator().getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
-                bin_pixels = pickle.dumps(pixel_diffs, protocol=3)
-                step_snapshot.pixelsDiff = bin_pixels
+                
+                # store diff picture mask into database instead of pixels, to reduce size of stored object
+                step_snapshot.pixelsDiff = DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
+#                 bin_pixels = pickle.dumps(pixel_diffs, protocol=3)
+#                 step_snapshot.pixelsDiff = bin_pixels
                 step_snapshot.tooManyDiffs = too_many_diffs
             else:
                 step_snapshot.pixelsDiff = None

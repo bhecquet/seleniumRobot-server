@@ -44,7 +44,11 @@ class TestCaseInSession(models.Model):
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
                 continue
-            pixels = pickle.loads(snapshot.pixelsDiff)
+            
+            try:
+                pixels = pickle.loads(snapshot.pixelsDiff)
+            except:
+                pixels = snapshot.pixelsDiff
             
             result = result and not bool(pixels)
             
@@ -87,7 +91,10 @@ class TestStep(models.Model):
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
                 continue
-            pixels = pickle.loads(snapshot.pixelsDiff)
+            try:
+                pixels = pickle.loads(snapshot.pixelsDiff)
+            except:
+                pixels = snapshot.pixelsDiff
             
             result = result and not bool(pixels)
             

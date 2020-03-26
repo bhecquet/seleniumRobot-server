@@ -11,6 +11,11 @@ class TestSessionAdmin(admin.ModelAdmin):
     actions = ['delete_selected']
     
     def get_deleted_objects(self, test_sessions, request):
+        """
+        Method getting the list of objects related to test sessions that will be deleted
+        If we find related snapshots that are reference for other snapshot, add an item in object list. This item (__delete_reference_snapshots__) will be
+        interpreted by custom admin templates to display a warning
+        """
         
         deletable_objects, model_count, perms_needed, protected =  get_deleted_objects(test_sessions, request, self.admin_site)
         

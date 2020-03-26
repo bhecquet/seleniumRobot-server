@@ -83,9 +83,11 @@ class PictureView(TemplateView):
                 print(sys.getsizeof(diff_pixels_bin))
                     
                 if diff_pixels_bin:
-                    diff_pixels = pickle.loads(diff_pixels_bin)
-                    diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
-                    
+                    try:
+                        diff_pixels = pickle.loads(diff_pixels_bin)
+                        diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
+                    except:
+                        diff_picture = base64.b64encode(diff_pixels_bin).decode('ascii')
                 else:
                     diff_pixels = []
                     diff_picture = None
