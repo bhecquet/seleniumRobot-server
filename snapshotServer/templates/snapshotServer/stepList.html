@@ -1,17 +1,34 @@
-{% for testStep, status in object_list.items %}
-	<div class="box {% if status %}success{% else %}failed{% endif %}">
-		<script>
-			updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'step_{{testStep.id}}')
-		</script>
-		<div class="box-header with-border">
-			<button type="button" class="btn btn-box-tool" data-widget="collapse">
-				<i class="fa fa-minus"></i>
-			</button> 
-			{{ testStep }}
-		</div>
-		<div class="box-body" style="display: block;" id="step_{{testStep.id}}">
+{% if header %}
+	{% load static %}
+	<!DOCTYPE html>
+	<html>
+		{% include "snapshotServer/header.html" %}	
+	<body>
+		<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+		<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
+{% endif %}
+
+	{% for testStep, status in object_list.items %}
+		<div class="box {% if status %}success{% else %}failed{% endif %}">
 			
+			<div class="box-header with-border">
+				<button type="button" class="btn btn-box-tool" data-widget="collapse">
+					<i class="fa fa-minus"></i>
+				</button> 
+				{{ testStep }}
+			</div>
+			<div class="box-body" style="display: block;" id="step_{{testStep.id}}">
+				
+			</div>
+			<script>
+				updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'step_{{testStep.id}}')
+			</script>
 		</div>
-	</div>
-{% endfor %}
+	{% endfor %}
+
+{% if header %}
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.2.10/js/iframeResizer.contentWindow.min.js"></script>	
+	</body>
+</html>
+{% endif %}
 

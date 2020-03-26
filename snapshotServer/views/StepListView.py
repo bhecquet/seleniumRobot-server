@@ -7,7 +7,6 @@ from django.views.generic.list import ListView
 
 from snapshotServer.models import TestCaseInSession
 
-
 class StepListView(ListView):
     """
     View displaying the list of steps for a test case in a session
@@ -28,4 +27,9 @@ class StepListView(ListView):
     def get_context_data(self, **kwargs):
         context = super(StepListView, self).get_context_data(**kwargs)
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
+        
+        if self.request.GET.get('header', 'false') == 'true':
+            context['header'] = True
+        else:
+            context['header'] = False
         return context
