@@ -224,7 +224,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	
 	// remove exclude zones that should not be kept
 	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + '_' + snapshotId + ' input');
-	console.log(currentExcludes);
+
 	for(let i= 0; i < currentExcludes.length; i++) {
 		if (!currentExcludes[i].checked) {
 
@@ -242,11 +242,9 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 		url: '/snapshot/compare/compute/' + snapshotId + '/',
 		async: false	
 	});
-	
-	// hide modal explicitly because updatePanel blocks hiding
-	$('#editionModal_' + testStepId + '_' + snapshotId).modal('hide')
-	
+
 	// reload step
 	updatePanel('/snapshot/compare/picture/' + testCaseId + '/' + testStepId, 'step_' + testStepId);
+
 
 }

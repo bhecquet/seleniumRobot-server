@@ -116,9 +116,7 @@
 									<div class="modal-footer">
 										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
 										<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');">Toggle differences</button>
-										<button type="submit" class="btn btn-primary" 
-												onclick="updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})" 
-												data-dismiss="modal">Save</button>
+										<button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
 									</div>
 								</div>
 							</div>
@@ -155,6 +153,14 @@
 								{{ testStepId }},
 								{{ snapshot_id }});
 				})
+				
+				$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
+				  	var $button = $(event.target); 
+				
+					$(this).closest('.modal').one('hidden.bs.modal', function() {
+					    updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
+					});
+				});
 				
 			</script>
 		{% endwith %}
