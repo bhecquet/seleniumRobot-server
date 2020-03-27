@@ -7,10 +7,11 @@
 		
 			<!-- be sure we load display exclusion zones only once image is loaded -->
 			<script>;
-			
+				
 				{% if namedSnapshot.stepSnapshot and namedSnapshot.stepSnapshot.refSnapshot %}
 					var img = document.getElementById('stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}');
 					img.onload = function() {
+						
 						updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
 						drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
 												document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
@@ -133,7 +134,7 @@
 				console.log("displaying diff")
 				setTimeout(function(){
 			
-					// display them
+					// display differences
 					toggleElement('diff_{{ testStepId }}_{{ snapshot_id }}'); 
 					toggleElement('diff2_{{ testStepId }}_{{ snapshot_id }}');
 					
@@ -154,6 +155,7 @@
 								{{ snapshot_id }});
 				})
 				
+				// update exclusion zone and recompute diff when saving
 				$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
 				  	var $button = $(event.target); 
 				

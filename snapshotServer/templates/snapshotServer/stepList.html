@@ -2,10 +2,13 @@
 	{% load static %}
 	<!DOCTYPE html>
 	<html>
-		{% include "snapshotServer/header.html" %}	
+		<head>
+			{% include "snapshotServer/header.html" %}	
+			<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
+			<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
+		</head>
 	<body>
-		<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
-		<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
+		
 {% endif %}
 
 	{% for testStep, status in object_list.items %}

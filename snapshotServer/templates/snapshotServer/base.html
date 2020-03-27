@@ -1,6 +1,10 @@
 {% load static %}
 <html>
-	{% include "snapshotServer/header.html" %}	
+	<head>
+		{% include "snapshotServer/header.html" %}	
+	{% block head %}{% endblock %}
+		
+	</head>
 	<body>
 		
 		<div class="col-sm-12" style="background-color:#00888d">

@@ -52,11 +52,11 @@ class SessionListView(TemplateView):
         sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
         
         context['sessionFrom'] = self.request.GET.get('sessionFrom')
-        if context['sessionFrom']:
+        if context['sessionFrom'] and context['sessionFrom'] != 'None':
             sessions = sessions.filter(date__gte=datetime.strptime(context['sessionFrom'], '%d-%m-%Y'))
             
         context['sessionTo'] = self.request.GET.get('sessionTo')
-        if context['sessionTo']:
+        if context['sessionTo'] and context['sessionTo'] != 'None':
             sessions = sessions.filter(date__lte=datetime.strptime(context['sessionTo'], '%d-%m-%Y') + timedelta(days=1))
 
         # display error when no option of one select list is choosen
