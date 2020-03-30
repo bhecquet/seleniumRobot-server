@@ -63,7 +63,7 @@ class PictureComparator:
         @param reference: reference picture
         @param image: image to compare with
         @param exclude_zones: list of zones (Rectangle objects) which should not be marked as differences.
-        @return: list of pixels which are different between reference and image
+        @return: list of pixels which are different between reference and image and a boolean indicating if there are differences
         """
         if not os.path.isfile(reference):
             raise PictureComparatorError("Reference file %s does not exist" % reference)
@@ -89,7 +89,6 @@ class PictureComparator:
         diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
         
         pixels = []
-        too_many_diffs = False
         
         # ignore excluded pixels
         for x, y in excluded_pixels:
@@ -109,7 +108,7 @@ class PictureComparator:
             for y in range(reference_height):
                 pixels.append(Pixel(x + reference_width, y))
             
-        return pixels, too_many_diffs
+        return pixels, bool(pixels)
     
     def _buildListOfExcludedPixels(self, excludeZones):
         """

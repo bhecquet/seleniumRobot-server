@@ -73,7 +73,7 @@ class Test(unittest.TestCase):
         diffPixels, tooManyDiffs = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
         self.assertEqual(3, len(diffPixels), "3 pixels should be found")
         self.assertEqual(Pixel(554, 256), diffPixels[0], "detected position is wrong")
-        self.assertFalse(tooManyDiffs)
+        self.assertTrue(tooManyDiffs)
          
     def test_realTooManyDiff(self):
         comparator = PictureComparator();

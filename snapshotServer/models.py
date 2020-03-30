@@ -45,12 +45,12 @@ class TestCaseInSession(models.Model):
             if snapshot.pixelsDiff is None:
                 continue
             
+            # TODO: pickle should be removed as not pickling should exist in database anymore
             try:
                 pixels = pickle.loads(snapshot.pixelsDiff)
+                result = result and not bool(pixels)
             except:
-                pixels = snapshot.pixelsDiff
-            
-            result = result and not bool(pixels)
+                result = result and not snapshot.tooManyDiffs
             
         return result
     
@@ -91,13 +91,14 @@ class TestStep(models.Model):
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
                 continue
+            
+            # TODO: pickle should be removed as not pickling should exist in database anymore
             try:
                 pixels = pickle.loads(snapshot.pixelsDiff)
+                result = result and not bool(pixels)
             except:
-                pixels = snapshot.pixelsDiff
-            
-            result = result and not bool(pixels)
-            
+                result = result and not snapshot.tooManyDiffs
+           
         return result
     
 class TestSession(models.Model):
