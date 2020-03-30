@@ -22,9 +22,15 @@
 	margin-left: 8px;
 }
 
+.body-picture {
+	background-color: #ecf0f5;
+}
+
 .snapshot {
 	width:100%;
 	display: grid;
+	padding-left: 10px;
+	padding-right: 10px;
 }
 
 #excludeZone {
@@ -52,8 +58,6 @@
 
 .header-picture {
 	background-color:	#aaa;
-	padding-left: 20%;
-	padding-right: 20%;
 }
 
 .itemSuccess {
@@ -86,6 +90,7 @@
 body {	
 	box-shadow: 5px 10px 10px #aaa;
 	background-color: #eef3f7;
+	font-size: 14px;
 }
 #testList {
 	margin-top: 20px;
