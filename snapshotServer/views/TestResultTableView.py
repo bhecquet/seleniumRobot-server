@@ -9,6 +9,7 @@ from snapshotServer.models import Version, TestSession, TestEnvironment,\
 from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
 from datetime import datetime, timedelta
 from django.shortcuts import render_to_response
+import pytz
 
 class TestResultTableView(TemplateView):
     """
@@ -58,13 +59,15 @@ class TestResultTableView(TemplateView):
             context['sessionFrom'] = (datetime.now() - timedelta(days=15)).strftime('%d-%m-%Y')
         else:
             context['sessionFrom'] = self.request.GET.get('sessionFrom')
-        sessions = sessions.filter(date__gte=datetime.strptime(context['sessionFrom'], '%d-%m-%Y'))
+        session_from_date = datetime.strptime(context['sessionFrom'], '%d-%m-%Y')
+        sessions = sessions.filter(date__gte=datetime(session_from_date.year, session_from_date.month, session_from_date.day, tzinfo=pytz.UTC))
             
         if self.request.GET.get('sessionTo') is None:
             context['sessionTo'] = datetime.now().strftime('%d-%m-%Y')
         else:
             context['sessionTo'] = self.request.GET.get('sessionTo')
-        sessions = sessions.filter(date__lte=datetime.strptime(context['sessionTo'], '%d-%m-%Y'))
+        session_to_date = datetime.strptime(context['sessionTo'], '%d-%m-%Y')
+        sessions = sessions.filter(date__lte=datetime(session_to_date.year, session_to_date.month, session_to_date.day, tzinfo=pytz.UTC))
         
         # filter session according to request parameters
         context['sessions'] = sessions

@@ -13,7 +13,7 @@ from snapshotServer.tests.views.Test_Views import TestViews
 class Test_SessionListView(TestViews):
 
 
-    def test_noFilter(self):
+    def test_no_filter(self):
         """
         rendering when we arrive on page. No session found because no filter given
         """
@@ -64,7 +64,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('error' not in response.context)
 
-    def test_allFilterWithDate(self):
+    def test_all_filter_with_date(self):
         """
         When date are selected, we should get only session from the 06th may
         """

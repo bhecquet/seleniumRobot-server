@@ -12,11 +12,8 @@ from django.core.files.images import ImageFile
 import django.test
 
 from seleniumRobotServer.settings import MEDIA_ROOT
-from snapshotServer.models import Snapshot, TestStep, TestSession, TestCase,\
-    TestCaseInSession, StepResult
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.controllers.PictureComparator import Pixel
-import pickle
+from snapshotServer.models import Snapshot, StepResult
 
 
 class TestDiffComputer(django.test.TestCase):
@@ -90,71 +87,9 @@ class TestDiffComputer(django.test.TestCase):
          
                 # something has been computed
                 self.assertIsNotNone(s2.pixelsDiff)
-                pixels_diff_map = pickle.loads(s2.pixelsDiff)
-                
-                # check part of difference
-                self.assertEqual(pixels_diff_map[:3], [Pixel(699, 118), Pixel(700, 118), Pixel(701, 118)], "")
-                self.assertEqual(len(pixels_diff_map), 768, "wrong diff found")
+                self.assertTrue(s2.tooManyDiffs)
                 self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
-         
-    def test_compute_diff_with_cropping_on_step_image(self):
-        """
-        Check no error is raised when comparing 2 images with different sizes
-        Here step image is smaller than reference, so no diff will be shown
-        """
-        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
-            with open("snapshotServer/tests/data/test_Image1Crop.png", 'rb') as step:
-                img_reference = ImageFile(reference)
-                img_step = ImageFile(step)
-                s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-                s1.save()
-                s1.image.save("img", img_reference)
-                s1.save()
-                s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
-                s2.save()
-                s2.image.save("img", img_step)
-                s2.save()
-         
-                # no error should be raised
-                DiffComputer.getInstance().computeNow(s1, s2)
-         
-                # check that no difference is found, as step image is smaller
-                pixels_diff_map = pickle.loads(s2.pixelsDiff)
-                self.assertEqual(len(pixels_diff_map), 0, "no diff should be found")
-         
-    def test_compute_diff_with_cropping_on_reference_image(self):
-        """
-        Check no error is raised when comparing 2 images with different sizes
-        Here reference image is smaller than step, so diff will be shown on missing pixels
-        """
-        with open("snapshotServer/tests/data/test_Image1Crop.png", 'rb') as reference:
-            with open("snapshotServer/tests/data/test_Image1.png", 'rb') as step:
-                img_reference = ImageFile(reference)
-                img_step = ImageFile(step)
-                s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-                s1.save()
-                s1.image.save("img", img_reference)
-                s1.save()
-                s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
-                s2.save()
-                s2.image.save("img", img_step)
-                s2.save()
-         
-                # no error should be raised
-                DiffComputer.getInstance().computeNow(s1, s2)
-         
-                # check that no difference is found, as step image is smaller
-                pixels_diff_map = pickle.loads(s2.pixelsDiff)
-                
-                # cropping on 58 lines. Check we have all points
-                self.assertEqual(pixels_diff_map[0], Pixel(0, 701))
-                self.assertEqual(pixels_diff_map[1174], Pixel(0, 702))
-                self.assertEqual(pixels_diff_map[1174 * 58 - 1], Pixel(1173, 758))
-                
-                # cropping on 4 columns
-                self.assertEqual(pixels_diff_map[1174 * 58], Pixel(1170, 0)) 
-                self.assertEqual(pixels_diff_map[-1], Pixel(1173, 700)) 
-                self.assertEqual(len(pixels_diff_map), 70896)
+
          
     def test_ref_is_none(self):
         """

@@ -10,10 +10,10 @@ from snapshotServer.models import TestEnvironment, TestCase
 from snapshotServer.tests.views.Test_Views import TestViews
 
 
-class Test_ResultTableView(TestViews):
+class TestResultTableView(TestViews):
 
 
-    def test_noFilter(self):
+    def test_no_filter(self):
         """
         rendering when we arrive on page. 0 session found because no env is provided by default
         """
@@ -25,7 +25,7 @@ class Test_ResultTableView(TestViews):
         self.assertEqual(len(response.context['selectedEnvironments']), 0)
         self.assertTrue('testCaseTable' in response.context)
   
-    def test_allFilterNoDate(self):
+    def test_all_filter_no_date(self):
         """
         Filtering done when all fields are filled but date
         Dates are mandatory for filter or else nothing is resturned
@@ -38,7 +38,7 @@ class Test_ResultTableView(TestViews):
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('testCaseTable' in response.context)
  
-    def test_allFilterWithDate(self):
+    def test_all_filter_with_date(self):
         """
         When date are selected, we should get only session from the 06th may
         """
@@ -46,7 +46,7 @@ class Test_ResultTableView(TestViews):
                                                                                               'environment': [1], 
                                                                                               'testcase': [4],
                                                                                               'sessionFrom': '06-05-2017',
-                                                                                              'sessionTo': '06-05-2017'})
+                                                                                              'sessionTo': '07-05-2017'})
         self.assertEqual(len(response.context['sessions']), 2)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
