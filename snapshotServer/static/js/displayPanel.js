@@ -171,11 +171,18 @@ function initDraw(excludeTable, testStepId, snapshotId) {
  * @returns
  */
 function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, snapshotId) {
-
+	
+	// do not draw if canvas / snapshot is not visible
+	if (snapshotHeight == 0) {
+		return
+	}
+	
 	canvas.style.height = snapshotHeight;
 	var canvasRatio = getIntValue(canvas.clientWidth) / getIntValue(canvas.getAttribute("width"));
 	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + '_' + snapshotId + ' input');
-
+	//console.log("canvas: " + canvas.clientWidth + '-' + canvas.clientHeight + '-' + snapshotHeight);
+	
+	
 	for(var i= 0; i < currentExcludes.length; i++) {
 		if (currentExcludes[i].checked) {
 
@@ -187,9 +194,9 @@ function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, 
 		    
 		    
 		    element.style.left = Math.round(getIntValue(currentExcludes[i].getAttribute('r_x')) * canvasRatio) * 100 / canvas.clientWidth + '%';
-		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) * 100 / canvas.clientHeight + '%';
+		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) * 100 / snapshotHeight + '%';
 		    element.style.width = Math.round(getIntValue(currentExcludes[i].getAttribute('r_w')) * canvasRatio) * 100 / canvas.clientWidth + '%';
-		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) * 100 / canvas.clientHeight + '%';
+		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) * 100 / snapshotHeight + '%';
 		     
 		    canvas.appendChild(element);
 		}
@@ -208,9 +215,12 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	var newExcludes = document.getElementsByName('new_exclude_' + testStepId + '_' + snapshotId);
 	
 	// add new exclude zones
+	// these ajax calls are not asynchronous as they MUST finish before we call computing 
 	for(let i= 0; i < newExcludes.length; i++) {
 		if (newExcludes[i].checked) {
-			$.post({
+			$.ajax({
+				type: 'POST',
+				async: false,
 				url: '/snapshot/api/exclude/',
 				data: "x=" + newExcludes[i].getAttribute('r_x')
 					+ "&y=" + newExcludes[i].getAttribute('r_y')
@@ -228,6 +238,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	for(let i= 0; i < currentExcludes.length; i++) {
 		if (!currentExcludes[i].checked) {
 
+			// these ajax calls are not asynchronous as they MUST finish before we call computing 
 			$.ajax({
 				type: 'DELETE',
 				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
