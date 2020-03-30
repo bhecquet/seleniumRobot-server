@@ -5,32 +5,39 @@
 		<head>
 			{% include "snapshotServer/header.html" %}	
 			<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
-			<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
+			<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>	
 		</head>
 	<body>
 		
 {% endif %}
 
 	{% for testStep, status in object_list.items %}
-		<div class="box {% if status %}success{% else %}failed{% endif %}">
-			
-			<div class="box-header with-border">
-				<button type="button" class="btn btn-box-tool" data-widget="collapse">
-					<i class="fa fa-minus"></i>
-				</button> 
-				{{ testStep }}
-			</div>
-			<div class="box-body" style="display: block;" id="step_{{testStep.id}}">
-				
-			</div>
-			<script>
-				updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'step_{{testStep.id}}')
-			</script>
+		<div id="step_{{testStep.id}}">
+			{{ testStep }}
 		</div>
+		<script>
+			updatePanel('{% url "pictureView" testCaseId testStep.id %}', 'step_{{testStep.id}}')
+		</script>
+		
 	{% endfor %}
 
-{% if header %}
-		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.2.10/js/iframeResizer.contentWindow.min.js"></script>	
+{% if header %}	
+		<script>
+			var triggerSent = false;
+			window.iFrameResizer = {
+				// when message is received, trigger 'displayed' event so that we inform each "diff" zone that it is being displayed and should be resized the first time
+				// initially, when steplist is embedded in an iframe which is not displayed, picture / canvas size is set to 0.
+			    onMessage: function(message) {
+			    	if (!triggerSent) {
+				    	var evt = $.Event('displayed');
+				    	$(window).trigger(evt);
+				    	triggerSent = true
+				    }
+		    	}
+			  }
+		</script>
+		
+		<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/iframe-resizer@4.2.10/js/iframeResizer.contentWindow.min.js"></script>
 	</body>
 </html>
 {% endif %}

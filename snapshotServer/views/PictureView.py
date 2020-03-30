@@ -8,7 +8,8 @@ import pickle
 from django.views.generic.base import TemplateView
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import Snapshot, TestCaseInSession, TestSession
+from snapshotServer.models import Snapshot, TestCaseInSession, TestSession,\
+    TestStep
 import base64
 import sys
 
@@ -31,6 +32,11 @@ class PictureView(TemplateView):
         context['captureList'] = []
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
         context['testStepId'] = self.kwargs['testStepId']
+        
+        step = TestStep.objects.get(pk=self.kwargs['testStepId'])
+        
+        context['testStepName'] = step.name
+        context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
         
         step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
                                                stepResult__step=self.kwargs['testStepId'])

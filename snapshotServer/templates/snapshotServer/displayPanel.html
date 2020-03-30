@@ -1,174 +1,203 @@
 {% load static %}
 
-<div class="container">
-	{% for namedSnapshot in captureList %}
-		{% with snapshot_id=namedSnapshot.stepSnapshot.id %}
-	
-		
-			<!-- be sure we load display exclusion zones only once image is loaded -->
-			<script>;
-				
-				{% if namedSnapshot.stepSnapshot and namedSnapshot.stepSnapshot.refSnapshot %}
-					var img = document.getElementById('stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}');
-					img.onload = function() {
-						
-						updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
-						drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
-												document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
-												'Static',
-												{{ testStepId }},
-												{{ snapshot_id }});
-					}
-				{% endif %}
+<div class="box {% if status %}success{% else %}failed{% endif %} {% if captureList|length == 0 %}collapsed-box{% endif %}">
+	<div class="box-header with-border">
+		<button type="button" class="btn btn-box-tool" data-widget="collapse">
+			{% if captureList|length == 0 %}
+				<i class="fa fa-plus"></i>
+			{% else %}
+				<i class="fa fa-minus"></i>
+			{% endif %}
+		</button> 
+		{{ testStepName }}
+	</div>
+	<div class="box-body" style="display: {% if captureList|length == 0 %}none{% else %}block{% endif %};">
+
+		<div class="container-fluid">
+			{% for namedSnapshot in captureList %}
+				{% with snapshot_id=namedSnapshot.stepSnapshot.id %}
 			
-			</script>
-		
-			<div class="row no-gutters header-picture">
-				<div class="header-picture">
-					{{ namedSnapshot.name }}
-				</div>
-			</div>
-			<div class="row no-gutters">
-				<div class="col-lg-5">
-					{% if namedSnapshot.reference %}
-						<div class="snapshot">
-							<figure>
-								<img src="{{ namedSnapshot.reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
-								<figcaption class="figure-caption">{{ namedSnapshot.reference.stepResult.testCase.session }}</figcaption>
-							</figure>
-						</div>
-					{% else %}
-						<div class="snapshotInfo">No Reference</div>
-					{% endif %}
-				</div>
-				<div class="col-lg-2 btn-group-vertical">
-					{% if namedSnapshot.stepSnapshot.refSnapshot %}
-						<button type="submit" 
-								class="btn btn-success mt-3 mb-3" 
-								onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
-								>Make reference</button>
-						<button type="button" 
-								class="btn btn-info mt-3 mb-3" 
-								onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');"
-								>Toggle differences</button>
-						<button type="button" 
-								class="btn btn-primary mt-3 mb-3" 
-								data-toggle="modal" 
-								data-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
-								>Edit</button>
-					{% elif namedSnapshot.stepSnapshot %}
-						<button type="button" 
-								class="btn btn-success mt-3 mb-3" 
-								disabled>This step is a reference</button>
-						<button type="submit" 
-								class="btn btn-primary mt-3 mb-3" 
-								onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False&snapshotId={{ snapshot_id }}')"
-								>Remove this reference</button>
-					{% endif %}
-				</div>
-				<div class="col-lg-5">
-					{% if namedSnapshot.stepSnapshot %}
-						<div class="snapshot">
-							<img class="shadowBox" 
-								id="stepSnapshotStatic_{{testStepId}}_{{ snapshot_id }}" 
-								src="{{ namedSnapshot.stepSnapshot.image.url }}" 
-								style="z-index:1;width:inherit;" 
-								>
-							{% if namedSnapshot.diffB64 %}
-								<img class="diffCanvas diffCanvas_{{testStepId}}_{{ snapshot_id }}" 
-									id="diff_{{testStepId}}_{{ snapshot_id }}" 
-									alt="." src="data:image/png;base64,{{namedSnapshot.diffB64}}"
-									style="z-index:10;width:inherit; display: none;" 
-									>
-							{% endif %}
-							<div id="canvasStatic_{{testStepId}}_{{ snapshot_id }}" 
-								class="diffCanvas" 
-								width="{{ namedSnapshot.stepSnapshot.image.width }}" 
-								height="{{ namedSnapshot.stepSnapshot.image.height }}" 
-								style="z-index: 10; width: inherit;">
-							</div>
-						</div>
+				
+					<!-- be sure we load display exclusion zones only once image is loaded -->
+					<script>;
+						
+						{% if namedSnapshot.stepSnapshot and namedSnapshot.stepSnapshot.refSnapshot %}
+							// update exclusion zone from database and draw them
+							function loadImages_{{ testStepId }}_{{ snapshot_id }}() {
+								updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
+
+								// delay display so that image is loaded and its height is > 0
+								setTimeout(function(){
+									drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
+															document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
+															'Static',
+															{{ testStepId }},
+															{{ snapshot_id }});
+									
+								}, 1000);
+							}
+						
+							var img = document.getElementById('stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}');
+							img.onload = loadImages_{{ testStepId }}_{{ snapshot_id }}()
+							$(window).on('displayed', function (e) {
+							    loadImages_{{ testStepId }}_{{ snapshot_id }}();
+							});
+						{% endif %}
 					
-						<div class="modal fade" id="editionModal_{{testStepId}}_{{ snapshot_id }}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}_{{ snapshot_id }}" aria-hidden="true">
-							<div class="modal-dialog modal-xl" role="document">
-								<div class="modal-content">
-									<div class="modal-body">
-										<div class="snapshot">
-											<img class="shadowBox" 
-												id="stepSnapshot_{{testStepId}}_{{ snapshot_id }}" 
-												src="{{ namedSnapshot.stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
-											{% if namedSnapshot.diffB64 %}
-												<img class="diffCanvas diffCanvas_{{testStepId}}_{{ snapshot_id }}" 
-													id="diff2_{{testStepId}}_{{ snapshot_id }}" 
-													src="data:image/png;base64,{{ namedSnapshot.diffB64 }}"
-													style="z-index:10;width:inherit; display: none;" 
-													>
-											{% endif %}
-											<div id="canvas_{{testStepId}}_{{ snapshot_id }}"
-												class="diffCanvas"  
-												width="{{ namedSnapshot.stepSnapshot.image.width }}" 
-												height="{{ namedSnapshot.stepSnapshot.image.height }}" 
-												style="z-index: 10; width: inherit;">
+					</script>
+				
+					<div class="row no-gutters header-picture">
+						<div class="header-picture mx-auto">
+							{{ namedSnapshot.name }}
+						</div>
+					</div>
+					<div class="row no-gutters body-picture">
+						<div class="col-lg-6">
+							{% if namedSnapshot.reference %}
+								<div class="snapshot">
+									<figure>
+										<img src="{{ namedSnapshot.reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
+										<figcaption class="figure-caption">{{ namedSnapshot.reference.stepResult.testCase.session }} - {{ namedSnapshot.reference.stepResult.testCase.session.date }}</figcaption>
+									</figure>
+								</div>
+							{% else %}
+								<div class="snapshotInfo">No Reference</div>
+							{% endif %}
+						</div>
+						<div class="col-lg-6">
+							{% if namedSnapshot.stepSnapshot %}
+								<div class="snapshot">
+									<img class="shadowBox" 
+										id="stepSnapshotStatic_{{testStepId}}_{{ snapshot_id }}" 
+										src="{{ namedSnapshot.stepSnapshot.image.url }}" 
+										style="z-index:1;width:inherit;" 
+										>
+									{% if namedSnapshot.diffB64 %}
+										<img class="diffCanvas diffCanvas_{{testStepId}}_{{ snapshot_id }}" 
+											id="diff_{{testStepId}}_{{ snapshot_id }}" 
+											alt="." src="data:image/png;base64,{{namedSnapshot.diffB64}}"
+											style="z-index:10;width:inherit; display: none;" 
+											>
+									{% endif %}
+									<div id="canvasStatic_{{testStepId}}_{{ snapshot_id }}" 
+										class="diffCanvas" 
+										width="{{ namedSnapshot.stepSnapshot.image.width }}" 
+										height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+										style="z-index: 10; width: inherit;">
+									</div>
+									<div class="btn-group">
+										{% if namedSnapshot.stepSnapshot.refSnapshot %}
+											<button type="submit" 
+													class="btn btn-success mt-3 mb-3" 
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
+													>Make reference</button>
+											<button type="button" 
+													class="btn btn-info mt-3 mb-3" 
+													onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');"
+													>Toggle differences</button>
+											<button type="button" 
+													class="btn btn-primary mt-3 mb-3" 
+													data-toggle="modal" 
+													data-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
+													>Edit</button>
+										{% elif namedSnapshot.stepSnapshot %}
+											<button type="button" 
+													class="btn btn-success mt-3 mb-3" 
+													disabled>This step is a reference</button>
+											<button type="submit" 
+													class="btn btn-primary mt-3 mb-3" 
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False&snapshotId={{ snapshot_id }}')"
+													>Remove this reference</button>
+										{% endif %}
+									</div>
+								
+								</div>
+							
+								<div class="modal fade" id="editionModal_{{testStepId}}_{{ snapshot_id }}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}_{{ snapshot_id }}" aria-hidden="true">
+									<div class="modal-dialog modal-xl" role="document">
+										<div class="modal-content">
+											<div class="modal-body">
+												<div class="snapshot">
+													<img class="shadowBox" 
+														id="stepSnapshot_{{testStepId}}_{{ snapshot_id }}" 
+														src="{{ namedSnapshot.stepSnapshot.image.url }}" style="z-index:1;width:inherit;">
+													{% if namedSnapshot.diffB64 %}
+														<img class="diffCanvas diffCanvas_{{testStepId}}_{{ snapshot_id }}" 
+															id="diff2_{{testStepId}}_{{ snapshot_id }}" 
+															src="data:image/png;base64,{{ namedSnapshot.diffB64 }}"
+															style="z-index:10;width:inherit; display: none;" 
+															>
+													{% endif %}
+													<div id="canvas_{{testStepId}}_{{ snapshot_id }}"
+														class="diffCanvas"  
+														width="{{ namedSnapshot.stepSnapshot.image.width }}" 
+														height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+														style="z-index: 10; width: inherit;">
+													</div>
+												</div>
+												<div id="excludeZoneTable_{{testStepId}}_{{ snapshot_id }}">
+												</div>
+											</div>
+											<div class="modal-footer">
+												<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+												<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');">Toggle differences</button>
+												<button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
 											</div>
 										</div>
-										<div id="excludeZoneTable_{{testStepId}}_{{ snapshot_id }}">
-										</div>
-									</div>
-									<div class="modal-footer">
-										<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-										<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');">Toggle differences</button>
-										<button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
 									</div>
 								</div>
-							</div>
+							{% else %}
+								<div class="snapshotInfo step">No Snapshot for this step</div>
+							{% endif %}
 						</div>
-					{% else %}
-						<div class="snapshotInfo step">No Snapshot for this step</div>
-					{% endif %}
-				</div>
-			</div>
-			
-			<script>
-				var exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }} = false;
-			
-				console.log("displaying diff")
-				setTimeout(function(){
-			
-					// display differences
-					toggleElement('diff_{{ testStepId }}_{{ snapshot_id }}'); 
-					toggleElement('diff2_{{ testStepId }}_{{ snapshot_id }}');
+					</div>
 					
-				}, 500);
+					<script>
+						var exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }} = false;
+					
+						console.log("displaying diff")
+						setTimeout(function(){
+					
+							// display differences
+							toggleElement('diff_{{ testStepId }}_{{ snapshot_id }}'); 
+							toggleElement('diff2_{{ testStepId }}_{{ snapshot_id }}');
+							
+						}, 500);
+						
+						$('#editionModal_{{ testStepId }}_{{ snapshot_id }}').on('shown.bs.modal', function (e) {
+						  
+						  	// do not draw several times
+							if (!exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }}) {
+								drawExistingExcludeZones(document.getElementById('canvas_{{ testStepId }}_{{ snapshot_id }}'), 
+														document.getElementById("stepSnapshot_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
+														'',
+														{{ testStepId }},
+														{{ snapshot_id }});
+								exclusionDrawnOnModal_{{testStepId}}_{{ snapshot_id }} = true;
+						  	}
+							initDraw(document.getElementById('excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}').getElementsByTagName('tbody')[0],
+										{{ testStepId }},
+										{{ snapshot_id }});
+						})
+						
+						// update exclusion zone and recompute diff when saving
+						$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
+						  	var $button = $(event.target); 
+						
+							$(this).closest('.modal').one('hidden.bs.modal', function() {
+							    updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
+							});
+						});
+						
+					</script>
+				{% endwith %}
 				
-				$('#editionModal_{{ testStepId }}_{{ snapshot_id }}').on('shown.bs.modal', function (e) {
-				  
-					if (!exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }}) {
-						drawExistingExcludeZones(document.getElementById('canvas_{{ testStepId }}_{{ snapshot_id }}'), 
-												document.getElementById("stepSnapshot_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
-												'',
-												{{ testStepId }},
-												{{ snapshot_id }});
-						exclusionDrawnOnModal_{{testStepId}}_{{ snapshot_id }} = true;
-				  	}
-					initDraw(document.getElementById('excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}').getElementsByTagName('tbody')[0],
-								{{ testStepId }},
-								{{ snapshot_id }});
-				})
-				
-				// update exclusion zone and recompute diff when saving
-				$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
-				  	var $button = $(event.target); 
-				
-					$(this).closest('.modal').one('hidden.bs.modal', function() {
-					    updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
-					});
-				});
-				
-			</script>
-		{% endwith %}
-		
-	{% endfor %}
+			{% endfor %}
+		</div>
+	</div>
+	
 </div>
+
 
 
 

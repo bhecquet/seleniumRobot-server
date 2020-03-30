@@ -2,6 +2,8 @@
 *.pyo
 __pycache__/
 dist/
-static/
+/static/
 /seleniumrobot-server.zip
 /db.sqlite3
+/venv/
+/cover/
