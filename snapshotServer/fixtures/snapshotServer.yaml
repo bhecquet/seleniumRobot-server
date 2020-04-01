@@ -30,6 +30,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testsession
     pk: 2
     fields:
@@ -40,6 +41,7 @@
         environment: 1
         compareSnapshot: true
         name: session2
+        ttl: '0'  # set to 0 to avoid automatic deletion
         
 -   model: snapshotServer.testcaseinsession
     pk: 1
@@ -100,6 +102,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
         
 # A reference and a step snapshot, each in its own session
 -   model: snapshotServer.testcase
@@ -116,6 +119,7 @@
         browser: firefox
         environment: 1
         compareSnapshot: true
+        ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testsession
     pk: 5
     fields:
@@ -126,6 +130,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
         
 -   model: snapshotServer.testcaseinsession
     pk: 3
@@ -189,6 +194,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testsession
     pk: 7
     fields:
@@ -199,6 +205,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testsession
     pk: 107
     fields:
@@ -209,6 +216,7 @@
         environment: 1
         compareSnapshot: false
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
         
 -   model: snapshotServer.testcaseinsession
     pk: 105
@@ -341,6 +349,7 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testsession
     pk: 9
     fields:
@@ -351,4 +360,5 @@
         environment: 1
         compareSnapshot: true
         name: session1
+        ttl: '0'  # set to 0 to avoid automatic deletion
     

@@ -1,11 +1,15 @@
 
 from django.db import models
+from django.db.models import F, Q
 
 from snapshotServer.controllers.PictureComparator import Rectangle
 import pickle
 import commonsServer.models
 from django.dispatch.dispatcher import receiver
 from django.db.models.signals import post_delete, pre_delete
+from django.utils import timezone
+import datetime
+from django.db.models.aggregates import Count
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -110,13 +114,29 @@ class TestSession(models.Model):
     browser = models.CharField(max_length=20)
     environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)
     compareSnapshot = models.BooleanField(default=False)                            # if True, this session will be displayed in snapshot comparator
-    ttl = models.IntegerField(default=30) # time to live of the session, in days. After this delay, session may be deleted
+    ttl = models.DurationField(default=datetime.timedelta(days=30)) # time to live of the session, in days. After this delay, session may be deleted
     
     def __str__(self):
         if self.name:
             return self.name
         else:
             return "Session %s with %s" % (self.sessionId, self.browser)
+        
+
+    def save(self, *args, **kwds):
+        """
+        While saving a new session, delete all too old sessions
+        """
+        super(TestSession, self).save(*args, **kwds)
+        
+        # search all sessions whose date is older than defined 'ttl' (ttl > 0)
+        # do not select sessions whose snapshot number is > 0 and reference snapshot number is > 0
+        for session in TestSession.objects.annotate(snapshot_number=Count('testcaseinsession__stepresult__snapshots')) \
+                                            .filter(ttl__gt=datetime.timedelta(days=0), 
+                                                  date__lt=timezone.now() - F('ttl')) \
+                                            .exclude(~Q(snapshot_number=0) & Q(testcaseinsession__stepresult__snapshots__refSnapshot=None)):
+            session.delete()
+        
     
 # TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
