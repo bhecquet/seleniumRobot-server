@@ -48,10 +48,10 @@ urlpatterns = [
     
     url(r'^$', ApplicationVersionListView.as_view(), name='home'),
     
-    url(r'^testResults/(?P<versionId>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
+    url(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
     url(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
 
-    url(r'^compare/(?P<versionId>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
+    url(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
     url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
     url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', xframe_options_exempt(StepListView.as_view()), name="steplistView"), 

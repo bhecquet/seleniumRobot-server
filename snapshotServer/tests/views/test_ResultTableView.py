@@ -17,7 +17,7 @@ class TestResultTableView(TestViews):
         """
         rendering when we arrive on page. 0 session found because no env is provided by default
         """
-        response = self.client.get(reverse('testResultTableView', kwargs={'versionId': 1}))
+        response = self.client.get(reverse('testResultTableView', kwargs={'version_id': 1}))
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(len(response.context['selectedBrowser']), 1)
@@ -30,7 +30,7 @@ class TestResultTableView(TestViews):
         Filtering done when all fields are filled but date
         Dates are mandatory for filter or else nothing is resturned
         """
-        response = self.client.get(reverse('testResultTableView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
+        response = self.client.get(reverse('testResultTableView', kwargs={'version_id': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
         self.assertEqual(len(response.context['sessions']), 0)      
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
@@ -42,7 +42,7 @@ class TestResultTableView(TestViews):
         """
         When date are selected, we should get only session from the 06th may
         """
-        response = self.client.get(reverse('testResultTableView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 
+        response = self.client.get(reverse('testResultTableView', kwargs={'version_id': 1}), data={'browser': ['firefox'], 
                                                                                               'environment': [1], 
                                                                                               'testcase': [4],
                                                                                               'sessionFrom': '06-05-2017',

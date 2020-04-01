@@ -8,7 +8,7 @@ from snapshotServer.models import Version, TestSession, TestEnvironment,\
     TestCaseInSession, TestCase
 from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
 from datetime import datetime, timedelta
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 import pytz
 
 class TestResultTableView(TemplateView):
@@ -18,19 +18,19 @@ class TestResultTableView(TemplateView):
     
     template_name = "snapshotServer/testResults.html"
 
-    def get(self, request, versionId):
+    def get(self, request, version_id):
         try:
-            Version.objects.get(pk=versionId)
+            Version.objects.get(pk=version_id)
         except:
-            return render_to_response(ApplicationVersionListView.template_name, {'error': "Application version %s does not exist" % versionId})
+            return render(request, ApplicationVersionListView.template_name, {'error': "Application version %s does not exist" % version_id})
         
-        return super(TestResultTableView, self).get(request, versionId)
+        return super(TestResultTableView, self).get(request, version_id)
     
     def get_context_data(self, **kwargs):
         
         context = super(TestResultTableView, self).get_context_data(**kwargs)
         
-        sessions = TestSession.objects.filter(version=self.kwargs['versionId'])
+        sessions = TestSession.objects.filter(version=self.kwargs['version_id'])
 
         context['browsers'] = list(set([s.browser for s in TestSession.objects.all()]))
         
@@ -46,11 +46,11 @@ class TestResultTableView(TemplateView):
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
         
         # build the list of TestCase objects which can be selected by user
-        context['testCases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
+        context['test_cases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['version_id'])]))
         
         # by default, select all test cases
         if 'testcase' not in self.request.GET:
-            context['selectedTestCases'] = context['testCases']
+            context['selectedTestCases'] = context['test_cases']
         else:
             context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
         sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
@@ -73,20 +73,20 @@ class TestResultTableView(TemplateView):
         context['sessions'] = sessions
         
         # get all TestCaseInSession associated to these sessions
-        testCaseInSessions = TestCaseInSession.objects.filter(session__in=sessions)
-        testCases = list(set([tcs.testCase for tcs in testCaseInSessions]))
+        test_case_in_sessions = TestCaseInSession.objects.filter(session__in=sessions)
+        test_cases = list(set([tcs.testCase for tcs in test_case_in_sessions]))
         
-        testCaseTable = {}
-        for testCase in testCases:
-            testCaseTable[testCase] = []
-            sessionsForTestCase = [tcs.session for tcs in testCaseInSessions.filter(testCase=testCase)]
+        test_case_table = {}
+        for test_case in test_cases:
+            test_case_table[test_case] = []
+            sessions_for_test_case = [tcs.session for tcs in test_case_in_sessions.filter(testCase=test_case)]
             for session in sessions:
-                if session in sessionsForTestCase:
-                    tcs = TestCaseInSession.objects.filter(session=session, testCase=testCase)[0]
-                    testCaseTable[testCase].append((tcs, tcs.isOkWithResult()))
+                if session in sessions_for_test_case:
+                    tcs = TestCaseInSession.objects.filter(session=session, testCase=test_case)[0]
+                    test_case_table[test_case].append((tcs, tcs.isOkWithResult()))
                 else:
-                    testCaseTable[testCase].append((None, None))
+                    test_case_table[test_case].append((None, None))
             
-        context['testCaseTable'] = testCaseTable
+        context['testCaseTable'] = test_case_table
     
         return context

@@ -9,7 +9,7 @@ from django.utils import timezone
 
 from rest_framework.test import APITestCase
 
-class test_FileUploadView(APITestCase):
+class TestApiView(APITestCase):
     '''
     Using APITestCase as we call the REST Framework API
     Client handles patch / put cases
@@ -525,12 +525,33 @@ class test_FileUploadView(APITestCase):
         var0.test.add(test)
         var1 = Variable(name='var0', value='value0', application=version.application, reservable=True)
         var1.save()
+        var1.test.add(test)
             
         response = self.client.patch(reverse('variableApiPut', args=[var1.id]), {'reservable': False, 'test': [1]})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
           
-        for v in Variable.objects.filter(name='var0'):
-            self.assertFalse(v.reservable)
+        # var0 and var1 are similar, so when 'reservable' is updated on var1, var0 is also updated
+        self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
+        self.assertFalse(Variable.objects.get(pk=var1.id).reservable)
+        
+    def test_update_reservable_state_correction_with_different_tests(self):
+        """
+        Check that when a variable with the same characteristics of another (except test list) is not changed
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+        var0.save()
+        var0.test.add(test)
+        var1 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+        var1.save()
+            
+        response = self.client.patch(reverse('variableApiPut', args=[var1.id]), {'reservable': False, 'test': [1]})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+          
+        # var0 and var1 are similar, except for test list, so when 'reservable' is updated on var1, var0 is not updated
+        self.assertTrue(Variable.objects.get(pk=var0.id).reservable)
+        self.assertFalse(Variable.objects.get(pk=var1.id).reservable)
               
           
     def test_variable_already_reserved(self):

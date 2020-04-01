@@ -7,17 +7,12 @@ import datetime
 import time
 import logging
 
-from django.db.models import Q
-from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, generics
 from rest_framework.exceptions import ValidationError
 
-from seleniumRobotServer.wsgi import application
-from variableServer.models import Variable, TestEnvironment, Version, TestCase,\
-    Application
-from variableServer.utils.utils import SPECIAL_NONE, SPECIAL_NOT_NONE, \
-    updateVariables
+from variableServer.models import Variable, TestEnvironment, Version, TestCase
+from variableServer.utils.utils import updateVariables
 from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from django.utils import timezone

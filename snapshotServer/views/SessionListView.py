@@ -5,7 +5,7 @@ Created on 26 juil. 2017
 '''
 from datetime import datetime, timedelta
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from django.views.generic.base import TemplateView
 
 from snapshotServer.models import Version, TestSession, TestEnvironment, \
@@ -20,19 +20,19 @@ class SessionListView(TemplateView):
     
     template_name = "snapshotServer/compare.html"
 
-    def get(self, request, versionId):
+    def get(self, request, version_id):
         try:
-            Version.objects.get(pk=versionId)
+            Version.objects.get(pk=version_id)
         except:
-            return render_to_response(ApplicationVersionListView.template_name, {'error': "Application version %s does not exist" % versionId})
+            return render(request, ApplicationVersionListView.template_name, {'error': "Application version %s does not exist" % version_id})
         
-        return super(SessionListView, self).get(request, versionId)
+        return super(SessionListView, self).get(request, version_id)
     
     def get_context_data(self, **kwargs):
         
         context = super(SessionListView, self).get_context_data(**kwargs)
         
-        sessions = TestSession.objects.filter(version=self.kwargs['versionId'], compareSnapshot=True)
+        sessions = TestSession.objects.filter(version=self.kwargs['version_id'], compareSnapshot=True)
         
         context['environments'] = TestEnvironment.objects.all()
         context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])
@@ -47,7 +47,7 @@ class SessionListView(TemplateView):
         sessions = sessions.filter(browser__in=context['selectedBrowser'])
         
         # build the list of TestCase objects which can be selected by user
-        context['testCases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['versionId'])]))
+        context['testCases'] = list(set([tcs.testCase for tcs in TestCaseInSession.objects.filter(session__version=self.kwargs['version_id'])]))
         context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
         sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
         

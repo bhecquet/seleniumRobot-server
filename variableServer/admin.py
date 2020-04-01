@@ -3,7 +3,7 @@ from django.contrib.admin.actions import delete_selected as django_delete_select
 from django import forms
 from variableServer.models import Variable, TestCase, Application, Version
 from django.template.context_processors import csrf
-from django.shortcuts import render_to_response
+from django.shortcuts import render
 from variableServer.models import TestEnvironment
 from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
 
@@ -235,7 +235,7 @@ class VariableAdmin(BaseServerModelAdmin):
                 'queryString': request.META['QUERY_STRING']} # permettra de revenir à la liste des variables filtrée
         args.update(csrf(request))
 
-        return render_to_response("variableServer/admin/copyTo.html", args)
+        return render(request, "variableServer/admin/copyTo.html", args)
     copyTo.short_description = 'copier les variables'
     
     def changeValuesAtOnce(self, request, queryset):
@@ -249,7 +249,7 @@ class VariableAdmin(BaseServerModelAdmin):
                 'queryString': request.META['QUERY_STRING']} # permettra de revenir à la liste des variables filtrée
         args.update(csrf(request))
 
-        return render_to_response("variableServer/admin/changeTo.html", args)
+        return render(request, "variableServer/admin/changeTo.html", args)
     changeValuesAtOnce.short_description = 'modifier les variables'
     
     def delete_selected(self, request, queryset):

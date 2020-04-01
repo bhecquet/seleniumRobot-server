@@ -53,8 +53,11 @@ class Variable(models.Model):
         """
         Make sure that all variable of the same scope have the same reservable state as the new/updated variable
         """
+        # search all variables of the same name / application / version / environment where reservable state is not the same to update it
         similarVariables = Variable.objects.filter(name=self.name, application=self.application, version=self.version, environment=self.environment).exclude(reservable=self.reservable)
         for var in similarVariables:
+            
+            # tests must be the same for both variables so that variables really have the same scope
             if list(var.test.all()) == list(self.test.all()):
                 var.reservable = self.reservable
                 var.save()

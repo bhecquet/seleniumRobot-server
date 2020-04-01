@@ -17,7 +17,7 @@ class Test_SessionListView(TestViews):
         """
         rendering when we arrive on page. No session found because no filter given
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}))
+        response = self.client.get(reverse('sessionListView', kwargs={'version_id': 1}))
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 0)
         self.assertEqual(len(response.context['selectedBrowser']), 0)
@@ -29,7 +29,7 @@ class Test_SessionListView(TestViews):
         """
         Filtering when not all select box are chosen lead to empty session list and error message
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'environment': ['1'], 'browser': ['firefox'], 'sessionName': ['session1']})
+        response = self.client.get(reverse('sessionListView', kwargs={'version_id': 1}), data={'environment': ['1'], 'browser': ['firefox'], 'sessionName': ['session1']})
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
@@ -41,7 +41,7 @@ class Test_SessionListView(TestViews):
         """
         Filtering when not all select box are chosen lead to empty session list and error message
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'environment': ['1']})
+        response = self.client.get(reverse('sessionListView', kwargs={'version_id': 1}), data={'environment': ['1']})
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])    
         self.assertEqual(len(response.context['browsers']), 0)     # only firefox in test data
@@ -55,7 +55,7 @@ class Test_SessionListView(TestViews):
         3 sessions correspond to input parameters but one 2 them (id=7) has the compareSnapshot flag set to false
         Only one session should be returned
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4], 'sessionName': ['session1']})
+        response = self.client.get(reverse('sessionListView', kwargs={'version_id': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4], 'sessionName': ['session1']})
         self.assertEqual(len(response.context['sessions']), 2)      
         self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])      
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
@@ -68,7 +68,7 @@ class Test_SessionListView(TestViews):
         """
         When date are selected, we should get only session from the 06th may
         """
-        response = self.client.get(reverse('sessionListView', kwargs={'versionId': 1}), data={'browser': ['firefox'], 
+        response = self.client.get(reverse('sessionListView', kwargs={'version_id': 1}), data={'browser': ['firefox'], 
                                                                                               'environment': [1], 
                                                                                               'testcase': [4],
                                                                                               'sessionFrom': '06-05-2017',
