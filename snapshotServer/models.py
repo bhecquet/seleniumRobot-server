@@ -10,6 +10,7 @@ from django.db.models.signals import post_delete, pre_delete
 from django.utils import timezone
 import datetime
 from django.db.models.aggregates import Count
+import logging
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -135,6 +136,7 @@ class TestSession(models.Model):
                                             .filter(ttl__gt=datetime.timedelta(days=0), 
                                                   date__lt=timezone.now() - F('ttl')) \
                                             .exclude(~Q(snapshot_number=0) & Q(testcaseinsession__stepresult__snapshots__refSnapshot=None)):
+            logging.info("deleting session {}-{} of the {}".format(session.id, str(session), session.date))
             session.delete()
         
     
