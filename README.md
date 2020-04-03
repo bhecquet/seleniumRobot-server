@@ -12,7 +12,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 
 ## Windows ##
 	
-- Install python 3 (tested with Python 3.4 & 3.6)
+- Install python 3 >= 3.6)
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
@@ -56,7 +56,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
     
     
 ## Linux (RHE) ##
-- Install python 3 (tested with Python 3.4 & 3.6)
+- Install python 3 >= 3.6
 - apache install (Linux): `yum install mod_wsgi httpd24-httpd`
 - Install Postgre database (if not using a centralized database or SQLite)
 - Install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`,  `openldap-devel`,  so that dependencies can be compiled
@@ -156,8 +156,23 @@ From there, it's also possible to add some dependencies. For example, if your va
 ### Snapshot server ###
 
 This server aims at storing test snapshots to compare them
+Snapshot are sent by seleniumRobot when `seleniumRobotServerActive` and `seleniumRobotServerCompareSnapshots` are set to `true`. Moreover, only snapshot taken explicitely inside test script are sent to server
 
-**TBC**
+```java
+capturePageSnapshot(<pic_name>, SnapshotCheckType.TRUE);
+```
+or
+
+```java
+captureElementSnapshot(<pic_name>, <myWebElement>, SnapshotCheckType.TRUE);
+```
+
+#### access web interface ####
+
+Go to [http://<server>:<port>/snapshot/](http://localhost:8002/snapshot/) and select the application / version and "compare snapshot"
+
+![](doc/images/snapshot_select_session.png)
+
 
 ## API ##
 
