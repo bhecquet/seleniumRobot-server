@@ -10,6 +10,9 @@
 -   model: snapshotServer.testenvironment
     pk: 1
     fields: {name: DEV}
+-   model: snapshotServer.testenvironment
+    pk: 2
+    fields: {name: AUT}
     
 # Base model for testing model classes
 -   model: snapshotServer.testcase
@@ -361,4 +364,54 @@
         compareSnapshot: true
         name: session1
         ttl: '0'  # set to 0 to avoid automatic deletion
+
+# session attached to an other environment (same browser / version / name ) than session1 (1234) and its associated test case and step result   
+-   model: snapshotServer.testsession
+    pk: 10
+    fields:
+        sessionId: '1254'
+        version: 1
+        date: '2017-05-05T12:16:09.184106+01:00'
+        browser: firefox
+        environment: 2
+        compareSnapshot: true
+        name: session_other_env
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 9
+    fields:
+        testCase: 1
+        session: 10
+        testSteps: [1]
+-   model: snapshotServer.stepresult
+    pk: 11
+    fields: 
+        step: 1
+        testCase: 9
+        result: true
+        
+# session attached to an other browser (same environment / version / name) than session1 (1234) and its associated test case and step result   
+-   model: snapshotServer.testsession
+    pk: 11
+    fields:
+        sessionId: '1254'
+        version: 1
+        date: '2017-05-05T12:16:09.184106+01:00'
+        browser: chrome
+        environment: 2
+        compareSnapshot: true
+        name: session_other_browser
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 10
+    fields:
+        testCase: 1
+        session: 11
+        testSteps: [1]
+-   model: snapshotServer.stepresult
+    pk: 12
+    fields: 
+        step: 1
+        testCase: 10
+        result: true
     

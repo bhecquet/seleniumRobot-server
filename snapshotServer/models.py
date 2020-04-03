@@ -83,15 +83,15 @@ class TestStep(models.Model):
         return self.name 
     
     
-    def isOkWithSnapshots(self, testCaseId):
+    def isOkWithSnapshots(self, test_case_id):
         """
-        Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
+        Returns True if step is OK for the session in parameter. Look at each step. None of the snapshot should
         show a diff
         @param testSessionId: testSessionId
         @param testCaseIdparam: the test case this step belongs
         """
         
-        snapshots = Snapshot.objects.filter(stepResult__testCase=testCaseId, stepResult__step=self)
+        snapshots = Snapshot.objects.filter(stepResult__testCase=test_case_id, stepResult__step=self)
         result = True 
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
@@ -218,6 +218,8 @@ def submission_delete(sender, instance, **kwargs):
         # search any reference snapshot that exists previously
         ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name, 
                                                stepResult__testCase__session__version=test_case.session.version,
+                                               stepResult__testCase__session__environment=test_case.session.environment, 
+                                               stepResult__testCase__session__browser=test_case.session.browser, 
                                                stepResult__step=snapshot.stepResult.step, 
                                                refSnapshot=None,
                                                id__lt=snapshot.id,

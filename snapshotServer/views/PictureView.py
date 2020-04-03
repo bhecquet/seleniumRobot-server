@@ -59,12 +59,14 @@ class PictureView(TemplateView):
                         
                     elif self.request.GET['makeRef'] == 'False' and step_snapshot.refSnapshot is None:
                         # search a reference with a lower id, meaning that it has been recorded before our step
-                        # search with the same test case name / same step name / same application version / same image name so that comparison
+                        # search with the same test case name / same step name / same application version / same environment / same browser / same image name so that comparison
                         # is done on same basis
                         # TODO: reference could be searched in previous versions
                         test_case = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
                         ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name, 
                                                                stepResult__testCase__session__version=test_case.session.version,
+                                                               stepResult__testCase__session__environment=test_case.session.environment,
+                                                               stepResult__testCase__session__browser=test_case.session.browser,
                                                                stepResult__step=self.kwargs['testStepId'], 
                                                                refSnapshot=None,
                                                                id__lt=step_snapshot.id,

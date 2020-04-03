@@ -36,20 +36,24 @@ class TestPictureView(TestViews):
           
     def test_make_new_ref(self):
         """
-        From a picture which is not a reference (s1), make it a new ref
+        From a picture which is not a reference (snapshot_future_ref_same_env), make it a new ref
+        'snapshot_same_env' should then have 'snapshot_future_ref_same_env' as reference because it has a higher id than 'initialRefSnapshot' and same name / browser / environment / version
         """
-        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
-            s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
-            s1.save()
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
+            
             img = ImageFile(imgFile)
-            s1.image.save("img", img)
-            s1.save()
-            s2 = Snapshot(stepResult=self.sr2, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
-            s2.save()
-            s2.image.save("img", img)
-            s2.save()
+             
+            snapshot_future_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+            snapshot_future_ref_same_env.save()
+            snapshot_future_ref_same_env.image.save("img", img)
+            snapshot_future_ref_same_env.save()
+            
+            snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+            snapshot_same_env.save()
+            snapshot_same_env.image.save("img", img)
+            snapshot_same_env.save()
               
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True&snapshotId=" + str(s1.id))
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
               
             # check display
             self.assertIsNone(response.context['captureList'][0]['reference'], "new reference should be the snapshot itself")
@@ -57,24 +61,27 @@ class TestPictureView(TestViews):
             self.assertIsNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
             DiffComputer.stopThread()
               
-            # check s2 ref as been changed
-            self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, s1, "ref snapshot for s2 should have changed to s1")
-            self.assertEqual(Snapshot.objects.get(id=2).refSnapshot, self.initialRefSnapshot, "snapshot previous to s1 should not have change")
+            # check snapshot_same_env ref as been changed
+            self.assertEqual(Snapshot.objects.get(id=snapshot_same_env.id).refSnapshot, snapshot_future_ref_same_env, "ref snapshot for snapshot_same_env should have changed to snapshot_future_ref_same_env")
+            self.assertEqual(Snapshot.objects.get(id=2).refSnapshot, self.initialRefSnapshot, "snapshot previous to snapshot_future_ref_same_env should not have change")
           
     def test_multiple_snapshots_per_step(self):
         """
         Test that all snapshots are returned when there are multiple in one test
         """
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
-            s1 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None, name='cap1')
-            s1.save()
+            
             img = ImageFile(imgFile)
-            s1.image.save("img", img)
-            s1.save()
-            s2 = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None, name='cap2')
-            s2.save()
-            s2.image.save("img", img)
-            s2.save()
+            
+            snapshot_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None, name='cap1')
+            snapshot_ref_same_env.save()
+            snapshot_ref_same_env.image.save("img", img)
+            snapshot_ref_same_env.save()
+            
+            snapshot_same_env = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None, name='cap2')
+            snapshot_same_env.save()
+            snapshot_same_env.image.save("img", img)
+            snapshot_same_env.save()
               
             response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}))
             self.assertEqual(len(response.context['captureList']), 2, "2 snapshots should be returned")
@@ -181,21 +188,24 @@ class TestPictureView(TestViews):
   
     def test_remove_ref(self):
         """
-        From a picture which is a reference (s1), remove the reference flag. Next snpashots (s2) should then refere to the last 
+        From a picture which is a reference (snapshot_ref_same_env), remove the reference flag. Next snpashots (snapshot_same_env) should then refere to the last 
         reference available
         """
-        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
-            s1 = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
-            s1.save()
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
+            
             img = ImageFile(imgFile)
-            s1.image.save("img", img)
-            s1.save()
-            s2 = Snapshot(stepResult=self.sr2, refSnapshot=s1, pixelsDiff=None)
-            s2.save()
-            s2.image.save("img", img)
-            s2.save()
+             
+            snapshot_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
+            snapshot_ref_same_env.save()
+            snapshot_ref_same_env.image.save("img", img)
+            snapshot_ref_same_env.save()
+            
+            snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=snapshot_ref_same_env, pixelsDiff=None)
+            snapshot_same_env.save()
+            snapshot_same_env.image.save("img", img)
+            snapshot_same_env.save()
               
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(s1.id))
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
               
             # check display
             self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
@@ -203,7 +213,83 @@ class TestPictureView(TestViews):
             self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
             DiffComputer.stopThread()
               
-            # check s2 ref as been changed
-            self.assertEqual(Snapshot.objects.get(id=s2.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for s2 should have changed to first snapshot")
+            # check snapshot_same_env ref as been changed
+            self.assertEqual(Snapshot.objects.get(id=snapshot_same_env.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for snapshot_same_env should have changed to first snapshot")
+   
+    def test_remove_ref_with_different_env(self):
+        """
+        Test the case where we remove a ref a we want to make sure that the new reference is searched with the same environment
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
+            
+            img = ImageFile(imgFile)
+            
+            # snapshot associated to same version, same test case, but other environment as 'initialRefSnapshot'
+            snapshot_other_env = Snapshot(stepResult=self.step_result_other_env, refSnapshot=None, pixelsDiff=None)
+            snapshot_other_env.save()
+            snapshot_other_env.image.save("img", img)
+            snapshot_other_env.save()
+            
+            # reference snapshot associated to same version / test case / environment / browser as 'initialRefSnapshot'
+            snapshot_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
+            snapshot_ref_same_env.save()
+            snapshot_ref_same_env.image.save("img", img)
+            snapshot_ref_same_env.save()
+            
+            # snapshot associated to same version / test case / environment / browser as 'snapshot_ref_same_env'
+            snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=snapshot_ref_same_env, pixelsDiff=None)
+            snapshot_same_env.save()
+            snapshot_same_env.image.save("img", img)
+            snapshot_same_env.save()
+            
+              
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
+              
+            # check display
+            self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertEqual(response.context['captureList'][0]['stepSnapshot'].refSnapshot, self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
+            DiffComputer.stopThread()
+              
+            # check 'snapshot_same_env' ref as been changed and its reference snapshot is 'initialRefSnapshot' becaus it's the same environment / test case / version 
+            self.assertEqual(Snapshot.objects.get(id=snapshot_same_env.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for 'snapshot_same_env' should have changed to first snapshot")
+   
+    def test_remove_ref_with_different_browser(self):
+        """
+        Test the case where we remove a ref a we want to make sure that the new reference is searched with the same browsert 
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
+            
+            img = ImageFile(imgFile)
+            
+            # snapshot associated to same version, same test case, but other environment as 'initialRefSnapshot'
+            snapshot_other_browser = Snapshot(stepResult=self.step_result_other_env, refSnapshot=None, pixelsDiff=None)
+            snapshot_other_browser.save()
+            snapshot_other_browser.image.save("img", img)
+            snapshot_other_browser.save()
+            
+            # reference snapshot associated to same version / test case / environment / browser as 'initialRefSnapshot'
+            snapshot_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=None, pixelsDiff=None)
+            snapshot_ref_same_env.save()
+            snapshot_ref_same_env.image.save("img", img)
+            snapshot_ref_same_env.save()
+            
+            # snapshot associated to same version / test case / environment / browser as 'snapshot_ref_same_env'
+            snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=snapshot_ref_same_env, pixelsDiff=None)
+            snapshot_same_env.save()
+            snapshot_same_env.image.save("img", img)
+            snapshot_same_env.save()
+            
+              
+            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
+              
+            # check display
+            self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertEqual(response.context['captureList'][0]['stepSnapshot'].refSnapshot, self.initialRefSnapshot, "new reference should be the first snapshot")
+            self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
+            DiffComputer.stopThread()
+              
+            # check 'snapshot_same_env' ref as been changed and its reference snapshot is 'initialRefSnapshot' becaus it's the same environment / test case / version 
+            self.assertEqual(Snapshot.objects.get(id=snapshot_same_env.id).refSnapshot, self.initialRefSnapshot, "ref snapshot for 'snapshot_same_env' should have changed to first snapshot, not 'snapshot_other_browser'")
    
    

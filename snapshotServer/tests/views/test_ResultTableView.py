@@ -19,9 +19,9 @@ class TestResultTableView(TestViews):
         """
         response = self.client.get(reverse('testResultTableView', kwargs={'version_id': 1}))
         self.assertEqual(len(response.context['sessions']), 0)
-        self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
-        self.assertEqual(len(response.context['selectedBrowser']), 1)
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['browsers']), 2)     # only firefox/chrome in test data
+        self.assertEqual(len(response.context['selectedBrowser']), 2) # all browsers are selected by default
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(len(response.context['selectedEnvironments']), 0)
         self.assertTrue('testCaseTable' in response.context)
   
@@ -32,9 +32,9 @@ class TestResultTableView(TestViews):
         """
         response = self.client.get(reverse('testResultTableView', kwargs={'version_id': 1}), data={'browser': ['firefox'], 'environment': [1], 'testcase': [4]})
         self.assertEqual(len(response.context['sessions']), 0)      
-        self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
+        self.assertEqual(len(response.context['browsers']), 2)     # only firefox/chrome in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('testCaseTable' in response.context)
  
@@ -48,9 +48,9 @@ class TestResultTableView(TestViews):
                                                                                               'sessionFrom': '06-05-2017',
                                                                                               'sessionTo': '07-05-2017'})
         self.assertEqual(len(response.context['sessions']), 2)
-        self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
+        self.assertEqual(len(response.context['browsers']), 2)     # only firefox/chrome in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         
         # check content of test case table. For each test, we should have the list of sessions. Here, the 2 sessions 

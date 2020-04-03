@@ -4,8 +4,7 @@ from rest_framework.response import Response
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.forms import ImageUploadForm
-from snapshotServer.models import Snapshot, TestStep, TestSession,\
-    TestCaseInSession, StepResult
+from snapshotServer.models import Snapshot, StepResult
 import json
 from django.http.response import HttpResponse
 
@@ -33,11 +32,14 @@ class FileUploadView(views.APIView):
             name = form.cleaned_data['name']
             compare_option = form.cleaned_data.get('compare', 'true')
             
-            # check if a reference exists for this step in the same test case / same application / same version / same name
-            reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step, 
-                                                          stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
-                                                          refSnapshot=None,
-                                                          name=name)
+            # check if a reference exists for this step in the same test case / same application / same version / same environment / same browser / same name
+            reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step,                                                    # same step in the test case
+                                                          stepResult__testCase__testCase__name=step_result.testCase.testCase.name,              # same test case
+                                                          stepResult__testCase__session__version=step_result.testCase.session.version,          # same version
+                                                          stepResult__testCase__session__environment=step_result.testCase.session.environment,  # same environment
+                                                          stepResult__testCase__session__browser=step_result.testCase.session.browser,          # same browser
+                                                          refSnapshot=None,                                                                     # a reference image
+                                                          name=name)                                                                            # same snapshot name
             
             # check for a reference in previous versions
             if not reference_snapshots:
@@ -45,6 +47,8 @@ class FileUploadView(views.APIView):
                     reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step, 
                                                                   stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
                                                                   stepResult__testCase__session__version=app_version, 
+                                                                  stepResult__testCase__session__environment=step_result.testCase.session.environment, 
+                                                                  stepResult__testCase__session__browser=step_result.testCase.session.browser, 
                                                                   refSnapshot=None,
                                                                   name=name)
                     if reference_snapshots:

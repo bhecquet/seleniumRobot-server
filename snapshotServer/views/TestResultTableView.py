@@ -35,14 +35,11 @@ class TestResultTableView(TemplateView):
         context['browsers'] = list(set([s.browser for s in TestSession.objects.all()]))
         
         # by default, select all browsers
-        if 'browser' not in self.request.GET:
-            context['selectedBrowser'] = context['browsers']
-        else:
-            context['selectedBrowser'] = self.request.GET.getlist('browser')
+        context['selectedBrowser'] = self.request.GET.getlist('browser', context['browsers'])
         sessions = sessions.filter(browser__in=context['selectedBrowser'])
         
         context['environments'] = TestEnvironment.objects.all()
-        context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])
+        context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment', [])])
         sessions = sessions.filter(environment__in=context['selectedEnvironments'])
         
         # build the list of TestCase objects which can be selected by user
@@ -53,19 +50,14 @@ class TestResultTableView(TemplateView):
             context['selectedTestCases'] = context['test_cases']
         else:
             context['selectedTestCases'] = TestCase.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('testcase')])
+            
         sessions = sessions.filter(testcaseinsession__testCase__in=context['selectedTestCases'])
         
-        if self.request.GET.get('sessionFrom') is None:
-            context['sessionFrom'] = (datetime.now() - timedelta(days=15)).strftime('%d-%m-%Y')
-        else:
-            context['sessionFrom'] = self.request.GET.get('sessionFrom')
+        context['sessionFrom'] = self.request.GET.get('sessionFrom', (datetime.now() - timedelta(days=15)).strftime('%d-%m-%Y'))
         session_from_date = datetime.strptime(context['sessionFrom'], '%d-%m-%Y')
         sessions = sessions.filter(date__gte=datetime(session_from_date.year, session_from_date.month, session_from_date.day, tzinfo=pytz.UTC))
             
-        if self.request.GET.get('sessionTo') is None:
-            context['sessionTo'] = datetime.now().strftime('%d-%m-%Y')
-        else:
-            context['sessionTo'] = self.request.GET.get('sessionTo')
+        context['sessionTo'] = self.request.GET.get('sessionTo', datetime.now().strftime('%d-%m-%Y'))
         session_to_date = datetime.strptime(context['sessionTo'], '%d-%m-%Y')
         sessions = sessions.filter(date__lte=datetime(session_to_date.year, session_to_date.month, session_to_date.day, tzinfo=pytz.UTC))
         

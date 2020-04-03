@@ -21,7 +21,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 0)
         self.assertEqual(len(response.context['selectedBrowser']), 0)
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(len(response.context['selectedEnvironments']), 0)
         self.assertTrue('error' in response.context)
 
@@ -33,7 +33,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(len(response.context['selectedEnvironments']), 1)
         self.assertTrue('error' in response.context)
 
@@ -45,7 +45,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(len(response.context['sessions']), 0)
         self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])    
         self.assertEqual(len(response.context['browsers']), 0)     # only firefox in test data
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(len(response.context['selectedEnvironments']), 1)
         self.assertTrue('error' in response.context)
 
@@ -60,7 +60,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(response.context['sessionNames'], ['', 'session1', 'session2'])      
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('error' not in response.context)
 
@@ -78,7 +78,7 @@ class Test_SessionListView(TestViews):
         self.assertEqual(len(response.context['sessions']), 1)
         self.assertEqual(len(response.context['browsers']), 1)     # only firefox in test data
         self.assertEqual(response.context['selectedBrowser'], ['firefox'])
-        self.assertEqual(len(response.context['environments']), 1) # only DEV in test data
+        self.assertEqual(len(response.context['environments']), 2) # only DEV/AUT in test data
         self.assertEqual(response.context['selectedEnvironments'][0], TestEnvironment.objects.get(id=1))
         self.assertTrue('error' not in response.context)
         

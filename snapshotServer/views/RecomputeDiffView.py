@@ -13,6 +13,7 @@ from snapshotServer.models import Snapshot
 class RecomputeDiffView(View):
     """
     API to compute diff from a REST request
+    Called when changes has been applied to the list of exclude zones in step snapshot
     """
     
     queryset = Snapshot.objects.none()
