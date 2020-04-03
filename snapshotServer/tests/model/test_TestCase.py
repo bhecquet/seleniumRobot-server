@@ -13,7 +13,7 @@ class TestTestCases(TestCase):
 
     fixtures = ['snapshotServer.yaml']
 
-    def test_isOkWithAllStepResultOk(self):
+    def test_is_ok_with_all_step_result_ok(self):
         tcs = TestCaseInSession.objects.get(pk=5)
         s1 = TestStep.objects.get(pk=2)
         s2 = TestStep.objects.get(pk=3)
@@ -45,10 +45,10 @@ class TestTestCases(TestCase):
         tcs = TestCaseInSession.objects.get(pk=5)
         s1 = StepResult.objects.get(pk=5)
         s2 = StepResult.objects.get(pk=6)
-        initialRefSnapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=None)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=None)
+        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
         s2.save()
         
         self.assertTrue(tcs.isOkWithSnapshots())
@@ -61,10 +61,10 @@ class TestTestCases(TestCase):
         tcs = TestCaseInSession.objects.get(pk=5)
         s1 = StepResult.objects.get(pk=5)
         s2 = StepResult.objects.get(pk=6)
-        initialRefSnapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
         s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
         s2.save()
         
         self.assertTrue(tcs.isOkWithSnapshots())
@@ -73,12 +73,12 @@ class TestTestCases(TestCase):
         tcs = TestCaseInSession.objects.get(pk=5)
         s1 = StepResult.objects.get(pk=5)
         s2 = StepResult.objects.get(pk=6)
-        initialRefSnapshot = Snapshot.objects.get(id=1)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
         
         # some diffs for first picture
-        s1 = Snapshot(stepResult=s1, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([(1,1)]))
+        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1,1)]))
         s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initialRefSnapshot, pixelsDiff=pickle.dumps([]))
+        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
         s2.save()
         
         self.assertFalse(tcs.isOkWithSnapshots())

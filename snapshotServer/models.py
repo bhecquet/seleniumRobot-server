@@ -40,7 +40,7 @@ class TestCaseInSession(models.Model):
     
     def isOkWithSnapshots(self):
         """
-        Returns True if test is OK for the session in parameter. Look at each step. None of the snapshot should
+        Returns True if test is OK for this test case, executed in session. Look at each step. None of the snapshot should
         show a diff
         """
         
@@ -64,10 +64,10 @@ class TestCaseInSession(models.Model):
         Returns True if test is OK for the session in parameter. Look at each step. None of the steps should be KO (look at StepResult object)
         """
         
-        stepResults = StepResult.objects.filter(testCase=self)
+        step_results = StepResult.objects.filter(testCase=self)
 
-        for stepResult in stepResults:
-            if not stepResult.result:
+        for step_result in step_results:
+            if not step_result.result:
                 return False
             
         return True
@@ -83,16 +83,21 @@ class TestStep(models.Model):
         return self.name 
     
     
-    def isOkWithSnapshots(self, test_case_id):
+    def isOkWithSnapshots(self, test_case):
         """
-        Returns True if step is OK for the session in parameter. Look at each step. None of the snapshot should
-        show a diff
-        @param testSessionId: testSessionId
-        @param testCaseIdparam: the test case this step belongs
+        Returns True if step is OK for the session in parameter. Look at each step. 
+        If None of the snapshot shows diff, returns True
+        @param test_case: the test case this step belongs
         """
         
-        snapshots = Snapshot.objects.filter(stepResult__testCase=test_case_id, stepResult__step=self)
-        result = True 
+        snapshots = Snapshot.objects.filter(stepResult__testCase=test_case, stepResult__step=self)
+        step_status = StepResult.objects.filter(step=self, testCase=test_case).last()
+        
+        if step_status == None:
+            result = True
+        else:
+            result = step_status.result
+        
         for snapshot in snapshots:
             if snapshot.pixelsDiff is None:
                 continue
@@ -154,22 +159,22 @@ class Snapshot(models.Model):
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 
     
-    def snapshotsUntilNextRef(self, refSnapshot):
+    def snapshotsUntilNextRef(self, ref_snapshot):
         """
         get all snapshots, sharing the same reference snapshot, until the next reference for the same testCase / testStep
         """
         
         # get list of all snapshots following ourself, sharing 'refSnapshot'
-        nextSnapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
+        next_snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
                                             stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
                                             stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.nextVersions(),
-                                            refSnapshot=refSnapshot,
+                                            refSnapshot=ref_snapshot,
                                             id__gt=self.id) \
                                         .order_by('id')
         
         snapshots = []
         
-        for snap in nextSnapshots:
+        for snap in next_snapshots:
             if snap.refSnapshot:
                 snapshots.append(snap)
             else:
