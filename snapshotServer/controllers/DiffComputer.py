@@ -110,6 +110,7 @@ class DiffComputer(threading.Thread):
                 step_snapshot.tooManyDiffs = False
                 
             step_snapshot.refSnapshot = ref_snapshot
+            step_snapshot.computed = True
             step_snapshot.save()
         except PictureComparatorError as e:
             pass

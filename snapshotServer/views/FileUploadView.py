@@ -62,7 +62,8 @@ class FileUploadView(views.APIView):
                 DiffComputer.addJobs(reference_snapshots[0], step_snapshot)
 
             else:
-                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None, name=name, compareOption=compare_option)
+                # snapshot is marked as computed as this is a reference snapshot
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None, name=name, compareOption=compare_option, computed=True)
                 step_snapshot.save()
                 
             return HttpResponse(json.dumps({'id': step_snapshot.id}), content_type='application/json', status=201)

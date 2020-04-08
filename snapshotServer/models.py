@@ -59,6 +59,17 @@ class TestCaseInSession(models.Model):
             
         return result
     
+    def computed(self):
+        """
+        Returns True if all snapshots have been computed
+        """
+        snapshots = Snapshot.objects.filter(stepResult__testCase=self)
+        for snapshot in snapshots:
+            if not snapshot.computed:
+                return False
+            
+        return True
+    
     def isOkWithResult(self):
         """
         Returns True if test is OK for the session in parameter. Look at each step. None of the steps should be KO (look at StepResult object)
@@ -155,6 +166,7 @@ class Snapshot(models.Model):
     tooManyDiffs = models.BooleanField(default=False)
     name = models.CharField(max_length=100, default="") # name of the snapshot
     compareOption = models.CharField(max_length=100, default="true") # options for comparison
+    computed = models.BooleanField(default=False)
   
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 

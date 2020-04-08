@@ -29,7 +29,7 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCaseInSession
-        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace')
+        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed')
         
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     

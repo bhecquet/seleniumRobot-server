@@ -59,12 +59,18 @@ class TestDiffComputer(django.test.TestCase):
             s2.save()
             s2.image.save("img", img)
             s2.save()
+            
+            self.assertFalse(s1.computed)
+            self.assertFalse(s2.computed)
      
             DiffComputer.getInstance().computeNow(s1, s2)
      
             # something has been computed
             self.assertIsNotNone(s2.pixelsDiff)
             self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+            
+            self.assertFalse(s1.computed) # reference picture, computed flag remains False
+            self.assertTrue(s2.computed) # diff computed, flag changed
          
     def test_compute_diff(self):
         """

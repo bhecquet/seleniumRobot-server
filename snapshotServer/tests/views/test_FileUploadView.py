@@ -83,6 +83,7 @@ class test_FileUploadView(django.test.TestCase):
             
             uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
+            self.assertTrue(uploaded_snapshot.computed)
             
     def test_post_snapshot_existing_ref(self):
         """
@@ -99,6 +100,10 @@ class test_FileUploadView(django.test.TestCase):
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploaded_snapshot_2.refSnapshot, uploaded_snapshot_1)
+            
+            # both snapshots are marked as computed as they have been uploaded
+            self.assertTrue(uploaded_snapshot_1.computed)
+            self.assertTrue(uploaded_snapshot_2.computed)
             
     def test_post_snapshot_existing_ref_other_env(self):
         """

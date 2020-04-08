@@ -167,11 +167,43 @@ or
 captureElementSnapshot(<pic_name>, <myWebElement>, SnapshotCheckType.TRUE);
 ```
 
-#### access web interface ####
+#### Access web interface ####
 
 Go to [http://<server>:<port>/snapshot/](http://localhost:8002/snapshot/) and select the application / version and "compare snapshot"
 
 ![](doc/images/snapshot_select_session.png)
+
+#### Visualize comparison results ####
+
+Complete "environment", "sessions", "browser", "test cases" and execution date. Each time, click on "Filter".
+
+You will then get a list of test sessions corresponding to your search criteria.
+
+![](doc/images/snapshot_comparison_result.png)
+
+these results will also be accessible from SeleniumRobot HTML result, as a tab in each test result, pointing to this page.
+
+#### Edit comparison ####
+
+For each picture, where a reference exists, a comparison pixel by pixel is done, meaning that picture size must be the same. Each pixel different from reference is coulored red. If these pixels are not relevant differences (value of a text field, picture based on news), then you can create "exclude zones" by clicking "Edit" button.
+
+In the opened modal, draw rectangles and click "save". Differences are automatically recomputed.
+
+On the bottom of the edit modal, you will find a table with all "exclude zones". You can disable some of them if you want them not being used anymore in comparison.
+
+![](doc/images/snapshot_edit_exclude_zone.png)
+
+**Exclude zones** are common to all pictures that share the same reference.
+
+**Reference**: a picture to which further snapshot taken during test will be compared. A reference is specific to an [application / version / environment / test case / test step].
+
+#### Change reference ####
+
+By default, the first snapshot of a [application / version / environment / test case / test step] tuple is the reference. But sometimes, while application change, inside the same version, GUI may change and so, a new reference must be set. Therefore, you can click on button  "Make reference".
+
+![](doc/images/snapshot_reference.png)
+
+In the example above, firstly, all sessions snapshot refere to "reference" snapshot. But after making "Session 2" a new reference, "Session 1" always referes to "reference" while sessions after "Session 2" refere to "Sessions 2".
 
 
 ## API ##
