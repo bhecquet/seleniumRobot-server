@@ -6,14 +6,14 @@ Created on 15 mai 2017
 
 import os
 import time
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
 
 from django.core.files.images import ImageFile
 import django.test
 
 from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import Snapshot, StepResult
+from snapshotServer.models import Snapshot, StepResult, ExcludeZone
 
 
 class TestDiffComputer(django.test.TestCase):
@@ -153,8 +153,8 @@ class TestDiffComputer(django.test.TestCase):
             s3.save()
      
             diff_computer = DiffComputer.getInstance()
-            diff_computer.addJobs(s1, s2, checkTestMode=False)
-            diff_computer.addJobs(s1, s3, checkTestMode=False)
+            diff_computer.addJobs(s1, s2, check_test_mode=False)
+            diff_computer.addJobs(s1, s3, check_test_mode=False)
             time.sleep(1)
             diff_computer.stopThread()
              
@@ -172,7 +172,57 @@ class TestDiffComputer(django.test.TestCase):
         s2.save()
         diff_computer = DiffComputer.getInstance()
         diff_computer._computeDiff = MagicMock(side_effect=Exception("error while computing"))
-        diff_computer.addJobs(s1, s2, checkTestMode=False)
+        diff_computer.addJobs(s1, s2, check_test_mode=False)
         time.sleep(0.7)
         self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
          
+
+    def test_compute_using_exclude_zones_from_ref(self):
+        """
+        Check that computing takes into account exclude zone from reference snapshot
+        """
+        
+        with patch.object(DiffComputer.picture_comparator, 'getChangedPixels', wraps=DiffComputer.picture_comparator.getChangedPixels) as wrapped_get_changed_pixels:
+            with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+                img = ImageFile(imgFile)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img)
+                step_snapshot.save()
+                
+                exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=ref_snapshot)
+                exclusion1.save()
+            
+                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                
+                # check exclude zone has been used for comparison
+                wrapped_get_changed_pixels.assert_called_with(ref_snapshot.image.path, step_snapshot.image.path, [exclusion1.toRectangle()])             
+
+    def test_compute_using_exclude_zones_from_step(self):
+        """
+        issue #57: Check that computing takes into account exclude zone from step snapshot that could be added by seleniumRobot
+        """
+        
+        with patch.object(DiffComputer.picture_comparator, 'getChangedPixels', wraps=DiffComputer.picture_comparator.getChangedPixels) as wrapped_get_changed_pixels:
+            with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+                img = ImageFile(imgFile)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img)
+                step_snapshot.save()
+                
+                exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=step_snapshot)
+                exclusion1.save()
+            
+                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                
+                # check exclude zone has been used for comparison
+                wrapped_get_changed_pixels.assert_called_with(ref_snapshot.image.path, step_snapshot.image.path, [exclusion1.toRectangle()])             

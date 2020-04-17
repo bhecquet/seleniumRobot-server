@@ -9,6 +9,7 @@ import threading
 import time
 
 from snapshotServer.controllers import Tools
+from django.db.models import Q
 from snapshotServer.controllers.PictureComparator import PictureComparator,\
     Pixel
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
@@ -25,6 +26,7 @@ class DiffComputer(threading.Thread):
     
     _instance = None
     _jobLock = threading.Lock()
+    picture_comparator = PictureComparator()
     
     @classmethod
     def getInstance(cls):
@@ -34,24 +36,29 @@ class DiffComputer(threading.Thread):
         return cls._instance
     
     @classmethod
-    def addJobs(cls, refSnapshot, stepSnapshot, checkTestMode=True):
+    def addJobs(cls, ref_snapshot, step_snapshot, check_test_mode=True):
         """
         Add a job to handle
-        @param refSnapshot: reference snapshot
-        @param stepSnapshot: snapshot to compare with reference
-        @param checkTestMode: default is True. If True and we are in unit tests, computation is not done through thread
+        @param ref_snapshot: reference snapshot
+        @param step_snapshot: snapshot to compare with reference
+        @param check_test_mode: default is True. If True and we are in unit tests, computation is not done through thread
         """
-        if Tools.isTestMode() and checkTestMode:
-            cls.computeNow(refSnapshot, stepSnapshot)
+        if Tools.isTestMode() and check_test_mode:
+            cls.computeNow(ref_snapshot, step_snapshot)
             return 
         else:
             inst = cls.getInstance()
             DiffComputer._jobLock.acquire()
-            inst.jobs.append((refSnapshot, stepSnapshot))
+            inst.jobs.append((ref_snapshot, step_snapshot))
             DiffComputer._jobLock.release()
         
     @classmethod
     def computeNow(cls, ref_snapshot, step_snapshot):
+        """
+        Compute difference now
+        @param ref_snapshot: the reference snapshot
+        @param step_snapshot: the snapshot to compare to step_snapshot
+        """
         DiffComputer._computeDiff(ref_snapshot, step_snapshot)
         
     @classmethod
@@ -98,9 +105,9 @@ class DiffComputer(threading.Thread):
             if ref_snapshot and step_snapshot and ref_snapshot.image and step_snapshot.image:
                 
                 # get the list of exclude zones
-                exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(snapshot=ref_snapshot)]
+                exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
                 
-                pixel_diffs, too_many_diffs = PictureComparator().getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                pixel_diffs, too_many_diffs = DiffComputer.picture_comparator.getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
                 # store diff picture mask into database instead of pixels, to reduce size of stored object
                 step_snapshot.pixelsDiff = DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
