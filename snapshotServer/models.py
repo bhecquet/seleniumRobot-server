@@ -284,3 +284,9 @@ class ExcludeZone(models.Model):
     def toRectangle(self):
         return Rectangle(self.x, self.y, self.width, self.height)
     
+    def copy_to_snapshot(self, snapshot):
+        """
+        Copy this exclude zone to the snapshot provided
+        """
+        ExcludeZone(x=self.x, y=self.y, width=self.width, height=self.height, snapshot=snapshot).save()
+    

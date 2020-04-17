@@ -8,7 +8,7 @@ from django.core.files.images import ImageFile
 from django.urls.base import reverse
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import Snapshot, TestStep
+from snapshotServer.models import Snapshot, TestStep, ExcludeZone
 from snapshotServer.tests.views.Test_Views import TestViews
 
 
@@ -48,6 +48,13 @@ class TestPictureView(TestViews):
             snapshot_future_ref_same_env.image.save("img", img)
             snapshot_future_ref_same_env.save()
             
+            exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=self.initialRefSnapshot)
+            exclusion1.save()
+            exclusion2 = ExcludeZone(x=10, y=10, width=10, height=10, snapshot=self.initialRefSnapshot)
+            exclusion2.save()
+            self.assertEqual(len(ExcludeZone.objects.filter(snapshot=self.initialRefSnapshot)), 2)
+            self.assertEqual(len(ExcludeZone.objects.filter(snapshot=snapshot_future_ref_same_env)), 0)
+            
             snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
             snapshot_same_env.save()
             snapshot_same_env.image.save("img", img)
@@ -64,6 +71,12 @@ class TestPictureView(TestViews):
             # check snapshot_same_env ref as been changed
             self.assertEqual(Snapshot.objects.get(id=snapshot_same_env.id).refSnapshot, snapshot_future_ref_same_env, "ref snapshot for snapshot_same_env should have changed to snapshot_future_ref_same_env")
             self.assertEqual(Snapshot.objects.get(id=2).refSnapshot, self.initialRefSnapshot, "snapshot previous to snapshot_future_ref_same_env should not have change")
+          
+            # check 'initialRefSnapshot' has kept its references
+            self.assertEqual(len(ExcludeZone.objects.filter(snapshot=self.initialRefSnapshot)), 2)
+            
+            # check new ref 'snapshot_future_ref_same_env' has got a copy of the exclusion zones
+            self.assertEqual(len(ExcludeZone.objects.filter(snapshot=snapshot_future_ref_same_env)), 2)
           
     def test_multiple_snapshots_per_step(self):
         """

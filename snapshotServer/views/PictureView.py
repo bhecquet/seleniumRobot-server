@@ -9,7 +9,7 @@ from django.views.generic.base import TemplateView
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestCaseInSession, TestSession,\
-    TestStep
+    TestStep, ExcludeZone
 import base64
 import sys
 
@@ -56,6 +56,11 @@ class PictureView(TemplateView):
                         # Compute differences for the following snapshots as they will depend on this new ref
                         for snap in step_snapshot.snapshotsUntilNextRef(previous_snapshot):
                             DiffComputer.addJobs(step_snapshot, snap)
+                            
+                        # copy exclude zones to the new ref so that they may be processed independently
+                        for exclude_zone in ExcludeZone.objects.filter(snapshot=previous_snapshot):
+                            exclude_zone.copy_to_snapshot(step_snapshot)
+                        
                         
                     elif self.request.GET['makeRef'] == 'False' and step_snapshot.refSnapshot is None:
                         # search a reference with a lower id, meaning that it has been recorded before our step
@@ -88,8 +93,7 @@ class PictureView(TemplateView):
                 
                 # extract difference pixel. Recompute in case this step is no more a reference
                 diff_pixels_bin = step_snapshot.pixelsDiff
-                print(sys.getsizeof(diff_pixels_bin))
-                    
+                
                 if diff_pixels_bin:
                     try:
                         diff_pixels = pickle.loads(diff_pixels_bin)
