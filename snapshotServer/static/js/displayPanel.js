@@ -34,13 +34,13 @@ function getIntValue(strValue) {
  * @param testStepId		
  * @returns
  */
-function initDraw(excludeTable, testStepId, snapshotId) {
+function initDraw(excludeTable, testStepId, stepSnapshotId, refSnapshotId) {
 	
-	var canvas = document.getElementById('canvas_' + testStepId + '_' + snapshotId);
-	var staticCanvas = document.getElementById('canvasStatic_' + testStepId + '_' + snapshotId);
+	var canvas = document.getElementById('canvas_' + testStepId + '_' + stepSnapshotId);
+	var staticCanvas = document.getElementById('canvasStatic_' + testStepId + '_' + stepSnapshotId);
 	
     function setMousePosition(e) {
-		let scrollPosition = $('#editionModal_' + testStepId + '_' + snapshotId).scrollTop();
+		let scrollPosition = $('#editionModal_' + testStepId + '_' + stepSnapshotId).scrollTop();
         let ev = e || window.event; //Moz || IE
         /*if (ev.pageX) { //Moz
             mouse.x = ev.pageX;
@@ -52,17 +52,17 @@ function initDraw(excludeTable, testStepId, snapshotId) {
     }
     
     function getCanvasRatio() {
-        let canvasWidth = document.getElementById("stepSnapshot_" + testStepId + '_' + snapshotId).clientWidth;
+        let canvasWidth = document.getElementById("stepSnapshot_" + testStepId + '_' + stepSnapshotId).clientWidth;
         return getIntValue(canvas.getAttribute("width")) / getIntValue(canvasWidth);
     }
 
     function getCanvasCoords() {
-    	return $('#canvas_' + testStepId + '_' + snapshotId).offset();
+    	return $('#canvas_' + testStepId + '_' + stepSnapshotId).offset();
     }
     
     function updateSizeAndCoords() {
     	canvasCoords = getCanvasCoords();
-    	canvas.style.height = document.getElementById("stepSnapshot_" + testStepId + '_' + snapshotId).clientHeight;
+    	canvas.style.height = document.getElementById("stepSnapshot_" + testStepId + '_' + stepSnapshotId).clientHeight;
     	canvasRatio = getCanvasRatio();
     }
 
@@ -115,24 +115,53 @@ function initDraw(excludeTable, testStepId, snapshotId) {
             element.style.top = getIntValue(element.style.top) * 100 / canvas.clientHeight + '%';
 
             // add line to exclude excludeTable
-            let row = document.createElement('tr');
-            let colActive = document.createElement('td');
+            let row = document.createElement('tr')
+            let colActive = document.createElement('td')
             let activeBox = document.createElement('input')
+            let inputId = 'new_exclude_input_' + excludeIndex
             activeBox.type = 'checkbox';
             activeBox.checked = 'checked';
-            activeBox.setAttribute('name', 'new_exclude_' + testStepId + '_' + snapshotId);
+            activeBox.setAttribute('name', 'new_exclude_' + testStepId + '_' + stepSnapshotId);
+            activeBox.setAttribute('id', inputId);
             activeBox.setAttribute('r_x', realLeft);
             activeBox.setAttribute('r_y', realTop);
             activeBox.setAttribute('r_w', realWidth);
             activeBox.setAttribute('r_h', realHeight);
+            activeBox.setAttribute('target_snapshot', refSnapshotId);
 			
 			// clic will enable/disable the static element (on summary) and its equivalent on edition modal
             activeBox.setAttribute('onclick', "toggleElement('new_exclude_" + excludeIndex + "');toggleElement('new_exclude_" + excludeIndex + "Static');");
             colActive.appendChild(activeBox);
+            
+            // column for color
+            let colColor = document.createElement('td');
+            colColor.setAttribute('style', "background-color: darkred");
+            
+            // colum for position / dimension of the zone
             let colPosition = document.createElement('td');
             colPosition.innerHTML = '(x, y, width, height)=(' + realLeft + ', ' + realTop + ', ' + realWidth + ', ' + realHeight + ')';
+            
+            // column for snapshot to which this exclude zone will apply
+            let colApplyTo = document.createElement('td');
+            let selectBox = document.createElement('select');
+            selectBox.setAttribute("onchange", "changeExcludeZoneTarget('" + inputId + "', this.value);")
+            let applyToReference = document.createElement('option');
+            applyToReference.setAttribute('value', refSnapshotId);
+            applyToReference.setAttribute('selected', 'true');
+            applyToReference.innerHTML = 'reference';
+            
+            let applyToStep = document.createElement('option');
+            applyToStep.setAttribute('value', stepSnapshotId);
+            applyToStep.innerHTML = 'this snapshot only';
+            
+            selectBox.appendChild(applyToReference)
+            selectBox.appendChild(applyToStep)
+            colApplyTo.appendChild(selectBox)
+            
             row.appendChild(colActive);
+            row.appendChild(colColor);
             row.appendChild(colPosition);
+            row.appendChild(colApplyTo);
             excludeTable.appendChild(row);
             
 			// copy the created rectangle so that it is displayed in summary
@@ -160,6 +189,17 @@ function initDraw(excludeTable, testStepId, snapshotId) {
             
         }
     }
+}
+
+/**
+ * Change the "snapshot" attribute of the input element representing the exclude zone
+ * @param inputElementId	the <input> element
+ * @param value			id of the target snapshot (reference or step snapshot)
+ * @returns
+ */
+function changeExcludeZoneTarget(inputElementId, value) {
+	console.log(value)
+	document.getElementById(inputElementId).setAttribute("target_snapshot", value)
 }
 
 /**
@@ -197,6 +237,7 @@ function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, 
 		    element.style.top = Math.round(getIntValue(currentExcludes[i].getAttribute('r_y')) * canvasRatio) * 100 / snapshotHeight + '%';
 		    element.style.width = Math.round(getIntValue(currentExcludes[i].getAttribute('r_w')) * canvasRatio) * 100 / canvas.clientWidth + '%';
 		    element.style.height = Math.round(getIntValue(currentExcludes[i].getAttribute('r_h')) * canvasRatio) * 100 / snapshotHeight + '%';
+		    element.style.borderColor = currentExcludes[i].getAttribute('color')
 		     
 		    canvas.appendChild(element);
 		}
@@ -226,16 +267,17 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 					+ "&y=" + newExcludes[i].getAttribute('r_y')
 					+ "&width=" + newExcludes[i].getAttribute('r_w')
 					+ "&height=" + newExcludes[i].getAttribute('r_h')
-					+ "&snapshot=" + refSnapshotId
+					+ "&snapshot=" + newExcludes[i].getAttribute('target_snapshot')
 					
 			});
 		}
 	}
 	
-	// remove exclude zones that should not be kept
 	var currentExcludes = document.querySelectorAll('#excludeZoneTable_' + testStepId + '_' + snapshotId + ' input');
 
 	for(let i= 0; i < currentExcludes.length; i++) {
+		
+		// remove exclude zones that should not be kept
 		if (!currentExcludes[i].checked) {
 
 			// these ajax calls are not asynchronous as they MUST finish before we call computing 
@@ -245,6 +287,15 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 				async: false	
 			});
 		}
+		
+		// change target snapshot
+		$.ajax({
+			type: 'PATCH',
+			async: false,
+			url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
+			data: "snapshot=" + currentExcludes[i].getAttribute('target_snapshot')
+				
+		});
 	}
 	
 	// recompute difference

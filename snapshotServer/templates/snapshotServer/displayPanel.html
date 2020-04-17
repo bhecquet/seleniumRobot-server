@@ -24,7 +24,7 @@
 						{% if namedSnapshot.stepSnapshot and namedSnapshot.stepSnapshot.refSnapshot %}
 							// update exclusion zone from database and draw them
 							function loadImages_{{ testStepId }}_{{ snapshot_id }}() {
-								updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
+								updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id namedSnapshot.stepSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
 
 								// delay display so that image is loaded and its height is > 0
 								setTimeout(function(){
@@ -177,7 +177,8 @@
 						  	}
 							initDraw(document.getElementById('excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}').getElementsByTagName('tbody')[0],
 										{{ testStepId }},
-										{{ snapshot_id }});
+										{{ snapshot_id }},
+										{{ namedSnapshot.stepSnapshot.refSnapshot.id }});
 						})
 						
 						// update exclusion zone and recompute diff when saving

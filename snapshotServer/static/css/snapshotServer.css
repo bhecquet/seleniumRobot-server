@@ -70,7 +70,7 @@
 }
 
 .rectangle {
-    border: 1px solid #FF0000;
+    border: 2px solid darkred;
     position: absolute;
     background-color: grey;
     opacity: 0.4;

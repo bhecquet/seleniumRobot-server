@@ -56,7 +56,7 @@ urlpatterns = [
     url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
     url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', xframe_options_exempt(StepListView.as_view()), name="steplistView"), 
     url(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
-    url(r'^compare/excludeList/(?P<snapshotId>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
+    url(r'^compare/excludeList/(?P<ref_snapshot_id>[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
     url(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
