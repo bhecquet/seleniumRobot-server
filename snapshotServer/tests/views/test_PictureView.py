@@ -78,6 +78,46 @@ class TestPictureView(TestViews):
             # check new ref 'snapshot_future_ref_same_env' has got a copy of the exclusion zones
             self.assertEqual(len(ExcludeZone.objects.filter(snapshot=snapshot_future_ref_same_env)), 2)
           
+    def test_make_new_ref_diff_image(self):
+        """
+        Compare 2 pictures (force computation to be sure we have diff data)
+        Check we get the diff percentage
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
+            with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as img_file_mod: 
+                
+                img = ImageFile(imgFile)
+                img_mod = ImageFile(img_file_mod)
+                 
+                snapshot_future_ref_same_env = Snapshot(stepResult=self.sr1, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+                snapshot_future_ref_same_env.save()
+                snapshot_future_ref_same_env.image.save("img", img)
+                snapshot_future_ref_same_env.save()
+                
+                exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=self.initialRefSnapshot)
+                exclusion1.save()
+                exclusion2 = ExcludeZone(x=10, y=10, width=10, height=10, snapshot=self.initialRefSnapshot)
+                exclusion2.save()
+                self.assertEqual(len(ExcludeZone.objects.filter(snapshot=self.initialRefSnapshot)), 2)
+                self.assertEqual(len(ExcludeZone.objects.filter(snapshot=snapshot_future_ref_same_env)), 0)
+                
+                snapshot_same_env = Snapshot(stepResult=self.step_result_same_env, refSnapshot=self.initialRefSnapshot, pixelsDiff=None)
+                snapshot_same_env.save()
+                snapshot_same_env.image.save("img", img_mod)
+                snapshot_same_env.save()
+                  
+                # force computing
+                self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
+
+                DiffComputer.stopThread()
+                
+                # ask for the step snapshot and look for data
+                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs_same_env.id, 'testStepId': 1}) + "?snapshotId=" + str(snapshot_same_env.id))
+                self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff) 
+                self.assertTrue(response.context['captureList'][0]['diffPercentage'] > 0.086) 
+
+                
+          
     def test_multiple_snapshots_per_step(self):
         """
         Test that all snapshots are returned when there are multiple in one test
@@ -224,6 +264,7 @@ class TestPictureView(TestViews):
             self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
             self.assertEqual(response.context['captureList'][0]['stepSnapshot'].refSnapshot, self.initialRefSnapshot, "new reference should be the first snapshot")
             self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
+            self.assertEqual(response.context['captureList'][0]['diffPercentage'], 0.0)
             DiffComputer.stopThread()
               
             # check snapshot_same_env ref as been changed

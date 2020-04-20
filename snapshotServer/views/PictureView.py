@@ -12,6 +12,8 @@ from snapshotServer.models import Snapshot, TestCaseInSession, TestSession,\
     TestStep, ExcludeZone
 import base64
 import sys
+import io
+from PIL import Image
 
 
 class PictureView(TemplateView):
@@ -98,23 +100,32 @@ class PictureView(TemplateView):
                     try:
                         diff_pixels = pickle.loads(diff_pixels_bin)
                         diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
+                        diff_pixels_percentage = 0.0
                     except:
+#                         diff_picture_bin
                         diff_picture = base64.b64encode(diff_pixels_bin).decode('ascii')
+                        with io.BytesIO(diff_pixels_bin) as input:
+                            diff_pixels_percentage = 100 * (sum(list(Image.open(input).getdata(3))) / 255) / (step_snapshot.image.width * step_snapshot.image.height)
+                        
+                            
                 else:
                     diff_pixels = []
                     diff_picture = None
+                    diff_pixels_percentage = 0.0
                     
             # not snapshot has been recorded for this session
             else:
                 ref_snapshot = None
                 diff_pixels = []
                 diff_picture = None
+                diff_pixels_percentage = 0.0
                 
             step_snapshot_context = {
                 'name': step_snapshot.name,
                 'reference': ref_snapshot,
                 'stepSnapshot': step_snapshot,
-                'diffB64': diff_picture
+                'diffB64': diff_picture,
+                'diffPercentage': diff_pixels_percentage
                 }
             context['captureList'].append(step_snapshot_context)
             
