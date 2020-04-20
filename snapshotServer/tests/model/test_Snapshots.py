@@ -9,6 +9,7 @@ from snapshotServer.models import Snapshot, Application, Version, TestStep, \
     TestSession, TestEnvironment, TestCase, TestCaseInSession, StepResult
 import datetime
 import pytz
+from django.db.utils import IntegrityError
 
 
 class TestSnapshots(django.test.TestCase):
@@ -65,6 +66,20 @@ class TestSnapshots(django.test.TestCase):
         s2 = Snapshot(stepResult=self.tsr2, image=None, refSnapshot=s1, pixelsDiff=None)
         s2.save()
         self.assertEqual(s2.snapshotsUntilNextRef(s2.refSnapshot), [], "No next snapshot should be found")
+    
+    def test_too_low_diff_tolerance(self):
+        """
+        tolerance < 0 should be refused
+        """
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None, diffTolerance=-0.1)
+        self.assertRaises(IntegrityError, s1.save)
+    
+    def test_too_high_diff_tolerance(self):
+        """
+        tolerance > 100 should be refused
+        """
+        s1 = Snapshot(stepResult=self.tsr1, image=None, refSnapshot=None, pixelsDiff=None, diffTolerance=100.1)
+        self.assertRaises(IntegrityError, s1.save)
     
     def test_next_snapshots_with_no_ref(self):
         """

@@ -35,12 +35,12 @@ class ExcludeZoneSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ExcludeZone
-        fields = ('x', 'y', 'width', 'height', 'snapshot')
+        fields = ('id', 'x', 'y', 'width', 'height', 'snapshot')
         
 class SnapshotSerializer(serializers.ModelSerializer):
     class Meta:
         model = Snapshot
-        fields = ('id', 'stepResult', 'name', 'compareOption')
+        fields = ('id', 'stepResult', 'name', 'compareOption', 'diffTolerance')
         
 class StepResultSerializer(serializers.ModelSerializer):
     class Meta:

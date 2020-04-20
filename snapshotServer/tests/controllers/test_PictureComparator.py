@@ -11,7 +11,7 @@ from snapshotServer.controllers.PictureComparator import PictureComparator,\
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 
 
-class Test(unittest.TestCase):
+class TestPictureComparator(unittest.TestCase):
 
 
     def setUp(self):
@@ -63,24 +63,24 @@ class Test(unittest.TestCase):
            
     def test_no_diff(self):
         comparator = PictureComparator();
-        diff_pixels, too_many_diffs = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse.png')
+        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse.png')
         self.assertEqual(0, len(diff_pixels), "No difference pixels should be found")
-        self.assertFalse(too_many_diffs)
+        self.assertEqual(int(diff_percentage), 0)
            
           
     def test_real_diff(self):
         comparator = PictureComparator();
-        diff_pixels, too_many_diffs = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
+        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
         self.assertEqual(3, len(diff_pixels), "3 pixels should be found")
         self.assertEqual(Pixel(554, 256), diff_pixels[0], "detected position is wrong")
-        self.assertTrue(too_many_diffs)
+        self.assertTrue(diff_percentage > 0)
          
     def test_real_too_many_diff(self):
         comparator = PictureComparator();
-        diff_pixels, too_many_diffs = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_tooManyDiffs.png')
+        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_tooManyDiffs.png')
         self.assertEqual(817176, len(diff_pixels), "207360 pixels should be found")
         self.assertEqual(diff_pixels[0], Pixel(0, 132), "First diff pixel should be (0, 132)")
-        self.assertTrue(too_many_diffs)
+        self.assertTrue(int(diff_percentage), 39)
           
          
     def test_real_diff_with_exclusion(self):
@@ -89,11 +89,11 @@ class Test(unittest.TestCase):
         marked as diff
         """
         comparator = PictureComparator();
-        diffPixels, tooManyDiffs = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', 
+        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', 
                                                  self.dataDir + 'Ibis_Mulhouse_diff.png',
                                                  [Rectangle(550, 255, 5, 3)])
-        self.assertEqual(2, len(diffPixels), "2 pixels should be found")
-        self.assertEqual(Pixel(555, 256), diffPixels[0], "detected position is wrong")
+        self.assertEqual(2, len(diff_pixels), "2 pixels should be found")
+        self.assertEqual(Pixel(555, 256), diff_pixels[0], "detected position is wrong")
          
         # [Pixel(x=554, y=256), Pixel(x=555, y=256), Pixel(x=556, y=256)]
         
@@ -105,7 +105,7 @@ class Test(unittest.TestCase):
         """
         
         comparator = PictureComparator();
-        pixels_diff_map, too_many_diffs = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1.png',
                                                  [])
         

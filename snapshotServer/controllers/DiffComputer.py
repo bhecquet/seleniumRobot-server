@@ -107,11 +107,13 @@ class DiffComputer(threading.Thread):
                 # get the list of exclude zones
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
                 
-                pixel_diffs, too_many_diffs = DiffComputer.picture_comparator.getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                pixel_diffs, diff_percentage = DiffComputer.picture_comparator.getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
                 # store diff picture mask into database instead of pixels, to reduce size of stored object
                 step_snapshot.pixelsDiff = DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
-                step_snapshot.tooManyDiffs = too_many_diffs
+                
+                # too many pixel differences if we go over tolerance
+                step_snapshot.tooManyDiffs = step_snapshot.diffTolerance < diff_percentage
             else:
                 step_snapshot.pixelsDiff = None
                 step_snapshot.tooManyDiffs = False

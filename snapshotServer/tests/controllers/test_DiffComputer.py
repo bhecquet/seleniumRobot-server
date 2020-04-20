@@ -72,29 +72,75 @@ class TestDiffComputer(django.test.TestCase):
             self.assertFalse(s1.computed) # reference picture, computed flag remains False
             self.assertTrue(s2.computed) # diff computed, flag changed
          
-    def test_compute_diff(self):
+    def test_compute_diff_without_tolerance(self):
         """
-        Check thread is not started when computing is requested to be done now
+        Check difference is found between two different images
         """
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
             with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
                 img_reference = ImageFile(reference)
                 img_step = ImageFile(step)
-                s1 = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
-                s1.save()
-                s1.image.save("img", img_reference)
-                s1.save()
-                s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
-                s2.save()
-                s2.image.save("img", img_step)
-                s2.save()
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img_reference)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img_step)
+                step_snapshot.save()
          
-                DiffComputer.getInstance().computeNow(s1, s2)
+                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
          
                 # something has been computed
-                self.assertIsNotNone(s2.pixelsDiff)
-                self.assertTrue(s2.tooManyDiffs)
-                self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+                self.assertIsNotNone(step_snapshot.pixelsDiff)
+                self.assertTrue(step_snapshot.tooManyDiffs)
+                self.assertEqual(step_snapshot.refSnapshot, ref_snapshot, "refSnapshot should have been updated")
+         
+    def test_compute_diff_with_tolerance_higher_than_difference(self):
+        """
+        Check that even with differences, as tolerance is higher, images are considered the same
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
+            with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
+                img_reference = ImageFile(reference)
+                img_step = ImageFile(step)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img_reference)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None, diffTolerance=0.5)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img_step)
+                step_snapshot.save()
+         
+                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+         
+                # something has been computed
+                self.assertIsNotNone(step_snapshot.pixelsDiff)
+                self.assertFalse(step_snapshot.tooManyDiffs)
+         
+    def test_compute_diff_with_tolerance_lower_than_difference(self):
+        """
+        Check that tooManyDiffs is True as % of differences is higher than tolerance
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
+            with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
+                img_reference = ImageFile(reference)
+                img_step = ImageFile(step)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img_reference)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None, diffTolerance=0.005)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img_step)
+                step_snapshot.save()
+         
+                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+         
+                # something has been computed
+                self.assertIsNotNone(step_snapshot.pixelsDiff)
+                self.assertTrue(step_snapshot.tooManyDiffs)
 
          
     def test_ref_is_none(self):

@@ -167,9 +167,15 @@ class Snapshot(models.Model):
     name = models.CharField(max_length=100, default="") # name of the snapshot
     compareOption = models.CharField(max_length=100, default="true") # options for comparison
     computed = models.BooleanField(default=False)
+    diffTolerance = models.FloatField(default=0.0) # pixel tolerance when comparing pictures. 0.0 means all pixels must be identical, 10.0 means 10% of the pixels may be different 
   
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 
+    
+    class Meta:
+        constraints = [
+            models.CheckConstraint(check=Q(diffTolerance__gte=0) & Q(diffTolerance__lte=100) , name='percentage_diff_tolerance'),
+        ]
     
     def snapshotsUntilNextRef(self, ref_snapshot):
         """
