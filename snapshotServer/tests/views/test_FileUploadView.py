@@ -19,7 +19,7 @@ import datetime
 import pytz
 
 
-class test_FileUploadView(django.test.TestCase):
+class TestFileUploadView(django.test.TestCase):
     fixtures = ['snapshotServer.yaml']
     
     mediaDir = MEDIA_ROOT + os.sep + 'documents'
@@ -104,6 +104,31 @@ class test_FileUploadView(django.test.TestCase):
             # both snapshots are marked as computed as they have been uploaded
             self.assertTrue(uploaded_snapshot_1.computed)
             self.assertTrue(uploaded_snapshot_2.computed)
+            
+    def test_post_snapshot_multiple_existing_ref(self):
+        """
+        issue #61: Check that when multiple references exist for the same version / name / env / ..., we take the last one.
+        """
+        # upload first ref
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            uploaded_snapshot_1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+        
+        # upload second snapshot and make it a reference
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_snapshot_2.refSnapshot = None
+            uploaded_snapshot_2.save()
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            
+            uploaded_snapshot_3 = Snapshot.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
+            self.assertIsNotNone(uploaded_snapshot_3, "the uploaded snapshot should be recorded")
+            self.assertEqual(uploaded_snapshot_3.refSnapshot, uploaded_snapshot_2, "last snapshot should take the most recent reference snapshot available")
+            
             
     def test_post_snapshot_existing_ref_other_env(self):
         """

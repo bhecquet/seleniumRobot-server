@@ -33,33 +33,33 @@ class FileUploadView(views.APIView):
             compare_option = form.cleaned_data.get('compare', 'true')
             
             # check if a reference exists for this step in the same test case / same application / same version / same environment / same browser / same name
-            reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step,                                                    # same step in the test case
+            most_recent_reference_snapshot = Snapshot.objects.filter(stepResult__step=step_result.step,                                                    # same step in the test case
                                                           stepResult__testCase__testCase__name=step_result.testCase.testCase.name,              # same test case
                                                           stepResult__testCase__session__version=step_result.testCase.session.version,          # same version
                                                           stepResult__testCase__session__environment=step_result.testCase.session.environment,  # same environment
                                                           stepResult__testCase__session__browser=step_result.testCase.session.browser,          # same browser
                                                           refSnapshot=None,                                                                     # a reference image
-                                                          name=name)                                                                            # same snapshot name
+                                                          name=name).order_by('pk').last()                                                                          # same snapshot name
             
             # check for a reference in previous versions
-            if not reference_snapshots:
+            if not most_recent_reference_snapshot:
                 for app_version in reversed(step_result.testCase.session.version.previousVersions()):
-                    reference_snapshots = Snapshot.objects.filter(stepResult__step=step_result.step, 
+                    most_recent_reference_snapshot = Snapshot.objects.filter(stepResult__step=step_result.step, 
                                                                   stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
                                                                   stepResult__testCase__session__version=app_version, 
                                                                   stepResult__testCase__session__environment=step_result.testCase.session.environment, 
                                                                   stepResult__testCase__session__browser=step_result.testCase.session.browser, 
                                                                   refSnapshot=None,
-                                                                  name=name)
-                    if reference_snapshots:
+                                                                  name=name).order_by('pk').last()     
+                    if most_recent_reference_snapshot:
                         break
             
-            if reference_snapshots:
-                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=reference_snapshots[0], name=name, compareOption=compare_option)
+            if most_recent_reference_snapshot:
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=most_recent_reference_snapshot, name=name, compareOption=compare_option)
                 step_snapshot.save()
                 
                 # compute difference if a reference already exist
-                DiffComputer.addJobs(reference_snapshots[0], step_snapshot)
+                DiffComputer.addJobs(most_recent_reference_snapshot, step_snapshot)
 
             else:
                 # snapshot is marked as computed as this is a reference snapshot
