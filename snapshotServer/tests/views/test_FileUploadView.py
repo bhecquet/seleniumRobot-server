@@ -84,6 +84,20 @@ class TestFileUploadView(django.test.TestCase):
             uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
             self.assertTrue(uploaded_snapshot.computed)
+            self.assertEquals(uploaded_snapshot.diffTolerance, 0.0)
+    
+    def test_post_snapshot_no_ref_with_threshold(self):
+        """
+        Check a reference is created when non is found
+        """
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true', 'diffTolerance': 1.5})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            
+            uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
+            self.assertTrue(uploaded_snapshot.computed)
+            self.assertEqual(uploaded_snapshot.diffTolerance, 1.5)
             
     def test_post_snapshot_existing_ref(self):
         """

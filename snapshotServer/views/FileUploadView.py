@@ -30,6 +30,7 @@ class FileUploadView(views.APIView):
             step_result = StepResult.objects.get(id=form.cleaned_data['stepResult'])
             image = form.cleaned_data['image']
             name = form.cleaned_data['name']
+            diff_tolerance = form.cleaned_data.get('diffTolerance', 0.0)
             compare_option = form.cleaned_data.get('compare', 'true')
             
             # check if a reference exists for this step in the same test case / same application / same version / same environment / same browser / same name
@@ -55,7 +56,7 @@ class FileUploadView(views.APIView):
                         break
             
             if most_recent_reference_snapshot:
-                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=most_recent_reference_snapshot, name=name, compareOption=compare_option)
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=most_recent_reference_snapshot, name=name, compareOption=compare_option, diffTolerance=diff_tolerance)
                 step_snapshot.save()
                 
                 # compute difference if a reference already exist
@@ -63,7 +64,7 @@ class FileUploadView(views.APIView):
 
             else:
                 # snapshot is marked as computed as this is a reference snapshot
-                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None, name=name, compareOption=compare_option, computed=True)
+                step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=None, name=name, compareOption=compare_option, computed=True, diffTolerance=diff_tolerance)
                 step_snapshot.save()
                 
             return HttpResponse(json.dumps({'id': step_snapshot.id}), content_type='application/json', status=201)
