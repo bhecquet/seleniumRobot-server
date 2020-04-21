@@ -34,6 +34,6 @@ class RecomputeDiffView(View):
             else:
                 return HttpResponse(status=304)
                 
-        except:
+        except Exception as e:
             return HttpResponse(status=404)
         

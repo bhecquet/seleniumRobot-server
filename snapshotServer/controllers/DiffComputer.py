@@ -14,7 +14,6 @@ from snapshotServer.controllers.PictureComparator import PictureComparator,\
     Pixel
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 from snapshotServer.models import ExcludeZone
-from builtins import staticmethod
 from PIL import Image, ImageDraw
 import io
 
@@ -43,6 +42,10 @@ class DiffComputer(threading.Thread):
         @param step_snapshot: snapshot to compare with reference
         @param check_test_mode: default is True. If True and we are in unit tests, computation is not done through thread
         """
+        # as we will (re)compute, consider that current diff are not valid anymore
+        step_snapshot.computed = False
+        step_snapshot.save()
+        
         if Tools.isTestMode() and check_test_mode:
             cls.computeNow(ref_snapshot, step_snapshot)
             return 
@@ -81,13 +84,13 @@ class DiffComputer(threading.Thread):
         try:
             while self.running or self.jobs:
                 DiffComputer._jobLock.acquire()
-                tmpJobs = self.jobs[:]
+                tmp_jobs = self.jobs[:]
                 self.jobs = []
                 DiffComputer._jobLock.release()
 
-                for refSnapshot, stepSnapshot in tmpJobs:
+                for ref_snapshot, step_snapshot in tmp_jobs:
                     try:
-                        DiffComputer._computeDiff(refSnapshot, stepSnapshot)
+                        DiffComputer._computeDiff(ref_snapshot, step_snapshot)
                     except Exception as e:
                         logger.error('Error computing snapshot: %s', str(e))
                 time.sleep(0.5)

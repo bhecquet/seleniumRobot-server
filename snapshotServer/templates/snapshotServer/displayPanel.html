@@ -48,7 +48,11 @@
 				
 					<div class="row no-gutters header-picture">
 						<div class="header-picture mx-auto">
-							{{ namedSnapshot.name }} [diff: {{ namedSnapshot.diffPercentage|floatformat }}%]
+							{{ namedSnapshot.name }} [diff: {{ namedSnapshot.diffPercentage|floatformat }}% 
+							{% if not namedSnapshot.stepSnapshot.computed %} 
+								  <span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-toggle="tooltip" title="Computing ... Reload to update"></span>
+							{% endif %}
+							]
 						</div>
 					</div>
 					<div class="row no-gutters body-picture">

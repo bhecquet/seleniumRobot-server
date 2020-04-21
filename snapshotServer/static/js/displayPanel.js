@@ -286,16 +286,16 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
 				async: false	
 			});
-		}
+		} else {
 		
-		// change target snapshot
-		$.ajax({
-			type: 'PATCH',
-			async: false,
-			url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
-			data: "snapshot=" + currentExcludes[i].getAttribute('target_snapshot')
-				
-		});
+			// change target snapshot
+			$.ajax({
+				type: 'PATCH',
+				async: false,
+				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
+				data: "snapshot=" + currentExcludes[i].getAttribute('target_snapshot')	
+			});
+		}
 	}
 	
 	// recompute difference
