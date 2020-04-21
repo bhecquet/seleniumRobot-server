@@ -52,7 +52,7 @@
 							{% if not namedSnapshot.stepSnapshot.computed %} 
 								  <span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-toggle="tooltip" title="Computing ... Reload to update"></span>
 							{% endif %}
-							]
+							 - allowed diff: {{ namedSnapshot.stepSnapshot.diffTolerance }}%]
 						</div>
 					</div>
 					<div class="row no-gutters body-picture">
