@@ -245,6 +245,27 @@ function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, 
 }
 
 /**
+ * Get cookie value
+ * @param name		cookie name
+ * @returns
+ */
+function getCookie(name) {
+    var cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        var cookies = document.cookie.split(';');
+        for (var i = 0; i < cookies.length; i++) {
+            var cookie = cookies[i].trim();
+            // Does this cookie string begin with the name we want?
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+/**
  * Store in database the list of exclusion zones. Look for newly created zones (name=new_exclude_<stepId>) and for current
  * @param snapshotId
  * @param refSnapshotId
@@ -254,6 +275,7 @@ function drawExistingExcludeZones(canvas, snapshotHeight, idSuffix, testStepId, 
  */
 function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	var newExcludes = document.getElementsByName('new_exclude_' + testStepId + '_' + snapshotId);
+	var csrftoken = getCookie('csrftoken');
 	
 	// add new exclude zones
 	// these ajax calls are not asynchronous as they MUST finish before we call computing 
@@ -262,6 +284,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 			$.ajax({
 				type: 'POST',
 				async: false,
+				headers: {"X-CSRFToken": csrftoken},
 				url: '/snapshot/api/exclude/',
 				data: "x=" + newExcludes[i].getAttribute('r_x')
 					+ "&y=" + newExcludes[i].getAttribute('r_y')
@@ -283,6 +306,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 			// these ajax calls are not asynchronous as they MUST finish before we call computing 
 			$.ajax({
 				type: 'DELETE',
+				headers: {"X-CSRFToken": csrftoken},
 				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
 				async: false	
 			});
@@ -292,6 +316,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 			$.ajax({
 				type: 'PATCH',
 				async: false,
+				headers: {"X-CSRFToken": csrftoken},
 				url: '/snapshot/api/exclude/' + getIntValue(currentExcludes[i].id) + '/',
 				data: "snapshot=" + currentExcludes[i].getAttribute('target_snapshot')	
 			});
@@ -301,6 +326,7 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 	// recompute difference
 	$.ajax({
 		type: 'POST',
+		headers: {"X-CSRFToken": csrftoken},
 		url: '/snapshot/compare/compute/' + snapshotId + '/',
 		async: false	
 	});
