@@ -31,6 +31,7 @@ from snapshotServer.views.TestResultView import TestResultView
 
 from commonsServer.views.viewsets import ApplicationViewSet
 from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
@@ -54,7 +55,8 @@ urlpatterns = [
     url(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
     url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
-    url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', xframe_options_exempt(StepListView.as_view()), name="steplistView"), 
+    # force view to set CSRF cookie so that editing exclusion zones do not fail 
+    url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', ensure_csrf_cookie(xframe_options_exempt(StepListView.as_view())), name="steplistView"), 
     url(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
     url(r'^compare/excludeList/(?P<ref_snapshot_id>[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
