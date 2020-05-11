@@ -167,7 +167,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
-if ("${security.api}"):
+# whether to enable security of API / GUI
+SECURITY_ENABLED = "${security.api}"
+
+if (SECURITY_ENABLED):
     REST_FRAMEWORK = {
         # Use Django's standard `django.contrib.auth` permissions,
         'DEFAULT_PERMISSION_CLASSES': [

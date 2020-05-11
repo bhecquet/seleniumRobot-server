@@ -8,7 +8,7 @@ import time
 import logging
 
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, generics
+from rest_framework import mixins, generics, permissions
 from rest_framework.exceptions import ValidationError
 
 from variableServer.models import Variable, TestEnvironment, Version, TestCase
@@ -25,7 +25,10 @@ logger = logging.getLogger(__name__)
 
 class Ping(APIView):
     
+    # allow anyone on this view
     queryset = Variable.objects.none()
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
     
     def get(self, request, *args, **kwargs):
         return Response("OK")

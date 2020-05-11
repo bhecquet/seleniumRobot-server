@@ -10,9 +10,10 @@ from django.http.response import HttpResponse
 from django.views.generic.base import View
 
 from snapshotServer.models import TestCaseInSession, Snapshot
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class TestStatusView(View):
+class TestStatusView(LoginRequiredMixinConditional, View):
     
     
     queryset = TestCaseInSession.objects.none()

@@ -1,9 +1,10 @@
 from django.views.generic.list import ListView
 from snapshotServer.models import Version
 from django.shortcuts import render, redirect
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class ApplicationVersionListView(ListView):
+class ApplicationVersionListView(LoginRequiredMixinConditional, ListView):
     """
     View displaying the application / version list and entry point for snapshot view or test result view
     """

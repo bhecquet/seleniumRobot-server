@@ -8,9 +8,10 @@ from django.views.generic.base import View
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class RecomputeDiffView(View):
+class RecomputeDiffView(LoginRequiredMixinConditional, View):
     """
     API to compute diff from a REST request
     Called when changes has been applied to the list of exclude zones in step snapshot
@@ -20,15 +21,15 @@ class RecomputeDiffView(View):
     
     def post(self, request, *args, **kwargs):
         try:
-            stepSnapshot = Snapshot.objects.get(pk=args[0])
+            step_snapshot = Snapshot.objects.get(pk=args[0])
             
             # compute has sense when a reference exists
-            if stepSnapshot.refSnapshot:
-                DiffComputer.computeNow(stepSnapshot.refSnapshot, stepSnapshot)
+            if step_snapshot.refSnapshot:
+                DiffComputer.computeNow(step_snapshot.refSnapshot, step_snapshot)
                 
                 # start computing differences for other snapshots sharing the same reference
-                for snap in stepSnapshot.snapshotWithSameRef():
-                    DiffComputer.addJobs(stepSnapshot.refSnapshot, snap)
+                for snap in step_snapshot.snapshotWithSameRef():
+                    DiffComputer.addJobs(step_snapshot.refSnapshot, snap)
                 
                 return HttpResponse(status=200)
             else:

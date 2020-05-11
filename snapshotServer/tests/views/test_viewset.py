@@ -8,16 +8,26 @@ import django.test
 from django.test.client import Client
 from django.contrib.auth.models import User
 import json
+from rest_framework.test import APITestCase
+from snapshotServer.tests import authenticate_test_client_for_api
 
-class test_viewset(django.test.TestCase):
+class TestViewset(APITestCase):
     fixtures = ['snapshotServer.yaml']
     
     def setUp(self):
-        self.client = Client()
-        self.user = User.objects.create_superuser('admin', 'admin@django.com', 'admin')
-        self.client.login(username='admin', password='admin')
+        authenticate_test_client_for_api(self.client)
     
-    def test_creationWhenNotExist(self):
+         
+    def test_creation_when_not_exist_no_security(self):
+        """
+        Check we cannot access API without API token
+        """
+        self.client.credentials()
+       
+        response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
+        self.assertEqual(response.status_code, 401)
+    
+    def test_creation_when_not_exist(self):
         """
         Test creation of object when it does not exist
         ex: we try to get an application, if it does not exist, it's created
@@ -27,7 +37,7 @@ class test_viewset(django.test.TestCase):
         self.assertTrue('id' in json.loads(response.content))
         self.assertEqual(json.loads(response.content)['name'], 'test')
     
-    def test_noCreationWhenExist(self):
+    def test_no_creation_when_exist(self):
         """
         Test creation of object when it does exist
         ex: we try to get an application, if it does not exist, it's created
@@ -38,7 +48,7 @@ class test_viewset(django.test.TestCase):
         self.assertEqual(json.loads(response.content)['name'], 'infotel')
         self.assertEqual(json.loads(response.content)['id'], 1)
     
-    def test_creationWhenExistWithManyToManyFields(self):
+    def test_creation_when_exist_with_many_to_many_fields(self):
         """
         New testCaseInSession should be created as it does not match any existing testCaseInSession (no test steps)
         """
@@ -47,7 +57,7 @@ class test_viewset(django.test.TestCase):
         self.assertTrue('id' in json.loads(response.content))
         self.assertNotEqual(json.loads(response.content)['id'], 1)
         
-    def test_noCreationWhenExistWithManyToManyFields(self):
+    def test_no_creation_when_exist_with_many_to_many_fields(self):
         """
         New testCaseInSession should not be created as it does match an existing testCaseInSession
         """
@@ -56,7 +66,7 @@ class test_viewset(django.test.TestCase):
         self.assertTrue('id' in json.loads(response.content))
         self.assertEqual(json.loads(response.content)['id'], 6)
         
-    def test_noCreationWhenExistWithManyToManyFieldsEmpty(self):
+    def test_no_creation_when_exist_with_many_to_many_fields_empty(self):
         """
         New session should not be created as there are not test cases
         """

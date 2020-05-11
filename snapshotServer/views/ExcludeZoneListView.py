@@ -7,10 +7,11 @@ from django.views.generic.list import ListView
 from django.db.models import Q
 
 from snapshotServer.models import ExcludeZone
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
 
-class ExclusionZoneListView(ListView):
+class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
     """
     View displaying list of exclusion zones for a picture
     """

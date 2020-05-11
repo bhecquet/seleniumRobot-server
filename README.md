@@ -105,11 +105,46 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	AUTH_LDAP_1_BIND_DN = 'CN=user,OU=branch,DC=my,DC=company,DC=com'
 	AUTH_LDAP_1_BIND_PASSWORD = 'pwd'
 	AUTH_LDAP_1_USER_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
+	AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+	AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
+	AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
+	    "is_active": (LDAPGroupQuery("CN=GROUP_USER_001,OU=Selenium,DC=my,DC=company,DC=com") |
+	                  LDAPGroupQuery("CN=GROUP_ADMIN_002,OU=Selenium,DC=my,DC=company,DC=com")),
+	    "is_staff": "CN=GROUP_USER_001,OU=Selenium,DC=my,DC=company,DC=com",
+	    "is_superuser": "CN=GROUP_ADMIN_002,OU=Selenium,DC=my,DC=company,DC=com"
+	}
 
 - to use SQLite instead of Postgre: comment the right default database in `DATABASES`
 
 
 # Usage #
+
+## Security aspects ##
+
+Before version 3.1, only variable server was secured, other accesses were open.
+Now, you can enable/disable security on API / Web views through `SECURITY_ENABLED` parameter in settings.xml.
+Set it to `True` to restrict access to API / GUI
+
+### Access with security enabled ###
+
+As setting `SECURITY_ENABLED` to `True` will restrict all accesses, you must grant some users to access the server.
+
+- execute `python manage.py fix_permissions` to create `Variable Users` and `Snapshot Users` groups
+- If using AD/LDAP authentication, authenticated users will automatically be added to the above groups
+- Else, add them manually
+- Add, as administrator an auth token to the user
+
+![](doc/images/add_token.png)
+- alternatively, you can create token through API (for example via Postman)
+![](doc/images/generate_token_postman.png)
+
+### Groups ###
+
+#### Variable Users ####
+Allow a user to add / modify variable assets, and also delete variables
+
+#### Snapshot Users ####
+Allow a user to view / add / edit snapshot comparisons
 
 ## User interface ##
 

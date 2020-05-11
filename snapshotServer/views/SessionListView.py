@@ -11,9 +11,10 @@ from django.views.generic.base import TemplateView
 from snapshotServer.models import Version, TestSession, TestEnvironment, \
     TestCaseInSession, TestCase
 from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class SessionListView(TemplateView):
+class SessionListView(LoginRequiredMixinConditional, TemplateView):
     """
     View displaying the session list depending on filters given by user
     """

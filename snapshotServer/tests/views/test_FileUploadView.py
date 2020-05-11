@@ -4,31 +4,27 @@ Created on 15 mai 2017
 @author: behe
 '''
 
+import datetime
 import os
 
-from django.contrib.auth.models import User
-import django.test
-from django.test.client import Client
 from django.urls.base import reverse
+import pytz
+from rest_framework.test import APITestCase
 
 from seleniumRobotServer.settings import MEDIA_ROOT
+from snapshotServer.tests import authenticate_test_client_for_api
 from snapshotServer.models import TestCase, TestStep, TestSession, \
-    TestEnvironment, Version, Snapshot, TestCaseInSession, Application,\
+    TestEnvironment, Version, Snapshot, TestCaseInSession, Application, \
     StepResult
-import datetime
-import pytz
 
 
-class TestFileUploadView(django.test.TestCase):
+class TestFileUploadView(APITestCase):
     fixtures = ['snapshotServer.yaml']
     
     mediaDir = MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
-        # TODO: remove admin authentication
-        self.client = Client()
-        self.user = User.objects.create_superuser('admin', 'admin@django.com', 'admin')
-        self.client.login(username='admin', password='admin')
+        authenticate_test_client_for_api(self.client)
         
         # test in a version
         self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))

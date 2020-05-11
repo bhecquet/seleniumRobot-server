@@ -6,6 +6,7 @@ from variableServer.models import Variable, Version,\
 import time
 import datetime
 from django.utils import timezone
+from variableServer.tests import authenticate_test_client
 
 from rest_framework.test import APITestCase
 
@@ -17,8 +18,18 @@ class TestApiView(APITestCase):
     fixtures = ['varServer.yaml']
 
     
+    
     def setUp(self):
-        pass
+        authenticate_test_client(self.client)
+        
+         
+    def test_ping(self):
+        """
+        Check 'ping' api can be called without security token
+        """
+        self.client.credentials()
+        response = self.client.get(reverse('variablePing'))
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
     
     def test_update_variables(self):
         """
@@ -51,6 +62,14 @@ class TestApiView(APITestCase):
             variable_dict[variable['name']] = variable
              
         return variable_dict
+     
+    def test_get_all_variables_no_security(self):
+        """
+        Check we cannot access API without API token
+        """
+        self.client.credentials()
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
      
     def test_get_all_variables(self):
         """

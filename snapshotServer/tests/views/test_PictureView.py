@@ -10,10 +10,21 @@ from django.urls.base import reverse
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestStep, ExcludeZone
 from snapshotServer.tests.views.Test_Views import TestViews
+from django.test.client import Client
 
 
 class TestPictureView(TestViews):
 
+    def test_creation_when_not_exist_no_security(self):
+        """
+        Check we cannot access view without being authenticated
+        Use an empty client (anonymous user)
+        """
+        response = Client().get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+        
+        # we should get a redirect to login page
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(response.url.startswith('/accounts/login/'))
 
     def test_pictures_exist(self):
         """
@@ -32,6 +43,7 @@ class TestPictureView(TestViews):
         Check that no error is raised when one of step / test case / session does not exist
         """
         response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 1, 'testStepId': 2}))
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['captureList']), 0, "No picture should be returned")
           
     def test_make_new_ref(self):

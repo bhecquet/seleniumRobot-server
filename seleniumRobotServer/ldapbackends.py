@@ -9,6 +9,9 @@ from django.contrib.auth.models import Group
 import logging
 
 class CommonLDAPBackend(LDAPBackend):
+    """
+    Specific backend to grant all connected users to be allowed to variables operations
+    """
     
     def authenticate_ldap_user(self, ldap_user, password):
         user = super(CommonLDAPBackend, self).authenticate_ldap_user(ldap_user, password)
@@ -16,11 +19,18 @@ class CommonLDAPBackend(LDAPBackend):
         
         if user:
             try:
-                variablesGroup = Group.objects.get(name='Variable Users')
-                variablesGroup.user_set.add(user)
+                variables_group = Group.objects.get(name='Variable Users')
+                variables_group.user_set.add(user)
                 logging.info("User %s added to group 'Variable Users'" % user.username)
             except:
                 logging.warn("Group 'Variable Users' should be created ")
+                
+            try:
+                snapshot_group = Group.objects.get(name='Snapshot Users')
+                snapshot_group.user_set.add(user)
+                logging.info("User %s added to group 'Snapshot Users'" % user.username)
+            except:
+                logging.warn("Group 'Snapshot Users' should be created ")
         
         return user
 

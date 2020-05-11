@@ -18,6 +18,7 @@ from django.conf.urls import url, include
 from django.conf.urls.static import static
 from django.contrib import admin
 from commonsServer.views.api import CustomAuthToken
+from django.urls.conf import path
 
 urlpatterns = [
     
@@ -27,6 +28,7 @@ urlpatterns = [
     url(r'^variable/', include('variableServer.urls')),
     url(r'^elementinfo/', include('elementInfoServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
+    path('accounts/', include('django.contrib.auth.urls')),
     
     # add media directory
 ] +   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

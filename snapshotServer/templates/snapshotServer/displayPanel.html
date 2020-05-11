@@ -94,6 +94,7 @@
 											<button type="submit" 
 													class="btn btn-success mt-3 mb-3" 
 													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
+													{% if not editable %}disabled{% endif %}
 													>Make reference</button>
 											<button type="button" 
 													class="btn btn-info mt-3 mb-3" 
@@ -103,6 +104,7 @@
 													class="btn btn-primary mt-3 mb-3" 
 													data-toggle="modal" 
 													data-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
+													{% if not editable %}disabled{% endif %}
 													>Edit</button>
 										{% elif namedSnapshot.stepSnapshot %}
 											<button type="button" 
@@ -111,6 +113,7 @@
 											<button type="submit" 
 													class="btn btn-primary mt-3 mb-3" 
 													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False&snapshotId={{ snapshot_id }}')"
+													{% if not editable %}disabled{% endif %}
 													>Remove this reference</button>
 										{% endif %}
 									</div>
@@ -143,9 +146,19 @@
 												</div>
 											</div>
 											<div class="modal-footer">
-												<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-												<button type="button" class="btn btn-info" onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');">Toggle differences</button>
-												<button type="submit" class="btn btn-primary" data-dismiss="modal">Save</button>
+												<button type="button" 
+														class="btn btn-secondary" 
+														data-dismiss="modal"
+														>Close</button>
+												<button type="button" 
+														class="btn btn-info" 
+														onclick="toggleElement('diff_{{testStepId}}_{{ snapshot_id }}');toggleElement('diff2_{{testStepId}}_{{ snapshot_id }}');"
+														>Toggle differences</button>
+												<button type="submit" 
+														class="btn btn-primary" 
+														data-dismiss="modal" 
+														{% if not editable %}disabled{% endif %}
+														>Save</button>
 											</div>
 										</div>
 									</div>

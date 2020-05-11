@@ -12,6 +12,7 @@ import django.test
 from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
     TestEnvironment, Version, TestCaseInSession, StepResult
+from snapshotServer.tests import authenticate_test_client_for_web_view
 import datetime
 import pytz
 
@@ -24,6 +25,7 @@ class TestViews(django.test.TestCase):
     
     def setUp(self):
         self.client = Client()
+        authenticate_test_client_for_web_view(self.client)
         
         # prepare data
         self.testCase = TestCase.objects.get(id=1)

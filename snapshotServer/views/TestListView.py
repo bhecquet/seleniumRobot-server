@@ -6,9 +6,10 @@ Created on 26 juil. 2017
 from django.views.generic.list import ListView
 
 from snapshotServer.models import TestCaseInSession
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class TestListView(ListView):
+class TestListView(LoginRequiredMixinConditional, ListView):
     """
     View displaying the list of test corresponding to a session
     """

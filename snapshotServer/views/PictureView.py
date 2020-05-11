@@ -14,9 +14,10 @@ import base64
 import sys
 import io
 from PIL import Image
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 
-class PictureView(TemplateView):
+class PictureView(LoginRequiredMixinConditional, TemplateView):
     """
     View displaying the comparison between pictures (the current and the reference)
     """
@@ -40,6 +41,9 @@ class PictureView(TemplateView):
         context['testStepName'] = step.name
         context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
         
+        # check that the user has permissions to edit exclusion zones. If not buttons will be disabled
+        context['editable'] = not self.security_enabled or (self.security_enabled and self.request.user.has_perms(['snapshotServer.add_excludezone', 'snapshotServer.change_excludezone', 'snapshotServer.delete_excludezone']))
+        
         step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
                                                stepResult__step=self.kwargs['testStepId'])
         
@@ -47,7 +51,7 @@ class PictureView(TemplateView):
             if step_snapshot:
     
                 # request should contain the snapshotId when makeRef is sent. Filter on it
-                if 'makeRef' in self.request.GET and 'snapshotId' in self.request.GET and int(self.request.GET['snapshotId']) == step_snapshot.id:
+                if 'makeRef' in self.request.GET and 'snapshotId' in self.request.GET and int(self.request.GET['snapshotId']) == step_snapshot.id and context['editable']:
 
                     if self.request.GET['makeRef'] == 'True' and step_snapshot.refSnapshot is not None:
                         previous_snapshot = step_snapshot.refSnapshot

@@ -6,8 +6,9 @@ Created on 26 juil. 2017
 from django.views.generic.list import ListView
 
 from snapshotServer.models import TestCaseInSession
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
-class StepListView(ListView):
+class StepListView(LoginRequiredMixinConditional, ListView):
     """
     View displaying the list of steps for a test case in a session
     """

@@ -10,8 +10,9 @@ from snapshotServer.views.ApplicationVersionListView import ApplicationVersionLi
 from datetime import datetime, timedelta
 from django.shortcuts import render
 import pytz
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
-class TestResultTableView(TemplateView):
+class TestResultTableView(LoginRequiredMixinConditional, TemplateView):
     """
     View displaying a table with results of all tests for the sessions selected by user
     """

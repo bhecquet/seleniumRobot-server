@@ -6,8 +6,9 @@ Created on 4 sept. 2017
 from django.views.generic.list import ListView
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot
 import json
+from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
-class TestResultView(ListView):
+class TestResultView(LoginRequiredMixinConditional, ListView):
     """
     View displaying a single test result
     """
