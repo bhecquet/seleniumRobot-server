@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework.authtoken',
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
@@ -53,7 +54,7 @@ NOSE_ARGS = [
     '--with-xunit',
     '--cover-package=snapshotServer',
     '--cover-package=variableServer',
-    '--cover-package=elementInfServer',
+    '--cover-package=elementInfoServer',
     '--cover-branches',
     '--cover-inclusive',
     '--cover-erase',
@@ -90,7 +91,7 @@ TEMPLATES = [
 
 
 AUTHENTICATION_BACKENDS = (
-    "seleniumRobotServer.ldapbackends.LDAPBackend1", #"seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3",
+    #"seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3",
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -159,9 +160,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # whether to enable security of API / GUI
-SECURITY_ENABLED = "True"
+SECURITY_WEB_ENABLED = "True"
+SECURITY_API_ENABLED = "True"
 
-if (SECURITY_ENABLED):
+if (SECURITY_API_ENABLED):
     REST_FRAMEWORK = {
         # Use Django's standard `django.contrib.auth` permissions,
         'DEFAULT_PERMISSION_CLASSES': [
@@ -261,7 +263,11 @@ LOGGING = {
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
-
+ 
+AUTH_LDAP_GLOBAL_OPTIONS = {
+    ldap.OPT_REFERRALS: 0
+}
+ 
 # first LDAP server configuration
 AUTH_LDAP_1_SERVER_URI = "ldap://mycompany.com:389"
 AUTH_LDAP_1_BIND_DN = 'CN=user,OU=ou,DC=company,DC=com'

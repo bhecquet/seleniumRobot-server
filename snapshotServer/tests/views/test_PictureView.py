@@ -11,6 +11,7 @@ from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestStep, ExcludeZone
 from snapshotServer.tests.views.Test_Views import TestViews
 from django.test.client import Client
+from django.contrib.auth.models import User
 
 
 class TestPictureView(TestViews):
@@ -26,6 +27,19 @@ class TestPictureView(TestViews):
         self.assertEqual(response.status_code, 302)
         self.assertTrue(response.url.startswith('/accounts/login/'))
 
+    def test_picture_display_for_authenticated_user_no_permission(self):
+        """
+        Check we can access view without having permission to edit it
+        """
+        client = Client()
+        user = User.objects.create_user(username='usernoperm', password='pwd')
+        client.login(username='usernoperm', password='pwd')
+        response = client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+        
+        # we should get the page, but exclude zones won't be editable
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(response.context['editable'])
+
     def test_pictures_exist(self):
         """
         Check that reference and snapshot are found and correct
@@ -37,6 +51,10 @@ class TestPictureView(TestViews):
           
         self.assertIsNone(response.context['captureList'][0]['reference'].refSnapshot)
         self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].refSnapshot)
+        
+        # we should get the page, and exclude zones should be editable
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['editable'])
           
     def test_snapshot_dont_exist(self):
         """

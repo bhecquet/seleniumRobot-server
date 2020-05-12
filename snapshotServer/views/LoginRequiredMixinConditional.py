@@ -16,7 +16,7 @@ class LoginRequiredMixinConditional(AccessMixin):
     def __init__(self, *args, **kwargs):
         
         # security is enabled by default
-        self.security_enabled = bool(getattr(settings, 'SECURITY_ENABLED', True))
+        self.security_enabled = bool(getattr(settings, 'SECURITY_WEB_ENABLED', True))
         
         super().__init__(*args, **kwargs)
     

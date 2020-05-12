@@ -59,6 +59,8 @@ NOSE_ARGS = [
     '--with-coverage',
     '--with-xunit',
     '--cover-package=snapshotServer',
+    '--cover-package=variableServer',
+    '--cover-package=elementInfoServer',
     '--cover-branches',
     '--cover-inclusive',
     '--cover-erase',
@@ -168,9 +170,10 @@ STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # whether to enable security of API / GUI
-SECURITY_ENABLED = "${security.api}"
+SECURITY_WEB_ENABLED = "${security.web}"
+SECURITY_API_ENABLED = "${security.api}"
 
-if (SECURITY_ENABLED):
+if (SECURITY_API_ENABLED):
     REST_FRAMEWORK = {
         # Use Django's standard `django.contrib.auth` permissions,
         'DEFAULT_PERMISSION_CLASSES': [
