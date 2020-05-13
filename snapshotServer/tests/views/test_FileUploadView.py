@@ -80,7 +80,7 @@ class TestFileUploadView(APITestCase):
             uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
             self.assertTrue(uploaded_snapshot.computed)
-            self.assertEquals(uploaded_snapshot.diffTolerance, 0.0)
+            self.assertEqual(uploaded_snapshot.diffTolerance, 0.0)
     
     def test_post_snapshot_no_ref_with_threshold(self):
         """
