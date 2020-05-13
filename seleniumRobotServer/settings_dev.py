@@ -29,6 +29,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 
+TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
+TEST_OUTPUT_FILE_NAME = 'unittest.xml'
 
 # Application definition
 
