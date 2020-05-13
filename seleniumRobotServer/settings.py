@@ -51,20 +51,6 @@ INSTALLED_APPS = [
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
     'elementInfoServer.app.ElementinfoserverConfig',
-    'django_nose',
-]
-
-#TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_ARGS = [
-    '--with-coverage',
-    '--with-xunit',
-    '--cover-package=snapshotServer',
-    '--cover-package=variableServer',
-    '--cover-package=elementInfoServer',
-    '--cover-branches',
-    '--cover-inclusive',
-    '--cover-erase',
-    '--cover-html',
 ]
 
 MIDDLEWARE = [
@@ -180,7 +166,8 @@ if (SECURITY_API_ENABLED):
             'rest_framework.permissions.DjangoModelPermissions'
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': [
-            'rest_framework.authentication.TokenAuthentication'
+            'rest_framework.authentication.TokenAuthentication',   # for API calls
+            'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
         ]
     }
 else:

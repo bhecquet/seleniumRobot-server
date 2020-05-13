@@ -1,0 +1,7 @@
+[run]
+branch = True
+source = commonServer,elementInfoServer,snapshotServer,variableServer,seleniumRobotServer
+command_line = manage.py test --settings seleniumRobotServer.settings_dev
+
+[html]
+directory = coverage_html_report
