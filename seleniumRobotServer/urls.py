@@ -19,6 +19,9 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from commonsServer.views.api import CustomAuthToken
 from django.urls.conf import path
+from django.contrib.auth import views
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
 urlpatterns = [
     
@@ -28,7 +31,7 @@ urlpatterns = [
     url(r'^variable/', include('variableServer.urls')),
     url(r'^elementinfo/', include('elementInfoServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
-    path('accounts/', include('django.contrib.auth.urls')),
+    path('accounts/login/', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(views.LoginView.as_view()))), name='login'),
     
     # add media directory
 ] +   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
