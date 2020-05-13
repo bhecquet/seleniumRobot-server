@@ -39,22 +39,22 @@ class PictureComparator:
         if not os.path.isfile(image):
             raise PictureComparatorError("Image file %s does not exist" % image)
         
-        referenceImg = cv2.imread(reference, 0)
-        imageImg = cv2.imread(image, 0)
-        referenceWidth, referenceHeight = referenceImg.shape[::-1]
-        imageWidth, imageHeight = imageImg.shape[::-1]
+        reference_img = cv2.imread(reference, 0)
+        image_img = cv2.imread(image, 0)
+        reference_width, reference_height = reference_img.shape[::-1]
+        image_width, image_height = image_img.shape[::-1]
         
-        if referenceWidth < imageWidth or referenceHeight < imageHeight:
+        if reference_width < image_width or reference_height < image_height:
             raise PictureComparatorError("Reference picture must be greater than image to find")
 
         method = cv2.TM_CCOEFF_NORMED
     
         # Apply template Matching
-        res = cv2.matchTemplate(referenceImg, imageImg, method)
+        res = cv2.matchTemplate(reference_img, image_img, method)
         min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
         if max_val > 0.95:
-            return Rectangle(max_loc[0], max_loc[1], imageWidth, imageHeight)
+            return Rectangle(max_loc[0], max_loc[1], image_width, image_height)
         else:
             return None
         
@@ -95,8 +95,8 @@ class PictureComparator:
         for x, y in excluded_pixels:
             diff[y][x] = 0
         
-        mat_diff = numpy.matrix(diff)
-        diff_pixels = numpy.transpose(mat_diff.nonzero());
+#         mat_diff = numpy.array(diff)
+        diff_pixels = numpy.transpose(diff.nonzero());
         
         for y, x in diff_pixels:
             pixels.append(Pixel(x, y))
