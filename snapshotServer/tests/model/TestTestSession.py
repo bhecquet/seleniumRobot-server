@@ -66,26 +66,56 @@ class TestTestSession(django.test.TestCase):
                          version=Version.objects.get(pk=1), 
                          ttl=datetime.timedelta(days=0))
         s1.save()
-        step = TestStep(name="step1")
-        step.save()
+        step1 = TestStep(name="step1")
+        step1.save()
+        step2 = TestStep(name="step2")
+        step2.save()
         tc1 = TestCase(name="case1", application=Application.objects.get(pk=1))
         tc1.save()
         tcs1 = TestCaseInSession(testCase=tc1, session=s1)
         tcs1.save()
-        tcs1.testSteps.set([step])
+        tcs1.testSteps.set([step1])
         tcs1.save()
-        tsr1 = StepResult(step=step, testCase=tcs1, result=True)
+        tsr1 = StepResult(step=step1, testCase=tcs1, result=True)
         tsr1.save()
+        tsr2 = StepResult(step=step2, testCase=tcs1, result=True)
+        tsr2.save()
         
         # add a snapshot without reference => its a reference itself
         sn1 = Snapshot(stepResult=tsr1, image=None, refSnapshot=None, pixelsDiff=None)
         sn1.save()
+        sn2 = Snapshot(stepResult=tsr2, image=None, refSnapshot=sn1, pixelsDiff=None)
+        sn2.save()
         
         s1.ttl = datetime.timedelta(days=3)
         s1.save()
         
-        # session should not be deleted
+        # old session without reference
+        s2 = TestSession(sessionId="1235", 
+                         date=timezone.now() - datetime.timedelta(days=4), 
+                         browser="firefox", 
+                         environment=TestEnvironment.objects.get(pk=1), 
+                         version=Version.objects.get(pk=1), 
+                         ttl=datetime.timedelta(days=0))
+        s2.save()
+        tcs2 = TestCaseInSession(testCase=tc1, session=s2)
+        tcs2.save()
+        tcs2.testSteps.set([step1])
+        tcs2.save()
+        tsr2 = StepResult(step=step1, testCase=tcs2, result=True)
+        tsr2.save()
+        
+        # add a snapshot with reference
+        sn2 = Snapshot(stepResult=tsr2, image=None, refSnapshot=sn1, pixelsDiff=None)
+        sn2.save()
+        s2.ttl = datetime.timedelta(days=3)
+        s2.save()
+        
+        # session1 should not be deleted
         TestSession.objects.get(pk=s1.id)
+        
+        # session2 should  be deleted
+        self.assertRaises(TestSession.DoesNotExist, TestSession.objects.get, pk=s2.id)
 
     def test_delete_old_sessions_with_no_reference(self):
         """
