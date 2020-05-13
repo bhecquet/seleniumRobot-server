@@ -16,16 +16,16 @@ class ApplicationVersionListView(LoginRequiredMixinConditional, ListView):
         return Version.objects.all()
 
     
-    def post(self, request):
+    def get(self, request):
         try:
-            Version.objects.get(pk=request.POST.get('application'))
+            Version.objects.get(pk=request.GET.get('application'))
         except:
             return render(request, self.template_name, {'error': "Application version %s does not exist" % request.POST.get('application'),
                                                            'object_list': self.get_queryset()})
 
-        displayType = request.POST.get('display')
+        display_type = request.GET.get('display')
 
-        if displayType == 'snapshot':
-            return redirect('sessionListView', request.POST.get('application'))
+        if display_type == 'snapshot':
+            return redirect('sessionListView', request.GET.get('application'))
         else:
-            return redirect('testResultTableView', request.POST.get('application'))
+            return redirect('testResultTableView', request.GET.get('application'))
