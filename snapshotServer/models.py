@@ -148,10 +148,10 @@ class TestSession(models.Model):
         
         # search all sessions whose date is older than defined 'ttl' (ttl > 0)
         # do not select sessions whose snapshot number is > 0 and reference snapshot number is > 0
-        for session in TestSession.objects.annotate(snapshot_number=Count('testcaseinsession__stepresult__snapshots')) \
-                                            .filter(ttl__gt=datetime.timedelta(days=0), 
-                                                  date__lt=timezone.now() - F('ttl')) \
-                                            .exclude(~Q(snapshot_number=0) & Q(testcaseinsession__stepresult__snapshots__refSnapshot=None)):
+        # a sub query is used because we need 'inner join' when filtering and django creates 'left outer join' which gets more than necessary
+        for session in TestSession.objects.filter(ttl__gt=datetime.timedelta(days=0), 
+                                                  date__lt=timezone.now() - F('ttl'))\
+                                            .exclude(id__in=[s.stepResult.testCase.session.id for s in Snapshot.objects.filter(refSnapshot=None).select_related('stepResult__testCase__session')]).distinct():
             logging.info("deleting session {}-{} of the {}".format(session.id, str(session), session.date))
             session.delete()
         
