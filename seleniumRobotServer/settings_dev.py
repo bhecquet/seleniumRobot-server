@@ -59,6 +59,11 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# both settings are needed to allow viewing test results from seleniumRobot HTML file. Else session and CSRF cookies are not set
+CSRF_COOKIE_SAMESITE = None
+SESSION_COOKIE_SAMESITE = None
+# CSRF_COOKIE_SECURE = True  # may be needed when site is exposed in HTTPS
+
 ROOT_URLCONF = 'seleniumRobotServer.urls'
 
 TEMPLATES = [
