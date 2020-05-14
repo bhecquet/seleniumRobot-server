@@ -33,6 +33,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	LoadFile "<path_to_python_dll>"
 	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp36-win32.pyd"
 	WSGIPythonHome "<python_dir>"
+	WSGIApplicationGroup %{GLOBAL}
 	
 	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
 	WSGIPythonPath <path_to_selenium_server>
@@ -54,6 +55,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	Require all granted
 	</Directory>
     
+[https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API](https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API) explains why `WSGIApplicationGroup %{GLOBAL}` is mandatory for running OpenCV inside apache server WSGI. (Else image loading hangs).
     
 ## Linux (RHE) ##
 - Install python 3 >= 3.6
