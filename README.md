@@ -44,18 +44,20 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	</Files>
 	</Directory>
 	
-	Alias /media/ <path_to_selenium_server>/media/
+	Alias /media/ <path_to_selenium_server_data>/media/
 	Alias /static/ <path_to_selenium_server>/static/
 	
 	<Directory "<path_to_selenium_server>/static">
 	Require all granted
 	</Directory>
 	
-	<Directory "<path_to_selenium_server>/media">
+	<Directory "<path_to_selenium_server_data>/media">
 	Require all granted
 	</Directory>
     
 [https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API](https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API) explains why `WSGIApplicationGroup %{GLOBAL}` is mandatory for running OpenCV inside apache server WSGI. (Else image loading hangs).
+
+**Warning** In the above apache configuration, `<path_to_selenium_server_data>` may or may not be identical to `<path_to_selenium_server>` but MUST be the same as `${data.dir}` setting in settings.py file
     
 ## Linux (RHE) ##
 - Install python 3 >= 3.6
