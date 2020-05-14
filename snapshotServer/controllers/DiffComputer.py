@@ -3,7 +3,6 @@ Created on 15 mai 2017
 
 @author: bhecquet
 '''
-from asyncio.log import logger
 import pickle
 import threading
 import time
@@ -16,7 +15,8 @@ from snapshotServer.exceptions.PictureComparatorError import PictureComparatorEr
 from snapshotServer.models import ExcludeZone
 from PIL import Image, ImageDraw
 import io
-
+import logging
+logger = logging.getLogger(__name__)
 
 class DiffComputer(threading.Thread):
     """
