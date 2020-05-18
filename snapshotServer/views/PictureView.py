@@ -54,7 +54,7 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
             context['editButtonText'] = "You don't have right to edit"
         
         step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
-                                               stepResult__step=self.kwargs['testStepId'])
+                                               stepResult__step=self.kwargs['testStepId']).order_by('id')
         
         for step_snapshot in step_snapshots:
             if step_snapshot:
