@@ -104,6 +104,9 @@
 													class="btn btn-primary mt-3 mb-3" 
 													data-toggle="modal" 
 													data-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
+													data-toggle="tooltip" 
+													data-placement="top" 
+													title="{{ editButtonText }}"
 													{% if not editable %}disabled{% endif %}
 													>Edit</button>
 										{% elif namedSnapshot.stepSnapshot %}

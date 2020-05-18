@@ -42,7 +42,16 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
         context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
         
         # check that the user has permissions to edit exclusion zones. If not buttons will be disabled
-        context['editable'] = not self.security_enabled or (self.security_enabled and self.request.user.has_perms(['snapshotServer.add_excludezone', 'snapshotServer.change_excludezone', 'snapshotServer.delete_excludezone']))
+        authenticated_to_edit = not self.security_api_enabled or (self.security_api_enabled and self.request.user.is_authenticated)
+        allowed_to_edit = not self.security_enabled or (self.security_enabled and self.request.user.has_perms(['snapshotServer.add_excludezone', 'snapshotServer.change_excludezone', 'snapshotServer.delete_excludezone']))
+        
+        context['editable'] = authenticated_to_edit and allowed_to_edit
+        if context['editable']:
+            context['editButtonText'] = 'Edit'
+        elif not authenticated_to_edit:
+            context['editButtonText'] = 'You must log in to edit.'
+        elif not allowed_to_edit:
+            context['editButtonText'] = "You don't have right to edit"
         
         step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'], 
                                                stepResult__step=self.kwargs['testStepId'])
