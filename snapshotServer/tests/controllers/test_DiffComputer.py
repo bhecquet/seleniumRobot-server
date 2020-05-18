@@ -11,15 +11,15 @@ from unittest.mock import MagicMock, patch
 from django.core.files.images import ImageFile
 import django.test
 
-from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, StepResult, ExcludeZone
+from django.conf import settings
 
 
 class TestDiffComputer(django.test.TestCase):
     
     fixtures = ['snapshotServer.yaml']
-    mediaDir = MEDIA_ROOT + os.sep + 'documents'
+    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
  
     def tearDown(self):
         DiffComputer.stopThread()

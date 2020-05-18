@@ -9,19 +9,20 @@ import os
 from django.test import Client
 import django.test
 
-from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
     TestEnvironment, Version, TestCaseInSession, StepResult
 from snapshotServer.tests import authenticate_test_client_for_web_view
 import datetime
 import pytz
 
+from django.conf import settings
+
 
 class TestViews(django.test.TestCase):
     
     fixtures = ['snapshotServer.yaml']
     dataDir = 'snapshotServer/tests/data/'
-    mediaDir = MEDIA_ROOT + os.sep + 'documents'
+    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         self.client = Client()

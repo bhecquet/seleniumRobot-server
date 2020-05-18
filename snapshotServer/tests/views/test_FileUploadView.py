@@ -11,17 +11,17 @@ from django.urls.base import reverse
 import pytz
 from rest_framework.test import APITestCase
 
-from seleniumRobotServer.settings import MEDIA_ROOT
 from snapshotServer.tests import authenticate_test_client_for_api
 from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, Snapshot, TestCaseInSession, Application, \
     StepResult
 
+from django.conf import settings
 
 class TestFileUploadView(APITestCase):
     fixtures = ['snapshotServer.yaml']
     
-    mediaDir = MEDIA_ROOT + os.sep + 'documents'
+    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         authenticate_test_client_for_api(self.client)
