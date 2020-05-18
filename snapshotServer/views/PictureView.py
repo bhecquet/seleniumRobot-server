@@ -15,6 +15,8 @@ import sys
 import io
 from PIL import Image
 from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+import os
+from django.conf import settings
 
 
 class PictureView(LoginRequiredMixinConditional, TemplateView):
@@ -109,7 +111,14 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                 # extract difference pixel. Recompute in case this step is no more a reference
                 diff_pixels_bin = step_snapshot.pixelsDiff
                 
-                if diff_pixels_bin:
+                if os.path.isfile(settings.MEDIA_ROOT + os.sep + step_snapshot.image.name):
+                    snapshot_width = step_snapshot.image.width
+                    snapshot_height = step_snapshot.image.height
+                else:
+                    snapshot_height = 0
+                    snapshot_width = 0
+                
+                if diff_pixels_bin and snapshot_width and snapshot_height:
                     try:
                         diff_pixels = pickle.loads(diff_pixels_bin)
                         diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
@@ -137,6 +146,8 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                 'name': step_snapshot.name,
                 'reference': ref_snapshot,
                 'stepSnapshot': step_snapshot,
+                'width': snapshot_width,
+                'height': snapshot_height,
                 'diffB64': diff_picture,
                 'diffPercentage': diff_pixels_percentage
                 }

@@ -85,8 +85,8 @@
 									{% endif %}
 									<div id="canvasStatic_{{testStepId}}_{{ snapshot_id }}" 
 										class="diffCanvas" 
-										width="{{ namedSnapshot.stepSnapshot.image.width }}" 
-										height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+										width="{{ namedSnapshot.width }}" 
+										height="{{ namedSnapshot.height }}" 
 										style="z-index: 10; width: inherit;">
 									</div>
 									<div class="btn-group">
@@ -140,8 +140,8 @@
 													{% endif %}
 													<div id="canvas_{{testStepId}}_{{ snapshot_id }}"
 														class="diffCanvas"  
-														width="{{ namedSnapshot.stepSnapshot.image.width }}" 
-														height="{{ namedSnapshot.stepSnapshot.image.height }}" 
+														width="{{ namedSnapshot.width }}" 
+														height="{{ namedSnapshot.height }}" 
 														style="z-index: 10; width: inherit;">
 													</div>
 												</div>
