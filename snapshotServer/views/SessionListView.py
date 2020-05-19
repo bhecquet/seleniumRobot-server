@@ -33,7 +33,7 @@ class SessionListView(LoginRequiredMixinConditional, TemplateView):
         
         context = super(SessionListView, self).get_context_data(**kwargs)
         
-        sessions = TestSession.objects.filter(version=self.kwargs['version_id'], compareSnapshot=True)
+        sessions = TestSession.objects.filter(version=self.kwargs['version_id'], compareSnapshot=True).order_by('-id')
         
         context['environments'] = TestEnvironment.objects.all()
         context['selectedEnvironments'] = TestEnvironment.objects.filter(pk__in=[int(e) for e in self.request.GET.getlist('environment')])

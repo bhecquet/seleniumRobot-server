@@ -17,8 +17,8 @@ class TestListView(LoginRequiredMixinConditional, ListView):
     template_name = "snapshotServer/testList.html"
     
     def get_queryset(self):
-        testCases = TestCaseInSession.objects.filter(session=self.kwargs['sessionId'])
-        return dict([(t, t.isOkWithSnapshots()) for t in testCases])
+        test_cases = TestCaseInSession.objects.filter(session=self.kwargs['sessionId']).order_by('id')
+        return dict([(t, t.isOkWithSnapshots()) for t in test_cases])
     
     def get_context_data(self, **kwargs):
         context = super(TestListView, self).get_context_data(**kwargs)

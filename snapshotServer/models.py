@@ -37,6 +37,7 @@ class TestCaseInSession(models.Model):
     session = models.ForeignKey('TestSession', on_delete=models.CASCADE)
     testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     stacktrace = models.TextField(null=True)
+    name = models.CharField(max_length=100, null=True)
     
     def isOkWithSnapshots(self):
         """
@@ -84,7 +85,10 @@ class TestCaseInSession(models.Model):
         return True
     
     def __str__(self):
-        return "%s - %s" % (self.testCase.name, self.session.version.name)
+        if self.name:
+            return "%s - %s" % (self.name, self.session.version.name)
+        else:
+            return "%s - %s" % (self.testCase.name, self.session.version.name)
     
 class TestStep(models.Model):
     __test__= False  # avoid detecting it as a test class
