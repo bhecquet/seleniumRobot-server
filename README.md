@@ -27,7 +27,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
-- configure Apache server with
+- configure Apache server (example on Windows without HTTPS)
 
 
 	LoadFile "<path_to_python_dll>"
@@ -39,21 +39,70 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	WSGIPythonPath <path_to_selenium_server>
 	
 	<Directory "<path_to_selenium_server>/seleniumRobotServer">
-	<Files wsgi.py>
-	Require all granted 	
-	</Files>
+		<Files wsgi.py>
+			Require all granted 	
+		</Files>
 	</Directory>
 	
 	Alias /media/ <path_to_selenium_server_data>/media/
 	Alias /static/ <path_to_selenium_server>/static/
 	
 	<Directory "<path_to_selenium_server>/static">
-	Require all granted
+		Require all granted
 	</Directory>
 	
 	<Directory "<path_to_selenium_server_data>/media">
-	Require all granted
+		Require all granted
 	</Directory>
+	
+- If HTTPS is necessary, assuming a virtualenv is created inside <path_to_selenium_server>
+
+	WSGIPythonHome "<path_to_selenium_server>/venv"
+	WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.6/site-packages/:<path_to_selenium_server>
+	
+	<VirtualHost *:80>
+	  ServerName seleniumRobotServer
+	
+	  RewriteEngine On
+	    RewriteCond %{SERVER_PORT} !^443$
+	    RewriteRule ^(.*)$ https://%{HTTP_HOST}$1 [R=308,L]
+	
+	</VirtualHost>
+	
+	<VirtualHost *:443>
+		ServerName seleniumRobotServer
+		LoadFile "<path_to_python>/libpython3.so"
+		LoadModule wsgi_module "<path_to>/mod_rh-python36-wsgi.so"
+		
+		WSGIPassAuthorization On
+		WSGIApplicationGroup %{GLOBAL}
+		
+		WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
+		
+		<Directory "<path_to_selenium_server>/seleniumRobotServer">
+			<Files wsgi.py>
+				Require all granted
+			</Files>
+		</Directory>
+		
+		Alias /media/ <path_to_selenium_server_data>/media/
+		Alias /static/ <path_to_selenium_server>/static/
+		
+		<Directory "<path_to_selenium_server>/static">
+			Require all granted
+		</Directory>
+		
+		<Directory "<path_to_selenium_server_data>/media">
+			Require all granted
+		</Directory>
+	
+		SSLEngine on
+		SSLCertificateFile <path_to_selenium_server>/ssl/selenium-server.crt
+		SSLCertificateKeyFile <path_to_selenium_server>/ssl/selenium-server.key
+		SSLCACertificateFile <path_to_selenium_server>/ssl/CA_selenium-server.cer
+	
+	</VirtualHost>
+	
     
 [https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API](https://code.google.com/archive/p/modwsgi/wikis/ApplicationIssues.wiki#Python_Simplified_GIL_State_API) explains why `WSGIApplicationGroup %{GLOBAL}` is mandatory for running OpenCV inside apache server WSGI. (Else image loading hangs).
 
