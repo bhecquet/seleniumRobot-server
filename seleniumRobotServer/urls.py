@@ -22,7 +22,6 @@ from django.urls.conf import path
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
-from adminSite.admin import admin_site
 from commonsServer.views.api import CustomAuthToken
 
 
