@@ -286,8 +286,9 @@ AUTH_LDAP_1_USER_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(${lda
 AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
-    "is_active": (LDAPGroupQuery("${ldap.group.admin}") |
-                  LDAPGroupQuery("${ldap.group.edit}")),
+# authenticated users will be active
+#     "is_active": (LDAPGroupQuery("${ldap.group.admin}") |
+#                   LDAPGroupQuery("${ldap.group.edit}")),
     "is_staff": "${ldap.group.edit}",
     "is_superuser": "${ldap.group.admin}"
 }
@@ -300,8 +301,9 @@ AUTH_LDAP_2_USER_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(${l
 AUTH_LDAP_2_GROUP_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_2_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_2_USER_FLAGS_BY_GROUP = {
-    "is_active": (LDAPGroupQuery("${ldap.2.group.admin}") |
-                  LDAPGroupQuery("${ldap.2.group.edit}")),
+# authenticated users will be active
+#     "is_active": (LDAPGroupQuery("${ldap.2.group.admin}") |
+#                   LDAPGroupQuery("${ldap.2.group.edit}")),
     "is_staff": "${ldap.2.group.edit}",
     "is_superuser": "${ldap.2.group.admin}"
 }
@@ -314,8 +316,9 @@ AUTH_LDAP_3_USER_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(${l
 AUTH_LDAP_3_GROUP_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_3_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_3_USER_FLAGS_BY_GROUP = {
-    "is_active": (LDAPGroupQuery("${ldap.3.group.admin}") |
-                  LDAPGroupQuery("${ldap.3.group.edit}")),
+# authenticated users will be active
+#     "is_active": (LDAPGroupQuery("${ldap.3.group.admin}") |
+#                   LDAPGroupQuery("${ldap.3.group.edit}")),
     "is_staff": "${ldap.3.group.edit}",
     "is_superuser": "${ldap.3.group.admin}"
 }

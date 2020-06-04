@@ -175,15 +175,15 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 ## Security aspects ##
 
 Before version 3.1, only variable server was secured, other accesses were open.
-Now, you can enable/disable security on API / Web views through `SECURITY_ENABLED` parameter in settings.xml.
+Now, you can enable/disable security on API / Web views through `SECURITY_API_ENABLED` and `SECURITY_WEB_ENABLED` parameter in settings.py.
 Set it to `True` to restrict access to API / GUI
 
 ### Access with security enabled ###
 
-As setting `SECURITY_ENABLED` to `True` will restrict all accesses, you must grant some users to access the server.
+As setting `SECURITY_WEB_ENABLED` and `SECURITY_API_ENABLED` to `True` will restrict all accesses, you must grant some users to access the server.
 
 - execute `python manage.py fix_permissions` to create `Variable Users` and `Snapshot Users` groups
-- If using AD/LDAP authentication, authenticated users will automatically be added to the above groups
+- If using AD/LDAP authentication or OpenID, authenticated users will automatically be added to the above groups
 - Else, add them manually
 - Add, as administrator an auth token to the user
 

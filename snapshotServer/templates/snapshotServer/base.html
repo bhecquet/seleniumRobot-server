@@ -6,9 +6,19 @@
 		
 	</head>
 	<body>
-		
-		<div class="col-sm-12" style="background-color:#00888d">
-			<div id="error">{{ error }}&nbsp;</div>
+		<div class="row">
+			<div class="col-sm-11" style="background-color:#00888d">
+				<div id="error">{{ error }}&nbsp;</div>
+			</div>
+			<div class="col-sm-1" style="background-color:#00888d">
+				{% if user.is_authenticated %}
+					<form action="{% url 'oidc_logout' %}" method="post">{% csrf_token %}
+				       <input type="submit" value="logout">
+				    </form>
+				{% else %}
+					Anonymous
+				{% endif %}
+			</div>
 		</div>
 	
 	

@@ -10,3 +10,4 @@ unittest-xml-reporting==3.0.2
 coverage==5.1
 https://download.lfd.uci.edu/pythonlibs/s2jqpv5t/python_ldap-3.2.0-cp36-cp36m-win_amd64.whl; platform_system == 'Windows'
 django_auth_ldap==2.1.1
+mozilla-django-oidc==1.2.3
