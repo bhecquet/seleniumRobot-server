@@ -41,6 +41,7 @@ ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'mozilla_django_oidc',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
@@ -89,6 +90,8 @@ TEMPLATES = [
 AUTHENTICATION_BACKENDS = (
     "${ldap.backends}",
     'django.contrib.auth.backends.ModelBackend',
+#     'seleniumRobotServer.openidbackend.NameOIDCAB',
+#     'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
     )
 
 WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
@@ -267,12 +270,39 @@ LOGGING = {
             'level': 'DEBUG',
             'handlers': ['console', 'development_logfile'],
         },
+        'mozilla_django_oidc': {
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        },
     }
 }
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
+ 
+
+# -------- OpenID Authentication -----------------
+OIDC_RP_CLIENT_ID = '${openid.clientid}'
+OIDC_RP_CLIENT_SECRET = '${openid.secret}'
+OIDC_OP_AUTHORIZATION_ENDPOINT = "${openid.authorization}"
+OIDC_OP_TOKEN_ENDPOINT = "${openid.token}"
+OIDC_OP_USER_ENDPOINT = "${openid.userinfo}"
+OIDC_RP_SIGN_ALGO = "RS256"
+OIDC_RP_SCOPES = "sub" # may not be necessary if email is provided
+OIDC_USE_NONCE = False # may be set to True if needed
+OIDC_RP_IDP_KEYFILE = '${openid.keyfile}' # pem file to read public key from. Only necessary for RS256 algo
+if os.path.isfile(OIDC_RP_IDP_KEYFILE):
+    with(open(OIDC_RP_IDP_KEYFILE)) as keyfile:
+        OIDC_RP_IDP_SIGN_KEY = keyfile.read()
+
+LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
+LOGIN_REDIRECT_URL = "/snapshot/"
+LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"
+
+# to use in conjunction with 'NameOIDCAB' backend
+OIDC_IS_STAFF_GROUP_NAMES = ['${openid.groups.isstaff}']
+OIDC_IS_SUPERUSER_GROUP_NAMES = ['${openid.groups.issuperuser}']
  
 AUTH_LDAP_GLOBAL_OPTIONS = {
     ldap.OPT_REFERRALS: 0
