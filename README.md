@@ -151,8 +151,15 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 
 # Configuration # 
 
-- change settings accordingly into settings.py (replace `${var}` variables)
-- to use AD/LDAP authentication, uncomment `AUTHENTICATION_BACKENDS = ("seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3", 'django.contrib.auth.backends.ModelBackend',)` and configure LDAP (the example above uses 3 LDAP so you will have 3 sets of variables) values
+change settings accordingly into settings.py (replace `${var}` variables)
+
+## Authentication ##
+
+### AD / LDAP ###
+to use AD/LDAP authentication, in `AUTHENTICATION_BACKENDS`, 
+
+- replace `${auth.backends}` by `seleniumRobotServer.ldapbackends.LDAPBackend1`
+- configure the LDAP Authentication part
 
 	AUTH_LDAP_1_SERVER_URI = "ldap://my.company.com:389"
 	AUTH_LDAP_1_BIND_DN = 'CN=user,OU=branch,DC=my,DC=company,DC=com'
@@ -167,7 +174,47 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	    "is_superuser": "CN=GROUP_ADMIN_002,OU=Selenium,DC=my,DC=company,DC=com"
 	}
 
-- to use SQLite instead of Postgre: comment the right default database in `DATABASES`
+if you have several LDAP configuration, replace `${ldap.backends}` by `seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3` 
+You will also have to configure the 2 remaining LDAP `AUTH_LDAP_2_xxx` and `AUTH_LDAP_3_xxx` sets of variables
+
+Setting the following only allow users belonging to the 2 groups to be considered as active. If you remove it, all authenticated user will be active.
+
+	"is_active": (LDAPGroupQuery("CN=GROUP_USER_001,OU=Selenium,DC=my,DC=company,DC=com") |
+	                  LDAPGroupQuery("CN=GROUP_ADMIN_002,OU=Selenium,DC=my,DC=company,DC=com")),
+
+For more details about configuration refer to [https://django-auth-ldap.readthedocs.io/en/latest/](https://django-auth-ldap.readthedocs.io/en/latest/)
+
+### OpenID configuration ###
+
+You can activate it by
+
+- replacing `${auth.backends}` by  `mozilla_django_oidc.auth.OIDCAuthenticationBackend` (default behaviour, based on email) or `seleniumRobotServer.openidbackend.NameOIDCAB` (behaviour based on 'sub' / username). This backend also automatically configures access rights based on groups declared in 'acr' userinfo returned by openid server.
+- configure OpenID configuration part
+
+	OIDC_RP_CLIENT_ID = 'seleniumserver'
+	OIDC_RP_CLIENT_SECRET = 'secret'
+	OIDC_OP_AUTHORIZATION_ENDPOINT = "https://endpoint/oauth2/authorization"
+	OIDC_OP_TOKEN_ENDPOINT = "https://endpoint/oauth2/token"
+	OIDC_OP_USER_ENDPOINT = "https://endpoint/oauth2/userInfo"
+	OIDC_RP_SIGN_ALGO = "RS256"
+	OIDC_RP_SCOPES = "sub" # may not be necessary if email is provided
+	OIDC_USE_NONCE = False # may be set to True if needed
+	OIDC_RP_IDP_KEYFILE = 'key.pem' # pem file to read public key from. Only necessary for RS256 algo
+	if os.path.isfile(OIDC_RP_IDP_KEYFILE):
+	    with(open(OIDC_RP_IDP_KEYFILE)) as keyfile:
+	        OIDC_RP_IDP_SIGN_KEY = keyfile.read()
+	
+	LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
+	LOGIN_REDIRECT_URL = "/snapshot/"
+	LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"
+
+	# to use in conjunction with 'NameOIDCAB' backend
+	OIDC_IS_STAFF_GROUP_NAMES = ['User']
+	OIDC_IS_SUPERUSER_GROUP_NAMES = ['Admin']
+	
+
+## Database ##
+to use SQLite instead of Postgre: comment the right default database in `DATABASES`
 
 
 # Usage #
