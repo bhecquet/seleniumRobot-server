@@ -88,7 +88,7 @@ TEMPLATES = [
 ]
 
 AUTHENTICATION_BACKENDS = (
-    "${ldap.backends}",
+    "${auth.backends}",
     'django.contrib.auth.backends.ModelBackend',
 #     'seleniumRobotServer.openidbackend.NameOIDCAB',
 #     'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
@@ -300,10 +300,11 @@ LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
 LOGIN_REDIRECT_URL = "/snapshot/"
 LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"
 
-# to use in conjunction with 'NameOIDCAB' backend
+# to use in conjunction with 'NameOIDCAB' backend. Set at least one group for each variable as this is the only way to have administrator (except local database)
 OIDC_IS_STAFF_GROUP_NAMES = ['${openid.groups.isstaff}']
 OIDC_IS_SUPERUSER_GROUP_NAMES = ['${openid.groups.issuperuser}']
  
+# -------- LDAP Authentication -------------------
 AUTH_LDAP_GLOBAL_OPTIONS = {
     ldap.OPT_REFERRALS: 0
 }

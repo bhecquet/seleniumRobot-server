@@ -87,7 +87,7 @@ TEMPLATES = [
 AUTHENTICATION_BACKENDS = (
     #"seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3",
     'django.contrib.auth.backends.ModelBackend',
-    'seleniumRobotServer.openidbackend.NameOIDCAB',
+#     'seleniumRobotServer.openidbackend.NameOIDCAB',
 #     'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
 )
 

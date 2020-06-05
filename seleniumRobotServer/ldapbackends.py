@@ -7,8 +7,6 @@ from django_auth_ldap.backend import LDAPBackend
 from django.contrib.auth.models import Group
 from seleniumRobotServer.CommonBackend import CommonBackend
 
-import logging
-
 class CommonLDAPBackend(LDAPBackend, CommonBackend):
     """
     Specific backend to grant all connected users to be allowed to variables operations
