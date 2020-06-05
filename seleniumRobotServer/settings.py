@@ -296,6 +296,7 @@ if os.path.isfile(OIDC_RP_IDP_KEYFILE):
     with(open(OIDC_RP_IDP_KEYFILE)) as keyfile:
         OIDC_RP_IDP_SIGN_KEY = keyfile.read()
 
+OIDC_OP_JWKS_ENDPOINT = "${openid.jwks}" # either set this or OIDC_RP_IDP_KEYFILE, not both
 LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
 LOGIN_REDIRECT_URL = "/snapshot/"
 LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"

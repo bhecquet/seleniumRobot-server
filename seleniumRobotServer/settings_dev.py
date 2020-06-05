@@ -276,10 +276,11 @@ OIDC_RP_SIGN_ALGO = "RS256"
 OIDC_RP_SCOPES = "sub" # may not be necessary if email is provided
 OIDC_USE_NONCE = False # may be set to True if needed
 OIDC_RP_IDP_KEYFILE = 'key.pem' # pem file to read public key from. Only necessary for RS256 algo
-if os.path.isfile(OIDC_RP_IDP_KEYFILE):
-    with(open(OIDC_RP_IDP_KEYFILE)) as keyfile:
-        OIDC_RP_IDP_SIGN_KEY = keyfile.read()
+# if os.path.isfile(OIDC_RP_IDP_KEYFILE):
+#     with(open(OIDC_RP_IDP_KEYFILE)) as keyfile:
+#         OIDC_RP_IDP_SIGN_KEY = keyfile.read()
 
+OIDC_OP_JWKS_ENDPOINT = 'https://endpoint/json-web-key-set' # either set this or OIDC_RP_IDP_SIGN_KEY, not both
 LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
 LOGIN_REDIRECT_URL = "/snapshot/"
 LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"
