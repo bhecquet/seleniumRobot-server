@@ -67,7 +67,7 @@ class TestEnvironment(models.Model):
 
 class TestCase(models.Model):
     __test__= False  # avoid detecting it as a test class
-    name = models.CharField(max_length=100)
+    name = models.CharField(max_length=150)
     application = models.ForeignKey(Application, related_name='testCase', on_delete=models.CASCADE)
     
     def __str__(self):
