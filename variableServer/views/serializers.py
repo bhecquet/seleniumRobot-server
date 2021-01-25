@@ -6,11 +6,18 @@ Created on 25 janv. 2017
 
 from rest_framework import serializers
 
+from django.conf import settings
+
 from variableServer.models import Variable, TestCase
+from variableServer.admin import is_user_authorized
         
 class VariableSerializer(serializers.ModelSerializer):
     
     test = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=TestCase.objects.all())
+    
+    def __init__(self, *args, **kwds):
+        super().__init__(*args, **kwds)
+        self.security_api_enabled = bool(getattr(settings, 'SECURITY_API_ENABLED', True))
     
     class Meta:
         model = Variable
@@ -26,3 +33,11 @@ class VariableSerializer(serializers.ModelSerializer):
         instance._correctReservableState()
         return instance
         
+    def to_representation(self, instance):
+        """Convert `username` to lowercase."""
+        ret = super().to_representation(instance)
+        
+        
+        if (self.security_api_enabled and not is_user_authorized(self.context['request'].user)):
+            ret['value'] = instance.valueProtected()
+        return ret

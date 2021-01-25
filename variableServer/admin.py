@@ -7,7 +7,7 @@ from django.shortcuts import render
 from variableServer.models import TestEnvironment
 from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
 
-def isUserAuthorized(user):
+def is_user_authorized(user):
     """
     Renvoie True si l'utilisateur est autorisé à voir les variables protégées
     @param user: l'utilisateur dont on vérifie les droits
@@ -103,7 +103,7 @@ class VariableForm(forms.ModelForm):
         # affichage des champs en fonction de l'utilisateur connecté
         # si un champ est protégé, la valeur ne doit être visible que de ceux qui ont la permission
         # see_protected_var
-        if self.initial.get('protected', False) and not isUserAuthorized(user):
+        if self.initial.get('protected', False) and not is_user_authorized(user):
             self.initial['value'] = "****"
             self.fields['protected'].widget = forms.HiddenInput()
             
@@ -142,7 +142,7 @@ class VariableAdmin(BaseServerModelAdmin):
     actions = ['delete_selected', 'copyTo', 'changeValuesAtOnce', 'unreserveVariable']
     
     def get_list_display(self, request):
-        if isUserAuthorized(request.user):
+        if is_user_authorized(request.user):
             return self.list_display
         else:
             return self.list_display_protected
@@ -175,7 +175,7 @@ class VariableAdmin(BaseServerModelAdmin):
             dbObj = Variable.objects.get(id=obj.id)
     
             # dans le cas où l'utilisateur n'est pas habilité à voir la variable, il ne pourra pas la modifier
-            if dbObj.protected and not isUserAuthorized(user):
+            if dbObj.protected and not is_user_authorized(user):
                 obj.protected = dbObj.protected
                 obj.value = dbObj.value
         except:

@@ -77,6 +77,22 @@
         creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 101
+
+# global protected variable
+-   fields: 
+        name: proxyPassword2
+        value: azertyuiop
+        application: null
+        version: null
+        environment: null
+        test: []
+        internal: false
+        protected: true
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 102
     
 # variable specific to an environment
 -   fields: 
