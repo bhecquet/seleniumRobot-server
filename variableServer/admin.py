@@ -382,7 +382,7 @@ class VersionAdmin(BaseServerModelAdmin):
         else:
             return (
                  (None, {
-                        'fields': ('name', 'application', 'linkedVersions'),
+                        'fields': ('name', 'application'),
                         'description': '<div style="font-size: 16px;color: red;">This version will be deleted when all linked variables will be deleted</div>'}
                   ),
                  )
