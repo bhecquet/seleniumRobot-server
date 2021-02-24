@@ -71,8 +71,7 @@ class PictureComparator:
         if not os.path.isfile(image):
             raise PictureComparatorError("Image file %s does not exist" % image)
         
-        excluded_pixels = self._buildListOfExcludedPixels(exclude_zones)
-        
+        # compute area where comparison will be done (<min_width>x<min_height>)
         reference_img = cv2.imread(reference, 0)
         image_img = cv2.imread(image, 0)
         
@@ -92,7 +91,8 @@ class PictureComparator:
         pixels = []
         
         # ignore excluded pixels
-        for x, y in excluded_pixels:
+        excluded_pixels = self._build_list_of_excluded_pixels(exclude_zones)
+        for x, y in [ep for ep in excluded_pixels if ep.x < min_width and ep.y < min_height]:
             diff[y][x] = 0
         
 #         mat_diff = numpy.array(diff)
@@ -104,20 +104,24 @@ class PictureComparator:
         # step image is taller that reference image, add missing pixels from reference
         for y in range(max(0, image_height - reference_height)):
             for x in range(image_width):
-                pixels.append(Pixel(x, y + reference_height))
+                # all excluded zones should be taken into account
+                if Pixel(x, y + reference_height) not in excluded_pixels:
+                    pixels.append(Pixel(x, y + reference_height))
         for x in range(max(0, image_width - reference_width)):
             for y in range(reference_height):
-                pixels.append(Pixel(x + reference_width, y))
+                # all excluded zones should be taken into account
+                if Pixel(x + reference_width, y) not in excluded_pixels:
+                    pixels.append(Pixel(x + reference_width, y))
             
         return pixels, len(pixels) * 100.0 / (image_height * image_width)
     
-    def _buildListOfExcludedPixels(self, excludeZones):
+    def _build_list_of_excluded_pixels(self, exclude_zones):
         """
         From the list of rectangles, build a list of pixels that these rectangles cover
         """
         
         pixels = []
-        for x, y, width, height in excludeZones:
+        for x, y, width, height in exclude_zones:
             for row in range(height):
                 for col in range(width):
                     pixels.append(Pixel(col + x, row + y))

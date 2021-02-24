@@ -85,7 +85,7 @@ class TestPictureComparator(unittest.TestCase):
          
     def test_real_diff_with_exclusion(self):
         """
-        Test that is some exclude zones are defined, and covers the diff pixels, these pixels are not
+        Test that if some exclude zones are defined, and covers the diff pixels, these pixels are not
         marked as diff
         """
         comparator = PictureComparator();
@@ -118,6 +118,49 @@ class TestPictureComparator(unittest.TestCase):
         self.assertEqual(pixels_diff_map[1174 * 58], Pixel(1170, 0)) 
         self.assertEqual(pixels_diff_map[-1], Pixel(1173, 700)) 
         self.assertEqual(len(pixels_diff_map), 70896)
+        
+    def test_compute_diff_with_cropping_on_reference_image_with_exclusions_outside_reference_height(self):
+        """
+        issue #81: check that if exclusion zones are partially ouside of reference image, computing is still done
+        test_Image1Mod2.png is 1174x759
+        test_Image1Crop.png is 1170x701
+        
+        We put an exclusion zone at Point(0x700) of 2 pixel height, so that it goes outside of test_Image1Crop.png range of 1 pixel
+        """
+        
+        comparator = PictureComparator();
+        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+                                                 self.dataDir + 'test_Image1Mod2.png',
+                                                 [Rectangle(0, 700, 1, 2)])
+        
+        self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
+        self.assertFalse(Pixel(0, 700) in pixels_diff_map) # exclusion zone inside reference area is excluded from comparison 
+        self.assertFalse(Pixel(0, 701) in pixels_diff_map) # exclusion zone outside reference area is excluded from comparison 
+        self.assertTrue(Pixel(1, 701) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
+        self.assertTrue(Pixel(0, 702) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
+        
+    def test_compute_diff_with_cropping_on_reference_image_with_exclusions_outside_reference_width(self):
+        """
+        issue #81: check that if exclusion zones are partially ouside of reference image (in width), computing is still done
+        test_Image1Mod2.png is 1174x759
+        test_Image1Crop.png is 1170x701
+        
+        We put an exclusion zone at Point(1169x700) of 2 pixel width, so that it goes outside of test_Image1Crop.png range of 1 pixel
+        
+        This checks that an exclusion zone can be set outside of reference image
+        """
+        
+        comparator = PictureComparator();
+        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+                                                 self.dataDir + 'test_Image1Mod2.png',
+                                                 [Rectangle(1169, 700, 2, 1)])
+        
+        self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
+        self.assertFalse(Pixel(1169, 700) in pixels_diff_map) # exclusion zone inside reference area is excluded from comparison 
+        self.assertFalse(Pixel(1170, 700) in pixels_diff_map) # exclusion zone outside reference area is excluded from comparison 
+        self.assertTrue(Pixel(1171, 700) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
+        self.assertTrue(Pixel(1170, 699) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
+
         
          
     def test_compute_diff_with_cropping_on_step_image(self):
