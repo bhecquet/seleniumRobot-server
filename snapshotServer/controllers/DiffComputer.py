@@ -92,7 +92,7 @@ class DiffComputer(threading.Thread):
                     try:
                         DiffComputer._computeDiff(ref_snapshot, step_snapshot)
                     except Exception as e:
-                        logger.error('Error computing snapshot: %s', str(e))
+                        logger.exception('Error computing snapshot: %s', str(e))
                 time.sleep(0.5)
         
         except Exception as e:
