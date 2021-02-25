@@ -225,7 +225,7 @@ LOGGING = {
             'formatter': 'verbose'
         },
         'production_logfile': {
-            'level': 'ERROR',
+            'level': 'INFO',
             'filters': ['require_debug_false'],
             'class': 'logging.handlers.RotatingFileHandler',
             'filename': BASE_DIR + '/log/django_production.log',
