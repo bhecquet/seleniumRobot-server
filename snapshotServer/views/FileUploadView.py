@@ -60,7 +60,7 @@ class FileUploadView(views.APIView):
                 step_snapshot.save()
                 
                 # compute difference if a reference already exist
-                DiffComputer.addJobs(most_recent_reference_snapshot, step_snapshot)
+                DiffComputer.get_instance().add_jobs(most_recent_reference_snapshot, step_snapshot)
 
             else:
                 # snapshot is marked as computed as this is a reference snapshot

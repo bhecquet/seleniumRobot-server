@@ -85,34 +85,24 @@ class PictureComparator:
             min_width = 0
         else:
             min_width = min(reference_width, image_width)
-        
+  
         diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
+        
+        # complete diff "image" to the size of step image
+        diff = numpy.pad(diff, ((0, max(0, image_height - min_height)), (0, max(0, image_width - min_width))), constant_values=1)
         
         pixels = []
         
         # ignore excluded pixels
         excluded_pixels = self._build_list_of_excluded_pixels(exclude_zones)
-        for x, y in [ep for ep in excluded_pixels if ep.x < min_width and ep.y < min_height]:
+        for x, y in [ep for ep in excluded_pixels if ep.x < image_width and ep.y < image_height]:
             diff[y][x] = 0
         
-#         mat_diff = numpy.array(diff)
         diff_pixels = numpy.transpose(diff.nonzero());
-        
+
         for y, x in diff_pixels:
             pixels.append(Pixel(x, y))
-            
-        # step image is taller that reference image, add missing pixels from reference
-        for y in range(max(0, image_height - reference_height)):
-            for x in range(image_width):
-                # all excluded zones should be taken into account
-                if Pixel(x, y + reference_height) not in excluded_pixels:
-                    pixels.append(Pixel(x, y + reference_height))
-        for x in range(max(0, image_width - reference_width)):
-            for y in range(reference_height):
-                # all excluded zones should be taken into account
-                if Pixel(x + reference_width, y) not in excluded_pixels:
-                    pixels.append(Pixel(x + reference_width, y))
-            
+
         return pixels, len(pixels) * 100.0 / (image_height * image_width)
     
     def _build_list_of_excluded_pixels(self, exclude_zones):

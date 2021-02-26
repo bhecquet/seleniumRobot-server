@@ -25,11 +25,13 @@ class RecomputeDiffView(LoginRequiredMixinConditional, View):
             
             # compute has sense when a reference exists
             if step_snapshot.refSnapshot:
-                DiffComputer.computeNow(step_snapshot.refSnapshot, step_snapshot)
+                
+                diff_computer = DiffComputer.get_instance()
+                diff_computer.compute_now(step_snapshot.refSnapshot, step_snapshot)
                 
                 # start computing differences for other snapshots sharing the same reference
                 for snap in step_snapshot.snapshotWithSameRef():
-                    DiffComputer.addJobs(step_snapshot.refSnapshot, snap)
+                    diff_computer.add_jobs(step_snapshot.refSnapshot, snap)
                 
                 return HttpResponse(status=200)
             else:

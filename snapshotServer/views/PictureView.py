@@ -72,7 +72,7 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                         
                         # Compute differences for the following snapshots as they will depend on this new ref
                         for snap in step_snapshot.snapshotsUntilNextRef(previous_snapshot):
-                            DiffComputer.addJobs(step_snapshot, snap)
+                            DiffComputer.get_instance().add_jobs(step_snapshot, snap)
                             
                         # copy exclude zones to the new ref so that they may be processed independently
                         for exclude_zone in ExcludeZone.objects.filter(snapshot=previous_snapshot):
@@ -99,12 +99,14 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                             step_snapshot.refSnapshot = ref_snapshots.last()
                             step_snapshot.save()
                             
+                            diff_computer = DiffComputer.get_instance()
+                            
                             # recompute diff pixels
-                            DiffComputer.computeNow(step_snapshot.refSnapshot, step_snapshot)
+                            diff_computer.compute_now(step_snapshot.refSnapshot, step_snapshot)
                             
                             # recompute all following snapshot as they will depend on a previous ref
                             for snap in step_snapshot.snapshotsUntilNextRef(step_snapshot):
-                                DiffComputer.addJobs(step_snapshot.refSnapshot, snap)
+                                diff_computer.add_jobs(step_snapshot.refSnapshot, snap)
         
                 ref_snapshot = step_snapshot.refSnapshot
                 
@@ -121,9 +123,9 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                 if diff_pixels_bin and snapshot_width and snapshot_height:
                     try:
                         diff_pixels = pickle.loads(diff_pixels_bin)
-                        diff_picture = base64.b64encode(DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
+                        diff_picture = base64.b64encode(DiffComputer.get_instance().mark_diff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
                         diff_pixels_percentage = 0.0
-                    except:
+                    except Exception:
 #                         diff_picture_bin
                         diff_picture = base64.b64encode(diff_pixels_bin).decode('ascii')
                         with io.BytesIO(diff_pixels_bin) as input:
