@@ -28,14 +28,13 @@ class DiffComputer(threading.Thread):
     picture_comparator = PictureComparator()
     
     @classmethod
-    def getInstance(cls):
+    def get_instance(cls):
         if not cls._instance:
             cls._instance = DiffComputer()
             cls._instance.start()
         return cls._instance
-    
-    @classmethod
-    def addJobs(cls, ref_snapshot, step_snapshot, check_test_mode=True):
+
+    def add_jobs(self, ref_snapshot, step_snapshot, check_test_mode=True):
         """
         Add a job to handle
         @param ref_snapshot: reference snapshot
@@ -47,22 +46,20 @@ class DiffComputer(threading.Thread):
         step_snapshot.save()
         
         if Tools.isTestMode() and check_test_mode:
-            cls.computeNow(ref_snapshot, step_snapshot)
+            self.compute_now(ref_snapshot, step_snapshot)
             return 
         else:
-            inst = cls.getInstance()
             DiffComputer._jobLock.acquire()
-            inst.jobs.append((ref_snapshot, step_snapshot))
+            self.jobs.append((ref_snapshot, step_snapshot))
             DiffComputer._jobLock.release()
-        
-    @classmethod
-    def computeNow(cls, ref_snapshot, step_snapshot):
+
+    def compute_now(self, ref_snapshot, step_snapshot):
         """
         Compute difference now
         @param ref_snapshot: the reference snapshot
         @param step_snapshot: the snapshot to compare to step_snapshot
         """
-        DiffComputer._computeDiff(ref_snapshot, step_snapshot)
+        self._compute_diff(ref_snapshot, step_snapshot)
         
     @classmethod
     def stopThread(cls):
@@ -90,7 +87,7 @@ class DiffComputer(threading.Thread):
 
                 for ref_snapshot, step_snapshot in tmp_jobs:
                     try:
-                        DiffComputer._computeDiff(ref_snapshot, step_snapshot)
+                        self._compute_diff(ref_snapshot, step_snapshot)
                     except Exception as e:
                         logger.exception('Error computing snapshot: %s', str(e))
                 time.sleep(0.5)
@@ -99,11 +96,14 @@ class DiffComputer(threading.Thread):
             logger.exception('Exception during computing: %s', str(e))
         
         DiffComputer._instance = None
-          
-    @staticmethod
-    def _computeDiff(ref_snapshot, step_snapshot): 
+
+    def _compute_diff(self, ref_snapshot, step_snapshot): 
+        """
+        Compare all pixels from reference snapshto and step snapshot, and store difference to database
+        """
         
         logger.info('computing') 
+        start = time.clock()
         try:
             if ref_snapshot and step_snapshot and ref_snapshot.image and step_snapshot.image:
                 
@@ -113,7 +113,7 @@ class DiffComputer(threading.Thread):
                 pixel_diffs, diff_percentage = DiffComputer.picture_comparator.getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
                 # store diff picture mask into database instead of pixels, to reduce size of stored object
-                step_snapshot.pixelsDiff = DiffComputer.markDiff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
+                step_snapshot.pixelsDiff = self.mark_diff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
                 
                 # too many pixel differences if we go over tolerance
                 step_snapshot.tooManyDiffs = step_snapshot.diffTolerance < diff_percentage
@@ -122,14 +122,23 @@ class DiffComputer(threading.Thread):
                 step_snapshot.tooManyDiffs = False
                 
             step_snapshot.refSnapshot = ref_snapshot
-            step_snapshot.computed = True
-            step_snapshot.save()
-        except PictureComparatorError as e:
+            step_snapshot.computingError = ''
+            
+        except PictureComparatorError:
             pass
-        logger.info('finished')
+        except Exception as e:
+            step_snapshot.computingError = str(e)
+        finally:
+            # issue #81: be sure step_snapshot is marked as computed so that it never remain in "computing" state
+            if step_snapshot:
+                step_snapshot.computed = True
+                step_snapshot.save()
+            logger.info('finished computing in %.2fs' % (time.clock() - start))
 
-    @staticmethod
-    def markDiff(width, height, diff_pixel):
+    def mark_diff(self, width, height, diff_pixel):
+        """
+        Save 'difference' pixels to a picture
+        """
         
 
         img = Image.new('RGBA', (width, height), (255, 0, 0, 0))

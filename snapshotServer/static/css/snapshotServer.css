@@ -187,3 +187,8 @@ body {
 	text-align: center;
 }
 
+.error-message {
+	color: red;
+	font-weight: bold;
+}
+

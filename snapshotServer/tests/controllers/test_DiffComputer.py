@@ -33,15 +33,15 @@ class TestDiffComputer(django.test.TestCase):
         Check we always have the same instance
         """
         self.assertIsNone(DiffComputer._instance)
-        inst = DiffComputer.getInstance()
+        inst = DiffComputer.get_instance()
         self.assertIsNotNone(inst, "an instance should have been created")
-        self.assertEqual(DiffComputer.getInstance(), inst, "the same instance should always be returned")
+        self.assertEqual(DiffComputer.get_instance(), inst, "the same instance should always be returned")
          
     def test_stop_thread(self):
         """
         Thread should be stopped and instance deleted
         """
-        inst = DiffComputer.getInstance()
+        inst = DiffComputer.get_instance()
         DiffComputer.stopThread()
         self.assertIsNone(DiffComputer._instance)
          
@@ -63,7 +63,7 @@ class TestDiffComputer(django.test.TestCase):
             self.assertFalse(s1.computed)
             self.assertFalse(s2.computed)
      
-            DiffComputer.getInstance().computeNow(s1, s2)
+            DiffComputer.get_instance().compute_now(s1, s2)
      
             # something has been computed
             self.assertIsNotNone(s2.pixelsDiff)
@@ -89,12 +89,15 @@ class TestDiffComputer(django.test.TestCase):
                 step_snapshot.image.save("img", img_step)
                 step_snapshot.save()
          
-                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
          
                 # something has been computed
                 self.assertIsNotNone(step_snapshot.pixelsDiff)
                 self.assertTrue(step_snapshot.tooManyDiffs)
                 self.assertEqual(step_snapshot.refSnapshot, ref_snapshot, "refSnapshot should have been updated")
+                
+                self.assertTrue(step_snapshot.computed)
+                self.assertTrue(step_snapshot.computingError == '')
          
     def test_compute_diff_with_tolerance_higher_than_difference(self):
         """
@@ -113,7 +116,7 @@ class TestDiffComputer(django.test.TestCase):
                 step_snapshot.image.save("img", img_step)
                 step_snapshot.save()
          
-                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
          
                 # something has been computed
                 self.assertIsNotNone(step_snapshot.pixelsDiff)
@@ -136,7 +139,7 @@ class TestDiffComputer(django.test.TestCase):
                 step_snapshot.image.save("img", img_step)
                 step_snapshot.save()
          
-                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
          
                 # something has been computed
                 self.assertIsNotNone(step_snapshot.pixelsDiff)
@@ -154,7 +157,7 @@ class TestDiffComputer(django.test.TestCase):
             s2.image.save("img", img)
             s2.save()
      
-            DiffComputer.getInstance().computeNow(None, s2)
+            DiffComputer.get_instance().compute_now(None, s2)
      
             # something has been computed
             self.assertIsNone(s2.pixelsDiff)
@@ -173,7 +176,7 @@ class TestDiffComputer(django.test.TestCase):
             s2.image.save("img", img)
             s2.save()
      
-            DiffComputer.getInstance().computeNow(s1, s2)
+            DiffComputer.get_instance().compute_now(s1, s2)
      
             # something has been computed
             self.assertIsNone(s2.pixelsDiff)
@@ -198,9 +201,9 @@ class TestDiffComputer(django.test.TestCase):
             s3.image.save("img", img)
             s3.save()
      
-            diff_computer = DiffComputer.getInstance()
-            diff_computer.addJobs(s1, s2, check_test_mode=False)
-            diff_computer.addJobs(s1, s3, check_test_mode=False)
+            diff_computer = DiffComputer.get_instance()
+            diff_computer.add_jobs(s1, s2, check_test_mode=False)
+            diff_computer.add_jobs(s1, s3, check_test_mode=False)
             time.sleep(1)
             diff_computer.stopThread()
              
@@ -216,12 +219,75 @@ class TestDiffComputer(django.test.TestCase):
         s1.save()
         s2 = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
         s2.save()
-        diff_computer = DiffComputer.getInstance()
-        diff_computer._computeDiff = MagicMock(side_effect=Exception("error while computing"))
-        diff_computer.addJobs(s1, s2, check_test_mode=False)
+        diff_computer = DiffComputer.get_instance()
+        diff_computer._compute_diff = MagicMock(side_effect=Exception("error while computing"))
+        diff_computer.add_jobs(s1, s2, check_test_mode=False)
         time.sleep(0.7)
         self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
          
+    def test_error_while_computing_computed_flag_set(self):
+        """
+        Check that if an error occurs during _compute_diff() method, 'computed' flag is still set to 'True' whatever the result is, and computingError is filled  
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
+            with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
+                img_reference = ImageFile(reference)
+                img_step = ImageFile(step)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img_reference)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img_step)
+                step_snapshot.save()
+
+                diff_computer = DiffComputer.get_instance()
+                diff_computer.mark_diff = MagicMock(side_effect=Exception("error while computing"))
+                diff_computer.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
+                time.sleep(2)
+                self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
+                
+                # check error has been saved
+                self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)
+                self.assertEqual(Snapshot.objects.get(id=step_snapshot.id).computingError, "error while computing")
+         
+    def test_error_message_reset(self):
+        """
+        Check that if an error occurs during _compute_diff() method, 'computed' flag is still set to 'True' whatever the result is, and 'computingError' is filled  
+        If an other computing is done, and no error occurs, then, 'computingError' is reset to an empty string
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
+            with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
+                img_reference = ImageFile(reference)
+                img_step = ImageFile(step)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img_reference)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img_step)
+                step_snapshot.save()
+
+                diff_computer = DiffComputer.get_instance()
+                diff_computer.mark_diff = MagicMock(side_effect=Exception("error while computing"))
+                diff_computer.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
+                time.sleep(1)
+                self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
+                
+                # check error has been saved
+                self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)
+                self.assertEqual(Snapshot.objects.get(id=step_snapshot.id).computingError, "error while computing")
+                
+                # check error has been removed as computing is ok
+                DiffComputer.stopThread() # reset DiffComputer instance
+                diff_computer_ok = DiffComputer.get_instance()
+                diff_computer_ok.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
+                time.sleep(1)
+                self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)
+                self.assertEqual(Snapshot.objects.get(id=step_snapshot.id).computingError, "")
+     
 
     def test_compute_using_exclude_zones_from_ref(self):
         """
@@ -243,7 +309,7 @@ class TestDiffComputer(django.test.TestCase):
                 exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=ref_snapshot)
                 exclusion1.save()
             
-                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
                 
                 # check exclude zone has been used for comparison
                 wrapped_get_changed_pixels.assert_called_with(ref_snapshot.image.path, step_snapshot.image.path, [exclusion1.toRectangle()])             
@@ -268,7 +334,7 @@ class TestDiffComputer(django.test.TestCase):
                 exclusion1 = ExcludeZone(x=0, y=0, width=10, height=10, snapshot=step_snapshot)
                 exclusion1.save()
             
-                DiffComputer.getInstance().computeNow(ref_snapshot, step_snapshot)
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
                 
                 # check exclude zone has been used for comparison
                 wrapped_get_changed_pixels.assert_called_with(ref_snapshot.image.path, step_snapshot.image.path, [exclusion1.toRectangle()])             

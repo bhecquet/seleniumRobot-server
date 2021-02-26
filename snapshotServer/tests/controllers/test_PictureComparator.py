@@ -110,13 +110,14 @@ class TestPictureComparator(unittest.TestCase):
                                                  [])
         
         # cropping on 58 lines. Check we have all points
-        self.assertEqual(pixels_diff_map[0], Pixel(0, 701))
-        self.assertEqual(pixels_diff_map[1174], Pixel(0, 702))
-        self.assertEqual(pixels_diff_map[1174 * 58 - 1], Pixel(1173, 758))
+        self.assertFalse(Pixel(0, 700) in pixels_diff_map) # last line where comparison is possible => same line
+        self.assertTrue(Pixel(0, 701) in pixels_diff_map)  # first line where step image is taller that reference on
+        self.assertTrue(Pixel(0, 702) in pixels_diff_map)
+        self.assertTrue(Pixel(1173, 758) in pixels_diff_map) # top right corner
         
         # cropping on 4 columns
-        self.assertEqual(pixels_diff_map[1174 * 58], Pixel(1170, 0)) 
-        self.assertEqual(pixels_diff_map[-1], Pixel(1173, 700)) 
+        self.assertTrue(Pixel(1170, 0) in pixels_diff_map)
+        self.assertTrue(Pixel(1173, 700) in pixels_diff_map)
         self.assertEqual(len(pixels_diff_map), 70896)
         
     def test_compute_diff_with_cropping_on_reference_image_with_exclusions_outside_reference_height(self):
@@ -161,7 +162,23 @@ class TestPictureComparator(unittest.TestCase):
         self.assertTrue(Pixel(1171, 700) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
         self.assertTrue(Pixel(1170, 699) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
 
+    def test_compute_diff_with_exclusions_outside_step_image(self):
+        """
+        issue #81: check that if exclusion zones are ouside of step image, computing is still done
+        test_Image1Mod2.png is 1174x759
+        test_Image1Crop.png is 1170x701
         
+        We put an exclusion zone at Point(0x758) of 2 pixel height, so that it goes outside of test_Image1Mod2.png range of 1 pixel
+        """
+        
+        comparator = PictureComparator();
+        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+                                                 self.dataDir + 'test_Image1Mod2.png',
+                                                 [Rectangle(0, 758, 1, 2)])
+        
+        self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
+        self.assertFalse(Pixel(0, 758) in pixels_diff_map) # exclusion zone outside reference area is excluded from comparison 
+        self.assertTrue(Pixel(0, 757) in pixels_diff_map) # this pixel is outside reference, so, there is difference on it
          
     def test_compute_diff_with_cropping_on_step_image(self):
         """

@@ -48,11 +48,15 @@
 				
 					<div class="row no-gutters header-picture">
 						<div class="header-picture mx-auto">
-							{{ namedSnapshot.name }} [diff: {{ namedSnapshot.diffPercentage|floatformat }}% 
+							{{ namedSnapshot.name }} 
 							{% if not namedSnapshot.stepSnapshot.computed %} 
-								  <span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-toggle="tooltip" title="Computing ... Reload to update"></span>
+								<span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-toggle="tooltip" title="Computing ... Reload to update"></span>
+							{% elif namedSnapshot.stepSnapshot.computed and namedSnapshot.stepSnapshot.computingError %}
+								<span class="error-message">Error while computing: {{ namedSnapshot.stepSnapshot.computingError }}</span>
+							{% else %}
+								[diff: {{ namedSnapshot.diffPercentage|floatformat }}% - allowed diff: {{ namedSnapshot.stepSnapshot.diffTolerance }}%]
 							{% endif %}
-							 - allowed diff: {{ namedSnapshot.stepSnapshot.diffTolerance }}%]
+							
 						</div>
 					</div>
 					<div class="row no-gutters body-picture">

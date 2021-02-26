@@ -414,4 +414,10 @@
         step: 1
         testCase: 10
         result: true
+-   model: snapshotServer.stepresult
+    pk: 13
+    fields: 
+        step: 2
+        testCase: 10
+        result: true
     

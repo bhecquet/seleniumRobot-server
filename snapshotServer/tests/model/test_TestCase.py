@@ -43,16 +43,100 @@ class TestTestCases(TestCase):
     
     def test_is_ok_with_all_snapshot_ok(self):
         tcs = TestCaseInSession.objects.get(pk=10)
-        s1 = StepResult.objects.get(pk=5)
-        s2 = StepResult.objects.get(pk=6)
+        st1 = StepResult.objects.get(pk=12)
+        st2 = StepResult.objects.get(pk=13)
         initial_ref_snapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s1 = Snapshot(stepResult=st1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
         s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s2 = Snapshot(stepResult=st2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
         s2.save()
         
         self.assertTrue(tcs.isOkWithSnapshots())
         
+    def test_is_ok_with_all_snapshot_ok_and_one_computing_error(self):
+        """
+        2 snapshots whose one has computing error, other is ok
+        Result is undefined, we return None
+        """
+        tcs = TestCaseInSession.objects.get(pk=10)
+        st1 = StepResult.objects.get(pk=12)
+        st2 = StepResult.objects.get(pk=13)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=st1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s1.save()
+        s2 = Snapshot(stepResult=st2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s2.computingError = 'some error'
+        s2.save()
+        
+        self.assertIsNone(tcs.isOkWithSnapshots())
+        
+    def test_is_ok_with_all_snapshot_ko_and_one_computing_error(self):
+        """
+        2 snapshots whose one has computing error, other is ko
+        Result is ko, we return False
+        """
+        tcs = TestCaseInSession.objects.get(pk=10)
+        st1 = StepResult.objects.get(pk=12)
+        st2 = StepResult.objects.get(pk=13)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=st1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1,1)]))
+        s1.save()
+        s2 = Snapshot(stepResult=st2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s2.computingError = 'some error'
+        s2.save()
+        
+        self.assertFalse(tcs.isOkWithSnapshots())
+        
+    def test_is_ok_with_all_snapshot_all_computing_error(self):
+        """
+        2 snapshots, all have computing errors
+        Result is undefined, we return None
+        """
+        tcs = TestCaseInSession.objects.get(pk=10)
+        st1 = StepResult.objects.get(pk=12)
+        st2 = StepResult.objects.get(pk=13)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=st1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s1.computingError = 'some error'
+        s1.save()
+        s2 = Snapshot(stepResult=st2, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        s2.computingError = 'some error'
+        s2.save()
+        
+        self.assertIsNone(tcs.isOkWithSnapshots())
+    
+    def test_is_ok_with_all_snapshot_ok_2(self):
+        """
+        Same as above but content of pixelDiffs is an empty list
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        s1 = StepResult.objects.get(pk=5)
+        s2 = StepResult.objects.get(pk=6)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
+        s1.save()
+        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
+        s2.save()
+        
+        self.assertTrue(tcs.isOkWithSnapshots())
+    
+    def test_is_ok_with_all_snapshot_ko(self):
+        """
+        Test case when at least one snapshot comparison is KO
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        s1 = StepResult.objects.get(pk=5)
+        s2 = StepResult.objects.get(pk=6)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        
+        # some diffs for first picture
+        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1,1)]))
+        s1.save()
+        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
+        s2.save()
+        
+        self.assertFalse(tcs.isOkWithSnapshots())
+
     
     def test_is_not_computed(self):
         """
@@ -95,31 +179,3 @@ class TestTestCases(TestCase):
         self.assertTrue(tcs.computed())
     
     
-    def test_is_ok_with_all_snapshot_ok_2(self):
-        """
-        Same as above but content of pixelDiffs is an empty list
-        """
-        tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = StepResult.objects.get(pk=5)
-        s2 = StepResult.objects.get(pk=6)
-        initial_ref_snapshot = Snapshot.objects.get(id=1)
-        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
-        s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
-        s2.save()
-        
-        self.assertTrue(tcs.isOkWithSnapshots())
-    
-    def test_is_ok_with_all_asnapshot_ko(self):
-        tcs = TestCaseInSession.objects.get(pk=5)
-        s1 = StepResult.objects.get(pk=5)
-        s2 = StepResult.objects.get(pk=6)
-        initial_ref_snapshot = Snapshot.objects.get(id=1)
-        
-        # some diffs for first picture
-        s1 = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1,1)]))
-        s1.save()
-        s2 = Snapshot(stepResult=s2, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([]))
-        s2.save()
-        
-        self.assertFalse(tcs.isOkWithSnapshots())

@@ -11,6 +11,7 @@ from django.utils import timezone
 import datetime
 from django.db.models.aggregates import Count
 import logging
+from commonsServer.models import TruncatingCharField
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -47,16 +48,27 @@ class TestCaseInSession(models.Model):
         
         snapshots = Snapshot.objects.filter(stepResult__testCase=self)
         result = True 
+        computing_errors = 0
+        
         for snapshot in snapshots:
+            if snapshot.computingError:
+                computing_errors += 1
+                continue
             if snapshot.pixelsDiff is None:
                 continue
             
-            # TODO: pickle should be removed as not pickling should exist in database anymore
+            # pickling is only used for tests
             try:
                 pixels = pickle.loads(snapshot.pixelsDiff)
                 result = result and not bool(pixels)
             except:
                 result = result and not snapshot.tooManyDiffs
+                
+        # result is undefined 
+        # - if none of the snapshots has been computed
+        # - at least one computation failed and remaining result is OK.
+        if len(snapshots) == computing_errors or (computing_errors > 0 and result):
+            return None
             
         return result
     
@@ -70,6 +82,18 @@ class TestCaseInSession(models.Model):
                 return False
             
         return True
+    
+    def computingError(self):
+        """
+        Returns a list of computing errors
+        """
+        all_errors = []
+        snapshots = Snapshot.objects.filter(stepResult__testCase=self)
+        for snapshot in snapshots:
+            if snapshot.computingError:
+                all_errors.append("%s: %s" % (snapshot.name, snapshot.computingError))
+            
+        return all_errors
     
     def isOkWithResult(self):
         """
@@ -160,7 +184,6 @@ class TestSession(models.Model):
             session.delete()
         
     
-# TODO delete file when snapshot is removed from database
 class Snapshot(models.Model):
 
     stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
@@ -168,10 +191,11 @@ class Snapshot(models.Model):
     refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.DO_NOTHING)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
-    name = models.CharField(max_length=100, default="") # name of the snapshot
+    name = models.CharField(max_length=150, default="") # name of the snapshot
     compareOption = models.CharField(max_length=100, default="true") # options for comparison
     computed = models.BooleanField(default=False)
     diffTolerance = models.FloatField(default=0.0) # pixel tolerance when comparing pictures. 0.0 means all pixels must be identical, 10.0 means 10% of the pixels may be different 
+    computingError = TruncatingCharField(max_length=250, default="")
   
     def __str__(self):
         return "%s - %s - %s - %d" % (self.stepResult.testCase.testCase.name, self.stepResult.step.name, self.stepResult.testCase.session.sessionId, self.id) 
@@ -257,12 +281,14 @@ def submission_delete(sender, instance, **kwargs):
             snapshot.refSnapshot = ref_snapshots.last()
             snapshot.save()
             
+            diff_computer = DiffComputer.get_instance()
+            
             # recompute diff pixels
-            DiffComputer.computeNow(snapshot.refSnapshot, snapshot)
+            diff_computer.compute_now(snapshot.refSnapshot, snapshot)
             
             # recompute all following snapshot as they will depend on a previous ref
             for snap in snapshot.snapshotsUntilNextRef(snapshot):
-                DiffComputer.addJobs(snapshot.refSnapshot, snap)
+                diff_computer.add_jobs(snapshot.refSnapshot, snap)
             
         # no reference snapshot found, only remove information about reference which makes this snapshot a reference    
         else:

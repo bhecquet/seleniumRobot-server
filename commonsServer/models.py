@@ -5,6 +5,13 @@ from django.db import models
 from django.contrib.auth.models import Permission
 
 
+class TruncatingCharField(models.CharField):
+    def get_prep_value(self, value):
+        value = super(TruncatingCharField,self).get_prep_value(value)
+        if value:
+            return value[:self.max_length]
+        return value
+
 class Application(models.Model):
     
     appPermissionCode = 'can_view_application_'
