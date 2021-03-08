@@ -9,6 +9,8 @@ from snapshotServer.utils.utils import getTestDirectory
 from snapshotServer.controllers.PictureComparator import PictureComparator,\
     Pixel, Rectangle
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+import numpy
+from numpy import int32, uint8
 
 
 class TestPictureComparator(unittest.TestCase):
@@ -135,6 +137,7 @@ class TestPictureComparator(unittest.TestCase):
                                                  [Rectangle(0, 700, 1, 2)])
         
         self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
+        pixels_diff_map[700]
         self.assertFalse(Pixel(0, 700) in pixels_diff_map) # exclusion zone inside reference area is excluded from comparison 
         self.assertFalse(Pixel(0, 701) in pixels_diff_map) # exclusion zone outside reference area is excluded from comparison 
         self.assertTrue(Pixel(1, 701) in pixels_diff_map)  # pixel outside of reference area and outside of exclusion zone is marked as a diff
@@ -154,7 +157,7 @@ class TestPictureComparator(unittest.TestCase):
         comparator = PictureComparator();
         pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1Mod2.png',
-                                                 [Rectangle(1169, 700, 2, 1)])
+                                                [Rectangle(1169, 700, 2, 1)])
         
         self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
         self.assertFalse(Pixel(1169, 700) in pixels_diff_map) # exclusion zone inside reference area is excluded from comparison 
@@ -191,4 +194,74 @@ class TestPictureComparator(unittest.TestCase):
                                                  [])
         
         self.assertEqual(len(pixels_diff_map), 0, "no diff should be found")    
+        
+    def test_compute_diff_without_exclusions_on_datatable(self):
+        """
+        Check exclusions are correctly computed
+        """
+        
+        # image without differences where we add a square of different pixels
+        image = numpy.zeros((6, 7), dtype=uint8)
+        image[0][0] = 1
+        image[1][0] = 1
+        image[0][1] = 1
+        image[1][1] = 1
+        
+        comparator = PictureComparator();
+        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [])
+        self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1), Pixel(x=1, y=1)], diff_pixels)
+        
+    def test_compute_diff_with_exclusions_inside_datatable(self):
+        """
+        Check exclusions are correctly computed
+        Exclusion zone is inside the shape of datatable
+        """
+        
+        # image without differences where we add a square of different pixels
+        image = numpy.zeros((6, 7), dtype=uint8)
+        image[0][0] = 1
+        image[1][0] = 1
+        image[0][1] = 1
+        image[1][1] = 1
+        
+        comparator = PictureComparator();
+        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3)])
+        self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1)], diff_pixels)
+        
+    def test_compute_diff_with_exclusions_outside_datatable(self):
+        """
+        Check exclusions are correctly computed
+        Exclusion zone is outside the shape of datatable
+        """
+        
+        # image without differences where we add a square of different pixels
+        image = numpy.zeros((6, 7), dtype=uint8)
+        image[0][0] = 1
+        image[1][0] = 1
+        image[0][1] = 1
+        image[1][1] = 1
+        
+        comparator = PictureComparator();
+        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(10, 10, 3, 3)])
+        self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1), Pixel(x=1, y=1)], diff_pixels)
+        
+    def test_compute_diff_with_multiple_exclusions_on_datatable(self):
+        """
+        Check multiple exclusions are correctly computed
+        """
+        
+        # image without differences where we add a square of different pixels
+        image = numpy.zeros((6, 7), dtype=uint8)
+        image[0][0] = 1
+        image[1][0] = 1
+        image[0][1] = 1
+        image[1][1] = 1
+
+        comparator = PictureComparator();
+        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3), Rectangle(0, 0, 5, 1)])
+
+        self.assertEqual([Pixel(x=0, y=1)], diff_pixels)
+        
+        
+        
         

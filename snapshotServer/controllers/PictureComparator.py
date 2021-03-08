@@ -14,6 +14,8 @@ import cv2
 
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 import math
+import time
+from numpy import int32, uint8
 
 
 Rectangle = collections.namedtuple("Rectangle", ['x', 'y', 'width', 'height'])
@@ -72,14 +74,15 @@ class PictureComparator:
             raise PictureComparatorError("Image file %s does not exist" % image)
         
         # compute area where comparison will be done (<min_width>x<min_height>)
+
         reference_img = cv2.imread(reference, 0)
         image_img = cv2.imread(image, 0)
-        
+
         reference_height = len(reference_img)
         reference_width = len(reference_img[0])
         image_height = len(image_img)
         image_width = len(image_img[0])
-        
+
         min_height = min(reference_height, image_height)
         if min_height == 0:
             min_width = 0
@@ -88,22 +91,47 @@ class PictureComparator:
   
         diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
         
+        pixels = self._build_list_of_changed_pixels(diff, image_width, image_height, min_width, min_height, exclude_zones)
+        
+        return pixels, len(pixels) * 100.0 / (image_height * image_width)
+    
+    def _build_list_of_changed_pixels(self, diff, image_width, image_height, min_width, min_height, exclude_zones):
+        """
+        From a matrix of difference pixels (for each pixel, we have 0 if pixel is the same, or non-zero if they are different
+        """
+        start = time.clock()
+        
         # complete diff "image" to the size of step image
         diff = numpy.pad(diff, ((0, max(0, image_height - min_height)), (0, max(0, image_width - min_width))), constant_values=1)
         
         pixels = []
         
         # ignore excluded pixels
-        excluded_pixels = self._build_list_of_excluded_pixels(exclude_zones)
-        for x, y in [ep for ep in excluded_pixels if ep.x < image_width and ep.y < image_height]:
-            diff[y][x] = 0
+        diff *= self._build_list_of_excluded_pixels2(exclude_zones, image_width, image_height)
+
         
         diff_pixels = numpy.transpose(diff.nonzero());
 
         for y, x in diff_pixels:
-            pixels.append(Pixel(x, y))
-
-        return pixels, len(pixels) * 100.0 / (image_height * image_width)
+            pixels.append((x, y))
+        
+        return pixels
+    
+    def _build_list_of_excluded_pixels2(self, exclude_zones, img_width, img_height):
+        """
+        From the list of rectangles, build a list of pixels that these rectangles cover
+        """
+        
+        full_image = numpy.ones((img_height, img_width), dtype=uint8)
+        for x, y, width, height in exclude_zones:
+            
+            # creates a matrix where 0 is placed on pixels to exclude, and 1 on pixel to keep
+            exclusion = numpy.zeros((height, width), dtype=uint8)
+            exclusion = numpy.pad(exclusion, ((min(y, img_height) , max(0, img_height - (y + height))), (min(x, img_width), max(0, img_width - (x + width)))), constant_values=1)
+                  
+            full_image *= exclusion[0:img_height, 0:img_width] # crop exclusion array if it's size is higher than image (exclusion zone outside of image dimensions)
+       
+        return full_image
     
     def _build_list_of_excluded_pixels(self, exclude_zones):
         """
