@@ -7,18 +7,18 @@ Created on 8 mai 2017
 import os
 
 from django.test import Client
-import django.test
 
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
     TestEnvironment, Version, TestCaseInSession, StepResult
-from snapshotServer.tests import authenticate_test_client_for_web_view
+from snapshotServer.tests import authenticate_test_client_for_web_view,\
+    SnapshotTestCase
 import datetime
 import pytz
 
 from django.conf import settings
 
 
-class TestViews(django.test.TestCase):
+class TestViews(SnapshotTestCase):
     
     fixtures = ['snapshotServer.yaml']
     dataDir = 'snapshotServer/tests/data/'
@@ -63,6 +63,7 @@ class TestViews(django.test.TestCase):
         Remove generated files
         """
         
+        super().tearDown()
         for f in os.listdir(self.mediaDir):
             if f.startswith('img_'):
                 os.remove(self.mediaDir + os.sep + f)

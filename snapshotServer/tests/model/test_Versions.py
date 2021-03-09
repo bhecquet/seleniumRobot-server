@@ -3,11 +3,11 @@ Created on 11 mai 2017
 
 @author: bhecquet
 '''
-from django.test import TestCase
 from snapshotServer.models import Version, Application
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestVersions(TestCase):
+class TestVersions(SnapshotTestCase):
 
 
     def test_findPreviousVersions(self):

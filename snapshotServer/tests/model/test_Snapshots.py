@@ -10,12 +10,13 @@ from snapshotServer.models import Snapshot, Application, Version, TestStep, \
 import datetime
 import pytz
 from django.db.utils import IntegrityError
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestSnapshots(django.test.TestCase):
+class TestSnapshots(SnapshotTestCase):
     
     def setUp(self):
-        super(TestSnapshots, self).setUp()
+        super().setUp()
         self.app = Application(name="test")
         self.app.save()
         self.v1 = Version(application=self.app, name='1.0')

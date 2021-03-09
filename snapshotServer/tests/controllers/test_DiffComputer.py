@@ -14,15 +14,16 @@ import django.test
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, StepResult, ExcludeZone
 from django.conf import settings
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestDiffComputer(django.test.TestCase):
+class TestDiffComputer(SnapshotTestCase):
     
     fixtures = ['snapshotServer.yaml']
     mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
  
     def tearDown(self):
-        DiffComputer.stopThread()
+        super().tearDown()
          
         for f in os.listdir(self.mediaDir):
             if f.startswith('img_'):

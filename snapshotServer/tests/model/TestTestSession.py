@@ -5,15 +5,12 @@ Created on 11 mai 2017
 '''
 from snapshotServer.models import Version, Application, TestCaseInSession,\
     TestStep, StepResult, Snapshot, TestSession, TestEnvironment, TestCase
-import pickle
 import datetime
-import pytz
 from django.utils import timezone
-from django.core.exceptions import ObjectDoesNotExist
-import django.test
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestTestSession(django.test.TestCase):
+class TestTestSession(SnapshotTestCase):
 
     fixtures = ['snapshotServer.yaml']
 

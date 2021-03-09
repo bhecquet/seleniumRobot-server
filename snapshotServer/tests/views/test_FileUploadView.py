@@ -65,6 +65,8 @@ class TestFileUploadView(APITestCase):
         Remove generated files
         """
         
+        super().tearDown()
+        
         for f in os.listdir(self.mediaDir):
             if f.startswith('engie'):
                 os.remove(self.mediaDir + os.sep + f)

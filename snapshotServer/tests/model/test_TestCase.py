@@ -3,13 +3,13 @@ Created on 11 mai 2017
 
 @author: bhecquet
 '''
-from django.test import TestCase
-from snapshotServer.models import Version, Application, TestCaseInSession,\
+from snapshotServer.models import TestCaseInSession,\
     TestStep, StepResult, Snapshot
 import pickle
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestTestCases(TestCase):
+class TestTestCases(SnapshotTestCase):
 
     fixtures = ['snapshotServer.yaml']
 

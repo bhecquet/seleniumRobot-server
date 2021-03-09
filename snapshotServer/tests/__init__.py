@@ -3,6 +3,9 @@ from django.contrib.contenttypes.models import ContentType
 from rest_framework.authtoken.models import Token
 from django.db.models import Q
 import snapshotServer
+import django.test
+from snapshotServer.controllers.DiffComputer import DiffComputer
+import logging
 
 def _create_allowed_user_and_group():
     
@@ -42,3 +45,11 @@ def authenticate_test_client_for_web_view(client):
     """
     user = _create_allowed_user_and_group()
     client.login(username='user', password='pwd')
+    
+    
+class SnapshotTestCase(django.test.TestCase):
+    
+    def tearDown(self):
+        DiffComputer.stopThread()
+        logging.error("Stop threads")
+        super().tearDown()

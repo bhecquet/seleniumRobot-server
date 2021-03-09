@@ -16,6 +16,8 @@ from snapshotServer.models import ExcludeZone
 from PIL import Image, ImageDraw
 import io
 import logging
+import traceback
+
 logger = logging.getLogger(__name__)
 
 class DiffComputer(threading.Thread):
@@ -32,6 +34,7 @@ class DiffComputer(threading.Thread):
         if not cls._instance:
             cls._instance = DiffComputer()
             cls._instance.start()
+            
         return cls._instance
 
     def add_jobs(self, ref_snapshot, step_snapshot, check_test_mode=True):

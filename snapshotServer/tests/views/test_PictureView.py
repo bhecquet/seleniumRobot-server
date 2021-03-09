@@ -203,7 +203,6 @@ class TestPictureView(TestViews):
         self.assertIsNone(response.context['captureList'][0]['reference'], "picture is still a reference")
         self.assertIsNone(response.context['captureList'][0]['stepSnapshot'].refSnapshot, "new reference should be the snapshot itself")
         self.assertIsNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff, "no diff as we have a reference")
-        DiffComputer.stopThread()
           
     def test_remove_very_first_ref(self):
         """
@@ -267,7 +266,6 @@ class TestPictureView(TestViews):
         # check display
         self.assertIsNotNone(response.context['captureList'][0]['reference'], "picture is still not a reference")
         self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].refSnapshot, "there is still a reference")
-        DiffComputer.stopThread()
   
     def test_remove_ref(self):
         """

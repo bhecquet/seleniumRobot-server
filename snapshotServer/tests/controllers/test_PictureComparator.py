@@ -3,7 +3,6 @@ Created on 8 mars 2017
 
 @author: worm
 '''
-import unittest
 
 from snapshotServer.utils.utils import getTestDirectory
 from snapshotServer.controllers.PictureComparator import PictureComparator,\
@@ -11,13 +10,14 @@ from snapshotServer.controllers.PictureComparator import PictureComparator,\
 from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
 import numpy
 from numpy import int32, uint8
+from snapshotServer.tests import SnapshotTestCase
 
 
-class TestPictureComparator(unittest.TestCase):
+class TestPictureComparator(SnapshotTestCase):
 
 
     def setUp(self):
-        unittest.TestCase.setUp(self)
+        super().setUp()
         self.dataDir = getTestDirectory();
 
     def test_compare_sample_image(self):
