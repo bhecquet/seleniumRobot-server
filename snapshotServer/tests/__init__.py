@@ -49,6 +49,10 @@ def authenticate_test_client_for_web_view(client):
     
 class SnapshotTestCase(django.test.TestCase):
     
+    def setUp(self):
+        logging.error(str(self))
+        super().setUp()
+    
     def tearDown(self):
         DiffComputer.stopThread()
         logging.error("Stop threads")

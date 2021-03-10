@@ -16,7 +16,6 @@ from snapshotServer.models import ExcludeZone
 from PIL import Image, ImageDraw
 import io
 import logging
-import traceback
 
 logger = logging.getLogger(__name__)
 
@@ -27,15 +26,20 @@ class DiffComputer(threading.Thread):
     
     _instance = None
     _jobLock = threading.Lock()
+    _instanceLock = threading.Lock()
     picture_comparator = PictureComparator()
     
     @classmethod
     def get_instance(cls):
-        if not cls._instance:
-            cls._instance = DiffComputer()
-            cls._instance.start()
-            
-        return cls._instance
+        with cls._instanceLock:
+            if not cls._instance:
+                cls._instance = DiffComputer()
+                cls._instance.start()
+                
+                if not cls._instance.running:
+                    time.sleep(0.1)
+                
+            return cls._instance
 
     def add_jobs(self, ref_snapshot, step_snapshot, check_test_mode=True):
         """
@@ -50,11 +54,10 @@ class DiffComputer(threading.Thread):
         
         if Tools.isTestMode() and check_test_mode:
             self.compute_now(ref_snapshot, step_snapshot)
-            return 
+   
         else:
-            DiffComputer._jobLock.acquire()
-            self.jobs.append((ref_snapshot, step_snapshot))
-            DiffComputer._jobLock.release()
+            with DiffComputer._jobLock:
+                self.jobs.append((ref_snapshot, step_snapshot))
 
     def compute_now(self, ref_snapshot, step_snapshot):
         """
@@ -66,10 +69,11 @@ class DiffComputer(threading.Thread):
         
     @classmethod
     def stopThread(cls):
-        if cls._instance:
-            cls._instance.running = False
-            cls._instance.join()
-        cls._instance = None
+        with cls._instanceLock:
+            if cls._instance:
+                cls._instance.running = False
+                cls._instance.join()
+            cls._instance = None
     
     def __init__(self):
         self.jobs = []
@@ -83,10 +87,9 @@ class DiffComputer(threading.Thread):
         # be sure we can restart a new thread if something goes wrong
         try:
             while self.running or self.jobs:
-                DiffComputer._jobLock.acquire()
-                tmp_jobs = self.jobs[:]
-                self.jobs = []
-                DiffComputer._jobLock.release()
+                with DiffComputer._jobLock:
+                    tmp_jobs = self.jobs[:]
+                    self.jobs = []
 
                 for ref_snapshot, step_snapshot in tmp_jobs:
                     try:
