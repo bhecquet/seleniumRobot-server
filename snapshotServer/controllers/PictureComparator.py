@@ -60,13 +60,14 @@ class PictureComparator:
         else:
             return None
         
-    def getChangedPixels(self, reference, image, exclude_zones=[]):
+    def get_changed_pixels(self, reference, image, exclude_zones=[]):
         """
         @param reference: reference picture
         @param image: image to compare with
         @param exclude_zones: list of zones (Rectangle objects) which should not be marked as differences.
-        @return: list of pixels which are different between reference and image
+        @return: list of pixels which are different between reference and image (as numpy array)
                 a percentage of diff pixels
+                the difference image
         """
         if not os.path.isfile(reference):
             raise PictureComparatorError("Reference file %s does not exist" % reference)
@@ -82,7 +83,7 @@ class PictureComparator:
         reference_width = len(reference_img[0])
         image_height = len(image_img)
         image_width = len(image_img[0])
-
+        
         min_height = min(reference_height, image_height)
         if min_height == 0:
             min_width = 0
@@ -90,32 +91,34 @@ class PictureComparator:
             min_width = min(reference_width, image_width)
   
         diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
+ 
+        pixels, diff_image = self._build_list_of_changed_pixels(diff, image_width, image_height, min_width, min_height, exclude_zones)
         
-        pixels = self._build_list_of_changed_pixels(diff, image_width, image_height, min_width, min_height, exclude_zones)
-        
-        return pixels, len(pixels) * 100.0 / (image_height * image_width)
+        return pixels, len(pixels) * 100.0 / (image_height * image_width), diff_image
     
     def _build_list_of_changed_pixels(self, diff, image_width, image_height, min_width, min_height, exclude_zones):
         """
-        From a matrix of difference pixels (for each pixel, we have 0 if pixel is the same, or non-zero if they are different
+        From a matrix of difference pixels (for each pixel, we have 0 if pixel is the same, or non-zero if they are different), creates
+        - list of pixels which are different
+        - a PNG image of the same size as 'step' image, where each different pixel is coloured RED
         """
-        start = time.clock()
-        
+
         # complete diff "image" to the size of step image
         diff = numpy.pad(diff, ((0, max(0, image_height - min_height)), (0, max(0, image_width - min_width))), constant_values=1)
-        
-        pixels = []
-        
+
         # ignore excluded pixels
         diff *= self._build_list_of_excluded_pixels2(exclude_zones, image_width, image_height)
-
         
+        # draw mask of differences
+        mask = numpy.ones((image_height, image_width, 1), dtype=uint8)
+        diff_image = numpy.zeros((image_height, image_width, 4), dtype=uint8)
+        cnd = diff[:,:] > 0 # says which pixels are non-zeros
+        diff_image[cnd] = mask[cnd]
+        diff_image *=  numpy.array([0, 0, 255, 255], dtype=uint8) # print red pixels
+
         diff_pixels = numpy.transpose(diff.nonzero());
-
-        for y, x in diff_pixels:
-            pixels.append((x, y))
         
-        return pixels
+        return diff_pixels, diff_image
     
     def _build_list_of_excluded_pixels2(self, exclude_zones, img_width, img_height):
         """

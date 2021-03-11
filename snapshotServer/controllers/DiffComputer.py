@@ -16,6 +16,7 @@ from snapshotServer.models import ExcludeZone
 from PIL import Image, ImageDraw
 import io
 import logging
+import cv2
 
 logger = logging.getLogger(__name__)
 
@@ -116,10 +117,11 @@ class DiffComputer(threading.Thread):
                 # get the list of exclude zones
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
                 
-                pixel_diffs, diff_percentage = DiffComputer.picture_comparator.getChangedPixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                pixel_diffs, diff_percentage, diff_image = DiffComputer.picture_comparator.get_changed_pixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
                 # store diff picture mask into database instead of pixels, to reduce size of stored object
-                step_snapshot.pixelsDiff = self.mark_diff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
+#                 step_snapshot.pixelsDiff = self.mark_diff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
+                step_snapshot.pixelsDiff = self.mark_diff(diff_image)
                 
                 # too many pixel differences if we go over tolerance
                 step_snapshot.tooManyDiffs = step_snapshot.diffTolerance < diff_percentage
@@ -141,19 +143,11 @@ class DiffComputer(threading.Thread):
                 step_snapshot.save()
             logger.info('finished computing in %.2fs' % (time.clock() - start))
 
-    def mark_diff(self, width, height, diff_pixel):
+    def mark_diff(self, diff_image):
         """
         Save 'difference' pixels to a picture
         """
-        
-
-        img = Image.new('RGBA', (width, height), (255, 0, 0, 0))
-        
-        draw = ImageDraw.Draw(img)
-        draw.point(diff_pixel, 'red')
-
-        with io.BytesIO() as output:
-            img.save(output, format="PNG")
-            return output.getvalue()     
+        is_success, buffer = cv2.imencode(".png", diff_image)
+        return io.BytesIO(buffer).getvalue()
                 
                 

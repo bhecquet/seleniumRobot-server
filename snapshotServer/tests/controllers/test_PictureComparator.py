@@ -20,6 +20,17 @@ class TestPictureComparator(SnapshotTestCase):
         super().setUp()
         self.dataDir = getTestDirectory();
 
+    
+    def convert_points_to_pixels(self, diff_pixels):
+        """
+        Convert a numpy array (typically, the array of difference pixels) to a list of Pixel objects
+        """
+        pixels = []
+        for y, x in diff_pixels:
+            pixels.append((x, y))
+            
+        return pixels
+
     def test_compare_sample_image(self):
         comparator = PictureComparator();
         rect = comparator.compare(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'template_Ibis_Mulhouse.png')
@@ -65,21 +76,26 @@ class TestPictureComparator(SnapshotTestCase):
            
     def test_no_diff(self):
         comparator = PictureComparator();
-        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse.png')
+        diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse.png')
         self.assertEqual(0, len(diff_pixels), "No difference pixels should be found")
         self.assertEqual(int(diff_percentage), 0)
            
           
     def test_real_diff(self):
         comparator = PictureComparator();
-        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
+        diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
+        
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
+        
         self.assertEqual(3, len(diff_pixels), "3 pixels should be found")
         self.assertEqual(Pixel(554, 256), diff_pixels[0], "detected position is wrong")
         self.assertTrue(diff_percentage > 0)
          
     def test_real_too_many_diff(self):
         comparator = PictureComparator();
-        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_tooManyDiffs.png')
+        diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_tooManyDiffs.png')
+        
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
         self.assertEqual(817176, len(diff_pixels), "207360 pixels should be found")
         self.assertEqual(diff_pixels[0], Pixel(0, 132), "First diff pixel should be (0, 132)")
         self.assertTrue(int(diff_percentage), 39)
@@ -91,9 +107,10 @@ class TestPictureComparator(SnapshotTestCase):
         marked as diff
         """
         comparator = PictureComparator();
-        diff_pixels, diff_percentage = comparator.getChangedPixels(self.dataDir + 'Ibis_Mulhouse.png', 
+        diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', 
                                                  self.dataDir + 'Ibis_Mulhouse_diff.png',
                                                  [Rectangle(550, 255, 5, 3)])
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
         self.assertEqual(2, len(diff_pixels), "2 pixels should be found")
         self.assertEqual(Pixel(555, 256), diff_pixels[0], "detected position is wrong")
          
@@ -107,9 +124,10 @@ class TestPictureComparator(SnapshotTestCase):
         """
         
         comparator = PictureComparator();
-        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+        pixels_diff_map, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1.png',
                                                  [])
+        pixels_diff_map = self.convert_points_to_pixels(pixels_diff_map)
         
         # cropping on 58 lines. Check we have all points
         self.assertFalse(Pixel(0, 700) in pixels_diff_map) # last line where comparison is possible => same line
@@ -132,9 +150,10 @@ class TestPictureComparator(SnapshotTestCase):
         """
         
         comparator = PictureComparator();
-        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+        pixels_diff_map, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1Mod2.png',
                                                  [Rectangle(0, 700, 1, 2)])
+        pixels_diff_map = self.convert_points_to_pixels(pixels_diff_map)
         
         self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
         pixels_diff_map[700]
@@ -155,9 +174,10 @@ class TestPictureComparator(SnapshotTestCase):
         """
         
         comparator = PictureComparator();
-        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+        pixels_diff_map, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1Mod2.png',
                                                 [Rectangle(1169, 700, 2, 1)])
+        pixels_diff_map = self.convert_points_to_pixels(pixels_diff_map)
         
         self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
         self.assertFalse(Pixel(1169, 700) in pixels_diff_map) # exclusion zone inside reference area is excluded from comparison 
@@ -175,9 +195,10 @@ class TestPictureComparator(SnapshotTestCase):
         """
         
         comparator = PictureComparator();
-        pixels_diff_map, diff_percentage = comparator.getChangedPixels(self.dataDir + 'test_Image1Crop.png', 
+        pixels_diff_map, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_Image1Crop.png', 
                                                  self.dataDir + 'test_Image1Mod2.png',
                                                  [Rectangle(0, 758, 1, 2)])
+        pixels_diff_map = self.convert_points_to_pixels(pixels_diff_map)
         
         self.assertEqual(pixels_diff_map[0], Pixel(0, 0))
         self.assertFalse(Pixel(0, 758) in pixels_diff_map) # exclusion zone outside reference area is excluded from comparison 
@@ -189,10 +210,10 @@ class TestPictureComparator(SnapshotTestCase):
         Here step image is smaller than reference, so no diff will be shown
         """
         comparator = PictureComparator();
-        pixels_diff_map, too_many_diffs = comparator.getChangedPixels(self.dataDir + 'test_Image1.png', 
+        pixels_diff_map, too_many_diffs, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_Image1.png', 
                                                  self.dataDir + 'test_Image1Crop.png',
                                                  [])
-        
+ 
         self.assertEqual(len(pixels_diff_map), 0, "no diff should be found")    
         
     def test_compute_diff_without_exclusions_on_datatable(self):
@@ -208,7 +229,8 @@ class TestPictureComparator(SnapshotTestCase):
         image[1][1] = 1
         
         comparator = PictureComparator();
-        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [])
+        diff_pixels, diff_image = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [])
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
         self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1), Pixel(x=1, y=1)], diff_pixels)
         
     def test_compute_diff_with_exclusions_inside_datatable(self):
@@ -225,7 +247,8 @@ class TestPictureComparator(SnapshotTestCase):
         image[1][1] = 1
         
         comparator = PictureComparator();
-        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3)])
+        diff_pixels, diff_image = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3)])
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
         self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1)], diff_pixels)
         
     def test_compute_diff_with_exclusions_outside_datatable(self):
@@ -242,7 +265,8 @@ class TestPictureComparator(SnapshotTestCase):
         image[1][1] = 1
         
         comparator = PictureComparator();
-        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(10, 10, 3, 3)])
+        diff_pixels, diff_image = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(10, 10, 3, 3)])
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
         self.assertEqual([Pixel(x=0, y=0), Pixel(x=1, y=0), Pixel(x=0, y=1), Pixel(x=1, y=1)], diff_pixels)
         
     def test_compute_diff_with_multiple_exclusions_on_datatable(self):
@@ -258,7 +282,8 @@ class TestPictureComparator(SnapshotTestCase):
         image[1][1] = 1
 
         comparator = PictureComparator();
-        diff_pixels = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3), Rectangle(0, 0, 5, 1)])
+        diff_pixels, diff_image = comparator._build_list_of_changed_pixels(image, 7, 6, 7, 6, [Rectangle(1, 1, 3, 3), Rectangle(0, 0, 5, 1)])
+        diff_pixels = self.convert_points_to_pixels(diff_pixels)
 
         self.assertEqual([Pixel(x=0, y=1)], diff_pixels)
         

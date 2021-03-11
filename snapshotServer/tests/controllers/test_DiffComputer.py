@@ -295,7 +295,7 @@ class TestDiffComputer(SnapshotTestCase):
         Check that computing takes into account exclude zone from reference snapshot
         """
         
-        with patch.object(DiffComputer.picture_comparator, 'getChangedPixels', wraps=DiffComputer.picture_comparator.getChangedPixels) as wrapped_get_changed_pixels:
+        with patch.object(DiffComputer.picture_comparator, 'get_changed_pixels', wraps=DiffComputer.picture_comparator.get_changed_pixels) as wrapped_get_changed_pixels:
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
                 img = ImageFile(imgFile)
                 ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
@@ -320,7 +320,7 @@ class TestDiffComputer(SnapshotTestCase):
         issue #57: Check that computing takes into account exclude zone from step snapshot that could be added by seleniumRobot
         """
         
-        with patch.object(DiffComputer.picture_comparator, 'getChangedPixels', wraps=DiffComputer.picture_comparator.getChangedPixels) as wrapped_get_changed_pixels:
+        with patch.object(DiffComputer.picture_comparator, 'get_changed_pixels', wraps=DiffComputer.picture_comparator.get_changed_pixels) as wrapped_get_changed_pixels:
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
                 img = ImageFile(imgFile)
                 ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
