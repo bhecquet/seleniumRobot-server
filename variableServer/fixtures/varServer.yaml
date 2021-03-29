@@ -35,6 +35,11 @@
     fields: 
         name: DEV1
         genericEnvironment: 1
+-   model: variableServer.testenvironment
+    pk: 4
+    fields: 
+        name: DEV2
+        genericEnvironment: 3
 -   model: variableServer.testcase
     pk: 1
     fields:

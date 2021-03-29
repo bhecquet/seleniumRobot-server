@@ -69,6 +69,14 @@ class TestEnvironment(models.Model):
     def __str__(self):
         return self.name
     
+    def get_parent_environments(self):
+        parent_environments = []
+        if self.genericEnvironment and self.genericEnvironment.id != self.id:
+            parent_environments.append(self.genericEnvironment)
+            parent_environments += self.genericEnvironment.get_parent_environments()
+            
+        return parent_environments
+    
     genericEnvironment = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
     genericEnvironment.short_description = 'generic environnement'
 

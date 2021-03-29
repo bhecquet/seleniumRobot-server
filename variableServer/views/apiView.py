@@ -122,35 +122,34 @@ class VariableList(mixins.ListModelMixin,
         
         # for each queryset depending on environment, we will first get the generic environment related variable and then update them
         # with the specific environment ones
-        if environment.genericEnvironment:
-            generic_environment = environment.genericEnvironment
-        else:
-            generic_environment = environment
-        
+        # for that purpose, we build the list of environments, first one is the most generic one, the latest is the most precise
+        environment_tree = [environment] + environment.get_parent_environments()
+        environment_tree.reverse()
+
         # environment specific variables
-        variables = updateVariables(variables, all_variables.filter(application=None, version=None, test=None, environment=generic_environment))
-        variables = updateVariables(variables, all_variables.filter(application=None, version=None, test=None, environment=environment))
+        for env in environment_tree:
+            variables = updateVariables(variables, all_variables.filter(application=None, version=None, test=None, environment=env))
         
         # application / test specific variables
         variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=None, test=test))
         
         # more precise variables
         # application / environment specific variables
-        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=generic_environment, test=None))
-        variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=environment, test=None))
+        for env in environment_tree:
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=env, test=None))
         
         # application / version/ environment specific variables
-        variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=generic_environment, test=None))
-        variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=environment, test=None))
+        for env in environment_tree:
+            variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=env, test=None))
         
         if test:
             # application / environment / test specific variables
-            variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=generic_environment, test=test))
-            variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=environment, test=test))
-        
+            for env in environment_tree:
+                variables = updateVariables(variables, all_variables.filter(application=version.application, version=None, environment=env, test=test))
+           
             # application / version / environment / test specific variables
-            variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=generic_environment, test=test))
-            variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=environment, test=test))
+            for env in environment_tree:
+                variables = updateVariables(variables, all_variables.filter(application=version.application, version=version, environment=env, test=test))
         
         # in case name is provided, filter variables
         if variable_name:

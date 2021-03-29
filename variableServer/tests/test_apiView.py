@@ -327,6 +327,57 @@ class TestApiView(APITestCase):
         # check overriding of variables
         self.assertEqual(all_variables['var0']['value'], 'value1')
                  
+    def test_get_variables_override_multiple_generic_environment(self):
+        """
+        Check that application/version specific variables are overriden by environment specific. Here, we have multiple parents for environment
+        Order is (bottom take precedence):
+        - global (no app, no env, no version, no test)
+        - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
+        - specific to tuple (application / environment)
+        - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
+        - specific to tuple (application / version / environment / test)
+        """
+        version = Version.objects.get(pk=3)
+        env = TestEnvironment.objects.get(pk=4)
+        gen_env1 = TestEnvironment.objects.get(pk=3)
+        gen_env2 = TestEnvironment.objects.get(pk=1)
+        Variable(name='var0', value='value0', environment=gen_env2).save()
+        Variable(name='var0', value='value1', environment=gen_env1).save()
+        Variable(name='var0', value='value2', environment=env).save()
+             
+        response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 4, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        all_variables = self._convert_to_dict(response.data)
+             
+        # check overriding of variables
+        self.assertEqual(all_variables['var0']['value'], 'value2')
+                 
+    def test_get_variables_override_multiple_generic_environment2(self):
+        """
+        Check that application/version specific variables are overriden by environment specific. Here, we have multiple parents for environment
+        Order is (bottom take precedence):
+        - global (no app, no env, no version, no test)
+        - specific to on of the parameter (matching app or matching version or matching env or matching test in this order)
+        - specific to tuple (application / environment)
+        - specific to tuple (application / version / environment)
+        - specific to tuple (application / environment / test)
+        - specific to tuple (application / version / environment / test)
+        """
+        version = Version.objects.get(pk=3)
+        env = TestEnvironment.objects.get(pk=4)
+        gen_env1 = TestEnvironment.objects.get(pk=3)
+        gen_env2 = TestEnvironment.objects.get(pk=1)
+        Variable(name='var0', value='value0', environment=gen_env2).save()
+        Variable(name='var0', value='value1', environment=gen_env1).save()
+             
+        response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 4, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        all_variables = self._convert_to_dict(response.data)
+             
+        # check overriding of variables
+        self.assertEqual(all_variables['var0']['value'], 'value1')
+                 
     def test_get_variables_override_environment(self):
         """
         Check that environment specific variables are overriden by test specific
