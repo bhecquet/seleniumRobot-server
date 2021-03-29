@@ -100,10 +100,23 @@ class VariableForm(forms.ModelForm):
         self.fields['name'].widget.attrs['style'] = "width:30em"
         self.fields['description'].widget.attrs['style'] = "width:70em"
         
+        # change value of available tests and versions depending on "application" value
+        if self.initial['application'] != None:
+            self.fields['test'].help_text = "If 'application' value is modified, click 'save and continue editing' to display the related list of tests"
+            self.fields['test'].queryset = TestCase.objects.filter(application__id=self.initial['application'])
+            
+            self.fields['version'].help_text = "If 'application' value is modified, click 'save and continue editing' to display the related list of versions"
+            self.fields['version'].queryset = Version.objects.filter(application__id=self.initial['application'])
+        else:
+            self.fields['test'].help_text = "Select an application, click 'save and continue editing' to display the list of related tests"
+            self.fields['test'].disabled = True
+            
+            self.fields['version'].help_text = "Select an application, click 'save and continue editing' to display the list of related versions"
+            self.fields['version'].disabled = True
+        
      
-        # affichage des champs en fonction de l'utilisateur connecté
-        # si un champ est protégé, la valeur ne doit être visible que de ceux qui ont la permission
-        # see_protected_var
+        # display fields depending on connected user
+        # If a variable is protected, display value only if user has right to see it through 'see_protected_var' permission
         if self.initial.get('protected', False) and not is_user_authorized(user):
             self.initial['value'] = "****"
             self.fields['protected'].widget = forms.HiddenInput()
@@ -231,7 +244,7 @@ class VariableAdmin(BaseServerModelAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         """
-        redefinition de la méthode pour pouvoir exploiter l'utilisateur dans le formulaire
+        redefine method so that user can be used in requests
         """
         try:
             obj.user = request.user
@@ -240,33 +253,33 @@ class VariableAdmin(BaseServerModelAdmin):
 
         return admin.ModelAdmin.get_form(self, request, obj=obj, **kwargs)
     
-    def _getDefaultValues(self, selectedVariables):
+    def _getDefaultValues(self, selected_variables):
         """
         Retourne les valeurs par défaut à sélectionner dans l'interface de copy/modification sous forme de dictionnaire
         """
-        refVariable = Variable.objects.get(id=int(selectedVariables[0]))
-        defaultValues = {'environment': refVariable.environment,
-                         'application': refVariable.application,
-                         'test': refVariable.test,
-                         'version': refVariable.version,
-                         'reservable': refVariable.reservable
+        ref_variable = Variable.objects.get(id=int(selected_variables[0]))
+        default_values = {'environment': ref_variable.environment,
+                         'application': ref_variable.application,
+                         'test': ref_variable.test,
+                         'version': ref_variable.version,
+                         'reservable': ref_variable.reservable
                          }
         
-        for variableId in selectedVariables[1:]:
-            variable = Variable.objects.get(id=int(variableId))
-            if variable.environment != refVariable.environment:
-                defaultValues['environment'] = None
-            if variable.application != refVariable.application:
-                defaultValues['application'] = None
+        for variable_id in selected_variables[1:]:
+            variable = Variable.objects.get(id=int(variable_id))
+            if variable.environment != ref_variable.environment:
+                default_values['environment'] = None
+            if variable.application != ref_variable.application:
+                default_values['application'] = None
             # take ManyToMany relationship for test into account
-            if not (variable.test and refVariable.test) or list(variable.test.all()) != list(refVariable.test.all()):
-                defaultValues['test'] = None
-            if variable.version != refVariable.version:
-                defaultValues['version'] = None
-            if variable.reservable != refVariable.reservable:
-                defaultValues['reservable'] = False
+            if not (variable.test and ref_variable.test) or list(variable.test.all()) != list(ref_variable.test.all()):
+                default_values['test'] = None
+            if variable.version != ref_variable.version:
+                default_values['version'] = None
+            if variable.reservable != ref_variable.reservable:
+                default_values['reservable'] = False
             
-        return defaultValues
+        return default_values
     
     def copyTo(self, request, queryset):
         """
