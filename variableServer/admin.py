@@ -6,6 +6,7 @@ from django.template.context_processors import csrf
 from django.shortcuts import render
 from variableServer.models import TestEnvironment
 from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
+from django.contrib.admin.filters import SimpleListFilter
 
 def is_user_authorized(user):
     """
@@ -132,11 +133,55 @@ class VariableForm2(forms.ModelForm):
     class Meta:
         model = Variable
         fields = ['application', 'version', 'environment', 'test', 'reservable']
+        
+class VersionFilter(SimpleListFilter):
+    """
+    Depending on selected application, will show only related versions
+    """
+    title = 'Version'
+    parameter_name = 'version'
+
+    def lookups(self, request, model_admin):
+        if 'application__id__exact' in request.GET:
+            app_id = request.GET['application__id__exact']
+            versions = set([c.version for c in model_admin.model.objects.all().filter(application=app_id)])
+        else:
+            versions = set([c.version for c in model_admin.model.objects.all()])
+        return [(v.id, str(v)) for v in versions if v is not None] + [('_None_', 'None')]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            if self.value() == '_None_':
+                return queryset.filter(version__id__exact=None)
+            else:
+                return queryset.filter(version__id__exact=self.value())
+            
+class EnvironmentFilter(SimpleListFilter):
+    """
+    Depending on selected application, will show only related versions
+    """
+    title = 'Environment'
+    parameter_name = 'environment'
+
+    def lookups(self, request, model_admin):
+        if 'application__id__exact' in request.GET:
+            app_id = request.GET['application__id__exact']
+            environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
+        else:
+            environments = set([c.environment for c in model_admin.model.objects.all()])
+        return [(e.id, str(e)) for e in environments if e is not None] + [('_None_', 'None')]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            if self.value() == '_None_':
+                return queryset.filter(environment__id__exact=None)
+            else:
+                return queryset.filter(environment__id__exact=self.value())
 
 class VariableAdmin(BaseServerModelAdmin): 
     list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
-    list_filter = ('application', 'version', 'environment', 'internal')
+    list_filter = ('application', VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
     actions = ['delete_selected', 'copyTo', 'changeValuesAtOnce', 'unreserveVariable']
