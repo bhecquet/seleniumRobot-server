@@ -43,6 +43,7 @@ urlpatterns = [
     url(r'^elementinfo/', include('elementInfoServer.urls')),
     url(r'^commons/', include('commonsServer.urls')),
     url(r'^oidc/', include('mozilla_django_oidc.urls')),
+    url(r'^health/', include('health_check.urls')),
     
     path('accounts/login/', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(views.LoginView.as_view()))), name='login'),
     

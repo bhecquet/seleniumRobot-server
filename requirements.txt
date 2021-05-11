@@ -1,7 +1,7 @@
 PyYAML==5.3.1
-Django==3.0.7
-django-filter==2.2.0
-djangorestframework==3.11.0
+Django==3.2.2
+django-filter==2.4.0
+djangorestframework==3.12.4
 numpy==1.18.4
 opencv-python==3.2.0.7
 Pillow==7.1.0
@@ -9,5 +9,6 @@ pytz==2017.2
 unittest-xml-reporting==3.0.2
 coverage==5.1
 https://download.lfd.uci.edu/pythonlibs/w4tscw6k/cp36/python_ldap-3.3.1-cp36-cp36m-win_amd64.whl; platform_system == 'Windows'
-django_auth_ldap==2.1.1
-mozilla-django-oidc==1.2.3
+django_auth_ldap==2.4.0
+mozilla-django-oidc==1.2.4
+health-check==3.4.1

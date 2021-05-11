@@ -13,9 +13,7 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 import os
 import ldap
 from django_auth_ldap.config import LDAPSearch
-
-# Build paths inside the project like this: os.path.join(BASE_DIR, ...)
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+from seleniumRobotServer.settings_base import *
 
 
 # Quick-start development settings - unsuitable for production
@@ -27,62 +25,8 @@ SECRET_KEY = 'nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '*']
-
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_FILE_NAME = 'unittest.xml'
-
-# Application definition
-
-INSTALLED_APPS = [
-    'django.contrib.admin',
-    'django.contrib.auth',
-    'mozilla_django_oidc',
-    'django.contrib.contenttypes',
-    'django.contrib.sessions',
-    'django.contrib.messages',
-    'django.contrib.staticfiles',
-    'rest_framework',
-    'rest_framework.authtoken',
-    'snapshotServer.app.SnapshotServerConfig',
-    'variableServer.app.VariableserverConfig',
-    'commonsServer.apps.CommonsserverConfig',
-    'elementInfoServer.app.ElementinfoserverConfig',
-]
-
-MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
-    'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.clickjacking.XFrameOptionsMiddleware',
-]
-
-# both settings are needed to allow viewing test results from seleniumRobot HTML file. Else session and CSRF cookies are not set
-CSRF_COOKIE_SAMESITE = None
-SESSION_COOKIE_SAMESITE = None
-# CSRF_COOKIE_SECURE = True  # may be needed when site is exposed in HTTPS
-
-ROOT_URLCONF = 'seleniumRobotServer.urls'
-
-TEMPLATES = [
-    {
-        'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
-        'APP_DIRS': True,
-        'OPTIONS': {
-            'context_processors': [
-                'django.template.context_processors.debug',
-                'django.template.context_processors.request',
-                'django.contrib.auth.context_processors.auth',
-                'django.contrib.messages.context_processors.messages',
-            ],
-        },
-    },
-]
-
 
 AUTHENTICATION_BACKENDS = (
     #"seleniumRobotServer.ldapbackends.LDAPBackend1", "seleniumRobotServer.ldapbackends.LDAPBackend2", "seleniumRobotServer.ldapbackends.LDAPBackend3",
@@ -90,12 +34,6 @@ AUTHENTICATION_BACKENDS = (
 #     'seleniumRobotServer.openidbackend.NameOIDCAB',
 #     'mozilla_django_oidc.auth.OIDCAuthenticationBackend'
 )
-
-WSGI_APPLICATION = 'seleniumRobotServer.wsgi.application'
-
-
-# Database
-# https://docs.djangoproject.com/en/1.10/ref/settings/#databases
 
 DATABASES = {
      'default': {
@@ -113,47 +51,8 @@ DATABASES = {
 }
 
 
-# Password validation
-# https://docs.djangoproject.com/en/1.10/ref/settings/#auth-password-validators
-
-AUTH_PASSWORD_VALIDATORS = [
-    {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
-    },
-]
-
-
-# Internationalization
-# https://docs.djangoproject.com/en/1.10/topics/i18n/
-
-LANGUAGE_CODE = 'en-us'
-
-TIME_ZONE = 'UTC'
-
-USE_I18N = True
-
-USE_L10N = True
-
-USE_TZ = True
-
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.10/howto/static-files/
-
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 # whether to enable security of API / GUI
 SECURITY_WEB_ENABLED = "True"
@@ -177,89 +76,6 @@ else:
             'rest_framework.permissions.AllowAny'
         ]
     }
-
-os.makedirs(os.path.join(BASE_DIR, 'log'), exist_ok=True)
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': True,
-    'filters': {
-        'require_debug_false': {
-            '()': 'django.utils.log.RequireDebugFalse',
-        },
-        'require_debug_true': {
-            '()': 'django.utils.log.RequireDebugTrue',
-        },
-    },
-    'formatters': {
-        'simple': {
-            'format': '[%(asctime)s] %(levelname)s %(message)s',
-        'datefmt': '%Y-%m-%d %H:%M:%S'
-        },
-        'verbose': {
-            'format': '[%(asctime)s] %(levelname)s [%(name)s.%(funcName)s:%(lineno)d] %(message)s',
-        'datefmt': '%Y-%m-%d %H:%M:%S'
-        },
-    },
-    'handlers': { 
-        'console': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple'
-        },
-        'development_logfile': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_true'],
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR + '/log/django_dev.log',
-            'formatter': 'verbose'
-        },
-        'production_logfile': {
-            'level': 'ERROR',
-            'filters': ['require_debug_false'],
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR + '/log/django_production.log',
-            'formatter': 'simple'
-        },
-        'variableReservation_logfile': {
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR + '/log/variable_reservation.log',
-            'formatter': 'simple'
-        },
-        'dba_logfile': {
-            'level': 'DEBUG',
-            'filters': ['require_debug_false','require_debug_true'],
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR + '/log/django_dba.log', 
-            'formatter': 'simple'
-        },
-    },
-    'loggers': {
-        'variableServer.views.apiView': {
-            'handlers': ['console', 'variableReservation_logfile'],
-            'level': 'INFO',
-         },
-        'snapshotServer': {
-            'handlers': ['console','development_logfile','production_logfile'],
-            'level': 'DEBUG',
-         },
-        'django': {
-            'handlers': ['console','development_logfile','production_logfile'],
-        },
-        'py.warnings': {
-            'handlers': ['console','development_logfile'],
-        },
-        'django_auth_ldap': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        },
-        'mozilla_django_oidc': {
-            'handlers': ['console'],
-            'level': 'DEBUG'
-        },
-    }
-}
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
