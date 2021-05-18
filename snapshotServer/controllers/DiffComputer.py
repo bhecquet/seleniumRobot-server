@@ -110,7 +110,7 @@ class DiffComputer(threading.Thread):
         """
         
         logger.info('computing') 
-        start = time.clock()
+        start = time.perf_counter()
         try:
             if ref_snapshot and step_snapshot and ref_snapshot.image and step_snapshot.image:
                 
@@ -141,7 +141,7 @@ class DiffComputer(threading.Thread):
             if step_snapshot:
                 step_snapshot.computed = True
                 step_snapshot.save()
-            logger.info('finished computing in %.2fs' % (time.clock() - start))
+            logger.info('finished computing in %.2fs' % (time.perf_counter() - start))
 
     def mark_diff(self, diff_image):
         """
