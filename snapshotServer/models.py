@@ -29,6 +29,14 @@ class TestCase(commonsServer.models.TestCase):
     class Meta:
         proxy = True    
     
+class TestStepsThroughTestCaseInSession(models.Model):
+    testCaseInSession = models.ForeignKey('TestCaseInSession', on_delete=models.CASCADE)
+    testStep = models.ForeignKey('TestStep', on_delete=models.CASCADE)
+    order = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering = ['order', ]
+    
 class TestCaseInSession(models.Model):
     """
     The test case in a test session
@@ -36,7 +44,8 @@ class TestCaseInSession(models.Model):
     __test__= False  # avoid detecting it as a test class
     testCase = models.ForeignKey(TestCase, related_name="testCaseInSession", on_delete=models.CASCADE)
     session = models.ForeignKey('TestSession', on_delete=models.CASCADE)
-    testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
+    testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True, through=TestStepsThroughTestCaseInSession)
+    # testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     stacktrace = models.TextField(null=True)
     name = models.CharField(max_length=100, null=True)
     

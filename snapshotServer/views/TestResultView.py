@@ -73,23 +73,23 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
     
     def get_queryset(self):
         try:
-            testCaseInSession = self.kwargs['testCaseInSessionId']
-            testSteps = TestCaseInSession.objects.get(id=testCaseInSession).testSteps.all()
+            test_case_in_session = self.kwargs['testCaseInSessionId']
+            test_steps = TestCaseInSession.objects.get(id=test_case_in_session).testSteps.all()
             
             stepSnapshots = {}
-            for stepResult in StepResult.objects.filter(testCase=testCaseInSession, step__in=testSteps).order_by('id'):
+            for step_result in StepResult.objects.filter(testCase=test_case_in_session, step__in=test_steps).order_by('id'):
                 
                 # build logs from json string
-                if stepResult.stacktrace:
-                    logs = self.buildLogStringFromJson(stepResult.stacktrace)
+                if step_result.stacktrace:
+                    logs = self.buildLogStringFromJson(step_result.stacktrace)
                 else:
                     logs = None
-                stepResult.formattedLogs = logs
+                step_result.formattedLogs = logs
                 
                 try:
-                    stepSnapshots[stepResult] = Snapshot.objects.get(stepResult = stepResult)
+                    stepSnapshots[step_result] = Snapshot.objects.get(stepResult = step_result)
                 except:
-                    stepSnapshots[stepResult] = None
+                    stepSnapshots[step_result] = None
             
             return stepSnapshots
                 

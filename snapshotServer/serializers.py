@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from snapshotServer.models import Snapshot, \
     TestCaseInSession, TestStep, TestSession, ExcludeZone, \
-    StepResult
+    StepResult, TestStepsThroughTestCaseInSession
 from commonsServer.models import TestEnvironment
 
 class TestSessionSerializer(serializers.ModelSerializer):
@@ -25,11 +25,51 @@ class TestStepSerializer(serializers.ModelSerializer):
         model = TestStep
         fields = ('id', 'name')
 
+class TestStepsThroughTestCaseInSessionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = TestStepsThroughTestCaseInSession
+        fields = ('testStep', 'order')
+        
+
 class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCaseInSession
         fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed', 'name', 'computingError')
+        
+    def create(self, validated_data):
+        
+        # do not create if it exists
+        tcss = TestCaseInSession.objects.filter(**validated_data)
+        if len(tcss) > 0:
+            test_case_in_sesssion = tcss[0]
+        else:
+            test_case_in_sesssion = super(TestCaseInSessionSerializer, self).create(validated_data)
+        
+        # add test steps
+        self._update_test_steps(test_case_in_sesssion)
+        
+        return test_case_in_sesssion
+    
+    def _update_test_steps(self, test_case_in_sesssion):
+        if 'testSteps' in self.initial_data:
+            
+            for step_through_test_case_in_session in TestStepsThroughTestCaseInSession.objects.filter(testCaseInSession=test_case_in_sesssion):
+                step_through_test_case_in_session.delete(keep_parents=True)
+            
+            for i, step_id in enumerate(self.initial_data.getlist('testSteps', [])):
+                step_through_test_case_in_session = TestStepsThroughTestCaseInSession(order=i, testStep=TestStep.objects.get(pk=int(step_id)), testCaseInSession=test_case_in_sesssion)
+                step_through_test_case_in_session.save()
+        
+        
+    def update(self, instance, validated_data):
+        
+        self._update_test_steps(instance)
+        
+        return super(TestCaseInSessionSerializer, self).update(instance, validated_data)
+        
+        
         
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     

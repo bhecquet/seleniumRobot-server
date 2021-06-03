@@ -15,10 +15,10 @@ class TestSessionViewSet(BaseViewSet):
     queryset = TestSession.objects.all()
     serializer_class = TestSessionSerializer
 
-class TestCaseInSessionViewSet(BaseViewSet):
+class TestCaseInSessionViewSet(viewsets.ModelViewSet):
     queryset = TestCaseInSession.objects.all()
     serializer_class = TestCaseInSessionSerializer
-    
+
 class TestStepViewSet(BaseViewSet):
     queryset = TestStep.objects.all()
     serializer_class = TestStepSerializer

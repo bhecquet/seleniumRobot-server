@@ -5,7 +5,9 @@ Created on 26 juil. 2017
 '''
 from django.views.generic.list import ListView
 
-from snapshotServer.models import TestCaseInSession
+from collections import OrderedDict
+from snapshotServer.models import TestCaseInSession,\
+    TestStepsThroughTestCaseInSession
 from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
 
 class StepListView(LoginRequiredMixinConditional, ListView):
@@ -20,8 +22,8 @@ class StepListView(LoginRequiredMixinConditional, ListView):
         @param testCaseInSessionId
         """
         try:
-            testSteps = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId']).testSteps.all()
-            return dict([(s, s.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])) for s in testSteps])
+            test_steps = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId']).testSteps.all().order_by('teststepsthroughtestcaseinsession__order')
+            return OrderedDict([(s, s.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])) for s in test_steps])
         except:
             return []
         
