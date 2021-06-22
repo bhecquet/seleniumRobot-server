@@ -315,7 +315,7 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         Same name as the method we override as we use it. Else django complains about an action that does not exists
         """
-        
+
         if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             # prevent deleting objects we do not have right for
             for application in Application.objects.all():
@@ -331,12 +331,12 @@ class VariableAdmin(BaseServerModelAdmin):
         action permettant de déreserver les variables (enlever l'information de releaseDate)
         """
         selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
-        for varId in selected:
+        for var_id in selected:
             try:
-                variable = Variable.objects.get(id=varId)
+                variable = Variable.objects.get(id=var_id)
                 variable.releaseDate = None
                 variable.save()
-            except:
+            except Exception as e:
                 pass
     unreserveVariable.short_description = 'déréserver les variables'
     

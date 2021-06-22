@@ -5,7 +5,7 @@ Created on 28 mars 2018
 '''
 from django.test.testcases import TestCase
 from variableServer.admin import ApplicationAdmin, VariableAdmin, is_user_authorized
-from commonsServer.models import Application
+from commonsServer.models import Application, Version
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission, Group
 from variableServer.models import Variable
@@ -18,6 +18,9 @@ import commonsServer
 from django.urls.base import reverse
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 import re
+
+from django.utils import timezone
+import datetime
 
 # tests we should add to check admin view behavior
 # - when permissions are set for application, 
@@ -252,7 +255,7 @@ class TestAdmin(TestCase):
                 app_list.append(var.application)
             
             self.assertEqual(len(list(set(app_list))), 2) # 'None' and 'app1'
-            self.assertTrue('app1' in app_list)
+            self.assertTrue(Application.objects.get(pk=1) in app_list)
         
     def test_variable_save_standard(self):
         """
@@ -308,10 +311,10 @@ class TestAdmin(TestCase):
         user.save()
 
         change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'copyTo'}
+        data = {'action': 'copyTo',
+                'index': '0',}
         response = client.post(change_url, data)
-        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        self.assertTrue('<title>Select variable to change | Django site admin</title>' in str(response.content))
+        self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
      
     def test_variable_copy_to(self):
         
@@ -322,7 +325,8 @@ class TestAdmin(TestCase):
 
         change_url = reverse('admin:variableServer_variable_changelist')
         data = {'action': 'copyTo',
-                ACTION_CHECKBOX_NAME: [3, 4]}
+                ACTION_CHECKBOX_NAME: [3, 4],
+                'index': '0',}
         response = client.post(change_url, data)
         content = self._format_content(response.content)
         
@@ -336,7 +340,159 @@ class TestAdmin(TestCase):
         Check default values are the one from the variable
         """
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        default_values = variable_admin._get_default_values([3])
+        default_values = variable_admin._get_default_values([7])
         
-        self.assertEqual(default_values['environment'], 'DEV')
+        self.assertEqual(default_values['environment'].name, 'DEV1')
+        self.assertEqual(default_values['application'].name, 'app1')
+        self.assertEqual(default_values['version'].name, '2.5')
+        self.assertEqual(default_values['reservable'], False)
+        self.assertEqual(len(default_values['test'].all()), 1)
+        
+    def test_variable_get_default_values_multiple_variables(self):
+        """
+        Check default values are the one common to first variable and others
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        default_values = variable_admin._get_default_values([7, 8])
+        
+        self.assertEqual(default_values['environment'].name, 'DEV1')
+        self.assertEqual(default_values['application'].name, 'app1')
+        self.assertEqual(default_values['version'], None)
+        self.assertEqual(default_values['reservable'], False)
+        self.assertEqual(default_values['test'], None)
+       
+        
+    def test_variable_change_no_variables(self):
+        
+        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user.is_staff = True
+        user.save()
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'changeValuesAtOnce',
+                'index': '0',}
+        response = client.post(change_url, data)
+        self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
+     
+    def test_variable_change(self):
+        
+        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user.is_staff = True
+        user.save()
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'changeValuesAtOnce',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: [3, 4]}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+        
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        self.assertTrue('<form action="/variable/changeVariables" method="post">' in content)
+        self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
+        self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
+       
+     
+    def test_variable_delete_selected_no_restriction(self):
+        """
+        Check that we can delete selected variable if no restriction applies on applications
+        """
+        
+        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user.is_staff = True
+        user.save()
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'delete_selected',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: [3]}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+        
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+        self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
+     
+     
+    def test_variable_cannot_delete_selected_with_restriction(self):
+        """
+        Check that we cannot delete selected variable as restriction apply on this application
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+            user.is_staff = True
+            user.save()
+            
+            change_url = reverse('admin:variableServer_variable_changelist')
+            data = {'action': 'delete_selected',
+                    'index': '0',
+                    ACTION_CHECKBOX_NAME: [3]}
+            response = client.post(change_url, data)
+            content = self._format_content(response.content)
+            
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable will be deleted, we do not have rights on this application
+     
+    def test_variable_can_be_delete_selected_with_restriction(self):
+        """
+        Check that we can delete selected variable as user has right to use this application
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            # be sure permission for application is created
+            Application.objects.get(pk=1).save()
+            
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+                Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='can_view_application_app1')))
+
+            user.is_staff = True
+            user.save()
+            
+            change_url = reverse('admin:variableServer_variable_changelist')
+            data = {'action': 'delete_selected',
+                    'index': '0',
+                    ACTION_CHECKBOX_NAME: [3]}
+            response = client.post(change_url, data)
+            content = self._format_content(response.content)
+            
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
+            
+     
+    def test_variable_unreserve(self):
+        
+        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user.is_staff = True
+        user.save()
+        
+        # reserve variable
+        reservable_var = Variable(name='var1', value='value1', application=Application.objects.get(pk=1), version=Version.objects.get(pk=1), releaseDate=timezone.now() + datetime.timedelta(seconds=60))
+        reservable_var.save()
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'unreserveVariable',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: [reservable_var.id]}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+        
+        self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
+        self.assertEqual(response.url, '/admin/variableServer/variable/')
+        
+        self.assertIsNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+        
+        
+        
+            
+            
+            
+            
+            
         
