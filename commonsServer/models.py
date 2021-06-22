@@ -18,13 +18,25 @@ class Application(models.Model):
 
     name = models.CharField(max_length=50)
     
+    
+    def get_linked_applications(self):
+        linked_applications = []
+        if self.linkedApplication and self.linkedApplication.id != self.id:
+            linked_applications.append(self.linkedApplication)
+            linked_applications += self.linkedApplication.get_linked_applications()
+            
+        return linked_applications
+    
+    linkedApplication = models.ManyToManyField("self", related_name='linked_application', symmetrical=False)
+    linkedApplication.short_description = 'linked application'
+    
     def __str__(self):
         return self.name
      
     def save(self, *args, **kwargs):
         super(Application, self).save(*args, **kwargs)
         content_type = ContentType.objects.get_for_model(Application)
-        Permission.objects.create(
+        Permission.objects.get_or_create(
             codename=Application.appPermissionCode + self.name,
             name='Can view application and related variables and versions for ' + self.name,
             content_type=content_type,

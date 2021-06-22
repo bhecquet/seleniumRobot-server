@@ -7,6 +7,18 @@
 -   model: variableServer.application
     pk: 3
     fields: {name: app3}
+-   model: variableServer.application
+    pk: 4
+    fields: 
+        name: app4
+        linkedApplication: [41]
+-   model: variableServer.application
+    pk: 41
+    fields:
+        name: linkedApp4
+-   model: variableServer.application
+    pk: 5
+    fields: {name: app5NoVar}
 -   model: variableServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
@@ -19,11 +31,13 @@
 -   model: variableServer.version
     pk: 4
     fields: {application: 3, name: '1.0'}
-    
--   model: variableServer.application
-    pk: 2
-    fields: {name: app2}
-
+-   model: variableServer.version
+    pk: 5
+    fields: {application: 4, name: '1.0'}
+-   model: variableServer.version
+    pk: 6
+    fields: {application: 41, name: '1.0'}
+  
 -   model: variableServer.testenvironment
     pk: 1
     fields: {name: DEV}
@@ -355,3 +369,92 @@
     model: variableServer.variable
     pk: 13
     
+        
+# variables specific to app4
+-   fields: 
+        name: varApp4
+        value: v1
+        application: 4
+        version: 5
+        environment: null
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 14
+-   fields: 
+        name: varApp4Env
+        value: v2
+        application: 4
+        version: 5
+        environment: 1
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 15
+
+# variables specific to linkedApp4
+-   fields: # no environment
+        name: varApp4Linked
+        value: v1
+        application: 41
+        version: null
+        environment: null
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 16
+-   fields: # environment defined
+        name: varApp4EnvLinked
+        value: v2
+        application: 41
+        version: null
+        environment: 1
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 17
+-   fields: # version defined => should not be retrieved
+        name: varApp4EnvLinked2
+        value: v2
+        application: 41
+        version: 6
+        environment: 1
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 18
+-   fields: # reservable => should not be retrieved
+        name: varApp4EnvLinkedReservable
+        value: v2
+        application: 41
+        version: null
+        environment: 1
+        test: []
+        internal: false
+        protected: false
+        releaseDate: null
+        description: null
+        reservable: true
+        creationDate: "2018-07-10 13:01:56.784734+00:00"
+    model: variableServer.variable
+    pk: 19

@@ -168,10 +168,15 @@ class VariableList(mixins.ListModelMixin,
         if (len(filtered_variable_names) < len(variable_names)):
             raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
         
+        initial_list = []
         if reserve_reservable_variables:            
-            return self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name)
+            initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name)]
         else:
-            return unique_variable_list
+            initial_list = [v for v in unique_variable_list]
+            
+        initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
+        
+        return initial_list
         
     def _unique_variable(self, variable_query_set):
         """
@@ -207,6 +212,26 @@ class VariableList(mixins.ListModelMixin,
                 logger.info("reserve variable [%d] %s=%s for (application=%s, version=%s, environment=%s, test=%s)" % (variable.id, variable.name, variable.value, application, version, environment, test))
                 
         return variable_list
+    
+    def _get_linked_application_variables(self, all_variables, application, environment_tree):
+        """
+        Get all variables of the applications linked to the requested application
+        """
+        
+        
+        linked_application_variables = Variable.objects.none()
+        if application.linkedApplication:
+            for linked_application in application.linkedApplication.all():
+                linked_application_variables = updateVariables(linked_application_variables, all_variables.filter(application=linked_application, version=None, environment=None, test=None, reservable=False))
+            
+                for env in environment_tree:
+                    linked_application_variables = updateVariables(linked_application_variables, all_variables.filter(application=linked_application, version=None, environment=env, test=None, reservable=False))
+ 
+        updated_linked_application_variables = []
+        for var in linked_application_variables:
+            updated_linked_application_variables.append(Variable(name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
+ 
+        return updated_linked_application_variables
 
     def get(self, request, *args, **kwargs):
         """

@@ -770,3 +770,41 @@ class TestApiView(APITestCase):
         self.assertIn('oldVar', all_variables, "oldVar should be get as it's older than requested")
         self.assertIn('oldVar2', all_variables, "oldVar2 should not be get as it's younger than requested")
         
+     
+    def test_get_all_variables_with_linked_application(self):
+        """
+        Check that if a linked application is defined, it's variables are get
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 5, 'environment': 1, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        all_variables = self._convert_to_dict(response.data)
+             
+        # check filtering is correct. 
+        self.assertTrue('varApp4' in all_variables)
+        self.assertTrue('varApp4Env' in all_variables)
+        self.assertTrue('linkedApp4.varApp4Linked' in all_variables) # variable without environment
+        self.assertTrue('linkedApp4.varApp4EnvLinked' in all_variables) # variable with environment
+        self.assertFalse('linkedApp4.varApp4EnvLinked2' in all_variables) # variable with specific version will not be returned
+        self.assertFalse('linkedApp4.varApp4EnvLinkedReservable' in all_variables) # variable is reservable, it should not be retrieved
+        
+     
+    def test_get_all_variables_with_reverse_linked_application(self):
+        """
+        Check that application that the link between application is not in both directions
+        app1 => app2 does not mean app2 => app1
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 6, 'environment': 1, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        all_variables = self._convert_to_dict(response.data)
+             
+        # check we only get variables from 'app4Linked' application
+        self.assertFalse('app4.varApp4' in all_variables)
+        self.assertFalse('app4.varApp4Env' in all_variables)
+        self.assertTrue('varApp4Linked' in all_variables) 
+        self.assertTrue('varApp4EnvLinked' in all_variables) 
+        self.assertTrue('varApp4EnvLinked2' in all_variables) 
+        self.assertTrue('varApp4EnvLinkedReservable' in all_variables) 
+        
+        

@@ -1,12 +1,14 @@
 from django.contrib import admin, messages
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django import forms
 from variableServer.models import Variable, TestCase, Application, Version
 from django.template.context_processors import csrf
 from django.shortcuts import render
 from variableServer.models import TestEnvironment
-from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
 from django.contrib.admin.filters import SimpleListFilter
+
+from django.conf import settings
 
 def is_user_authorized(user):
     """
@@ -34,7 +36,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         """
         Whether user has rights on this application
         """
-        if not FLAG_RESTRICT_APP:
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return global_permission
         
         if global_permission and request.method == 'POST' and request.POST.get('application'):
@@ -101,7 +103,7 @@ class VariableForm(forms.ModelForm):
         self.fields['description'].widget.attrs['style'] = "width:70em"
         
         # change value of available tests and versions depending on "application" value
-        if self.initial['application'] != None:
+        if 'application' in self.initial and self.initial['application'] != None:
             self.fields['test'].help_text = "If 'application' value is modified, click 'save and continue editing' to display the related list of tests"
             self.fields['test'].queryset = TestCase.objects.filter(application__id=self.initial['application'])
             
@@ -211,7 +213,7 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         qs = super(VariableAdmin, self).get_queryset(request)
         
-        if not FLAG_RESTRICT_APP:
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return qs
          
         for application in Application.objects.all():
@@ -222,22 +224,21 @@ class VariableAdmin(BaseServerModelAdmin):
 
     def save_model(self, request, obj, form, change):
         """
-        Dans le cas où l'utilisateur n'est pas habilité à voir les variables protégées (et donc, à les modifier)
-        cette méthode va remettre les valeurs par défaut pour 'value' et 'protected'
+        In case user is not allowed to see protected vars (and modifying them), this method will restore default values
         """
         
         user = request.user
         
-        # avant de sauvegarder, on récupère de la base le flag 'protected'
+        # before saving, get the 'protected' flag from database
         try:
-            dbObj = Variable.objects.get(id=obj.id)
+            db_obj = Variable.objects.get(id=obj.id)
     
-            # dans le cas où l'utilisateur n'est pas habilité à voir la variable, il ne pourra pas la modifier
-            if dbObj.protected and not is_user_authorized(user):
-                obj.protected = dbObj.protected
-                obj.value = dbObj.value
+            # In case user is not allowed to see value, he will not modify it
+            if db_obj.protected and not is_user_authorized(user):
+                obj.protected = db_obj.protected
+                obj.value = db_obj.value
         except:
-            # on peut se trouver ici dans le cas d'un ajout de variable, auquel cas, celle-ci n'existe pas déjà en BDD
+            # In case of adding variable, it's not already present in database, so continue
             pass
         
         admin.ModelAdmin.save_model(self, request, obj, form, change)
@@ -253,9 +254,9 @@ class VariableAdmin(BaseServerModelAdmin):
 
         return admin.ModelAdmin.get_form(self, request, obj=obj, **kwargs)
     
-    def _getDefaultValues(self, selected_variables):
+    def _get_default_values(self, selected_variables):
         """
-        Retourne les valeurs par défaut à sélectionner dans l'interface de copy/modification sous forme de dictionnaire
+        Render default values as dict depending of variables to modify
         """
         ref_variable = Variable.objects.get(id=int(selected_variables[0]))
         default_values = {'environment': ref_variable.environment,
@@ -286,10 +287,10 @@ class VariableAdmin(BaseServerModelAdmin):
         Action permettant de copier plusieurs variables d'un coup
         On reprend les valeurs communes des variables pour les proposer au moment de l'écran de saisie
         """
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
 
         args = {'ids': ','.join(selected), 
-                'form': VariableForm2(initial=self._getDefaultValues(selected)),
+                'form': VariableForm2(initial=self._get_default_values(selected)),
                 'queryString': request.META['QUERY_STRING']} # permettra de revenir à la liste des variables filtrée
         args.update(csrf(request))
 
@@ -301,9 +302,9 @@ class VariableAdmin(BaseServerModelAdmin):
         Action permettant de modifier plusieurs variables d'un coup
         On reprend les valeurs communes des variables pour les proposer au moment de l'écran de saisie
         """
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
         args = {'ids': ','.join(selected), 
-                'form': VariableForm2(initial=self._getDefaultValues(selected)),
+                'form': VariableForm2(initial=self._get_default_values(selected)),
                 'queryString': request.META['QUERY_STRING']} # permettra de revenir à la liste des variables filtrée
         args.update(csrf(request))
 
@@ -315,7 +316,7 @@ class VariableAdmin(BaseServerModelAdmin):
         Same name as the method we override as we use it. Else django complains about an action that does not exists
         """
         
-        if FLAG_RESTRICT_APP:
+        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             # prevent deleting objects we do not have right for
             for application in Application.objects.all():
                 if queryset.filter(application__name=application.name) and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
@@ -329,7 +330,7 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         action permettant de déreserver les variables (enlever l'information de releaseDate)
         """
-        selected = request.POST.getlist(admin.ACTION_CHECKBOX_NAME)
+        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
         for varId in selected:
             try:
                 variable = Variable.objects.get(id=varId)
@@ -369,7 +370,7 @@ class TestCaseAdmin(BaseServerModelAdmin):
         """
         qs = super(TestCaseAdmin, self).get_queryset(request)
         
-        if not FLAG_RESTRICT_APP:
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return qs
          
         for application in Application.objects.all():
@@ -378,8 +379,21 @@ class TestCaseAdmin(BaseServerModelAdmin):
                  
         return qs  
     
+        
+class ApplicationForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super(ApplicationForm, self).__init__(*args, **kwargs)
+        self.fields['linkedApplication'].required = False
+        self.fields['linkedApplication'].queryset = Application.objects.exclude(id=self.instance.id) # exclude the application itself to avoid looping
+     
+    class Meta:
+        model = Application
+        fields = ['name', 'linkedApplication']
+        
+    
 class ApplicationAdmin(admin.ModelAdmin):
-    list_display = ('name', )
+    list_display = ('name',)
+    form = ApplicationForm
 
     # deactivate all actions so that deleting an application must be done from detailed view
     actions = None
@@ -395,7 +409,7 @@ class ApplicationAdmin(admin.ModelAdmin):
         else:
             return (
                  (None, {
-                        'fields': ('name',),
+                        'fields': ('name', 'linkedApplication'),
                         'description': '<div style="font-size: 16px;color: red;">All tests / variables must be deleted before this application can be deleted</div>'}
                   ),
                  )
@@ -405,17 +419,17 @@ class ApplicationAdmin(admin.ModelAdmin):
         Do not display delete button if some tests / variables are linked to this application
         """
         
-        canDelete = admin.ModelAdmin.has_delete_permission(self, request, obj=obj)
+        can_delete = admin.ModelAdmin.has_delete_permission(self, request, obj=obj)
         
         # when no object provided, default behavior
         if not obj:
-            return canDelete
+            return can_delete
         
         # check for linked test cases and variables
         if len(TestCase.objects.filter(application=obj)) and len(Variable.objects.filter(application=obj)):
             return False
         else:
-            return True and canDelete 
+            return True and can_delete 
         
 class VersionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -470,7 +484,7 @@ class VersionAdmin(BaseServerModelAdmin):
         """
         qs = super(VersionAdmin, self).get_queryset(request)
         
-        if not FLAG_RESTRICT_APP:
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return qs
          
         for application in Application.objects.all():
