@@ -28,6 +28,8 @@ SECRET_KEY = '${django.secret.key}'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
+# allow files up to 10 MB to be uploaded
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
 
 
 AUTHENTICATION_BACKENDS = (

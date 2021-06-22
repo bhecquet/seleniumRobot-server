@@ -25,6 +25,9 @@ SECRET_KEY = 'nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# allow files up to 10 MB to be uploaded
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
+
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_FILE_NAME = 'unittest.xml'
 
