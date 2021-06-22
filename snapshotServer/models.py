@@ -30,8 +30,8 @@ class TestCase(commonsServer.models.TestCase):
         proxy = True    
     
 class TestStepsThroughTestCaseInSession(models.Model):
-    testCaseInSession = models.ForeignKey('TestCaseInSession', on_delete=models.CASCADE)
-    testStep = models.ForeignKey('TestStep', on_delete=models.CASCADE)
+    testcaseinsession = models.ForeignKey('TestCaseInSession', on_delete=models.CASCADE)
+    teststep = models.ForeignKey('TestStep', on_delete=models.CASCADE)
     order = models.PositiveSmallIntegerField(default=0)
 
     class Meta:
