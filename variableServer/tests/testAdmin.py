@@ -1068,7 +1068,7 @@ class TestAdmin(TestCase):
         form = VariableForm(instance=Variable.objects.get(pk=1))
         self.assertEqual(form.fields['test'].help_text, "Select an application, click 'save and continue editing' to display the list of related tests")
         self.assertTrue(form.fields['test'].disabled) # check field is disabled when no application is selected
-        self.assertEqual(form.fields['version'].help_text, "If 'application' value is modified, click 'save and continue editing' to display the related list of versions")
+        self.assertEqual(form.fields['version'].help_text, "Select an application, click 'save and continue editing' to display the list of related versions")
         self.assertTrue(form.fields['version'].disabled) # check field is disabled when no application is selected
         
 
@@ -1286,7 +1286,7 @@ class TestAdmin(TestCase):
         for test_case in query_set:
             app_list.append(test_case.application)
         
-        self.assertTrue(len(list(set(app_list))) > 2) # at least 'None' and 2 other applications
+        self.assertEqual(len(list(set(app_list))), 2) # at least 2 applications
           
     def test_testcase_queryset_with_application_restriction(self):
         """
