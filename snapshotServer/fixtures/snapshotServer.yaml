@@ -55,8 +55,8 @@
 -   model: snapshotServer.teststepsthroughtestcaseinsession
     pk: 101
     fields:
-        testStep: 1
-        testCaseInSession: 1
+        teststep: 1
+        testcaseinsession: 1
         order: 0
 -   model: snapshotServer.stepresult
     pk: 1
@@ -99,14 +99,14 @@
 -   model: snapshotServer.teststepsthroughtestcaseinsession
     pk: 102
     fields:
-        testStep: 2
-        testCaseInSession: 101
+        teststep: 2
+        testcaseinsession: 101
         order: 1
 -   model: snapshotServer.teststepsthroughtestcaseinsession
     pk: 103
     fields:
-        testStep: 3
-        testCaseInSession: 101
+        teststep: 3
+        testcaseinsession: 101
         order: 0
     
 # corner cases for testing model
