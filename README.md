@@ -288,6 +288,14 @@ From there, it's also possible to add some dependencies. For example, if your va
 - *internal*: this variable has been created by seleniumRobot for internal use. **Do not edit**
 - *protected*: value should not be displayed to non admin users or users that do not have the `Can see protected vars` right (e.g: passwords)
 
+
+#### Define dependencies between applications ####
+
+In case your seleniumRobot test navigates through multiple application (app1 -> app2 -> app1), it may be useful to get variables from app2 at the same time as variables from app1.
+To do so, in "app1" configuration, select the 'linkedApplication' => 'app2'
+
+In seleniumRobot, variables from 'app2' will then be accessible with `param("app2.myVar")`
+
 ### Snapshot server ###
 
 This server aims at storing test snapshots to compare them
