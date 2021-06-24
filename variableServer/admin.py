@@ -73,11 +73,65 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         Django model instance, the default implementation doesn't examine the
         `obj` parameter.
         """
-        perm = super(BaseServerModelAdmin, self).has_change_permission(request, obj)
+        perm = super(BaseServerModelAdmin, self).has_delete_permission(request, obj)
                 
         return perm and self._has_app_permission(perm, request, obj)
+    
+class VersionFilter(SimpleListFilter):
+    """
+    Depending on selected application, will show only related versions
+    """
+    title = 'Version'
+    parameter_name = 'version'
+
+    def lookups(self, request, model_admin):
+        if 'application__id__exact' in request.GET:
+            app_id = request.GET['application__id__exact']
+            versions = set([c.version for c in model_admin.model.objects.all().filter(application=app_id)])
+        else:
+            versions = set([c.version for c in model_admin.model.objects.all()])
+        return [(v.id, str(v)) for v in versions if v is not None] + [('_None_', 'None')]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            if self.value() == '_None_':
+                return queryset.filter(version__id__exact=None)
+            else:
+                return queryset.filter(version__id__exact=self.value())
+            
+        else:
+            return queryset
+            
+class EnvironmentFilter(SimpleListFilter):
+    """
+    Depending on selected application, will show only related versions
+    """
+    title = 'Environment'
+    parameter_name = 'environment'
+
+    def lookups(self, request, model_admin):
+        if 'application__id__exact' in request.GET:
+            app_id = request.GET['application__id__exact']
+            environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
+        else:
+            environments = set([c.environment for c in model_admin.model.objects.all()])
+        return [(e.id, str(e)) for e in environments if e is not None] + [('_None_', 'None')]
+
+    def queryset(self, request, queryset):
+        if self.value():
+            if self.value() == '_None_':
+                return queryset.filter(environment__id__exact=None)
+            else:
+                return queryset.filter(environment__id__exact=self.value())
+        else:
+            return queryset
 
 class VariableForm(forms.ModelForm):
+    
+    
+    class Meta:
+        model = Variable
+        exclude = []
 
     def __init__(self, *args, **kwargs):
         super(VariableForm, self).__init__(*args, **kwargs)
@@ -137,9 +191,9 @@ class VariableForm2(forms.ModelForm):
         Methode permettant de prendre en charge le ManyToManyFields. Sinon, on avait une KeyError lors de la modification d'une variable
         """
         if field_name == 'test':
-            initialValue = self.initial.get(field_name, field.initial)
-            if initialValue:
-                return initialValue.all()
+            initial_value = self.initial.get(field_name, field.initial)
+            if initial_value:
+                return initial_value.all()
             else:
                 return None
         else:
@@ -148,50 +202,6 @@ class VariableForm2(forms.ModelForm):
     class Meta:
         model = Variable
         fields = ['application', 'version', 'environment', 'test', 'reservable']
-        
-class VersionFilter(SimpleListFilter):
-    """
-    Depending on selected application, will show only related versions
-    """
-    title = 'Version'
-    parameter_name = 'version'
-
-    def lookups(self, request, model_admin):
-        if 'application__id__exact' in request.GET:
-            app_id = request.GET['application__id__exact']
-            versions = set([c.version for c in model_admin.model.objects.all().filter(application=app_id)])
-        else:
-            versions = set([c.version for c in model_admin.model.objects.all()])
-        return [(v.id, str(v)) for v in versions if v is not None] + [('_None_', 'None')]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            if self.value() == '_None_':
-                return queryset.filter(version__id__exact=None)
-            else:
-                return queryset.filter(version__id__exact=self.value())
-            
-class EnvironmentFilter(SimpleListFilter):
-    """
-    Depending on selected application, will show only related versions
-    """
-    title = 'Environment'
-    parameter_name = 'environment'
-
-    def lookups(self, request, model_admin):
-        if 'application__id__exact' in request.GET:
-            app_id = request.GET['application__id__exact']
-            environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
-        else:
-            environments = set([c.environment for c in model_admin.model.objects.all()])
-        return [(e.id, str(e)) for e in environments if e is not None] + [('_None_', 'None')]
-
-    def queryset(self, request, queryset):
-        if self.value():
-            if self.value() == '_None_':
-                return queryset.filter(environment__id__exact=None)
-            else:
-                return queryset.filter(environment__id__exact=self.value())
 
 class VariableAdmin(BaseServerModelAdmin): 
     list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
@@ -340,6 +350,7 @@ class VariableAdmin(BaseServerModelAdmin):
                 pass
     unreserveVariable.short_description = 'déréserver les variables'
     
+    
 class EnvironmentForm(forms.ModelForm):
     
     def __init__(self, *args, **kwargs):
@@ -426,10 +437,10 @@ class ApplicationAdmin(admin.ModelAdmin):
             return can_delete
         
         # check for linked test cases and variables
-        if len(TestCase.objects.filter(application=obj)) and len(Variable.objects.filter(application=obj)):
+        if len(TestCase.objects.filter(application=obj)) or len(Variable.objects.filter(application=obj)):
             return False
         else:
-            return True and can_delete 
+            return can_delete 
         
 class VersionForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
@@ -466,17 +477,17 @@ class VersionAdmin(BaseServerModelAdmin):
         Do not display delete button if some tests / variables are linked to this application
         """
         
-        canDelete = admin.ModelAdmin.has_delete_permission(self, request, obj=obj)
+        can_delete = admin.ModelAdmin.has_delete_permission(self, request, obj=obj)
         
         # when no object provided, default behavior
         if not obj:
-            return canDelete
+            return can_delete
         
         # check for linked variables
         if len(Variable.objects.filter(version=obj)):
             return False
         else:
-            return True and canDelete  
+            return can_delete  
         
     def get_queryset(self, request):
         """

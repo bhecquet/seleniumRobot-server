@@ -19,6 +19,9 @@
 -   model: variableServer.application
     pk: 5
     fields: {name: app5NoVar}
+-   model: variableServer.application
+    pk: 6
+    fields: {name: app6NoVarNoTest}
 -   model: variableServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
@@ -37,6 +40,9 @@
 -   model: variableServer.version
     pk: 6
     fields: {application: 41, name: '1.0'}
+-   model: variableServer.version
+    pk: 7
+    fields: {application: 5, name: '1.0'}
   
 -   model: variableServer.testenvironment
     pk: 1
@@ -64,6 +70,11 @@
     fields:
         name: test2 with some spaces
         application: 1
+-   model: variableServer.testcase
+    pk: 3
+    fields:
+        name: test3 with some spaces
+        application: 5
         
 # global variable
 -   fields: 
