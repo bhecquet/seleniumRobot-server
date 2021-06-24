@@ -1,5 +1,6 @@
 
 from django.conf.urls import url, include
+from django.urls import re_path
 from rest_framework import routers
 from commonsServer.views.api.VersionView import VersionView
 from commonsServer.views.api.ApplicationView import ApplicationView
@@ -15,9 +16,9 @@ router.register(r'testcase', viewsets.TestCaseViewSet)
 router.register(r'environment', viewsets.TestEnvironmentViewSet)
 
 urlpatterns = [
-    url(r'^api/', include(router.urls), name='api'),
-    url(r'^api/gapplication', ApplicationView.as_view(), name='applicationApi'),
-    url(r'^api/gversion', VersionView.as_view(), name='versionApi'),
-    url(r'^api/genvironment', EnvironmentView.as_view(), name='environmentApi'),
-    url(r'^api/gtestcase', TestCaseView.as_view(), name='testCaseApi'),
+    re_path(r'^api/', include(router.urls), name='api'),
+    re_path(r'^api/gapplication', ApplicationView.as_view(), name='applicationApi'),
+    re_path(r'^api/gversion', VersionView.as_view(), name='versionApi'),
+    re_path(r'^api/genvironment', EnvironmentView.as_view(), name='environmentApi'),
+    re_path(r'^api/gtestcase', TestCaseView.as_view(), name='testCaseApi'),
 ]

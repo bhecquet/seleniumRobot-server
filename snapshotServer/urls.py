@@ -1,18 +1,3 @@
-"""seleniumRobotServer URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/1.10/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  url(r'^$', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  url(r'^$', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.conf.urls import url, include
-    2. Add a URL to urlpatterns:  url(r'^blog/', include('blog.urls'))
-"""
 from django.conf.urls import url, include
 from rest_framework import routers
 
@@ -32,7 +17,7 @@ from snapshotServer.views.TestResultView import TestResultView
 from commonsServer.views.viewsets import ApplicationViewSet
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from django.urls.conf import path
+from django.urls.conf import re_path
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
@@ -44,25 +29,25 @@ router.register(r'exclude', viewsets.ExcludeZoneViewSet)
 router.register(r'session', viewsets.TestSessionViewSet)
 
 urlpatterns = [
-    url(r'^api/', include(router.urls), name='api'),
-    url(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
-    url(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
+    re_path(r'^api/', include(router.urls), name='api'),
+    re_path(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
+    re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     
-    url(r'^$', ApplicationVersionListView.as_view(), name='home'),
+    re_path(r'^$', ApplicationVersionListView.as_view(), name='home'),
     
-    url(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
-    url(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
+    re_path(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
+    re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
 
-    url(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
-    url(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
-    url(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
+    re_path(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
+    re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
+    re_path(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
     # force view to set CSRF cookie so that editing exclusion zones do not fail 
-    url(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(StepListView.as_view()))), name="steplistView"), 
-    url(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
-    url(r'^compare/excludeList/(?P<ref_snapshot_id>[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
+    re_path(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(StepListView.as_view()))), name="steplistView"), 
+    re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
+    re_path(r'^compare/excludeList/(?P<ref_snapshot_id>[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
-    url(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
-    url(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
     
 ]
