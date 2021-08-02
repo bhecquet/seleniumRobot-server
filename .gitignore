@@ -7,3 +7,5 @@ dist/
 /db.sqlite3
 /venv/
 /cover/
+/media/
+/coverage_html_report/
