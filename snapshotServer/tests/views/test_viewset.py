@@ -59,7 +59,7 @@ class TestViewset(APITestCase):
     
     def test_creation_when_exist_with_test_steps(self):
         """
-        New testCaseInSession should be created as it does not match any existing testCaseInSession (no test steps)
+        New testCaseInSession should be created as it does not match any existing testCaseInSession (with test steps)
         """
         response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4, 'testSteps': [2, 3, 4]})
         self.assertEqual(response.status_code, 201)

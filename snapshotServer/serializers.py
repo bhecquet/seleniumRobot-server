@@ -82,6 +82,11 @@ class SnapshotSerializer(serializers.ModelSerializer):
         model = Snapshot
         fields = ('id', 'stepResult', 'name', 'compareOption', 'diffTolerance')
         
+class StepReferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Snapshot
+        fields = ('id', 'stepResult')
+        
 class StepResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepResult

@@ -22,7 +22,7 @@ class TestViews(SnapshotTestCase):
     
     fixtures = ['snapshotServer.yaml']
     dataDir = 'snapshotServer/tests/data/'
-    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         self.client = Client()
@@ -64,9 +64,9 @@ class TestViews(SnapshotTestCase):
         """
         
         super().tearDown()
-        for f in os.listdir(self.mediaDir):
+        for f in os.listdir(self.media_dir):
             if f.startswith('img_'):
-                os.remove(self.mediaDir + os.sep + f)
+                os.remove(self.media_dir + os.sep + f)
 
     
 

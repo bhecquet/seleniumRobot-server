@@ -3,7 +3,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.forms import ImageUploadForm
+from snapshotServer.forms import ImageForComparisonUploadForm
 from snapshotServer.models import Snapshot, StepResult
 import json
 from django.http.response import HttpResponse
@@ -23,7 +23,7 @@ class FileUploadView(views.APIView):
     # curl -u admin:adminServer -F "step=1" -F "testCase=1" -F "sessionId=1234" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
     def post(self, request, filename, format=None):
         
-        form = ImageUploadForm(request.POST, request.FILES)
+        form = ImageForComparisonUploadForm(request.POST, request.FILES)
         
         
         if form.is_valid():

@@ -1,12 +1,18 @@
 -   model: snapshotServer.application
     pk: 1
     fields: {name: infotel}
+-   model: snapshotServer.application
+    pk: 2
+    fields: {name: company}
 -   model: snapshotServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
 -   model: snapshotServer.version
     pk: 2
     fields: {application: 1, name: '2.5'}
+-   model: snapshotServer.version
+    pk: 3
+    fields: {application: 2, name: '1.0'}
 -   model: snapshotServer.testenvironment
     pk: 1
     fields: {name: DEV}
@@ -446,4 +452,45 @@
         step: 2
         testCase: 10
         result: true
-    
+        
+# testing step reference
+
+-   model: snapshotServer.testcase
+    pk: 5
+    fields:
+        name: test1app2
+        application: 2
+-   model: snapshotServer.testsession
+    pk: 12
+    fields:
+        sessionId: '1255'
+        version: 3
+        date: '2017-05-05T12:16:09.184106+01:00'
+        browser: chrome
+        environment: 2
+        compareSnapshot: false
+        name: session_other_browser
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 11
+    fields:
+        testCase: 5
+        session: 12
+        testSteps: [1]
+-   model: snapshotServer.stepresult
+    pk: 13
+    fields: 
+        step: 1
+        testCase: 11
+        result: true
+        
+-   model: snapshotServer.stepreference
+    pk: 1
+    fields:
+        stepResult: 13
+        image: documents/test_Image1.png    
+-   model: snapshotServer.stepreference
+    pk: 2
+    fields:
+        stepResult: 11
+        image: documents/test_Image1.png    

@@ -20,14 +20,14 @@ from snapshotServer.tests import SnapshotTestCase
 class TestDiffComputer(SnapshotTestCase):
     
     fixtures = ['snapshotServer.yaml']
-    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
  
     def tearDown(self):
         super().tearDown()
          
-        for f in os.listdir(self.mediaDir):
+        for f in os.listdir(self.media_dir):
             if f.startswith('img_'):
-                os.remove(self.mediaDir + os.sep + f)
+                os.remove(self.media_dir + os.sep + f)
   
     def test_create_instance(self):
         """

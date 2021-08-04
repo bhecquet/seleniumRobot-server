@@ -3,7 +3,7 @@ from django import forms
 from snapshotServer.models import StepResult
 
 
-class ImageUploadForm(forms.Form):
+class ImageForComparisonUploadForm(forms.Form):
     """Image upload form."""
     image = forms.ImageField()
     stepResult = forms.IntegerField()
@@ -28,3 +28,21 @@ class ImageUploadForm(forms.Form):
         
         if self.cleaned_data['compare'] not in ['true', 'false']:
             self.cleaned_data['compare'] = 'true'
+
+class ImageForStepReferenceUploadForm(forms.Form):
+    """Image upload form."""
+    image = forms.ImageField()
+    stepResult = forms.IntegerField()
+    
+    def clean(self):
+        super().clean()
+        try:
+            self.cleaned_data['stepResult']
+        except KeyError as e:
+            raise forms.ValidationError("stepResult must be specified")
+          
+        try:
+            StepResult.objects.get(id=self.cleaned_data['stepResult'])
+        except Exception as e:
+            raise forms.ValidationError("stepResult not found")
+       

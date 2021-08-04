@@ -5,9 +5,10 @@ Created on 4 mai 2017
 '''
 from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
     TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer,\
-    StepResultSerializer
+    StepResultSerializer, StepReferenceSerializer
 from rest_framework import viewsets
-from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult
+from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
+    StepReference
 from commonsServer.views.viewsets import BaseViewSet
 from commonsServer.views.serializers import ApplicationSerializer
 
@@ -34,3 +35,7 @@ class StepResultViewSet(viewsets.ModelViewSet):
 class ExcludeZoneViewSet(BaseViewSet):
     queryset = ExcludeZone.objects.all()
     serializer_class = ExcludeZoneSerializer
+    
+class StepReferenceViewSet(viewsets.ModelViewSet):
+    queryset = StepReference.objects.all()
+    serializer_class = StepReferenceSerializer

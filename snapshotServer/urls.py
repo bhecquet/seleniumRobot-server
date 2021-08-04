@@ -17,7 +17,8 @@ from snapshotServer.views.TestResultView import TestResultView
 from commonsServer.views.viewsets import ApplicationViewSet
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
-from django.urls.conf import re_path
+from django.urls.conf import re_path, path
+from snapshotServer.views.StepReferenceView import StepReferenceView
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
@@ -34,6 +35,9 @@ urlpatterns = [
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
     
     re_path(r'^$', ApplicationVersionListView.as_view(), name='home'),
+    
+    path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
+    re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     
     re_path(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
     re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),

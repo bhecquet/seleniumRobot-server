@@ -12,6 +12,7 @@ import datetime
 from django.db.models.aggregates import Count
 import logging
 from commonsServer.models import TruncatingCharField
+from django.utils.safestring import mark_safe
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -191,9 +192,34 @@ class TestSession(models.Model):
                                             .exclude(id__in=[s.stepResult.testCase.session.id for s in Snapshot.objects.filter(refSnapshot=None).select_related('stepResult__testCase__session')]).distinct():
             logging.info("deleting session {}-{} of the {}".format(session.id, str(session), session.date))
             session.delete()
+     
+def upload_path(instance, filename):
+    return 'documents/references/%s/%s/%s' % (instance.stepResult.testCase.testCase.application, instance.stepResult.testCase.testCase.name, filename)
         
+class StepReference(models.Model):
+    """
+    Class for storing reference picture and data associated to a successful step
+    """
+    
+    stepResult = models.ForeignKey('StepResult', related_name='step_reference', on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=upload_path)
+    
+    def image_tag(self):
+        if self.image:
+            return mark_safe('<img src="%s" style="width: 400px;" />' % self.image.url)
+        else:
+            return 'No Image Found'
+    image_tag.short_description = 'Image'
+    
+    def step_name(self):
+        return self.stepResult.step.name
+    
+    # we could also add: signature, text, fields, for comparison
     
 class Snapshot(models.Model):
+    """
+    Snapshot class to store image with comparison data, for UI regression
+    """
 
     stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='documents/%Y/%m/%d')

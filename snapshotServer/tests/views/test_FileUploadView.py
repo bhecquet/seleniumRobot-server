@@ -21,7 +21,7 @@ from django.conf import settings
 class TestFileUploadView(APITestCase):
     fixtures = ['snapshotServer.yaml']
     
-    mediaDir = settings.MEDIA_ROOT + os.sep + 'documents'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         authenticate_test_client_for_api(self.client)
@@ -67,9 +67,9 @@ class TestFileUploadView(APITestCase):
         
         super().tearDown()
         
-        for f in os.listdir(self.mediaDir):
+        for f in os.listdir(self.media_dir):
             if f.startswith('engie'):
-                os.remove(self.mediaDir + os.sep + f)
+                os.remove(self.media_dir + os.sep + f)
     
     def test_post_snapshot_no_ref(self):
         """
