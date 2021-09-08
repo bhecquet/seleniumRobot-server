@@ -15,7 +15,7 @@ class Test_ApplicationListView(TestViews):
         Application list should be rendered
         """
         response = self.client.get(reverse('home'))
-        self.assertEqual(len(response.context['object_list']), 2)
+        self.assertEqual(len(response.context['object_list']), 3)
 
     def test_select_an_application(self):
         """
@@ -27,9 +27,9 @@ class Test_ApplicationListView(TestViews):
 
     def test_no_application_selected(self):
         """
-        Application list should be rendered and error displayed because an inexisting application has been requested
+        Application list should be rendered and error displayed because an unexisting application has been requested
         """
         response = self.client.get(reverse('home'), data={'application': 100})
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(len(response.context['object_list']), 2)
+        self.assertEqual(len(response.context['object_list']), 3)
         self.assertTrue('error' in response.context)

@@ -92,7 +92,7 @@ class TestStepReferenceView(APITestCase):
         response = self.client.get(reverse('stepReference', kwargs={'step_result_id': self.sr1.id}))
         self.assertEqual(response.status_code, 200, 'status code should be 200')
         self.assertEqual(response.headers['Content-Length'], '14378')
-        io.BytesIO(b"".join(response.streaming_content)).getvalue()
+        io.BytesIO(response.content).getvalue()
            
             
     

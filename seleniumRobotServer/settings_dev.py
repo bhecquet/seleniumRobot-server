@@ -53,13 +53,14 @@ DATABASES = {
 #     }
 }
 
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # whether to enable security of API / GUI
 SECURITY_WEB_ENABLED = "True"
-SECURITY_API_ENABLED = "True"
+SECURITY_API_ENABLED = "" 
 
 if (SECURITY_API_ENABLED):
     REST_FRAMEWORK = {
@@ -79,6 +80,7 @@ else:
             'rest_framework.permissions.AllowAny'
         ]
     }
+
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)

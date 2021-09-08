@@ -69,6 +69,8 @@ class StepReferenceView(views.APIView):
         else:
             step_reference = step_reference[0]
             content_type_file = mimetypes.guess_type(step_reference.image.path)[0]
+            
+            # Streaming of file has been disable because Unirest (of seleniumRobot) cannot handle it
             # response = StreamingHttpResponse(open(step_reference.image.path, 'rb'), content_type=content_type_file)
             # response['Content-Disposition'] = "attachment; filename=%s" % str(step_reference.image)
             # response['Content-Length'] = step_reference.image.size
