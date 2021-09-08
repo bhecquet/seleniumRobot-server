@@ -22,10 +22,13 @@ class TestViewset(APITestCase):
         """
         Check we cannot access API without API token
         """
-        self.client.credentials()
-       
-        response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
-        self.assertEqual(response.status_code, 401)
+        with self.settings(REST_FRAMEWORK={'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'
+        ]
+    }):
+            self.client.credentials()
+           
+            response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
+            self.assertEqual(response.status_code, 401)
     
     def test_creation_when_not_exist(self):
         """

@@ -60,7 +60,7 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 # whether to enable security of API / GUI
 SECURITY_WEB_ENABLED = "True"
-SECURITY_API_ENABLED = "" 
+SECURITY_API_ENABLED = "True" 
 
 if (SECURITY_API_ENABLED):
     REST_FRAMEWORK = {

@@ -478,7 +478,7 @@
         session: 12
         testSteps: [1]
 -   model: snapshotServer.stepresult
-    pk: 13
+    pk: 14
     fields: 
         step: 1
         testCase: 11
@@ -487,7 +487,7 @@
 -   model: snapshotServer.stepreference
     pk: 1
     fields:
-        stepResult: 13
+        stepResult: 14
         image: documents/test_Image1.png    
 -   model: snapshotServer.stepreference
     pk: 2
