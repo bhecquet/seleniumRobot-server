@@ -63,8 +63,8 @@
 						<div class="col-lg-6">
 							{% if namedSnapshot.reference %}
 								<div class="snapshot">
+									<img src="{{ namedSnapshot.reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
 									<figure>
-										<img src="{{ namedSnapshot.reference.image.url }}" class="shadowBox figure-img img-fluid" style="width:inherit">
 										<figcaption class="figure-caption">{{ namedSnapshot.reference.stepResult.testCase.session }} - {{ namedSnapshot.reference.stepResult.testCase.session.date }}</figcaption>
 									</figure>
 								</div>
