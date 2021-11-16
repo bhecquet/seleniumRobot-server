@@ -60,13 +60,14 @@ class DiffComputer(threading.Thread):
             with DiffComputer._jobLock:
                 self.jobs.append((ref_snapshot, step_snapshot))
 
-    def compute_now(self, ref_snapshot, step_snapshot):
+    def compute_now(self, ref_snapshot, step_snapshot, save_snapshot=True):
         """
         Compute difference now
         @param ref_snapshot: the reference snapshot
         @param step_snapshot: the snapshot to compare to step_snapshot
+        @param save_snapshot: (default True). When computing, snapshot is saved into database. By setting it to False, we prevent this
         """
-        self._compute_diff(ref_snapshot, step_snapshot)
+        self._compute_diff(ref_snapshot, step_snapshot, save_snapshot)
         
     @classmethod
     def stopThread(cls):
@@ -104,7 +105,7 @@ class DiffComputer(threading.Thread):
         
         DiffComputer._instance = None
 
-    def _compute_diff(self, ref_snapshot, step_snapshot): 
+    def _compute_diff(self, ref_snapshot, step_snapshot, save_snapshot=True): 
         """
         Compare all pixels from reference snapshto and step snapshot, and store difference to database
         """
@@ -116,6 +117,7 @@ class DiffComputer(threading.Thread):
                 
                 # get the list of exclude zones
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
+                
                 
                 pixel_diffs, diff_percentage, diff_image = DiffComputer.picture_comparator.get_changed_pixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
@@ -140,7 +142,9 @@ class DiffComputer(threading.Thread):
             # issue #81: be sure step_snapshot is marked as computed so that it never remain in "computing" state
             if step_snapshot:
                 step_snapshot.computed = True
-                step_snapshot.save()
+                
+                if save_snapshot:
+                    step_snapshot.save()
             logger.info('finished computing in %.2fs' % (time.perf_counter() - start))
 
     def mark_diff(self, diff_image):

@@ -17,6 +17,7 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
     StepResult
 
 from django.conf import settings
+import json
 
 class TestFileUploadView(APITestCase):
     fixtures = ['snapshotServer.yaml']
@@ -79,6 +80,14 @@ class TestFileUploadView(APITestCase):
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
+            # check returned data: with no ref, no computing error should be raised, but snapshot is considered as computed
+            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            self.assertIsNotNone(data['id']) # ID has been provided
+            self.assertTrue(data['computed'])
+            self.assertEqual(data['computingError'], '')
+            self.assertEqual(data['diffPixelPercentage'], 0.0)
+            self.assertFalse(data['tooManyDiffs'])
+            
             uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot, "the uploaded snapshot should be recorded")
             self.assertTrue(uploaded_snapshot.computed)
@@ -108,6 +117,7 @@ class TestFileUploadView(APITestCase):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 'image': fp, 'name': 'img', 'compare': 'true'})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            
             
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
@@ -204,6 +214,184 @@ class TestFileUploadView(APITestCase):
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=tcs3, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploaded_snapshot_2.refSnapshot, uploaded_snapshot_1)
+        
+    def test_post_snapshot_no_store_picture_parameter(self):
+        """
+        Check that uploaded picture is not stored when using the "put" method
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp,  
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test1',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            
+            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            self.assertIsNone(data['id'])       # no ID provided, snapshot should not be saved in database
+            self.assertTrue(data['computed'])
+            self.assertEqual(data['computingError'], '')
+            self.assertEqual(data['diffPixelPercentage'], 0.0)
+            self.assertFalse(data['tooManyDiffs'])
+            
+            uploaded_snapshot = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            self.assertIsNone(uploaded_snapshot, "the uploaded snapshot should not be recorded")
+        
+    def test_post_snapshot_with_comparison_no_store_picture_parameter(self):
+        """
+        Check that uploaded picture is not stored when using the "put" method
+        We expect to get a comparison result
+        """
+        
+        with open('snapshotServer/tests/data/Ibis_Mulhouse.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'stepResult': self.sr1.id, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            uploaded_snapshot1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            
+        with open('snapshotServer/tests/data/Ibis_Mulhouse_diff.png', 'rb') as fp:
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test upload',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            
+            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            self.assertIsNone(data['id'])           # no ID provided, snapshot should not be saved in database
+            self.assertTrue(data['computed'])
+            self.assertEqual(data['computingError'], '')
+            self.assertTrue(data['diffPixelPercentage'] > 0.000144) # check computation has been done
+            self.assertTrue(data['tooManyDiffs'])
+            
+            # check temp file has been deleted
+            self.assertFalse(os.path.isfile(os.path.join(settings.MEDIA_ROOT, 'Ibis_Mulhouse_diff.png')))
+            
+            uploaded_snapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            self.assertEqual(uploaded_snapshot2, uploaded_snapshot1, "the second uploaded snapshot should not be recorded")
+            
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_version(self):
+        """
+        Check that an error is raised when version is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test1',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+           
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_environment(self):
+        """
+        Check that an error is raised when environment is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test1',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_browser(self):
+        """
+        Check that an error is raised when browser is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'testCaseName': 'test1',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_test_name(self):
+        """
+        Check that an error is raised when test name is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_step_name(self):
+        """
+        Check that an error is raised when step name is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+        
+    def test_post_snapshot_no_store_picture_parameter_missing_image(self):
+        """
+        Check that an error is raised when imag is not provided
+        """
+        # check no snapshot correspond to this characteristics before the test
+        self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            
+            response = self.client.put(reverse('upload', args=['img']), data={'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test1',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 500, 'status code should be 500')
+           
         
     def test_post_snapshot_no_picture(self):
         response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'name': 'img', 'compare': 'true'})

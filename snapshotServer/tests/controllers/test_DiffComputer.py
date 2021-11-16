@@ -15,6 +15,7 @@ from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, StepResult, ExcludeZone
 from django.conf import settings
 from snapshotServer.tests import SnapshotTestCase
+import shutil
 
 
 class TestDiffComputer(SnapshotTestCase):
@@ -69,6 +70,33 @@ class TestDiffComputer(SnapshotTestCase):
             # something has been computed
             self.assertIsNotNone(s2.pixelsDiff)
             self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+            
+            self.assertFalse(s1.computed) # reference picture, computed flag remains False
+            self.assertTrue(s2.computed) # diff computed, flag changed
+         
+    def test_compute_now_no_save(self):
+        """
+        Check snapshot is not saved if it's not requested
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile, name="img.png")
+            s1 = Snapshot(stepResult=StepResult.objects.get(id=1), image=img, refSnapshot=None, pixelsDiff=None)
+            
+            # as we do not save any snapshot, image has to be copied manually where DiffComputer expects it
+            shutil.copyfile("snapshotServer/tests/data/test_Image1.png", settings.MEDIA_ROOT + os.sep + "img.png")
+ 
+            s2 = Snapshot(stepResult=StepResult.objects.get(id=2), image=img, refSnapshot=None, pixelsDiff=None)
+
+            self.assertFalse(s1.computed)
+            self.assertFalse(s2.computed)
+     
+            DiffComputer.get_instance().compute_now(s1, s2, save_snapshot=False)
+     
+            # something has been computed
+            self.assertIsNotNone(s2.pixelsDiff)
+            self.assertEqual(s2.refSnapshot, s1, "refSnapshot should have been updated")
+            self.assertIsNone(s1.id)
+            self.assertIsNone(s2.id)
             
             self.assertFalse(s1.computed) # reference picture, computed flag remains False
             self.assertTrue(s2.computed) # diff computed, flag changed

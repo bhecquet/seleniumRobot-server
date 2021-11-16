@@ -334,7 +334,10 @@ def submission_delete(sender, instance, **kwargs):
 class StepResult(models.Model):
     
     def __str__(self):
-        return "result %d " % self.id
+        if self.id:
+            return "result %d " % self.id
+        else:
+            return "result tmp"
     
     step = models.ForeignKey(TestStep, related_name='stepresult', on_delete=models.CASCADE)
     testCase = models.ForeignKey(TestCaseInSession, related_name='stepresult', on_delete=models.CASCADE)
