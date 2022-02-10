@@ -1,5 +1,5 @@
 PyYAML==5.4
-Django==3.2.4
+Django==3.2.12
 django-filter==2.4.0
 djangorestframework==3.12.4
 numpy==1.18.4
