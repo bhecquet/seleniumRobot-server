@@ -50,7 +50,7 @@ class VariableList(mixins.ListModelMixin,
         
     def _delete_old_variables(self):
         """
-        Delete variables which contains a positive value for 'timeToLive' and which are still whereas they expired
+        Delete variables which contains a positive value for 'timeToLive' and which are still there whereas they expired
         """
         for var in Variable.objects.filter(timeToLive__gt=0):
             if timezone.now() - datetime.timedelta(var.timeToLive) > var.creationDate:
@@ -66,6 +66,7 @@ class VariableList(mixins.ListModelMixin,
         environment_id = self.request.query_params.get('environment', None)
         test_id = self.request.query_params.get('test', None)
         older_than = int(self.request.query_params.get('olderThan', '0'))
+        reservation_duration = int(self.request.query_params.get('reservationDuration', '900'))
         variable_name = self.request.query_params.get('name', None)
         variable_value = self.request.query_params.get('value', None)
         reserve_reservable_variables = self.request.query_params.get('reserve', 'true') == 'true'
@@ -111,7 +112,7 @@ class VariableList(mixins.ListModelMixin,
         else:
             test = None
             
-            
+        # get list of all variables that applies (variables that live forever and those which have not been obsolated
         all_variables = queryset.filter(timeToLive__lte=0) | queryset.filter(timeToLive__gt=0, creationDate__lt=timezone.now() - datetime.timedelta(older_than))
         
         variables = all_variables.filter(application=None, version=None, environment=None, test=None)
@@ -170,7 +171,7 @@ class VariableList(mixins.ListModelMixin,
         
         initial_list = []
         if reserve_reservable_variables:            
-            initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name)]
+            initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)]
         else:
             initial_list = [v for v in unique_variable_list]
             
@@ -200,14 +201,16 @@ class VariableList(mixins.ListModelMixin,
                 existing_variable_names.append(variable.name)
         return variable_query_set.filter(pk__in=[v.pk for v in unique_variable_list])
 
-    def _reserve_reservable_variables(self, variable_list, application, version, environment, test):
+    def _reserve_reservable_variables(self, variable_list, application, version, environment, test, reservation_duration):
         """
         among all variables of the queryset, mark all variables as reserved (releaseDate not null) when the are flagged as reservable
         Release will occur 15 mins after now
+        
+        @param reservation_duration: number of seconds the variables will be reserved
         """
         for variable in variable_list:
             if variable.reservable:
-                variable.releaseDate = timezone.now() + datetime.timedelta(seconds=900)
+                variable.releaseDate = timezone.now() + datetime.timedelta(seconds=reservation_duration)
                 variable.save()
                 logger.info("reserve variable [%d] %s=%s for (application=%s, version=%s, environment=%s, test=%s)" % (variable.id, variable.name, variable.value, application, version, environment, test))
                 

@@ -147,6 +147,7 @@ class TestApiView(APITestCase):
             self.assertEqual(variable['name'], 'login')
             
         self.assertTrue(Variable.objects.get(pk=response.data[0]['id']), "returned variable should be reserved")
+        self.assertIsNotNone(Variable.objects.get(pk=response.data[0]['id']).releaseDate, "returned variable should be reserved")
 
              
     def test_get_all_variables_without_test(self):
@@ -528,6 +529,26 @@ class TestApiView(APITestCase):
         self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        
+        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        delta = (releaseDate - datetime.datetime.utcnow()).seconds
+        self.assertTrue(895 < delta < 905)
+        
+        
+    def test_reserve_variable_with_increased_duration(self):
+        """
+        Check that we can specify an other duration for reservation
+        """
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reservationDuration': 1000})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+           
+        self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+        all_variables = self._convert_to_dict(response.data)
+        self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        
+        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        delta = (releaseDate - datetime.datetime.utcnow()).seconds
+        self.assertTrue(995 < delta < 1005)
              
     def test_reserve_variable_with_parameter(self):
         """

@@ -281,6 +281,7 @@
         protected: false
         releaseDate: null
         description: null
+        reservable: true
         creationDate: "2018-07-10 13:01:56.784734+00:00"
     model: variableServer.variable
     pk: 7
