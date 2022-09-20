@@ -444,7 +444,7 @@ class TestAdmin(TestCase):
         self.assertEqual(default_values['environment'].name, 'DEV1')
         self.assertEqual(default_values['application'].name, 'app1')
         self.assertEqual(default_values['version'].name, '2.5')
-        self.assertEqual(default_values['reservable'], False)
+        self.assertEqual(default_values['reservable'], True)
         self.assertEqual(len(default_values['test'].all()), 1)
         
     def test_variable_get_default_values_multiple_variables(self):
