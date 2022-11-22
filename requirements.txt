@@ -4,7 +4,7 @@ django-filter==2.4.0
 djangorestframework==3.12.4
 numpy==1.18.4
 opencv-python==3.4.14.51
-Pillow==8.3.2
+Pillow==9.3.0
 pytz==2017.2
 unittest-xml-reporting==3.0.2
 coverage==5.1
