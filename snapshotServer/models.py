@@ -41,6 +41,8 @@ class TestStepsThroughTestCaseInSession(models.Model):
 class TestCaseInSession(models.Model):
     """
     The test case in a test session
+    It is the test case, executed
+    It allows to assiociate a test case with tests steps, as list of test step may change from time to time for the same test case
     """
     __test__= False  # avoid detecting it as a test class
     testCase = models.ForeignKey(TestCase, related_name="testCaseInSession", on_delete=models.CASCADE)
@@ -125,6 +127,10 @@ class TestCaseInSession(models.Model):
             return "%s - %s" % (self.testCase.name, self.session.version.name)
     
 class TestStep(models.Model):
+    """
+    A test step, not particularly associated to any test case
+    association is done through TestCaseInSession
+    """
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=100) 
     
@@ -161,6 +167,10 @@ class TestStep(models.Model):
         return result
     
 class TestSession(models.Model):
+    """
+    A test session represents a set of tests that have been run in the same launch
+    It may contain 1 to N tests
+    """
     __test__= False  # avoid detecting it as a test class
     sessionId = models.CharField(max_length=50)
     name = models.CharField(max_length=100, default="")
@@ -332,6 +342,9 @@ def submission_delete(sender, instance, **kwargs):
             
         
 class StepResult(models.Model):
+    """
+    The result (OK or KO) for a test step in a test case
+    """
     
     def __str__(self):
         if self.id:
@@ -346,6 +359,9 @@ class StepResult(models.Model):
     stacktrace = models.TextField(null=True)
     
 class ExcludeZone(models.Model):
+    """
+    A zone in image that will be ignored when comparing snapshots
+    """
     x = models.IntegerField()
     y = models.IntegerField()
     width = models.IntegerField()

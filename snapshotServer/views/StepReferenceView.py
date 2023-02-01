@@ -20,7 +20,7 @@ class StepReferenceView(views.APIView):
     queryset = StepResult.objects.all()
 
     # test with CURL
-    # curl -u admin:adminServer -F "step=1" -F "testCase=1" -F "sessionId=1234" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
+    # curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
     def post(self, request, format=None):
         
         form = ImageForStepReferenceUploadForm(request.POST, request.FILES)
@@ -32,6 +32,7 @@ class StepReferenceView(views.APIView):
             
             # only store reference when result is OK
             if step_result.result:
+                # search an existing reference for the same testCase / testStep / version / environment
                 step_reference = StepReference.objects.filter(stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
                                              stepResult__testCase__session__version=step_result.testCase.session.version,
                                              stepResult__testCase__session__environment=step_result.testCase.session.environment,
