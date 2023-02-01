@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from snapshotServer.forms import ImageForStepReferenceUploadForm
 from snapshotServer.models import StepResult, StepReference
 import mimetypes
+import os
 
 
 class StepReferenceView(views.APIView):
@@ -41,9 +42,19 @@ class StepReferenceView(views.APIView):
                 if not step_reference:
                     StepReference(stepResult=step_result, image=image).save()
                 else:
+                    if (image is not None):
+                        old_path = step_reference.image.path
+                    else:
+                        old_path = None
                     step_reference.stepResult = step_result
                     step_reference.image = image
                     step_reference.save()
+                    
+                    try:
+                        os.remove(old_path)
+                    except (FileNotFoundError, TypeError) as e:
+                        pass
+                        
             
                 
             return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=201)

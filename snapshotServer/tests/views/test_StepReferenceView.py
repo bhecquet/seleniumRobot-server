@@ -116,6 +116,7 @@ class TestStepReferenceView(APITestCase):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
             uploaded_reference_1 = StepReference.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_file1 = uploaded_reference_1.image.path
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
@@ -124,6 +125,11 @@ class TestStepReferenceView(APITestCase):
             uploaded_reference_2 = StepReference.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploaded_reference_2, uploaded_reference_1)
+            uploaded_file2 = uploaded_reference_2.image.path
+            
+            # check the previous file has been deleted, so that we do not store old references indefinitely
+            self.assertFalse(os.path.isfile(uploaded_file1))
+            self.assertTrue(os.path.isfile(uploaded_file2))
             
     def test_post_snapshot_existing_ref_other_env(self):
         """
