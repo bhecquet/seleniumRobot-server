@@ -212,7 +212,7 @@ class StepReference(models.Model):
     """
     
     stepResult = models.ForeignKey('StepResult', related_name='step_reference', on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=upload_path)
+    image = models.ImageField(upload_to=upload_path, max_length=200)
     
     def image_tag(self):
         if self.image:
