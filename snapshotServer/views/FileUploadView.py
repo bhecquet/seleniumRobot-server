@@ -56,6 +56,7 @@ class FileUploadView(views.APIView):
         store_snapshot = form.cleaned_data['storeSnapshot']         # do we store the image or not. If False, only comparison is returned
         diff_tolerance = form.cleaned_data.get('diffTolerance', 0.0)    # percentage of admissible error
         compare_option = form.cleaned_data.get('compare', 'true')       # how we compare image
+        exclude_zones = form.cleaned_data.get('excludeZones', [])       # the exclusion zones that will be taken into account when computing
         
         # check if a reference exists for this step in the same test case / same application / same version / same environment / same browser / same name
         most_recent_reference_snapshot = Snapshot.objects.filter(stepResult__step=step_result.step,                                                    # same step in the test case
@@ -83,12 +84,20 @@ class FileUploadView(views.APIView):
         
         if most_recent_reference_snapshot:
             step_snapshot = Snapshot(stepResult=step_result, image=image, refSnapshot=most_recent_reference_snapshot, name=name, compareOption=compare_option, diffTolerance=diff_tolerance)
+            
+            # we store the snapshot for future use, when user needs to know why comparison failed
             if store_snapshot:
                 step_snapshot.save()
+                
+                # store exclude zones with the snapshot, as we already store the snapshot
+                for exclude_zone in exclude_zones:
+                    exclude_zone.snapshot = step_snapshot
+                    exclude_zone.save()
             
                 # compute difference if a reference already exist
                 DiffComputer.get_instance().add_jobs(most_recent_reference_snapshot, step_snapshot)
                 
+            # we want the comparison result now, to tell if the test should fail or not
             else:
                 try:
                     
@@ -97,7 +106,7 @@ class FileUploadView(views.APIView):
                         img.write(image.read())
                         img.flush()
                         
-                        DiffComputer.get_instance().compute_now(most_recent_reference_snapshot, step_snapshot, save_snapshot=False)
+                        DiffComputer.get_instance().compute_now(most_recent_reference_snapshot, step_snapshot, save_snapshot=False, additional_exclude_zones=exclude_zones)
                 finally:
                     try:
                         os.remove(step_snapshot.image.path)
@@ -106,6 +115,8 @@ class FileUploadView(views.APIView):
                 
                 if step_snapshot.pixelsDiff is not None:
                     with io.BytesIO(step_snapshot.pixelsDiff) as input:
+
+                        # diff is represented by a red pixel
                         diff_pixels_percentage = 100 * (sum(list(Image.open(input).getdata(3))) / 255) / (step_snapshot.image.width * step_snapshot.image.height)
 
         else:

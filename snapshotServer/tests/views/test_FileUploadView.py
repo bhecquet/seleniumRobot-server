@@ -115,7 +115,10 @@ class TestFileUploadView(APITestCase):
             uploaded_snapshot_1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 
+                                                                               'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true'})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             
@@ -208,12 +211,53 @@ class TestFileUploadView(APITestCase):
             uploaded_snapshot_1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': sr3.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': sr3.id, 
+                                                                               'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true'})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=tcs3, stepResult__step__id=1).last()
             self.assertIsNotNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploaded_snapshot_2.refSnapshot, uploaded_snapshot_1)
+            
+        
+    def test_post_snapshot_with_comparison_picture_parameter_exclude_zones(self):
+        """
+        Check that uploaded picture is stored when using the "post" method
+        We provide exclude zones to check that they are used for comparison
+        """
+        
+        with open('snapshotServer/tests/data/Ibis_Mulhouse.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'stepResult': self.sr1.id, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            uploaded_snapshot1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            
+        with open('snapshotServer/tests/data/Ibis_Mulhouse_diff.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 
+                                                                                'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'excludeZones': '[{"x": 554, "y": 256, "width": 1, "height": 1}]'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            
+            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            self.assertIsNotNone(data['id'])           # ID provided, snapshot should be saved in database
+            self.assertTrue(data['computed'])
+            self.assertEqual(data['computingError'], '')
+            self.assertTrue(data['diffPixelPercentage'] < 0.000097) # check computation has been done => 2 pixel difference due to exclude zone (3 pixel diff in original image)
+            self.assertTrue(data['tooManyDiffs'])
+            
+            # check temp file has been deleted
+            self.assertFalse(os.path.isfile(os.path.join(settings.MEDIA_ROOT, 'Ibis_Mulhouse_diff.png')))
+            
+            uploaded_snapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            self.assertEqual(uploaded_snapshot2, uploaded_snapshot1, "the second uploaded snapshot should not be recorded")
+            
+             
         
     def test_post_snapshot_no_store_picture_parameter(self):
         """
@@ -281,7 +325,48 @@ class TestFileUploadView(APITestCase):
             
             uploaded_snapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             self.assertEqual(uploaded_snapshot2, uploaded_snapshot1, "the second uploaded snapshot should not be recorded")
+           
+        
+    def test_post_snapshot_with_comparison_no_store_picture_parameter_exclude_zones(self):
+        """
+        Check that uploaded picture is not stored when using the "put" method
+        We provide exclude zones to check that they are used for comparison
+        """
+        
+        with open('snapshotServer/tests/data/Ibis_Mulhouse.png', 'rb') as fp:
+            response = self.client.post(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'stepResult': self.sr1.id, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            uploaded_snapshot1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
             
+        with open('snapshotServer/tests/data/Ibis_Mulhouse_diff.png', 'rb') as fp:
+            response = self.client.put(reverse('upload', args=['img']), data={'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'true',
+                                                                               'versionId': Version.objects.get(pk=1).id,
+                                                                               'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                               'browser': 'firefox',
+                                                                               'testCaseName': 'test upload',
+                                                                               'stepName': 'Step 1',
+                                                                               'excludeZones': '[{"x": 554, "y": 256, "width": 1, "height": 1}]'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+            
+            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            self.assertIsNone(data['id'])           # no ID provided, snapshot should not be saved in database
+            self.assertTrue(data['computed'])
+            self.assertEqual(data['computingError'], '')
+            self.assertTrue(data['diffPixelPercentage'] < 0.000097) # check computation has been done => 2 pixel difference due to exclude zone (3 pixel diff in original image)
+            self.assertTrue(data['tooManyDiffs'])
+            
+            # check temp file has been deleted
+            self.assertFalse(os.path.isfile(os.path.join(settings.MEDIA_ROOT, 'Ibis_Mulhouse_diff.png')))
+            
+            uploaded_snapshot2 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            self.assertEqual(uploaded_snapshot2, uploaded_snapshot1, "the second uploaded snapshot should not be recorded")
+            
+             
         
     def test_post_snapshot_no_store_picture_parameter_missing_version(self):
         """

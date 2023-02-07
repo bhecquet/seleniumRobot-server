@@ -1,7 +1,7 @@
 from django import forms
 
 from snapshotServer.models import StepResult, Version, TestEnvironment,\
-    Application, TestCase, TestSession, TestStep, TestCaseInSession
+    Application, TestCase, TestSession, TestStep, TestCaseInSession, ExcludeZone
 import datetime
 
 
@@ -12,6 +12,7 @@ class ImageForComparisonUploadForm(forms.Form):
     name = forms.CharField()
     compare = forms.CharField()
     diffTolerance = forms.FloatField(required=False, max_value=100, min_value=0)
+    excludeZones = forms.JSONField(required=False)
     
     def clean(self):
         super().clean()
@@ -25,6 +26,11 @@ class ImageForComparisonUploadForm(forms.Form):
         except Exception as e:
             raise forms.ValidationError("stepResult not found")
 
+        if self.cleaned_data['excludeZones'] == None:
+            self.cleaned_data['excludeZones'] = []
+        else:
+            self.cleaned_data['excludeZones'] = [ExcludeZone(x=e['x'], y=e['y'], width=e['width'], height=e['height']) for e in self.cleaned_data['excludeZones']]
+        
         
         self.cleaned_data['storeSnapshot'] = True
         
@@ -49,6 +55,7 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
     name = forms.CharField()
     compare = forms.CharField()
     diffTolerance = forms.FloatField(required=False, max_value=100, min_value=0)
+    excludeZones = forms.JSONField(required=False)
     
     def clean(self):
         super().clean()
@@ -83,6 +90,10 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
                                  result=True)
         self.cleaned_data['storeSnapshot'] = False
         
+        if self.cleaned_data['excludeZones'] == None:
+            self.cleaned_data['excludeZones'] = []
+        else:
+            self.cleaned_data['excludeZones'] = [ExcludeZone(x=e['x'], y=e['y'], width=e['width'], height=e['height']) for e in self.cleaned_data['excludeZones']]
         
         if self.cleaned_data['diffTolerance'] == None:
             self.cleaned_data['diffTolerance'] = 0.0

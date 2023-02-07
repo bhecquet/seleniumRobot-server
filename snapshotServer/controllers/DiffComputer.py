@@ -60,14 +60,15 @@ class DiffComputer(threading.Thread):
             with DiffComputer._jobLock:
                 self.jobs.append((ref_snapshot, step_snapshot))
 
-    def compute_now(self, ref_snapshot, step_snapshot, save_snapshot=True):
+    def compute_now(self, ref_snapshot, step_snapshot, save_snapshot=True, additional_exclude_zones=[]):
         """
         Compute difference now
         @param ref_snapshot: the reference snapshot
         @param step_snapshot: the snapshot to compare to step_snapshot
         @param save_snapshot: (default True). When computing, snapshot is saved into database. By setting it to False, we prevent this
+        @param additional_exclude_zones: more exclude zones to use when comparing. Allow to use exclude zones without storing them into database
         """
-        self._compute_diff(ref_snapshot, step_snapshot, save_snapshot)
+        self._compute_diff(ref_snapshot, step_snapshot, save_snapshot, additional_exclude_zones)
         
     @classmethod
     def stopThread(cls):
@@ -105,9 +106,14 @@ class DiffComputer(threading.Thread):
         
         DiffComputer._instance = None
 
-    def _compute_diff(self, ref_snapshot, step_snapshot, save_snapshot=True): 
+    def _compute_diff(self, ref_snapshot, step_snapshot, save_snapshot=True, additional_exclude_zones=[]): 
         """
         Compare all pixels from reference snapshto and step snapshot, and store difference to database
+        
+        @param ref_snapshot: reference snapshot to use for comparison
+        @param step_snapshot: snapshot for the current step. We compare it to the reference
+        @param save_snapshot: (default True) saved the step_snapshot object / update it's computed state. Will be False for temporary computing
+        @param additional_exclude_zones: more exclude zones to use when comparing. Allow to use exclude zones without storing them into database
         """
         
         logger.info('computing') 
@@ -117,7 +123,7 @@ class DiffComputer(threading.Thread):
                 
                 # get the list of exclude zones
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
-                
+                exclude_zones += [e.toRectangle() for e in additional_exclude_zones]
                 
                 pixel_diffs, diff_percentage, diff_image = DiffComputer.picture_comparator.get_changed_pixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
                 
