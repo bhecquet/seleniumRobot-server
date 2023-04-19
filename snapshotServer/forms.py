@@ -117,4 +117,23 @@ class ImageForStepReferenceUploadForm(forms.Form):
             StepResult.objects.get(id=self.cleaned_data['stepResult'])
         except Exception as e:
             raise forms.ValidationError("stepResult not found")
-       
+
+
+class ImageForFieldDetectionForm(forms.Form):
+    """
+    Image upload form for field detection
+    - task represent the type of detection we will use.
+    """
+    image = forms.ImageField()
+    task = forms.CharField()
+    resizeFactor = forms.FloatField(required=False)
+
+    def clean(self):
+        super().clean()
+        try:
+            self.cleaned_data['task']
+        except KeyError as e:
+            raise forms.ValidationError("task must be specified ('error' or 'field'")
+
+        if self.cleaned_data['resizeFactor'] == None:
+            self.cleaned_data['resizeFactor'] = 1.0

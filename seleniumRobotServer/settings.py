@@ -86,6 +86,10 @@ else:
             'rest_framework.permissions.AllowAny'
         ]
     }
+    
+    
+DRAMATIQ_BROKER['OPTIONS']['url'] = '${redis.url}/0'
+DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = '${redis.url}'
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)

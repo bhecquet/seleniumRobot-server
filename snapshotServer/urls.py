@@ -13,6 +13,7 @@ from snapshotServer.views.TestListView import TestListView
 from snapshotServer.views.TestStatusView import TestStatusView
 from snapshotServer.views.TestResultTableView import TestResultTableView
 from snapshotServer.views.TestResultView import TestResultView
+from snapshotServer.views.FieldDetectorView import FieldDetectorView
 
 from commonsServer.views.viewsets import ApplicationViewSet
 from django.views.decorators.clickjacking import xframe_options_exempt
@@ -33,7 +34,10 @@ urlpatterns = [
     re_path(r'^api/', include(router.urls), name='api'),
     re_path(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
-    
+
+    # image-field-detector
+    re_path(r'^detect/$', FieldDetectorView.as_view(), name="detect"),
+
     re_path(r'^$', ApplicationVersionListView.as_view(), name='home'),
     
     path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
@@ -53,5 +57,6 @@ urlpatterns = [
     # get status of test session or test step
     re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
     re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
+
     
 ]

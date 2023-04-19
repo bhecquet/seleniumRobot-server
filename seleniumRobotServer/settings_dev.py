@@ -81,6 +81,8 @@ else:
         ]
     }
 
+DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://redis_server.fr:6379/0'
+DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://redis_server.fr:6379'
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
