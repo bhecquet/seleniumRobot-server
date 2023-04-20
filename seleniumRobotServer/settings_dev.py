@@ -81,8 +81,23 @@ else:
         ]
     }
 
-DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://redis_server.fr:6379/0'
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://redis_server.fr:6379'
+DRAMATIQ_BROKER = {
+    "BROKER": "dramatiq.brokers.stub.StubBroker",
+    "OPTIONS": {},
+    "MIDDLEWARE": [
+        "dramatiq.middleware.AgeLimit",
+        "dramatiq.middleware.TimeLimit",
+        "dramatiq.middleware.Callbacks",
+        "dramatiq.middleware.Pipelines",
+        "dramatiq.middleware.Retries",
+        "django_dramatiq.middleware.DbConnectionsMiddleware",
+        #"django_dramatiq.middleware.AdminMiddleware",
+    ]
+}
+#DRAMATIQ_RESULT_BACKEND = None
+#DRAMATIQ_BROKER['OPTIONS'] = 'redis://redis_server.fr:6379/0'
+DRAMATIQ_RESULT_BACKEND['BACKEND'] = "dramatiq.results.backends.stub.StubBackend"
+DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS'] = {}
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)

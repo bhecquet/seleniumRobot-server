@@ -19,6 +19,8 @@ import json
 import logging
 import unidecode
 
+from snapshotServer.models import Application, Snapshot
+
 logger = logging.getLogger(__name__)
 
 @dramatiq.actor(store_results=True, max_age=10000)
@@ -29,8 +31,24 @@ def detect_remote(processor_name, imageb64, image_name, resize_factor):
     @param image_name: name of the file
     @param resize_factor: factor to apply to picture, in case it's small (for example)
     """
-    # do nothing, worker.py holds the real code
-    return {'error': None}
+    # if we are here, it means we are in unit tests, so content may be json string (the reply)
+    # expected format:
+    # {"field": {
+    #     'error': 'a possible error',
+    #     'version': 'model_version',
+    #     'image': <base64 encoded image file with bounding boxes>
+    #     'data': [ObjectBox1, ObjectBox2]
+    #   },
+    # "text": {
+    #       "text1": {box}...
+    #   }
+    # }
+    try:
+        data = json.loads(base64.b64decode(imageb64))
+        return data['field']
+    except Exception as e:
+
+        return {'error': str(e)}
 
 
 @dramatiq.actor(store_results=True, max_age=10000)
@@ -40,12 +58,29 @@ def detect_text_remote(imageb64, image_name):
     @param imageb64: image transmitted as a Base 64 string
     @param image_name: name of the file
     """
-    # do nothing, worker.py holds the real code
-    return {'error': None}
+    # if we are here, it means we are in unit tests, so content may be json string (the reply)
+    # expected format:
+    # {"field": {
+    #     'error': 'a possible error',
+    #     'version': 'model_version',
+    #     'image': <base64 encoded image file with bounding boxes>
+    #     'data': [ObjectBox1, ObjectBox2]
+    #   },
+    # "text": {
+    #       "text1": {box}...
+    #   }
+    # }
+    try:
+        reply = json.loads(base64.b64decode(imageb64))['text']
+        return reply
+    except:
+        return {'error': None}
 
 
 
 class FieldDetectorView(APIView):
+
+    queryset = Snapshot.objects.filter(pk=1) # for rights in tests
     
     def get(self, request, format=None):
         """
@@ -104,7 +139,7 @@ class FieldDetectorView(APIView):
         if not detection_data:
             return Response({'error': "Error in detection"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         elif detection_data['error']:
-            return Response(detection_data, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response(detection_data['error'], status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
             return Response(detection_data, status=status.HTTP_200_OK)
 

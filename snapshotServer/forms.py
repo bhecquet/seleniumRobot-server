@@ -124,14 +124,14 @@ class ImageForFieldDetectionForm(forms.Form):
     Image upload form for field detection
     - task represent the type of detection we will use.
     """
-    image = forms.ImageField()
+    image = forms.FileField()
     task = forms.CharField()
     resizeFactor = forms.FloatField(required=False)
 
     def clean(self):
         super().clean()
         try:
-            self.cleaned_data['task']
+            self.cleaned_data['task'] in ['error', 'field']
         except KeyError as e:
             raise forms.ValidationError("task must be specified ('error' or 'field'")
 

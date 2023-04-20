@@ -81,7 +81,7 @@ class TestFileUploadView(APITestCase):
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
             # check returned data: with no ref, no computing error should be raised, but snapshot is considered as computed
-            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            data = json.loads(response.content.decode('UTF-8'))
             self.assertIsNotNone(data['id']) # ID has been provided
             self.assertTrue(data['computed'])
             self.assertEqual(data['computingError'], '')
@@ -244,7 +244,7 @@ class TestFileUploadView(APITestCase):
                                                                                'excludeZones': '[{"x": 554, "y": 256, "width": 1, "height": 1}]'})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
             
-            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            data = json.loads(response.content.decode('UTF-8'))
             self.assertIsNotNone(data['id'])           # ID provided, snapshot should be saved in database
             self.assertTrue(data['computed'])
             self.assertEqual(data['computingError'], '')
@@ -278,7 +278,7 @@ class TestFileUploadView(APITestCase):
                                                                                'stepName': 'Step 1'})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
             
-            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            data = json.loads(response.content.decode('UTF-8'))
             self.assertIsNone(data['id'])       # no ID provided, snapshot should not be saved in database
             self.assertTrue(data['computed'])
             self.assertEqual(data['computingError'], '')
@@ -313,7 +313,7 @@ class TestFileUploadView(APITestCase):
                                                                                'stepName': 'Step 1'})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
             
-            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            data = json.loads(response.content.decode('UTF-8'))
             self.assertIsNone(data['id'])           # no ID provided, snapshot should not be saved in database
             self.assertTrue(data['computed'])
             self.assertEqual(data['computingError'], '')
@@ -353,7 +353,7 @@ class TestFileUploadView(APITestCase):
                                                                                'excludeZones': '[{"x": 554, "y": 256, "width": 1, "height": 1}]'})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
             
-            data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+            data = json.loads(response.content.decode('UTF-8'))
             self.assertIsNone(data['id'])           # no ID provided, snapshot should not be saved in database
             self.assertTrue(data['computed'])
             self.assertEqual(data['computingError'], '')
