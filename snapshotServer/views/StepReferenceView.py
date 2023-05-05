@@ -34,13 +34,17 @@ class StepReferenceView(views.APIView):
             # only store reference when result is OK
             if step_result.result:
                 # search an existing reference for the same testCase / testStep / version / environment
-                step_reference = StepReference.objects.filter(stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
-                                             stepResult__testCase__session__version=step_result.testCase.session.version,
-                                             stepResult__testCase__session__environment=step_result.testCase.session.environment,
-                                             stepResult__step=step_result.step).order_by('pk').last()
+                step_reference = StepReference.objects.filter(testCase=step_result.testCase.testCase, 
+                                             version=step_result.testCase.session.version,
+                                             environment=step_result.testCase.session.environment,
+                                             testStep=step_result.step).order_by('pk').last()
                                              
                 if not step_reference:
-                    StepReference(stepResult=step_result, image=image).save()
+                    StepReference(testCase=step_result.testCase.testCase, 
+                                 version=step_result.testCase.session.version,
+                                 environment=step_result.testCase.session.environment,
+                                 testStep=step_result.step,
+                                 image=image).save()
                 else:
                     if (image is not None):
                         old_path = step_reference.image.path
@@ -71,10 +75,10 @@ class StepReferenceView(views.APIView):
         step_result = StepResult.objects.get(id=step_result_id)
         
         # get the step reference corresponding to the same testCase/testStep
-        step_reference = StepReference.objects.filter(stepResult__testCase__testCase=step_result.testCase.testCase, 
-                                             stepResult__testCase__session__version=step_result.testCase.session.version,
-                                             stepResult__testCase__session__environment=step_result.testCase.session.environment,
-                                             stepResult__step=step_result.step)
+        step_reference = StepReference.objects.filter(testCase=step_result.testCase.testCase, 
+                                             version=step_result.testCase.session.version,
+                                             environment=step_result.testCase.session.environment,
+                                             testStep=step_result.step)
     
         if not step_reference:
             return HttpResponse(json.dumps({'error': 'no matching reference'}), content_type='application/json', status=404)

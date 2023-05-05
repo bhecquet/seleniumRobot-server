@@ -204,14 +204,20 @@ class TestSession(models.Model):
             session.delete()
      
 def upload_path(instance, filename):
-    return 'documents/references/%s/%s/%s' % (instance.stepResult.testCase.testCase.application, instance.stepResult.testCase.testCase.name, filename)
+    return 'documents/references/%s/%s/%s' % (instance.testCase.application, instance.testCase.name, filename)
         
 class StepReference(models.Model):
     """
     Class for storing reference picture and data associated to a successful step
     """
     
-    stepResult = models.ForeignKey('StepResult', related_name='step_reference', on_delete=models.CASCADE)
+    # TODO: remove field stepResult as it won't be used anymore
+    stepResult = models.ForeignKey('StepResult', related_name='step_reference', on_delete=models.CASCADE, null=True, blank=True)
+    testCase = models.ForeignKey(TestCase, on_delete=models.CASCADE, null=True, blank=True)
+    environment = models.ForeignKey(TestEnvironment, on_delete=models.CASCADE, null=True, blank=True)
+    testStep = models.ForeignKey(TestStep, on_delete=models.CASCADE, null=True, blank=True)
+    version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, blank=True)
+    
     image = models.ImageField(upload_to=upload_path, max_length=200)
     
     def image_tag(self):

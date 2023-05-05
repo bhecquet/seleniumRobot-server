@@ -104,7 +104,7 @@ class TestStepReferenceView(APITestCase):
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
-            uploaded_reference = StepReference.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_reference = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
             self.assertIsNotNone(uploaded_reference, "the uploaded snapshot should be recorded")
             
             self.assertTrue(os.path.isfile(os.path.join(self.reference_dir, 'engie.png')))
@@ -115,14 +115,14 @@ class TestStepReferenceView(APITestCase):
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
-            uploaded_reference_1 = StepReference.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1).last()
             uploaded_file1 = uploaded_reference_1.image.path
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
-            uploaded_reference_2 = StepReference.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
+            uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_same_env.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
             self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
             self.assertEqual(uploaded_reference_2, uploaded_reference_1)
             uploaded_file2 = uploaded_reference_2.image.path
@@ -137,13 +137,13 @@ class TestStepReferenceView(APITestCase):
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
-            uploaded_reference_1 = StepReference.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_other_env.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
-            uploaded_reference_2 = StepReference.objects.filter(stepResult__testCase=self.tcs_other_env, stepResult__step__id=1).last()
+            uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_other_env.testCase, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=2), testStep__id=1).last()
             self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
             self.assertNotEqual(uploaded_reference_2, uploaded_reference_1)
             
@@ -153,13 +153,13 @@ class TestStepReferenceView(APITestCase):
         """
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
-            uploaded_reference_1 = StepReference.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1).last()
             
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_other_version.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             
-            uploaded_reference_2 = StepReference.objects.filter(stepResult__testCase=self.tcs_other_version, stepResult__step__id=1).last()
+            uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_other_version.testCase, version=Version.objects.get(pk=2), environment=TestEnvironment.objects.get(id=1), testStep__id=1).last()
             self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
             self.assertNotEqual(uploaded_reference_2, uploaded_reference_1)
   
