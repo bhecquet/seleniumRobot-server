@@ -220,6 +220,11 @@ class StepReference(models.Model):
     
     image = models.ImageField(upload_to=upload_path, max_length=200)
     
+    field_detection_date = models.DateTimeField(blank=True, null=True) # empty if detection has not been performed
+    field_detection_version = models.CharField(max_length=10, default="") # version of the model used to detect fields
+    field_detection_data = models.FileField(upload_to=upload_path, max_length=200, blank=True, null=True)
+    
+    
     def image_tag(self):
         if self.image:
             return mark_safe('<img src="%s" style="width: 400px;" />' % self.image.url)

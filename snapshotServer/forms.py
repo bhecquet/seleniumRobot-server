@@ -133,7 +133,7 @@ class ImageForFieldDetectionForm(forms.Form):
         try:
             self.cleaned_data['task'] in ['error', 'field']
         except KeyError as e:
-            raise forms.ValidationError("task must be specified ('error' or 'field'")
+            raise forms.ValidationError("task must be specified ('error' or 'field')")
 
         if self.cleaned_data['resizeFactor'] == None:
             self.cleaned_data['resizeFactor'] = 1.0

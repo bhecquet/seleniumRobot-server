@@ -26,7 +26,7 @@ class FileUploadView(views.APIView):
     queryset = Snapshot.objects.all()
 
     # test with CURL
-    # curl -u admin:adminServer -F "step=1" -F "testCase=1" -F "sessionId=1234" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
+    # curl -u admin:adminServer -F "step=1" -F "testCase=1" -F "sessionId=1234" -F "image=@/home/worm/Ibis Mulhouse.png" -F "compare=true"   http://127.0.0.1:8000/upload/toto
     def post(self, request, filename, format=None):
         
         form = ImageForComparisonUploadForm(request.POST, request.FILES)
