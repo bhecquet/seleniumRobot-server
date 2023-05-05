@@ -4,6 +4,7 @@ from django.http.response import HttpResponse, StreamingHttpResponse
 from rest_framework import views
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
+from multiprocessing import Process
 
 from snapshotServer.forms import ImageForStepReferenceUploadForm
 from snapshotServer.models import StepResult, StepReference
@@ -20,9 +21,11 @@ class StepReferenceView(views.APIView):
     parser_classes = (MultiPartParser,)
     queryset = StepResult.objects.all()
 
-    # test with CURL
-    # curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
     def post(self, request, format=None):
+        """
+        test with CURL
+        curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/upload/toto
+        """
         
         form = ImageForStepReferenceUploadForm(request.POST, request.FILES)
         
@@ -50,7 +53,6 @@ class StepReferenceView(views.APIView):
                         old_path = step_reference.image.path
                     else:
                         old_path = None
-                    step_reference.stepResult = step_result
                     step_reference.image = image
                     step_reference.save()
                     
@@ -92,3 +94,9 @@ class StepReferenceView(views.APIView):
             # response['Content-Length'] = step_reference.image.size
             response = HttpResponse(open(step_reference.image.path, 'rb'), content_type=content_type_file, status=200)
             return response
+        
+    # TODO: what happens if fields cannot be computed (no redis server started)
+    def _detect_fields(self):
+        """
+        Detect fields for the reference picture
+        """
