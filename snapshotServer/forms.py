@@ -103,7 +103,7 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
 
 class ImageForStepReferenceUploadForm(forms.Form):
     """Image upload form."""
-    image = forms.ImageField()
+    image = forms.FileField()
     stepResult = forms.IntegerField()
     
     def clean(self):
@@ -131,9 +131,37 @@ class ImageForFieldDetectionForm(forms.Form):
     def clean(self):
         super().clean()
         try:
-            self.cleaned_data['task'] in ['error', 'field']
+            if self.cleaned_data['task'] not in ['error', 'field']:
+                raise KeyError("")
         except KeyError as e:
             raise forms.ValidationError("task must be specified ('error' or 'field')")
 
         if self.cleaned_data['resizeFactor'] == None:
             self.cleaned_data['resizeFactor'] = 1.0
+
+
+class DataForFieldDetectionForm(forms.Form):
+    """
+    Image upload form for field detection
+    - task represent the type of detection we will use.
+    """
+
+    image = forms.CharField(required=False)
+    stepResultId = forms.CharField(required=False)
+    version = forms.CharField(required=False)
+    output = forms.CharField()
+
+    def clean(self):
+        super().clean()
+        
+        # image may not be provided
+        self.cleaned_data['image'] = self.cleaned_data.get('image')
+        self.cleaned_data['stepResultId'] = self.cleaned_data.get('stepResultId')
+        self.cleaned_data['version'] = self.cleaned_data.get('version')
+        
+        if self.cleaned_data.get('output') not in ['json', 'image']:
+            raise forms.ValidationError("'output' must be specified ('json' or 'image')")
+        
+        if not (self.cleaned_data['stepResultId'] or self.cleaned_data['image']):
+            raise forms.ValidationError("'image' OR 'stepResultId' parameters are mandatory")
+

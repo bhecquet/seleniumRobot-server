@@ -17,9 +17,12 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 import unidecode
 
-from snapshotServer.controllers.FieldDetector import FieldDetector
-from snapshotServer.forms import ImageForFieldDetectionForm
-from snapshotServer.models import Application, Snapshot
+from snapshotServer.controllers.FieldDetector import FieldDetector, \
+    FieldDetectorThread
+from snapshotServer.forms import ImageForFieldDetectionForm,\
+    DataForFieldDetectionForm
+from snapshotServer.models import Application, Snapshot, StepReference, \
+    StepResult
 
 
 logger = logging.getLogger(__name__)
@@ -28,30 +31,112 @@ class FieldDetectorView(APIView):
 
     queryset = Snapshot.objects.filter(pk=1) # for rights in tests
     
-    def get(self, request, format=None):
+    def get(self, request):
         """
         Method that returns the debug information of a previously 'detected' image
-        :param request:
-        :param format:
+        URL parameters MUST contains either:
+        - "image": the name of the file previously submitted through POST request
+          "output": "json" (default) or "image"
+            e.g: http://127.0.0.1:8000/detect/?image=<image_name>"
+        - "stepResultId": id of the test step result so that we can find the associated application / version / test case / environment values
+          "version": version of the model used to compute fields  
+          "output": "json" (default) or "image"
+            e.g: http://127.0.0.1:8002/snapshot/detect/?stepResultId=90&version=afcc45
+        
+        In both case, it returns a JSON 
+        {
+    "<image_name>": {
+        "fields": [
+            {
+                "class_id": 2,
+                "top": 216,
+                "bottom": 239,
+                "left": 277,
+                "right": 342,
+                "class_name": "button",
+                "text": null,
+                "related_field": null,
+                "with_label": false,
+                "width": 65,
+                "height": 23
+            },
+        [...]
+        ],
+        "labels": [
+            {
+                "top": 3,
+                "left": 16,
+                "width": 72,
+                "height": 16,
+                "text": "Join Us",
+                "right": 88,
+                "bottom": 19
+            },
+        [...]
+        ]
+    },
+    "error": null,
+    "version": "afcc45"
+}
+        
+        :param request
         :return:
         """
-        detect_folder_path = Path(settings.MEDIA_ROOT, 'detect')
+        form = DataForFieldDetectionForm(request.GET)
 
-        image_name = request.GET['image']
-        if image_name is None:
-            Response(status=status.HTTP_400_BAD_REQUEST, data="'image' parameter is mandatory")
-        elif image_name in os.listdir(detect_folder_path):
-            return HttpResponse((detect_folder_path / image_name).read_bytes(), content_type='image/png');
-        elif unidecode.unidecode(image_name.replace(' ', '_')) in os.listdir(detect_folder_path):
-            return HttpResponse((detect_folder_path / unidecode.unidecode(image_name.replace(' ', '_'))).read_bytes(), content_type='image/png')
+        if form.is_valid():
+            if form.cleaned_data['image']:
+                return self._get_fields_from_image_name(form)
+            elif form.cleaned_data['stepResultId']:
+                return self._get_fields_from_step_result_id(form) 
+            
         else:
-            Response(status=status.HTTP_404_NOT_FOUND, data="image '%s' not found" % image_name)
+            return Response(status=status.HTTP_400_BAD_REQUEST, data=str(form.errors))
+        
+    def _get_fields_from_image_name(self, form):
+        detect_folder_path = Path(settings.MEDIA_ROOT, 'detect')
+        if form.cleaned_data['image'] in os.listdir(detect_folder_path):
+            if form.cleaned_data['output'] == 'image':
+                return HttpResponse((detect_folder_path / form.cleaned_data['image']).read_bytes(), content_type='image/png', status=200)
+            else:
+                return HttpResponse((detect_folder_path / form.cleaned_data['image']).with_suffix('.json').read_text(), content_type='application/json', status=200)
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND, data="image '%s' not found" % form.cleaned_data['image'])
+        
+    def _get_fields_from_step_result_id(self, form):
+        detect_folder_path = Path(settings.MEDIA_ROOT, 'detect')
+        
+        step_result = StepResult.objects.get(id=form.cleaned_data['stepResultId'])
+        step_reference = StepReference.objects.filter(testCase=step_result.testCase.testCase, 
+                                         version=step_result.testCase.session.version,
+                                         environment=step_result.testCase.session.environment,
+                                         testStep=step_result.step).last()
+        
+        if not step_reference:
+            return Response(status=status.HTTP_404_NOT_FOUND, data='no matching reference')
+        
+        # recompute when reference does not have detection_data or versions does not match
+        if not step_reference.field_detection_data or step_reference.field_detection_version != form.cleaned_data['version']:
+            field_detector_thread = FieldDetectorThread(step_reference)
+            field_detector_thread.start()
+            field_detector_thread.join()
+        
+        if step_reference.field_detection_data:
+            
+            if form.cleaned_data['output'] == 'image':
+                # the detected image may or may not be here, if a 'detect' folder cleaning has been done
+                return HttpResponse((detect_folder_path / os.path.basename(step_reference.image.name)).read_bytes(), content_type='image/png', status=200)
+            else:
+                return HttpResponse(step_reference.field_detection_data.read(), content_type='application/json', status=200)
+            
+        else:
+            return Response(status=status.HTTP_404_NOT_FOUND, data="no field detection information")
 
-    def post(self, request, format=None):
+    def post(self, request):
         """
         Method to send an image and get detection data (POST)
         
-        to test: curl -F "image=@D:\Dev\yolo\yolov3\dataset_generated_small\out-7.jpg"   -F "task=field" http://127.0.0.1:5000/detect/
+        to test: curl -F "image=@D:\Dev\yolo\yolov3\dataset_generated_small\out-7.jpg"   -F "task=field" http://127.0.0.1:8000/detect/
         additionaly, redis serveur must be available and configured in settings.py
         DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://server.com:6379/0'
         DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://server.com:6379'
@@ -65,14 +150,6 @@ class FieldDetectorView(APIView):
             processor_name = form.cleaned_data['task'] + '_processor'
             
             detection_data = FieldDetector().detect(saved_file.file.read(), saved_file.name, processor_name, form.cleaned_data['resizeFactor'])
-#
-            # b64_image = base64.b64encode(saved_file.file.read()).decode('utf-8')
-            # message_fields = detect_remote.send(processor_name, b64_image, saved_file.name, form.cleaned_data['resizeFactor'])
-            # message_text = detect_text_remote.send(b64_image, saved_file.name)
-            #
-            # detection_img_data =  message_fields.get_result(block=True)
-            # detection_text_data =  message_text.get_result(block=True)
-            # detection_data = self.merge_detection_data(saved_file.name, detection_text_data, detection_img_data)
 
             return self.finalize_detection(detection_data)
 

@@ -25,7 +25,7 @@ class StepReferenceView(views.APIView):
     parser_classes = (MultiPartParser,)
     queryset = StepResult.objects.all()
 
-    def post(self, request, format=None):
+    def post(self, request):
         """
         test with CURL
         curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/stepReference/
@@ -71,8 +71,10 @@ class StepReferenceView(views.APIView):
                 # then, if an error occurs in test, it won't be necessary to compute both reference image and step image
                 FieldDetectorThread(step_reference).start()        
                 
-                
-            return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=201)
+                return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=201)
+            
+            else:
+                return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=200)
         
         else:
             return Response(status=500, data=str(form.errors))

@@ -9,7 +9,6 @@ import time
 from unittest.mock import MagicMock, patch
 
 from django.core.files.images import ImageFile
-import django.test
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, StepResult, ExcludeZone

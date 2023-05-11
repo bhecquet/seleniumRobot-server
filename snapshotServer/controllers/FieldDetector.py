@@ -15,6 +15,7 @@ import datetime
 from django.core.files.base import File, ContentFile
 import logging
 from django.utils import timezone
+from dramatiq.results.errors import ResultTimeout
 
 logger = logging.getLogger(__name__)
 
@@ -46,11 +47,17 @@ def detect_remote(processor_name, imageb64, image_name, resize_factor):
     #       "text1": {box}...
     #   }
     # }
+    data = base64.b64decode(imageb64)
+    
+    if data == b'exception:ResultTimeout':
+        raise ResultTimeout("timeout")
+    elif data == b'exception:ConnectionError':
+        raise ConnectionError("")
+        
     try:
-        data = json.loads(base64.b64decode(imageb64))
+        data = json.loads(data)
         return data['field']
     except Exception as e:
-
         return {'error': str(e)}
 
 
@@ -73,10 +80,16 @@ def detect_text_remote(imageb64, image_name):
     #       "text1": {box}...
     #   }
     # }
+    data = base64.b64decode(imageb64)
+    
+    if data == b'exception:ResultTimeout':
+        raise ResultTimeout("timeout")
+    elif data == b'exception:ConnectionError':
+        raise ConnectionError("")
     try:
-        reply = json.loads(base64.b64decode(imageb64))['text']
-        return reply
-    except:
+        data = json.loads(data)
+        return data['text']
+    except Exception as e:
         return {'error': None}
 
 
@@ -105,8 +118,8 @@ class FieldDetectorThread(threading.Thread):
             if not detection_data['error']:
                 self.step_reference.field_detection_date = timezone.now()
                 self.step_reference.field_detection_version = detection_data.get('version', '')
-                self.step_reference.field_detection_data.save(file_path.with_suffix('.json').name, ContentFile(json.dumps(detection_data)))
                 self.step_reference.save()
+                self.step_reference.field_detection_data.save(file_path.with_suffix('.json').name, ContentFile(json.dumps(detection_data)))
                 
                 # remove old json file
                 try:
@@ -142,15 +155,34 @@ class FieldDetector(object):
         message_fields = detect_remote.send(processor_name, b64_image, file_name, resize_factor)
         message_text = detect_text_remote.send(b64_image, file_name)
 
-        detection_img_data =  message_fields.get_result(block=True)
-        detection_text_data =  message_text.get_result(block=True)
-        logger.info(f"finished detecting fields for file {file_name}")
-        return self.merge_detection_data(file_name, detection_text_data, detection_img_data)
+        try:
+            detection_img_data =  message_fields.get_result(block=True)
+            detection_text_data =  message_text.get_result(block=True)
+            logger.info(f"finished detecting fields for file {file_name}")
+            return self.merge_detection_data(file_name, detection_text_data, detection_img_data)
+        except ResultTimeout as e:
+            return {'error': 'Timeout waiting for computation'}
+        except ConnectionError as e:
+            return {'error': 'No redis server found'}
+        except Exception as e:
+            return {'error': 'Compute error ' + str(e)}
     
     
-    def merge_detection_data(self, file_name, detection_text_data, detection_img_data):
+    def merge_detection_data(self, file_name:str, detection_text_data:dict, detection_img_data:dict):
         """
+        @param file_name: name of the picture file
+        @param detection_text_data: data collected with tesseract. Format is {'text1': [
+            {
+                "top": 3,
+                "left": 16,
+                "width": 72,
+                "height": 16,
+                "text": "text1",
+                "right": 88,
+                "bottom": 19
+            },
         @param detection_img_data: data collected during detection by Yolo algorithm. Format is {'error': <some_error>, 'data': [...], 'image': <base64 image>}
+        
         """
         if 'data' not in detection_img_data:
             return {'error': detection_img_data['error']}
@@ -180,7 +212,7 @@ class FieldDetector(object):
             
         return detection_data
     
-    def correlate_text_and_fields(self, text_boxes, field_boxes):
+    def correlate_text_and_fields(self, text_boxes:dict, field_boxes:list):
         """
         Try to match a box discovered by tesseract and a box discovered by field recognition, when this box has a label
         """
@@ -194,7 +226,7 @@ class FieldDetector(object):
                 
                 if (field_box['left'] < x_text_box_center < field_box['right']
                         and field_box['top'] < y_text_box_center < field_box['bottom']
-                    # set the text for error_fields inconditionnaly, as we try to get the error message
+                    # set the text for error_fields unconditionnaly, as we try to get the error message
                     # for other fields (button, text fields, ...), we try to match only if field has a label
                     and (field_box['with_label'] or field_box['class_name'] == 'error_field')):
                     field_box['text'] = text_box['text']
