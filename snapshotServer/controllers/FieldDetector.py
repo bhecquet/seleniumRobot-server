@@ -136,10 +136,9 @@ class FieldDetector(object):
         Returns the result of field detection process
         
         detection_data = {
-                <file_name>: {
-                    'fields': detection_img_data, 
-                    'labels': list(detection_text_data)
-                },
+                'fields': detection_img_data, 
+                'labels': list(detection_text_data),
+                'fileName': <file_name>,
                 'error': detection_img_data['error'],
                 'version': detection_img_data['version']
             }
