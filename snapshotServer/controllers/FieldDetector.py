@@ -195,10 +195,9 @@ class FieldDetector(object):
 
         # create output data
         detection_data = {
-                file_name: {
-                    'fields': detection_img_data['data'], 
-                    'labels': list(detection_text_data.values())
-                },
+                'fields': detection_img_data['data'], 
+                'labels': list(detection_text_data.values()),
+                'fileName': file_name,
                 'error': detection_img_data['error'],
                 'version': detection_img_data['version']
             }

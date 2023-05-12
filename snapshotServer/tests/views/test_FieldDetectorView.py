@@ -74,9 +74,9 @@ class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCas
             data = json.loads(response.content.decode('UTF-8'))
 
             # check content of data
-            self.assertIsNotNone(data['replyDetection.json.png'])
-            self.assertEqual(len(data['replyDetection.json.png']['fields']), 21)
-            self.assertEqual(len(data['replyDetection.json.png']['labels']), 11)
+            self.assertEqual(len(data['fields']), 21)
+            self.assertEqual(len(data['labels']), 11)
+            self.assertEqual(data['fileName'], 'replyDetection.json.png')
             self.assertIsNone(data['error'])
             self.assertEqual(data['version'], "afcc45")
 
@@ -198,7 +198,7 @@ class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCas
         data = json.loads(response.content.decode('UTF-8'))
 
         self.assertEqual(data['version'], 'afcc45')
-        self.assertTrue(Path(uploaded_reference_1.field_detection_data.file.name).with_suffix('.png').name in data.keys()) # check data are get from the computed file on first submission
+        self.assertEquals(data['fileName'], Path(uploaded_reference_1.field_detection_data.file.name).with_suffix('.png').name) # check data are get from the computed file on first submission
         
     def test_get_fields_from_step_result_format_json_no_previous_field_computation(self):
         """

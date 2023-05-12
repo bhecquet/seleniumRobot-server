@@ -48,15 +48,14 @@ class TestFieldDetector(TestCase):
         
         with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
             detection_data = FieldDetector().detect(fp.read(), 'replyDetection.json.png', 'field_processor', 1.0)
-            self.assertTrue('replyDetection.json.png' in detection_data, "no detection data returned")
-            self.assertIsNotNone(detection_data['replyDetection.json.png'])
-            self.assertEqual(len(detection_data['replyDetection.json.png']['fields']), 21)
-            self.assertEqual(len(detection_data['replyDetection.json.png']['labels']), 11)
+            self.assertEqual(len(detection_data['fields']), 21)
+            self.assertEqual(len(detection_data['labels']), 11)
+            self.assertEqual(detection_data['fileName'], 'replyDetection.json.png')
             self.assertIsNone(detection_data['error'])
             self.assertEqual(detection_data['version'], "afcc45")
             
             # check content to see if merging between text and fields is properly done
-            self.assertEqual(detection_data['replyDetection.json.png']['fields'][4]['text'], "Full Name")
+            self.assertEqual(detection_data['fields'][4]['text'], "Full Name")
             
             # check files are there
             self.assertTrue(Path(self.detect_dir, 'replyDetection.json.png').exists())
@@ -136,7 +135,7 @@ class TestFieldDetector(TestCase):
         
         # text has been added to field
         FieldDetector().correlate_text_and_fields(labels, fields)
-        self.assertEquals(fields[0]['text'], 'Join Us')
+        self.assertEqual(fields[0]['text'], 'Join Us')
 
     def test_correlate_text_and_fields_match_class_error(self):
         """
@@ -171,7 +170,7 @@ class TestFieldDetector(TestCase):
         
         # text has been added to field
         FieldDetector().correlate_text_and_fields(labels, fields)
-        self.assertEquals(fields[0]['text'], 'Join Us')
+        self.assertEqual(fields[0]['text'], 'Join Us')
         
     def test_correlate_text_and_fields_no_match_class_no_field(self):
         """
