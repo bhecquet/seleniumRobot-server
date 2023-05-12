@@ -12,7 +12,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 
 ## Windows ##
 	
-- Install python 3 >= 3.6)
+- Install python 3 >= 3.8)
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
@@ -109,7 +109,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 **Warning** In the above apache configuration, `<path_to_selenium_server_data>` may or may not be identical to `<path_to_selenium_server>` but MUST be the same as `${data.dir}` setting in settings.py file
     
 ## Linux (RHE) ##
-- Install python 3 >= 3.6
+- Install python 3 >= 3.8
 - apache install (Linux): `yum install mod_wsgi httpd24-httpd`
 - Install Postgre database (if not using a centralized database or SQLite)
 - Install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`,  `openldap-devel`,  so that dependencies can be compiled
@@ -215,6 +215,22 @@ You can activate it by
 
 ## Database ##
 to use SQLite instead of Postgre: comment the right default database in `DATABASES`
+
+## Field detector ##
+
+Field detector feature is used to detect fields (text fields, buttons, ...) on pictures.
+Computing is done for each reference picture and when '/detect' endpoint is called
+
+To enable, you have to 
+- configure one or several compute nodes ([https://github.com/bhecquet/image-fields-detector] (https://github.com/bhecquet/image-fields-detector)
+- install a redis server
+- in settings.py, update configuration
+
+```
+DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://localhost:6379/0'
+DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://localhost:6379'
+```
+- enable field detector: `FIELD_DETECTOR_ENABLED = 'True'`
 
 
 # Usage #
