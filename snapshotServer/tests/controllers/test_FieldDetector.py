@@ -11,8 +11,10 @@ from snapshotServer.controllers.FieldDetector import FieldDetector
 from dramatiq.broker import get_broker
 from dramatiq.worker import Worker
 from pathlib import Path
+from django.test.utils import override_settings
 
 
+@override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestFieldDetector(TestCase):
     
     fixtures = ['snapshotServer.yaml']
@@ -40,6 +42,9 @@ class TestFieldDetector(TestCase):
         super()._post_teardown()
 
     def test_detect_fields(self):
+        """
+        Test field detection when field detector is enabled
+        """
         
         with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
             detection_data = FieldDetector().detect(fp.read(), 'replyDetection.json.png', 'field_processor', 1.0)
@@ -56,6 +61,17 @@ class TestFieldDetector(TestCase):
             # check files are there
             self.assertTrue(Path(self.detect_dir, 'replyDetection.json.png').exists())
             self.assertTrue(Path(self.detect_dir, 'replyDetection.json.json').exists())
+
+    
+    @override_settings(FIELD_DETECTOR_ENABLED='False')
+    def test_detect_fields_disabled(self):
+        """
+        Test field detection when field detector is disabled
+        """
+        
+        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+            detection_data = FieldDetector().detect(fp.read(), 'replyDetection.json.png', 'field_processor', 1.0)
+            self.assertEqual(detection_data, {'error': 'Field detector disabled'})
 
     def test_detect_fields_error_in_detection(self):
         """

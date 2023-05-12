@@ -87,7 +87,7 @@ else:
         ]
     }
     
-    
+FIELD_DETECTOR_ENABLED = '${field.detector.enabled}'
 DRAMATIQ_BROKER['OPTIONS']['url'] = '${redis.url}/0'
 DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = '${redis.url}'
 

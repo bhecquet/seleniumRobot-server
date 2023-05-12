@@ -150,6 +150,9 @@ class FieldDetector(object):
         @param resize_factor: factor to apply to image for detection (e.g: 1.0)
         """
         
+        if settings.FIELD_DETECTOR_ENABLED != 'True':
+            return {'error': 'Field detector disabled'}
+        
         logger.info(f"detecting fields for file {file_name}")
         b64_image = base64.b64encode(image).decode('utf-8')
         message_fields = detect_remote.send(processor_name, b64_image, file_name, resize_factor)
