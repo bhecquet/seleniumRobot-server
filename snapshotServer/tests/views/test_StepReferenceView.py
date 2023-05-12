@@ -20,8 +20,9 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, Snapshot, TestCaseInSession, Application, \
     StepResult, StepReference
 from snapshotServer.tests import authenticate_test_client_for_api
+from django.test.utils import override_settings
 
-
+@override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestStepReferenceView(APITransactionTestCase):
     fixtures = ['snapshotServer.yaml']
     

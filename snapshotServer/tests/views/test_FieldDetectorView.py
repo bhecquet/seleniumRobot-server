@@ -3,8 +3,10 @@ import datetime
 import json
 import os
 from pathlib import Path
+import time
 
 from django.conf import settings
+from django.test.utils import override_settings
 from django_dramatiq.test import DramatiqTestCase
 from dramatiq import get_broker, Worker
 import pytz
@@ -14,9 +16,10 @@ from rest_framework.test import APITransactionTestCase
 from snapshotServer.models import TestCase, Application, TestStep, TestSession, \
     Version, TestEnvironment, TestCaseInSession, StepResult, StepReference
 from snapshotServer.tests import authenticate_test_client_for_api
-import time
+import unittest
 
 
+@override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCase to avoid 'database table is locked'
 
     media_dir = settings.MEDIA_ROOT + os.sep + 'detect'
@@ -38,6 +41,7 @@ class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCas
 
 
     def setUp(self):
+        print(unittest.TestCase.id(self))
         authenticate_test_client_for_api(self.client)
         
         self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))
@@ -79,6 +83,17 @@ class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCas
             # check files are copied in "detect" media folder
             self.assertTrue(Path(self.media_dir, 'replyDetection.json.json').is_file())
             self.assertTrue(Path(self.media_dir, 'replyDetection.json.png').is_file())
+
+    @override_settings(FIELD_DETECTOR_ENABLED='False')
+    def test_detect_fields_disabled(self):
+        """
+        Nominal test
+        Check the content of reply for field detection
+        """
+
+        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+            response = self.client.post(reverse('detect'), data={'image': fp, 'task': 'field'})
+            self.assertEqual(response.status_code, 500)
 
     def test_detect_fields_no_task(self):
         """
