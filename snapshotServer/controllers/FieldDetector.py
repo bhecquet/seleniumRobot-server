@@ -16,6 +16,7 @@ from django.core.files.base import File, ContentFile
 import logging
 from django.utils import timezone
 from dramatiq.results.errors import ResultTimeout
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -121,15 +122,46 @@ class FieldDetectorThread(threading.Thread):
                 self.step_reference.save()
                 self.step_reference.field_detection_data.save(file_path.with_suffix('.json').name, ContentFile(json.dumps(detection_data)))
                 
-                # remove old json file
-                try:
-                    os.remove(old_path)
-                except (FileNotFoundError, TypeError, PermissionError) as e:
-                    pass
-        
+                
+                if old_path:
+                    try:
+                        # remove old json file in 'reference' folder
+                        Path(old_path).unlink(True)
+                        
+                        # remove previous files in 'detect' folder
+                        Path(settings.MEDIA_ROOT, 'detect', Path(old_path).name).unlink(True)
+                        Path(settings.MEDIA_ROOT, 'detect', Path(old_path).with_suffix('.jpg').name).unlink(True) # reference pictures are in jpg because video recording uses MJEPG codec
+                        Path(settings.MEDIA_ROOT, 'detect', Path(old_path).with_suffix('.png').name).unlink(True) # reference pictures for tests are in png
+                    except (PermissionError) as e:
+                        pass
 
 class FieldDetector(object):
+    
+    last_clean = datetime.datetime.today()
+    clean_lock = threading.Lock()
+    DELETE_AFTER = 60 * 60 * 24 * 30
+    CLEAN_EVERY_SECONDS = 60 * 60 * 24
 
+    def clean(self):
+        """
+        clean detect folder for files older than 30 days
+        Do only every day
+        """
+        
+        with FieldDetector.clean_lock:
+            if (datetime.datetime.today() - FieldDetector.last_clean).seconds < FieldDetector.CLEAN_EVERY_SECONDS:
+                return
+            
+        for f in Path(settings.MEDIA_ROOT, 'detect').iterdir():
+        
+            if f.is_file() and time.time() - f.stat().st_mtime > FieldDetector.DELETE_AFTER:
+                try:
+                    f.unlink(True)
+                except Exception as e:
+                    logging.warn("cannot delete file: " + f)
+                    
+        with FieldDetector.clean_lock:
+            FieldDetector.last_clean = datetime.datetime.today()
         
     def detect(self, image:bytes, file_name:str, processor_name:str, resize_factor:float):
         """
@@ -148,6 +180,7 @@ class FieldDetector(object):
         @param processor_name: name of the processor to use ('error_processor' or 'field_processor')
         @param resize_factor: factor to apply to image for detection (e.g: 1.0)
         """
+        self.clean()
         
         if settings.FIELD_DETECTOR_ENABLED != 'True':
             return {'error': 'Field detector disabled'}

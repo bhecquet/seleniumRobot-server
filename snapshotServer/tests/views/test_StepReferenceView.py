@@ -21,6 +21,7 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
     StepResult, StepReference
 from snapshotServer.tests import authenticate_test_client_for_api
 from django.test.utils import override_settings
+from pathlib import Path
 
 @override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestStepReferenceView(APITransactionTestCase):
@@ -101,6 +102,10 @@ class TestStepReferenceView(APITransactionTestCase):
         for f in os.listdir(self.reference_dir):
             if f.startswith('engie') or f.startswith('replyDetection'):
                 os.remove(self.reference_dir + os.sep + f)
+                
+        for f in Path(settings.MEDIA_ROOT, 'detect').iterdir():
+            if f.is_file() and (f.name.startswith('engie') or f.name.startswith('replyDetection')):
+                f.unlink(missing_ok=True)
     
     def test_get_snapshot(self):
         """
@@ -135,7 +140,41 @@ class TestStepReferenceView(APITransactionTestCase):
             self.assertEqual(uploaded_reference.field_detection_version, 'afcc45')
             
             self.assertTrue(os.path.isfile(os.path.join(self.reference_dir, 'replyDetection.json.png')))
+
+    def test_post_snapshot_clean_old_reference(self):
+        """
+        Check old reference information are deleted when reference is updated
+        """
+        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+            response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            time.sleep(1) # wait field computing
+            
+            uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
+            uploaded_file1 = Path(uploaded_reference_1.image.path)
+            self.assertIsNotNone(uploaded_reference_1, "the uploaded snapshot should be recorded")
+
+            self.assertTrue(os.path.isfile(os.path.join(self.reference_dir, 'replyDetection.json.png')))
         
+        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+            response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            time.sleep(0.5) # wait field computing
+            
+            uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_same_env.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
+            self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
+            self.assertEqual(uploaded_reference_2, uploaded_reference_1)
+            uploaded_file2 = Path(uploaded_reference_2.image.path)
+
+            # old detected files are removed, only files from the second detection are kept
+            self.assertFalse(uploaded_file1.exists())
+            self.assertFalse(Path(settings.MEDIA_ROOT, 'detect', uploaded_file1.name).exists())
+            self.assertFalse(Path(settings.MEDIA_ROOT, 'detect', uploaded_file1.with_suffix('.json').name).exists())
+            self.assertTrue(uploaded_file2.exists())
+            self.assertTrue(Path(settings.MEDIA_ROOT, 'detect', uploaded_file2.name).exists())
+            self.assertTrue(Path(settings.MEDIA_ROOT, 'detect', uploaded_file2.with_suffix('.json').name).exists())
+                             
+            
     
     def test_post_snapshot_no_ref_result_ko(self):
         """

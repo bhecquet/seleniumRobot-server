@@ -60,6 +60,34 @@ class TestFieldDetector(TestCase):
             # check files are there
             self.assertTrue(Path(self.detect_dir, 'replyDetection.json.png').exists())
             self.assertTrue(Path(self.detect_dir, 'replyDetection.json.json').exists())
+            
+    def test_clean_detected_files(self):
+        """
+        Test we clean detected files
+        """
+        
+        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+            FieldDetector().detect(fp.read(), 'replyDetection.json.png', 'field_processor', 1.0)
+
+            # check files are there
+            self.assertTrue(Path(self.detect_dir, 'replyDetection.json.png').exists())
+            self.assertTrue(Path(self.detect_dir, 'replyDetection.json.json').exists())
+        
+        try:
+            FieldDetector.CLEAN_EVERY_SECONDS = 0    
+            FieldDetector.DELETE_AFTER = 0    
+            with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+                FieldDetector().detect(fp.read(), 'replyDetection2.json.png', 'field_processor', 1.0)
+                
+                # check previous files are removed
+                self.assertFalse(Path(self.detect_dir, 'replyDetection.json.png').exists())
+                self.assertFalse(Path(self.detect_dir, 'replyDetection.json.json').exists())
+                self.assertTrue(Path(self.detect_dir, 'replyDetection2.json.png').exists())
+                self.assertTrue(Path(self.detect_dir, 'replyDetection2.json.json').exists())
+        finally:
+            # reset as it's modified in test
+            FieldDetector.DELETE_AFTER = 60 * 60 * 24 * 30
+            FieldDetector.CLEAN_EVERY_SECONDS = 60 * 60 * 24
 
     
     @override_settings(FIELD_DETECTOR_ENABLED='False')

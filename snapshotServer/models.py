@@ -217,12 +217,13 @@ class StepReference(models.Model):
     environment = models.ForeignKey(TestEnvironment, on_delete=models.CASCADE, null=True, blank=True)
     testStep = models.ForeignKey(TestStep, on_delete=models.CASCADE, null=True, blank=True)
     version = models.ForeignKey(Version, on_delete=models.CASCADE, null=True, blank=True)
+    date = models.DateTimeField(blank=True, null=True, auto_now=True)
     
     image = models.ImageField(upload_to=upload_path, max_length=200)
     
     field_detection_date = models.DateTimeField(blank=True, null=True) # empty if detection has not been performed
     field_detection_version = models.CharField(max_length=10, default="") # version of the model used to detect fields
-    field_detection_data = models.FileField(upload_to=upload_path, max_length=200, blank=True, null=True)
+    field_detection_data = models.FileField(upload_to=upload_path, max_length=200, blank=True, null=True) # detection data stored as a JSON file on disk, next to reference image
     
     
     def image_tag(self):
