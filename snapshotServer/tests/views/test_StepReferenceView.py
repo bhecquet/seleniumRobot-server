@@ -22,6 +22,7 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
 from snapshotServer.tests import authenticate_test_client_for_api
 from django.test.utils import override_settings
 from pathlib import Path
+from snapshotServer.views.StepReferenceView import StepReferenceView
 
 @override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestStepReferenceView(APITransactionTestCase):
@@ -91,6 +92,9 @@ class TestStepReferenceView(APITransactionTestCase):
         self.step_result_other_version = StepResult(step=self.step1, testCase=self.tcs_other_version, result=True)
         self.step_result_other_version.save()
         
+        # set OVERWRITE_REFERENCE_AFTER_SECONDS so that reference is always updated in tests
+        StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 0
+        
         
     def tearDown(self):
         """
@@ -106,7 +110,27 @@ class TestStepReferenceView(APITransactionTestCase):
         for f in Path(settings.MEDIA_ROOT, 'detect').iterdir():
             if f.is_file() and (f.name.startswith('engie') or f.name.startswith('replyDetection')):
                 f.unlink(missing_ok=True)
+                
+        StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 48
     
+    def test_clean(self):
+        try:
+            StepReferenceView.DELETE_AFTER = 0
+            StepReferenceView.CLEAN_EVERY_SECONDS = 0
+            
+            self.assertIsNotNone(StepReference.objects.get(pk=3))
+            
+            # add a reference
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+                self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
+                time.sleep(0.5) # wait field computing
+                
+            # check old step reference has been deleted
+            self.assertEqual(len(StepReference.objects.filter(pk=3)), 0)
+        finally:
+            StepReferenceView.DELETE_AFTER = 60 * 60 * 24 * 30
+            StepReferenceView.CLEAN_EVERY_SECONDS = 60 * 60 * 24
+
     def test_get_snapshot(self):
         """
         Check we can get reference snapshot if it exists
@@ -211,9 +235,41 @@ class TestStepReferenceView(APITransactionTestCase):
             self.assertEqual(uploaded_reference_2, uploaded_reference_1)
             uploaded_file2 = uploaded_reference_2.image.path
             
+            # reference has been updated
+            self.assertTrue(uploaded_reference_2.date > uploaded_reference_1.date)
+            
             # check the previous file has been deleted, so that we do not store old references indefinitely
             self.assertFalse(os.path.isfile(uploaded_file1))
             self.assertTrue(os.path.isfile(uploaded_file2))
+            
+    def test_post_snapshot_existing_ref_do_not_overwrite(self):
+        """
+        Check we find the reference step when it exists in the same version / same name
+        Check we do not overwrite it as current reference is so young
+        """
+        
+        # prevent overwriting of step reference
+        StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 100
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
+            time.sleep(0.5) # wait field computing
+            uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1).last()
+            uploaded_file1 = uploaded_reference_1.image.path
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            time.sleep(0.5) # wait field computing
+            
+            uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_same_env.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
+            self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
+            self.assertEqual(uploaded_reference_2, uploaded_reference_1)
+            
+            # reference has not been updated
+            self.assertEqual(uploaded_reference_2.date, uploaded_reference_1.date)
+            
+            # check the previous file has NOT been deleted, no update done
+            self.assertTrue(os.path.isfile(uploaded_file1))
             
     def test_post_snapshot_existing_ref_other_env(self):
         """

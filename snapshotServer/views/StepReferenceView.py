@@ -1,20 +1,21 @@
+import datetime
 import json
+import mimetypes
+import os
 
 from django.http.response import HttpResponse, StreamingHttpResponse
 from rest_framework import views
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
-from multiprocessing import Process
 
+from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.forms import ImageForStepReferenceUploadForm
 from snapshotServer.models import StepResult, StepReference
-import mimetypes
-import os
-from snapshotServer.controllers.FieldDetector import FieldDetectorThread
+from datetime import timedelta, datetime
+import logging
+import threading
+from django.utils import timezone
 
-# TESTs
-# - calcul de field en même temps que la référence
-# - si le calcul échoue, cela ne doit pas bloquer
 
 class StepReferenceView(views.APIView):
     """
@@ -24,13 +25,35 @@ class StepReferenceView(views.APIView):
     
     parser_classes = (MultiPartParser,)
     queryset = StepResult.objects.all()
+    last_clean = datetime.today()
+    last_clean_lock = threading.Lock()
+    
+    DELETE_AFTER = 60 * 60 * 24 * 30                    # number of seconds after which old references will be deleted if they have not been updated. 30 days by default
+    CLEAN_EVERY_SECONDS = 60 * 60 * 24                  # try to clean references every (in seconds) => 24h by default
+    OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 48    # in case a reference already exist, overwrite it only after X seconds (48 hours by default)
+    
+    def clean(self):
+        """
+        Clean old step references every day
+        This will only 
+        - delete reference from database
+        - delete files associated to StepReference model
+        
+        Files in "detect" folder won't be deleted this way but it's not a problem, as FieldDetector has it's own cleaning method which already deletes old files
+        """
+        with StepReferenceView.last_clean_lock:
+            if datetime.today() - StepReferenceView.last_clean < timedelta(seconds=StepReferenceView.CLEAN_EVERY_SECONDS):
+                return
+        StepReference.objects.filter(date__lt=datetime.today() - timedelta(seconds=StepReferenceView.DELETE_AFTER)).delete()
+        StepReferenceView.last_clean = datetime.today()
+        logging.info('deleting old references')
 
     def post(self, request):
         """
         test with CURL
         curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/stepReference/
         """
-        
+        self.clean()
         form = ImageForStepReferenceUploadForm(request.POST, request.FILES)
         
         
@@ -53,6 +76,11 @@ class StepReferenceView(views.APIView):
                                  testStep=step_result.step,
                                  image=image)
                     step_reference.save()
+                    
+                # do not update reference if it has been upated in the last 48h
+                # this prevent from computing on every test run
+                elif (timezone.now() - step_reference.date).seconds < StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS:
+                    return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=200)
                 else:
                     
                     if image is not None:

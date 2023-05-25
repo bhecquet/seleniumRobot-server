@@ -487,10 +487,25 @@
 -   model: snapshotServer.stepreference
     pk: 1
     fields:
-        stepResult: 14
+        testStep: 1
+        testCase: 5
+        version: 3
+        environment: 2
         image: documents/test_Image1.png    
 -   model: snapshotServer.stepreference
     pk: 2
     fields:
-        stepResult: 11
+        testStep: 1
+        testCase: 1
+        version: 1
+        environment: 2
+        image: documents/test_Image1.png    
+-   model: snapshotServer.stepreference
+    pk: 3
+    fields:
+        testStep: 1
+        testCase: 1
+        version: 1
+        environment: 2
+        date: '2017-05-05T12:16:09.184106+01:00'
         image: documents/test_Image1.png    
