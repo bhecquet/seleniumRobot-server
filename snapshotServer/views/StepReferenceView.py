@@ -30,7 +30,7 @@ class StepReferenceView(views.APIView):
     
     DELETE_AFTER = 60 * 60 * 24 * 30                    # number of seconds after which old references will be deleted if they have not been updated. 30 days by default
     CLEAN_EVERY_SECONDS = 60 * 60 * 24                  # try to clean references every (in seconds) => 24h by default
-    OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 48    # in case a reference already exist, overwrite it only after X seconds (48 hours by default)
+    OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 12    # in case a reference already exist, overwrite it only after X seconds (12 hours by default)
     
     def clean(self):
         """
