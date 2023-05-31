@@ -36,11 +36,11 @@ class TestCaseFilter(SimpleListFilter):
     parameter_name = 'test_case_id'
 
     def lookups(self, request, model_admin):
-        if 'stepResult__testCase__testCase__application__id__exact' in request.GET:
-            app_id = request.GET['stepResult__testCase__testCase__application__id__exact']
-            test_cases = set([sr.stepResult.testCase.testCase for sr in model_admin.model.objects.filter(stepResult__testCase__testCase__application=app_id)])
+        if 'version__application__id__exact' in request.GET:
+            app_id = request.GET['version__application__id__exact']
+            test_cases = set([sr.testCase for sr in model_admin.model.objects.filter(version__application=app_id)])
         else:
-            test_cases = set([sr.stepResult.testCase.testCase for sr in model_admin.model.objects.all()])
+            test_cases = set([sr.testCase for sr in model_admin.model.objects.all()])
         return [(tc.id, str(tc)) for tc in test_cases if tc is not None]
 
     def queryset(self, request, queryset):
@@ -52,7 +52,7 @@ class TestCaseFilter(SimpleListFilter):
     
 class StepReferenceAdmin(admin.ModelAdmin):
     list_display = ('step_name', 'image_tag')
-    list_filter = ('stepResult__testCase__testCase__application', TestCaseFilter,)
+    list_filter = ('version__application', TestCaseFilter,)
 
 admin.site.register(TestSession, TestSessionAdmin)
 admin.site.register(StepReference, StepReferenceAdmin)
