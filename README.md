@@ -22,7 +22,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - deploy files: unzip seleniumRobotServer.zip
 - create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
 - go into virtual environment: `cd <path_to_selenium_server>/venv && Scripts\activate.bat`
-- install `python-ldap` from wheel found at [https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap): `pip instal python_ldap-3.1.0-cp36-cp36m-win_amd64.whl`
+- install `python-ldap` from wheel found at [https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap): `pip instal python_ldap-3.xxx.whl`
 - install python requirements: `pip install -r requirements.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
