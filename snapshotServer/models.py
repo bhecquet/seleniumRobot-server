@@ -238,6 +238,21 @@ class StepReference(models.Model):
     
     # we could also add: signature, text, fields, for comparison
     
+class File(models.Model):
+    """
+    Class that represents any file produced during a test run (network capture, video, pictures, ...
+    It's related to a single step, which produced the file
+    """
+    file = models.FileField(upload_to='documents/%Y/%m/%d')
+    stepResult = models.ForeignKey('StepResult', related_name='files', on_delete=models.CASCADE)
+    
+class ExecutionLogs(models.Model):
+    """
+    Class that represents the test case execution logs
+    """
+    file = models.FileField(upload_to='documents/%Y/%m/%d')
+    testCase = models.ForeignKey('TestCaseInSession', related_name='logs', on_delete=models.CASCADE)
+    
 class Snapshot(models.Model):
     """
     Snapshot class to store image with comparison data, for UI regression

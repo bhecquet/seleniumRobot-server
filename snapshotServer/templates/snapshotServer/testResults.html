@@ -7,11 +7,11 @@
 
 {% block body %}
 <div class="row">
-	<div class="col-sm-2 " style="background-color:#006266;height: 40px;"></div>
-	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">
+	<div class="col-sm-1 " style="background-color:#006266;"></div>
+	<div class="col-sm-10 " style="background-color:#006266;color: white ">
 		<form>
 			<div  class="btn" id="btnMenu"  >Browser&nbsp;
-				<select id="browsers" multiple="multiple" name="browser">
+				<select id="browsers" class="custom-select" multiple name="browser" size="2">
 					{% for browser in browsers %}
 						{% if browser in selectedBrowser %}
 							<option value="{{ browser }}" selected="selected">{{ browser }}</option>
@@ -23,7 +23,7 @@
 			</div>
 			
 			<div  class="btn" id="btnMenu">Environment&nbsp;
-				<select id="environments" multiple="multiple" name="environment">
+				<select id="environments" class="custom-select" multiple name="environment" size="2">
 					{% for environment in environments %}
 						{% if environment in selectedEnvironments %}
 							<option value="{{ environment.id }}" selected="selected">{{ environment.name }}</option>
@@ -36,7 +36,7 @@
 			
 			<!--  these are TestCase instances -->
 			<div  class="btn" id="btnMenu">Test Cases&nbsp;
-				<select id="testCases" multiple="multiple" name="testcase">
+				<select id="testCases" class="custom-select" multiple name="testcase" size="2">
 					{% for testCase in testCases %}
 						{% if testCase in selectedTestCases %}
 							<option value="{{ testCase.id }}" selected="selected">{{ testCase.name }}</option>
@@ -58,7 +58,7 @@
 			<input type="submit" class="btn" value="Filter" style="background-color:#1E4F51;">
 		</form>
 	</div>
-	<div  class="col-sm-2 " style="margin-left: -15px;height: 40px;background-color:#006266;" >&nbsp;  </div>
+	<div  class="col-sm-1 " style="margin-left: -15px;background-color:#006266;" >&nbsp;  </div>
 </div>
 
 <div class="row">

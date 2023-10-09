@@ -1,0 +1,55 @@
+<!-- A step to be displayed in result -->
+<ul>
+	{% for action in actions %}
+		{% if action.type == 'step' %}
+			{% if action.failed and action.exception %}
+				<li class="header-failed">
+	                {{ action.name }}<br/>
+	                {{ action.exception }}
+	            </li>
+			{% else %}
+				<li>
+	                <div class="message-conf">
+	                    <span class="stepTimestamp mr-2">{{ action.timestamp }}</span> {{ action.name }}
+	                </div>
+	            </li>
+			{% endif %}
+			{% include "snapshotServer/step.html" with actions=action.actions %}
+		{% elif action.type == 'action' %}
+			{% if action.failed and action.exception %}
+				<li class="header-failed">
+	                <div class="message-conf">
+	                    <span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}  {{ action.exception }}
+	                </div>
+	            </li>
+			{% else %}
+				<li>
+	                <div class="message-conf">
+	                    <span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}
+	                </div>
+	            </li>
+			{% endif %}
+		{% elif action.type == 'message' %}
+			 <div class="message-{{ action.messageType|lower }} message-conf">
+			 	<span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}
+	        </div>
+	    {% elif action.type == 'value' %}
+	    	<table class="table table-bordered table-sm">
+	            <tr>
+	                <th width="15%">Key</th>
+	                <th width="60%">Message</th>
+	                <th width="25%">Value</th>
+	            </tr>
+	            <tr>
+	                <td>
+	                    <div class="message-conf">
+	                        <span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}
+	                    </div>
+	                </td>
+	                <td>{{ action.message }}</td>
+	                <td>{{ action.value }}</td>
+	            </tr>
+	        </table>
+		{% endif %}
+	{% endfor %}
+</ul>

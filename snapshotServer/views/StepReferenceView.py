@@ -20,6 +20,8 @@ from django.utils import timezone
 class StepReferenceView(views.APIView):
     """
     View of the API to upload a file with step reference (mainly, a snapshot)
+    This will try to detect fields / texts / errors on the reference
+    
     Different from FileUploadView which aims at comparing snapshot with a reference
     """
     

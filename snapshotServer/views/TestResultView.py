@@ -81,10 +81,10 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 
                 # build logs from json string
                 if step_result.stacktrace:
-                    logs = self.buildLogStringFromJson(step_result.stacktrace)
+                    details = json.loads(step_result.stacktrace)
                 else:
-                    logs = None
-                step_result.formattedLogs = logs
+                    details = {}
+                step_result.details = details
                 
                 try:
                     stepSnapshots[step_result] = Snapshot.objects.get(stepResult = step_result)

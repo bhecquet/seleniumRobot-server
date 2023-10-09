@@ -2,13 +2,9 @@
 {% load static %}
 
 {% block head %}
-	<link rel="stylesheet" type="text/css" href="{% static 'css/AdminLTE.min.css' %}">
     <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot_solo.css' %}">
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Lobster+Two"> 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.5.0/css/font-awesome.min.css">
  
-	<script type="text/javascript" src="{% static 'js/AdminLTE.min.js' %}"></script>
-	<script type="text/javascript" src="{% static 'js/seleniumRobot.js' %}"></script>
+ 	<script type="text/javascript" src="{% static 'js/seleniumRobot.js' %}"></script>
 
 {% endblock %}
 
@@ -26,20 +22,98 @@
 </div>
 
 <div id="testResultDetails">
-	<div class="container">
+	<!-- Modal for displaying pictures -->
+    <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                </div>
+                <div class="modal-body">
+                    <img src="" id="imagepreview" style="width: 80%;">
+                </div>
+            </div>
+        </div>
+    </div>
+	<div class="container-fluid">
 		<section class="content">
 		  	<div class="row">
-		    	<div class="col-xs-12">
+		    	<div class="col-xl-12">
 		    		<h4> Test Details - {{ currentTest.testCase.name }}</h4>
-		      		<p><b>Browser : </b> {{ currentTest.session.browser }}<br/></p>
-		      		
+		    		<table class="table table-bordered table-sm">
+                        <tr>
+                        	<th>Application type</th>
+                        	<td>Browser</td>
+                    	</tr>
+                    	<tr>
+                        	<th>Application</th>
+                        	<td>{{ currentTest.session.browser }}</td>
+	                    </tr>
+	                    <!-- TODO récupérer les autres informations -->
+	                    <tr>
+	                        <th>Grid node</th>
+	                        <td>xxx</td>
+	                    </tr>                                                                                                
+	                    <tr>
+                            <th>Last State</th>
+                            <td>xxx</td>
+                        </tr>
+                    </table>
+
 		      		{% for stepResult, snapshot in object_list.items %}
 		      			<div class="box collapsed-box {% if stepResult.result %}success{% else %}failed{% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> {{ stepResult.step.name }}  - {{ stepResult.duration }} secs
+							<button type="button" class="btn btn-box-tool" data-widget="collapse">
+								<i class="fa fa-plus"></i>
+							</button>
+							<span class="step-title"> {{ stepResult.step.name }}  - {{ stepResult.duration }} secs</span>
 						</div>
 						<div class="box-body">
-							{{ stepResult.formattedLogs|safe }}
+							{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
+							<div class="row">
+						        {% for snapshot in stepResult.details.snapshots %}
+						        	{% if snapshot.displayInReport and snapshot.idImage %}
+						        		<div class="message-snapshot col">
+							        		<div class="message-snapshot col">
+								        		<div class="text-center">
+							        			      <a href="#" onclick="$('#imagepreview').attr('src', $('#{{ snapshot.idImage }}').attr('src'));$('#imagemodal').modal('show');">
+							        			          <img id="{{ snapshot.idImage }}" src="{% url "file-download" snapshot.idImage %}" style="width: 300px">
+							        			      </a>
+							        			</div>
+											</div>
+											{% if snapshot.title %}
+												<div class="text-center">:{{ snapshot.title }}</div>
+											{% else %}
+												<div class="text-center">:</div>
+											{% endif %}
+											<div class="text-center font-weight-lighter">
+											{% if snapshot.url %}<a href='{{ snapshot.url }}' target=url>URL</a>{% endif %}
+											{% if snapshot.idHtml %}| <a href='{% url "file-download" snapshot.idHtml %}' target=html>HTML Source</a>{% endif %}
+											</div>
+										</div>
+						        	{% endif %}
+						        {% endfor %}
+						    </div>
+						    
+						    <!-- TODO 
+						    Ajouter le téléchargement des fichiers
+						    Ajouter les HAR
+						    Ajouter les images de référence
+						    Ajouter les images pour la comparaison
+						    -->
+						    
+						
+						    #foreach( $file in $localStep.getFiles() )
+						        #set($log = $file.buildLog())
+						        <div class="message-snapshot">$log</div>
+						    #end
+						    #foreach( $har in $localStep.getHarCaptures() )
+						        #set($harLog = $har.buildHarLog())
+						        <div class="message-har">$harLog</div>
+						    #end
+
 							<!--<ul>
 										
 									<li>openPage with args: (https://www.qwant.com, )</li>
