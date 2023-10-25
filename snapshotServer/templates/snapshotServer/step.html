@@ -1,4 +1,6 @@
 <!-- A step to be displayed in result -->
+{% load timestamp_to_time %}
+
 <ul>
 	{% for action in actions %}
 		{% if action.type == 'step' %}
@@ -10,7 +12,7 @@
 			{% else %}
 				<li>
 	                <div class="message-conf">
-	                    <span class="stepTimestamp mr-2">{{ action.timestamp }}</span> {{ action.name }}
+	                    <span class="stepTimestamp mr-2">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
 	                </div>
 	            </li>
 			{% endif %}
@@ -19,19 +21,19 @@
 			{% if action.failed and action.exception %}
 				<li class="header-failed">
 	                <div class="message-conf">
-	                    <span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}  {{ action.exception }}
+	                    <span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}  {{ action.exception }}
 	                </div>
 	            </li>
 			{% else %}
 				<li>
 	                <div class="message-conf">
-	                    <span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}
+	                    <span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
 	                </div>
 	            </li>
 			{% endif %}
 		{% elif action.type == 'message' %}
 			 <div class="message-{{ action.messageType|lower }} message-conf">
-			 	<span class="stepTimestamp mr-1">{{ action.timestamp }}</span> {{ action.name }}
+			 	<span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
 	        </div>
 	    {% elif action.type == 'value' %}
 	    	<table class="table table-bordered table-sm">

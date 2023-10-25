@@ -80,9 +80,9 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
             for step_result in StepResult.objects.filter(testCase=test_case_in_session, step__in=test_steps).order_by('id'):
                 
                 # build logs from json string
-                if step_result.stacktrace:
+                try:
                     details = json.loads(step_result.stacktrace)
-                else:
+                except:
                     details = {}
                 step_result.details = details
                 
@@ -98,10 +98,49 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         
     def get_context_data(self, **kwargs):
         context = super(TestResultView, self).get_context_data(**kwargs)
-        context['currentTest'] = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
-        if context['currentTest'].stacktrace:
-            context['stacktrace'] = context['currentTest'].stacktrace.split('\n')
-        else:
-            context['stacktrace'] = ['no logs available']
+        current_test = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
+        context['currentTest'] = current_test
+        context['testCaseId'] = self.kwargs['testCaseInSessionId']
+        context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
+        context['status'] = current_test.status
+        if current_test.session.compareSnapshot and current_test.session.compareSnapshotBehaviour == 'CHANGE_TEST_RESULT' and not current_test.isOkWithSnapshots() :
+            context['status'] = 'FAILURE'
             
+        context['browserOrApp'] = current_test.session.browser.split(':')[-1].capitalize()
+        context['applicationType'] = current_test.session.browser.split(':')[0].capitalize()
+
+        try:
+            stack_and_logs = json.loads(context['current_test'].stacktrace)
+            context['stacktrace'] = stack_and_logs['stacktrace'].split('\n')
+            context['logs'] = stack_and_logs['logs'].split('\n')
+        except:
+            context['stacktrace'] = []
+            context['logs'] = ['no logs available']
+            
+        last_step = [s for s in current_test.testSteps.all() if s.name == 'Test end']
+        if last_step:
+            last_step_result = StepResult.objects.filter(testCase=current_test, step__in=last_step)
+            try:
+                context['lastStepDetails'] = json.loads(last_step_result[0].stacktrace)
+            except:
+                context['lastStepDetails'] = {}
+
         return context
+    
+# Tests
+# - Standard test OK
+#     . look and feel: steps must have the right color
+#     . pictures displayed
+#     . files downloadable
+#     . timestamps present
+#     . video timestamp present
+#     . substeps present
+# - Standart test KO
+#     . last step in red
+#     . failed step in red
+#     . error message displayed
+# - Test with snapshot comparison => info only
+#     . picture for comparison displayed
+# - Test OK with snapshot comparison KO => change result
+#     . picture for comparison displayed
+#     . result has been changed

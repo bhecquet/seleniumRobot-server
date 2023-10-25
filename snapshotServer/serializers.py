@@ -18,7 +18,7 @@ class TestSessionSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = TestSession
-        fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version', 'compareSnapshot', 'name', 'ttl')
+        fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version', 'compareSnapshot', 'compareSnapshotBehaviour', 'name', 'ttl')
 
 class TestStepSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,7 +36,7 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCaseInSession
-        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed', 'name', 'computingError')
+        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed', 'name', 'computingError', 'status', 'gridNode')
         
     def create(self, validated_data):
         

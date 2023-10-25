@@ -2,6 +2,7 @@
 *.pyo
 __pycache__/
 dist/
+.idea/
 /static/
 /seleniumrobot-server.zip
 /db.sqlite3

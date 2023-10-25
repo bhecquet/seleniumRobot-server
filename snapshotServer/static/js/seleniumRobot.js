@@ -36,3 +36,6 @@ $(function () {
 			//document.getElementById('pieChartLegend').innerHTML = myChart.generateLegend();
 
 		});
+		
+ $('[data-toggle="popover"]').popover();
+		

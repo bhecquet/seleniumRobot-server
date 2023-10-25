@@ -55,6 +55,39 @@ class TestPictureView(TestViews):
         # we should get the page, and exclude zones should be editable
         self.assertEqual(response.status_code, 200)
         self.assertTrue(response.context['editable'])
+        self.assertTrue(response.context['enable'])
+        self.assertEquals(response.context['testStepName'], "Step 1")
+
+    def test_pictures_exist_no_header(self):
+        """
+        Check its possible to call picture view from TestResultView, where we do not need step name
+        With this Test Step, reference should be found (snapshot.id = 2)
+        """
+        response = self.client.get(reverse('pictureViewNoHeader', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+        self.assertIsNotNone(response.context['captureList'][0]['reference'])
+        self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'])
+          
+        self.assertIsNone(response.context['captureList'][0]['reference'].refSnapshot)
+        self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].refSnapshot)
+        
+        # we should get the page, and exclude zones should be editable
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['editable'])
+        self.assertTrue(response.context['enable'])
+        self.assertEquals(response.context['testStepName'], "Snapshot comparison")
+
+    def test_no_pictures_exist_no_header(self):
+        """
+        Check that when no picture exists for comparison, 'enable' should be set to false so that it's not displayed in test report
+        """
+        response = self.client.get(reverse('pictureViewNoHeader', kwargs={'testCaseInSessionId': 100, 'testStepId': 2}))
+        self.assertEqual(len(response.context['captureList']), 0)
+      
+        # we should get the page, and exclude zones should be editable
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context['editable'])
+        self.assertFalse(response.context['enable'])
+        self.assertEquals(response.context['testStepName'], "Snapshot comparison")
           
     def test_snapshot_dont_exist(self):
         """

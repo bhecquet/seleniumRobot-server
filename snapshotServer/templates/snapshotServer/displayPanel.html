@@ -1,6 +1,7 @@
 {% load static %}
 
-<div class="box {% if status %}success{% else %}failed{% endif %} {% if captureList|length == 0 %}collapsed-box{% endif %}">
+<div class="box {% if status %}success{% else %}failed{% endif %} {% if captureList|length == 0 %}collapsed-box{% endif %}" 
+	style="display: {% if enable %}block{% else %}none{% endif %};>
 	<div class="box-header with-border">
 		<button type="button" class="btn btn-box-tool" data-widget="collapse">
 			{% if captureList|length == 0 %}

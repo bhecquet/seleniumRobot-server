@@ -51,6 +51,8 @@ class TestCaseInSession(models.Model):
     # testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     stacktrace = models.TextField(null=True)
     name = models.CharField(max_length=100, null=True)
+    status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status
+    gridNode = models.CharField(max_length=100, null=True) # name of the grid node on which test has run 
     
     def isOkWithSnapshots(self):
         """
@@ -176,9 +178,10 @@ class TestSession(models.Model):
     name = models.CharField(max_length=100, default="")
     date = models.DateTimeField()
     version = models.ForeignKey(Version, related_name='testsession', on_delete=models.CASCADE)
-    browser = models.CharField(max_length=20)
+    browser = models.CharField(max_length=100) # contains the name of the browser or the name of the mobile application => 'BROWSER:chrome' or 'APP:myApp.apk'
     environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)
-    compareSnapshot = models.BooleanField(default=False)                            # if True, this session will be displayed in snapshot comparator
+    compareSnapshot = models.BooleanField(default=False)                        # if True, this session will be displayed in snapshot comparator
+    compareSnapshotBehaviour = models.CharField(max_length=20, default='DISPLAY_ONLY')                  # DISPLAY_ONLY / ADD_TEST_RESULT / CHANGE_TEST_RESULT
     ttl = models.DurationField(default=datetime.timedelta(days=30)) # time to live of the session, in days. After this delay, session may be deleted
     
     def __str__(self):
