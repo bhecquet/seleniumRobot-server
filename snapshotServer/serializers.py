@@ -36,7 +36,7 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = TestCaseInSession
-        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed', 'name', 'computingError', 'status', 'gridNode')
+        fields = ('id', 'session', 'testCase', 'testSteps', 'stacktrace', 'isOkWithSnapshots', 'computed', 'name', 'computingError', 'status', 'gridNode', 'description')
         
     def create(self, validated_data):
         
@@ -101,4 +101,4 @@ class StepReferenceSerializer(serializers.ModelSerializer):
 class StepResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepResult
-        fields = ('id', 'step', 'testCase', 'result', 'duration', 'stacktrace')    
+        fields = ('id', 'step', 'stepFullName', 'testCase', 'result', 'duration', 'stacktrace')    

@@ -42,7 +42,7 @@ class TestCaseInSession(models.Model):
     """
     The test case in a test session
     It is the test case, executed
-    It allows to assiociate a test case with tests steps, as list of test step may change from time to time for the same test case
+    It allows to associate a test case with tests steps, as list of test step may change from time to time for the same test case
     """
     __test__= False  # avoid detecting it as a test class
     testCase = models.ForeignKey(TestCase, related_name="testCaseInSession", on_delete=models.CASCADE)
@@ -51,6 +51,7 @@ class TestCaseInSession(models.Model):
     # testSteps = models.ManyToManyField("TestStep", related_name="testCase", blank=True)
     stacktrace = models.TextField(null=True)
     name = models.CharField(max_length=100, null=True)
+    description = models.CharField(max_length=300, null=True)
     status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status
     gridNode = models.CharField(max_length=100, null=True) # name of the grid node on which test has run 
     
@@ -139,6 +140,14 @@ class TestStep(models.Model):
     def __str__(self):
         return self.name 
     
+    def save(self, *args, **kwds):
+        """
+        Remove the arguments from the step name, full step name is stored in details in StepResult
+        Thus, it's possible to share the same step even when a dataprovider or step parameters are used
+        """
+        self.name = self.name.split(" with args")[0]
+        
+        super().save(*args, **kwds)
     
     def isOkWithSnapshots(self, test_case):
         """
@@ -195,7 +204,7 @@ class TestSession(models.Model):
         """
         While saving a new session, delete all too old sessions
         """
-        super(TestSession, self).save(*args, **kwds)
+        super().save(*args, **kwds)
         
         # search all sessions whose date is older than defined 'ttl' (ttl > 0)
         # do not select sessions whose snapshot number is > 0 and reference snapshot number is > 0
@@ -259,6 +268,7 @@ class ExecutionLogs(models.Model):
 class Snapshot(models.Model):
     """
     Snapshot class to store image with comparison data, for UI regression
+    Other snapshot (those that are displayed in report are recorded as 'File' object
     """
 
     stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
@@ -409,4 +419,28 @@ class ExcludeZone(models.Model):
         Copy this exclude zone to the snapshot provided
         """
         ExcludeZone(x=self.x, y=self.y, width=self.width, height=self.height, snapshot=snapshot).save()
+    
+class ErrorCauseFromUser(models.Model):
+    """
+    Table that will store information given by user about the cause of an error at a specific step
+    For example, it could say that "NoSuchElementException" at step "login" is caused by "Environment" because the "authentication" application is not available
+    """
+    
+    testCase = models.ForeignKey(TestCase, on_delete=models.CASCADE, related_name='declaredErrorCauses', null=True, blank=True)
+    testStep = models.ForeignKey(TestStep, on_delete=models.CASCADE, related_name='declaredErrorCauses', null=True, blank=True)
+    action = TruncatingCharField(max_length=150, default="")        # the step / action name for which the user defined the error
+    exception = models.CharField(max_length=100, default="")        # the exception raised by the test. Used for correlation
+    errorMessage = models.CharField(max_length=1000, default=".*")  # the exception message associated to the exception. Used for correlation
+    type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
+    
+class ErrorCauseDetected(models.Model):
+    """
+    Table that will store error cause that may have been detected by the server. For example, if error message is found in snapshot, or if there is a difference in network capture
+    This is linked to the step result as it's specific to this execution
+    """
+    stepResult = models.ForeignKey('StepResult', related_name='detectedErrorCauses', on_delete=models.CASCADE)
+    description = models.CharField(max_length=200, null=False)      # some details about the error
+    type = models.CharField(max_length=100, null=False)             # the type of error: 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    
+    
     

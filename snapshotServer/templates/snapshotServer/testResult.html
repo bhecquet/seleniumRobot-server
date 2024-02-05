@@ -51,6 +51,12 @@
 		    			<i class="fa-solid fa-stopwatch-20" style="font-size: 40px;"></i>
 		    		</btn>
 		    		<table class="table table-bordered table-sm">
+		    		    {% if currentTest.description %}
+		    		    <tr>
+                            <th>Description</th>
+                            <td>{{ currentTest.description }}</td>
+                        </tr>
+		    		    {% endif %}
                         <tr>
                         	<th>Application type</th>
                         	<td>{{ applicationType }} </td>
@@ -91,7 +97,7 @@
 							<button type="button" class="btn btn-box-tool" data-widget="collapse">
 								<i class="fa fa-plus"></i>
 							</button>
-							<span class="step-title"> {{ stepResult.step.name }}  - {{ stepResult.duration|div:1000 }} secs</span>
+							<span class="step-title"> {{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs</span>
 							{% if stepResult.details.videoTimeStamp %}
                             	<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s</span>
                             {% endif %}
@@ -131,6 +137,7 @@
 						    </div>
 						    <div id="step_{{ stepResult.step.id }}">
 							</div>
+							<!-- snapshot comparison part -->
 						    <script>
 								updatePanel('{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}', 'step_{{ stepResult.step.id }}')
 							</script>
@@ -166,7 +173,7 @@
 							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Snapshot comparison
 						</div>
 						<div class="box-body">
-							Snapshot comparison {% if snasphotComparisonResult %} OK {% else %}KO{% endif %}
+							Snapshot comparison {% if snasphotComparisonResult %}OK{% else %}KO{% endif %}
 						</div>
 					</div>
 		      		{% endif %}

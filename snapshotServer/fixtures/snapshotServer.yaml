@@ -283,7 +283,69 @@
         result: true
         duration: 10
         stacktrace: >
-                      {"name":"Login","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
+            {
+                "date": "Wed Oct 25 14:53:58 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 20,
+                "name": "Login",
+                "snapshots": [
+                    {
+                        "idHtml": 87,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 88,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: Login",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://myapp.com",
+                        "timestamp": 1698245639884
+                    }
+                ],
+                "videoTimeStamp": 5,
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "messageType": "INFO",
+                        "name": "everything OK",
+                        "type": "message"
+                    },
+                    {
+                        "name": "action2",
+                        "failed": false,
+                        "type": "action",
+                        "position": 0,
+                        "timestamp": 1698245638814
+                    },
+                    {
+                        "name": "subStep",
+                        "type": "step",
+                        "position": 1,
+                        "timestamp": 1698245638815,
+                        "actions": [
+                            {
+                                "messageType": "WARNING",
+                                "name": "everything in subStep almost OK",
+                                "type": "message"
+                            },
+                            {
+                                "name": "action1",
+                                "failed": false,
+                                "type": "action",
+                                "position": 0,
+                                "timestamp": 1698245638815
+                            }
+                        ]
+                    }
+                ],
+                "timestamp": 1698245638814,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+        
 -   model: snapshotServer.snapshot
     pk: 5
     fields: 
@@ -297,7 +359,69 @@
         result: true
         duration: 11
         stacktrace: >
-                      {"name":"Logged","type":"step","actions":[{"messageType":"INFO","name":"everything OK","type":"message"},{"name":"action2","failed":false,"type":"action"},{"name":"subStep","type":"step","actions":[{"messageType":"WARNING","name":"everything in subStep almost OK","type":"message"},{"name":"action1","failed":false,"type":"action"}]}]}
+             {
+                "date": "Wed Oct 25 14:53:58 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 20,
+                "name": "Login",
+                "snapshots": [
+                    {
+                        "idHtml": 87,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 88,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: Login",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://myapp.com",
+                        "timestamp": 1698245639884
+                    }
+                ],
+                "videoTimeStamp": 5,
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "messageType": "INFO",
+                        "name": "everything OK",
+                        "type": "message"
+                    },
+                    {
+                        "name": "action2",
+                        "failed": false,
+                        "type": "action",
+                        "position": 0,
+                        "timestamp": 1698245638814
+                    },
+                    {
+                        "name": "subStep",
+                        "type": "step",
+                        "position": 1,
+                        "timestamp": 1698245638815,
+                        "actions": [
+                            {
+                                "messageType": "WARNING",
+                                "name": "everything in subStep almost OK",
+                                "type": "message"
+                            },
+                            {
+                                "name": "action1",
+                                "failed": false,
+                                "type": "action",
+                                "position": 0,
+                                "timestamp": 1698245638815
+                            }
+                        ]
+                    }
+                ],
+                "timestamp": 1698245638814,
+                "status": "SUCCESS",
+                "harCaptures": []            
+                }
+                    
 -   model: snapshotServer.snapshot
     pk: 6
     fields: 
