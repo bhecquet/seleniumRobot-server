@@ -128,6 +128,15 @@ class TestCaseInSession(models.Model):
             return "%s - %s" % (self.name, self.session.version.name)
         else:
             return "%s - %s" % (self.testCase.name, self.session.version.name)
+        
+class TestInfo(models.Model):
+    """
+    Information linked to the test (associated issue, video, last snapshot ...)
+    """
+    testCase = models.ForeignKey('TestCaseInSession', related_name='testInfos', on_delete=models.CASCADE)
+    name = TruncatingCharField(max_length=100, default="")
+    info = models.TextField(null=True)
+    
     
 class TestStep(models.Model):
     """
@@ -139,15 +148,6 @@ class TestStep(models.Model):
     
     def __str__(self):
         return self.name 
-    
-    def save(self, *args, **kwds):
-        """
-        Remove the arguments from the step name, full step name is stored in details in StepResult
-        Thus, it's possible to share the same step even when a dataprovider or step parameters are used
-        """
-        self.name = self.name.split(" with args")[0]
-        
-        super().save(*args, **kwds)
     
     def isOkWithSnapshots(self, test_case):
         """

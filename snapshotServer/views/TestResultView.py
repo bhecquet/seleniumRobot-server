@@ -74,6 +74,14 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 context['lastStepDetails'] = json.loads(last_step_result[0].stacktrace)
             except:
                 context['lastStepDetails'] = {}
+                
+        context['infos'] = {}
+        for test_info in current_test.testInfos.all():
+            try:
+                context['infos'][test_info.name] = json.loads(test_info.info)
+            except:
+                pass
+                
 
         return context
     

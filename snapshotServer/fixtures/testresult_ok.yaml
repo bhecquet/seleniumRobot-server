@@ -23,7 +23,26 @@
                 "stacktrace": "",
                 "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
             }
-    
+          
+- model: snapshotServer.testinfo
+  pk: 1
+  fields:
+    testCase: 1
+    name: Issue
+    info: '{"type":"hyperlink", "link":"https://jiraserver/PROJECT/PRO-1", "info": "Issue"}'
+- model: snapshotServer.testinfo
+  pk: 2
+  fields:
+    testCase: 1
+    name: Some information
+    info: '{"type":"string", "info": "some text"}'
+- model: snapshotServer.testinfo
+  pk: 3
+  fields:
+    testCase: 1
+    name: Last State
+    info: '{"type":"multipleinfo","infos":[{"link":"loginInvalid_3-1_Test_end--9a514b.png","id":90,"type":"imagelink","info":"Image"},{"link":"videoCapture.avi","id":91,"type":"videolink","info":"Video"}]}'
+  
 -   model: snapshotServer.teststep
     pk: 1
     fields: 
@@ -70,7 +89,7 @@
                     }
                 ],
                 "videoTimeStamp": 5,
-                "name": "openPage with args: (https:\\/\\/jenkins\\/jenkins\\/, )",
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
                 "files": [],
                 "position": 0,
                 "actions": [

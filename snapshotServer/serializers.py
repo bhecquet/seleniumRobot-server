@@ -8,7 +8,7 @@ from rest_framework import serializers
 
 from snapshotServer.models import Snapshot, \
     TestCaseInSession, TestStep, TestSession, ExcludeZone, \
-    StepResult, TestStepsThroughTestCaseInSession, File, ExecutionLogs
+    StepResult, TestStepsThroughTestCaseInSession, File, ExecutionLogs, TestInfo
 from commonsServer.models import TestEnvironment
 
 class TestSessionSerializer(serializers.ModelSerializer):
@@ -71,6 +71,13 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
         
         
         
+class TestInfoSerializer(serializers.ModelSerializer):
+    
+    class Meta:
+        model = TestInfo
+        fields = ('id', 'testCase', 'name', 'info')
+        
+        
 class ExcludeZoneSerializer(serializers.ModelSerializer):
     
     class Meta:
@@ -101,4 +108,4 @@ class StepReferenceSerializer(serializers.ModelSerializer):
 class StepResultSerializer(serializers.ModelSerializer):
     class Meta:
         model = StepResult
-        fields = ('id', 'step', 'stepFullName', 'testCase', 'result', 'duration', 'stacktrace')    
+        fields = ('id', 'step', 'testCase', 'result', 'duration', 'stacktrace')    

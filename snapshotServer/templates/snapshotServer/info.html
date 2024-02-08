@@ -1,0 +1,37 @@
+                            <th>{{ info_name }}</th>
+                            {% if info.type == 'string' %}
+                            <td>{{ info.info }}</td>
+                            {% elif info.type == 'log' %}
+                            <td>
+                                <a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="{{ info.info }}"></i></a>
+                            </td>
+                            {% elif info.type == 'hyperlink' %}
+                            <td>
+                                <a href="{{ info.link }}">{{ info.info }}</a>
+                            </td>
+                            {% elif info.type == 'imagelink' %}
+                            <td>
+                                <a href="{% url "file-download" info.id %}"><i class="fas fa-file-image" aria-hidden="true"></i></a>
+                            </td>
+                            {% elif info.type == 'videolink' %}
+                            <td>
+                                <a href="{% url "file-download" info.id %}"><i class="fas fa-file-video" aria-hidden="true"></i></a>
+                            </td>
+                            {% elif info.type == 'multipleinfo' %}
+                            <td>    
+                                {% for sub_info in info.infos %}
+                                    {% if sub_info.type == 'string' %}
+                                        <br/>{{ sub_info.info }}
+                                    {% elif sub_info.type == 'log' %}
+                                        <a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="{{ sub_info.info }}"></i></a>
+                                    {% elif sub_info.type == 'hyperlink' %}
+                                        <br/> <a href="{{ sub_info.link }}">{{ sub_info.info }}</a>
+                                    {% elif sub_info.type == 'imagelink' %}
+                                        <a href="{% url "file-download" sub_info.id %}"><i class="fas fa-file-image" aria-hidden="true"></i></a>
+                                    {% elif sub_info.type == 'videolink' %}
+                                        <a href="{% url "file-download" sub_info.id %}"><i class="fas fa-file-video" aria-hidden="true"></i></a>
+                                    {% endif %}
+                                {% endfor %}
+                            </td>
+                            {% endif %}
+                            

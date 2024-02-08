@@ -5,10 +5,11 @@ Created on 4 mai 2017
 '''
 from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
     TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer,\
-    StepResultSerializer, StepReferenceSerializer, FileSerializer, ExecutionLogsSerializer
+    StepResultSerializer, StepReferenceSerializer, FileSerializer, ExecutionLogsSerializer,\
+    TestInfoSerializer
 from rest_framework import viewsets, renderers
 from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
-    StepReference, File, ExecutionLogs
+    StepReference, File, ExecutionLogs, TestInfo
 from commonsServer.views.viewsets import BaseViewSet
 from commonsServer.views.serializers import ApplicationSerializer
 from rest_framework.decorators import action
@@ -21,6 +22,10 @@ class TestSessionViewSet(BaseViewSet):
 class TestCaseInSessionViewSet(viewsets.ModelViewSet):
     queryset = TestCaseInSession.objects.all()
     serializer_class = TestCaseInSessionSerializer
+
+class TestInfoSessionViewSet(viewsets.ModelViewSet):
+    queryset = TestInfo.objects.all()
+    serializer_class = TestInfoSerializer
 
 class TestStepViewSet(BaseViewSet):
     queryset = TestStep.objects.all()

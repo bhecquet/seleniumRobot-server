@@ -20,8 +20,8 @@
 
 <div class="row">
 	<div class="wrapper col-sm-12">
-        <header class='main-header {% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}'>
-            <a href='https://github.com/bhecquet/seleniumRobot'>SeleniumRobot</a><br/>
+        <header class="main-header {% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
+            <a href="https://github.com/bhecquet/seleniumRobot">SeleniumRobot</a><br/>
         </header>
     </div>
 </div>
@@ -69,26 +69,12 @@
 	                        <th>Grid node</th>
 	                        <td>{{ currentTest.gridNode }}</td>
 	                    </tr>                                                                                                
+	                    
+	                    {% for info_name, info in infos.items %}
 	                    <tr>
-                            <th>Last State</th>
-                            <td>
-                            {% if lastStepDetails %}
-                            	{% for file in lastStepDetails.files %}
-                        			{% if "video" in file.name|lower %}
-                        				<a href='{% url "file-download" file.id %}' target=html><i class="fas fa-video" aria-hidden="true"></i></a>
-                        			{% endif %}
-                            	{% endfor %}
-                            	{% for snapshot in lastStepDetails.snapshots %}
-                            		{% if snapshot.idImage %}
-                            			<a href='{% url "file-download" snapshot.idImage %}' target=html><i class="fas fa-file-image" aria-hidden="true"></i></a>
-                            		{% endif %}
-                            	{% endfor %}
-                            	{% if lastStepDetails.exceptionMessage %}
-                            		<a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="{{ lastStepDetails.exceptionMessage }}"></i></a>
-                            	{% endif %}
-                            {% endif %}
-                            </td>
-                        </tr>
+                            {% include "snapshotServer/info.html" with info=info %}  
+                        </tr>  
+                        {% endfor %}                                                                                               
                     </table>
 
 		      		{% for stepResult, snapshot in object_list.items %}
@@ -128,8 +114,8 @@
 												<div class="text-center">{{snapshot.name}}</div>
 											{% endif %}
 											<div class="text-center font-weight-lighter">
-											{% if snapshot.url %}<a href='{{ snapshot.url }}' target=url>URL</a>{% endif %}
-											{% if snapshot.idHtml %}| <a href='{% url "file-download" snapshot.idHtml %}' target=html>HTML Source</a>{% endif %}
+											{% if snapshot.url %}<a href="{{ snapshot.url }}" target=url>URL</a>{% endif %}
+											{% if snapshot.idHtml %}| <a href="{% url "file-download" snapshot.idHtml %}" target=html>HTML Source</a>{% endif %}
 											</div>
 										</div>
 						        	{% endif %}
@@ -139,18 +125,18 @@
 							</div>
 							<!-- snapshot comparison part -->
 						    <script>
-								updatePanel('{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}', 'step_{{ stepResult.step.id }}')
+								updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
 							</script>
 							
 							<!-- Files -->
 							{% for file in stepResult.details.files %}
 								<div class="message-snapshot">
-									{{ file.name }}: <a href='{% url "file-download" file.id %}'>file</a>
+									{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
 								</div>
 							{% endfor %}
 							{% for har in stepResult.details.harCaptures %}
 								<div class="message-har">
-									Network capture '{{ har.name }}' browser: <a href='{% url "file-download" har.id %}'>HAR file</a>
+									Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
 								</div>
 							{% endfor %}
 						    
@@ -168,7 +154,7 @@
 		      		
 		      		<!-- step for displaying if snapshot comparison is OK or KO -->
 		      		{% if currentTest.session.compareSnapshot %}
-		      		<div class="box collapsed-box {% if snasphotComparisonResult %} success {% else %}failed{% endif %}">
+		      		<div class="box collapsed-box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
 						<div class="box-header with-border">
 							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Snapshot comparison
 						</div>

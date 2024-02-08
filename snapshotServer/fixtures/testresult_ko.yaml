@@ -20,10 +20,17 @@
         status: FAILURE
         stacktrace: >-
             {                
-                "stacktrace": "",
+                "stacktrace": "line1\nline2",
                 "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid <;>\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
             }
-    
+   
+- model: snapshotServer.testinfo
+  pk: 11
+  fields:
+    testCase: 11
+    name: Last State
+    info: '{"type":"multipleinfo","infos":[{"type":"log","info":"Browsermob proxy
+      (captureNetwork option) is only compatible with DIRECT and <MANUAL>"}]}' 
 -   model: snapshotServer.teststep
     pk: 11
     fields: 
@@ -70,7 +77,7 @@
                     }
                 ],
                 "videoTimeStamp": 6,
-                "name": "openPage with args: (https:\/\/jenkins\/jenkins\/, )",
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
                 "files": [],
                 "position": 0,
                 "actions": [
