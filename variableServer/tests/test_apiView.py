@@ -828,4 +828,46 @@ class TestApiView(APITestCase):
         self.assertTrue('varApp4EnvLinked2' in all_variables) 
         self.assertTrue('varApp4EnvLinkedReservable' in all_variables) 
         
+    def test_delete_internal_variable(self):
+        """
+        Test custom variable deletion
+        It should be allowed
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+        var0.save()
+        var0.test.add(test)
         
+        response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+        self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+        
+            
+    def test_delete_variable_forbidden(self):
+        """
+        Test non internal variable deletion
+        It should not be allowed => renders a 404 as if variable did not exist
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=False)
+        var0.save()
+        var0.test.add(test)
+        
+        response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+        self.assertEqual(response.status_code, 404, 'status code should be 404: ' + str(response.content))
+        
+    def test_delete_variable_no_security(self):
+        """
+        Test custom variable deletion without security
+        It should not be allowed
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+        var0.save()
+        var0.test.add(test)
+        
+        self.client.credentials()
+        response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+        self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))

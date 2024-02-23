@@ -18,7 +18,7 @@ def authenticate_test_client(client):
     ct = ContentType.objects.get_for_model(variableServer.models.Application)
     group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') , content_type=ct))
     ct = ContentType.objects.get_for_model(variableServer.models.Variable)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') , content_type=ct))
+    group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') , content_type=ct))
     
     group.user_set.add(user)
     

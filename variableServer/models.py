@@ -73,7 +73,7 @@ class Variable(models.Model):
     test = models.ManyToManyField(TestCase)
     releaseDate = models.DateTimeField(null=True)
     reservable = models.BooleanField(default=False, help_text="tick it if this variable should be reserved when used to prevent other tests to use it at the same time. Default is false")
-    internal = models.BooleanField(default=False)
+    internal = models.BooleanField(default=False, help_text="tick it if this variable has been created by a selenium test. Variable of such type should be prefixed with 'custom.test.variable'")
     protected = models.BooleanField(default=False)
     description = models.CharField(max_length=500, default="", null=True)
     creationDate = models.DateTimeField(default=timezone.now)

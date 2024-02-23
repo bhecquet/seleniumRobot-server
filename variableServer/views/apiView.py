@@ -36,6 +36,7 @@ class Ping(APIView):
 class VariableList(mixins.ListModelMixin,
                   mixins.CreateModelMixin,
                   mixins.UpdateModelMixin,
+                  mixins.DestroyModelMixin,
                   generics.GenericAPIView):
     
     serializer_class = VariableSerializer
@@ -55,12 +56,12 @@ class VariableList(mixins.ListModelMixin,
         for var in Variable.objects.filter(timeToLive__gt=0):
             if timezone.now() - datetime.timedelta(var.timeToLive) > var.creationDate:
                 var.delete()
-    
-    def get_queryset(self):
-        return Variable.objects.all()
-    
-    def filter_queryset(self, queryset):
-        
+                
+    def _filter_get_queryset(self, queryset):
+        """
+        Filter to apply when GET method is called
+        We return a list of variables
+        """
         version_id = self.request.query_params.get('version', None)
         application_id = self.request.query_params.get('application', None)
         environment_id = self.request.query_params.get('environment', None)
@@ -178,6 +179,24 @@ class VariableList(mixins.ListModelMixin,
         initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
         
         return initial_list
+    
+    def _filter_delete_queryset(self, queryset):
+        """
+        Only allow "internal" variables deletion
+        """
+        return queryset.filter(pk=self.kwargs['pk'], internal=True)
+    
+    def get_queryset(self):
+        return Variable.objects.all()
+    
+    def filter_queryset(self, queryset):
+        
+        if self.request.method == "GET":
+            return self._filter_get_queryset(queryset)
+        elif self.request.method == "DELETE":
+            return 
+        else:
+            return super().filter_queryset(queryset)
         
     def _unique_variable(self, variable_query_set):
         """
