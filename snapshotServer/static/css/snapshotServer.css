@@ -29,8 +29,6 @@
 .snapshot {
 	width:100%;
 	display: grid;
-	padding-left: 10px;
-	padding-right: 10px;
 }
 
 #excludeZone {

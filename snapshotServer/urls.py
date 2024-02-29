@@ -57,7 +57,7 @@ urlpatterns = [
     re_path(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(StepListView.as_view()))), name="steplistView"), 
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/noheader/$', PictureView.as_view(), name="pictureViewNoHeader"), 
-    re_path(r'^compare/excludeList/(?P<ref_snapshot_id>[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
+    re_path(r'^compare/excludeList/(?P<ref_snapshot_id>None|[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
     re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 

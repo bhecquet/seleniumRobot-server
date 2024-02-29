@@ -19,13 +19,18 @@
 				{% with snapshot_id=namedSnapshot.stepSnapshot.id %}
 			
 				
-					<!-- be sure we load display exclusion zones only once image is loaded -->
+					<!-- be sure we load & display exclusion zones only once image is loaded -->
 					<script>;
 						
-						{% if namedSnapshot.stepSnapshot and namedSnapshot.stepSnapshot.refSnapshot %}
+						{% if namedSnapshot.stepSnapshot %}
 							// update exclusion zone from database and draw them
 							function loadImages_{{ testStepId }}_{{ snapshot_id }}() {
-								updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id namedSnapshot.stepSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
+							
+                                {% if namedSnapshot.stepSnapshot.refSnapshot %}
+								    updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id namedSnapshot.stepSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
+                                {% else %}
+                                    updatePanel('{% url "excludeListView" "None" namedSnapshot.stepSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
+                                {% endif %}
 
 								// delay display so that image is loaded and its height is > 0
 								setTimeout(function(){
@@ -37,12 +42,14 @@
 									
 								}, 1000);
 							}
-						
-							var img = document.getElementById('stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}');
-							img.onload = loadImages_{{ testStepId }}_{{ snapshot_id }}()
-							$(window).on('displayed', function (e) {
-							    loadImages_{{ testStepId }}_{{ snapshot_id }}();
-							});
+
+							// load exclude list when image is displayed
+							let observer_{{ testStepId }}_{{ snapshot_id }} = new IntersectionObserver(function(entries) {
+							    if(entries[0].isIntersecting === true)
+							        loadImages_{{ testStepId }}_{{ snapshot_id }}();
+							}, { threshold: [0] });
+							observer_{{ testStepId }}_{{ snapshot_id }}.observe(document.querySelector('#stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}'));
+							
 						{% endif %}
 					
 					</script>
@@ -147,7 +154,7 @@
 														class="diffCanvas"  
 														width="{{ namedSnapshot.width }}" 
 														height="{{ namedSnapshot.height }}" 
-														style="z-index: 10; width: inherit;">
+														style="z-index: 10; left: -1%; top: -1%; width: 102%; height: 102%;">
 													</div>
 												</div>
 												<div id="excludeZoneTable_{{testStepId}}_{{ snapshot_id }}">
@@ -178,7 +185,6 @@
 					</div>
 					
 					<script>
-						var exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }} = false;
 					
 						console.log("displaying diff")
 						setTimeout(function(){
@@ -191,15 +197,12 @@
 						
 						$('#editionModal_{{ testStepId }}_{{ snapshot_id }}').on('shown.bs.modal', function (e) {
 						  
-						  	// do not draw several times
-							if (!exclusionDrawnOnModal_{{ testStepId }}_{{ snapshot_id }}) {
-								drawExistingExcludeZones(document.getElementById('canvas_{{ testStepId }}_{{ snapshot_id }}'), 
-														document.getElementById("stepSnapshot_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
-														'',
-														{{ testStepId }},
-														{{ snapshot_id }});
-								exclusionDrawnOnModal_{{testStepId}}_{{ snapshot_id }} = true;
-						  	}
+							drawExistingExcludeZones(document.getElementById('canvas_{{ testStepId }}_{{ snapshot_id }}'), 
+													document.getElementById("stepSnapshot_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
+													'',
+													{{ testStepId }},
+													{{ snapshot_id }});
+						  	
 							initDraw(document.getElementById('excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}').getElementsByTagName('tbody')[0],
 										{{ testStepId }},
 										{{ snapshot_id }},
@@ -211,6 +214,12 @@
 						  	var $button = $(event.target); 
 						
 							$(this).closest('.modal').one('hidden.bs.modal', function() {
+							     // redrax rectangle on static canvas once they have been edited in modal
+							    drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
+                                                    document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
+                                                    'Static',
+                                                    {{ testStepId }},
+                                                    {{ snapshot_id }});
 							    updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
 							});
 						});

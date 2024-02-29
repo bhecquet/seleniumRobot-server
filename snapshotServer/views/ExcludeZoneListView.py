@@ -25,8 +25,10 @@ class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
         exclusion_list = []
         
         # get exclude zones from ref_snapshot
-        exclusion_list += [(ex, ExclusionZoneListView.colors[i % len(ExclusionZoneListView.colors)], self.kwargs['ref_snapshot_id']) 
-                for (i, ex) in enumerate(ExcludeZone.objects.filter(snapshot=self.kwargs['ref_snapshot_id']))]
+        # ref_snapshot_id may be 'None' when snapshot is itself a reference
+        if self.kwargs['ref_snapshot_id'] != 'None':
+            exclusion_list += [(ex, ExclusionZoneListView.colors[i % len(ExclusionZoneListView.colors)], self.kwargs['ref_snapshot_id']) 
+                    for (i, ex) in enumerate(ExcludeZone.objects.filter(snapshot=self.kwargs['ref_snapshot_id']))]
         exclusion_list += [(ex, ExclusionZoneListView.colors[(i + len(exclusion_list)) % len(ExclusionZoneListView.colors)], self.kwargs['step_snapshot_id']) 
                 for (i, ex) in enumerate(ExcludeZone.objects.filter(snapshot=self.kwargs['step_snapshot_id']))]
         
@@ -38,3 +40,6 @@ class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
         context['ref_snapshot_id'] = self.kwargs['ref_snapshot_id']
         context['step_snapshot_id'] = self.kwargs['step_snapshot_id']
         return context
+    
+    
+    

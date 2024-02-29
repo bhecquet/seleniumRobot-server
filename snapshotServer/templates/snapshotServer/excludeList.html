@@ -3,11 +3,10 @@ Exclude zones
     <tr>
         <th width="20px">Active</th>
         <th>Color</th>
-        <th>Position</th>
         <th>Applies to</th>
     </tr>
     {% for exclude, color, linked_snapshot_id in object_list %}
-	    <tr>
+	    <tr related_to="">
 			<td>
 				<input type="checkbox" 
 						name="exclude"
@@ -15,11 +14,13 @@ Exclude zones
 						id="existingExclude_{{ exclude.id }}" 
 						target_snapshot="{{linked_snapshot_id}}"
 						checked="checked" 
-						r_x="{{ exclude.x }}" r_y="{{ exclude.y }}" r_w="{{ exclude.width }}" r_h="{{ exclude.height }}"
-						onclick="toggleElement('exclude_{{ exclude.id }}');toggleElement('exclude_{{ exclude.id }}Static');" />
+						r_x="{{ exclude.x }}" 
+						r_y="{{ exclude.y }}" 
+						r_w="{{ exclude.width }}" 
+						r_h="{{ exclude.height }}"
+						onclick="toggleElement('exclude_{{ exclude.id }}');" />
 			</td>
 			<td style="background-color: {{ color }};width: 10px;">&nbsp;</td>
-			<td>{{ exclude }}</td>
 			<td>
 				<select onchange="changeExcludeZoneTarget('existingExclude_{{ exclude.id }}', this.value);">
 					<option value="{{ ref_snapshot_id }}" {% if linked_snapshot_id == ref_snapshot_id %}selected="true"{% endif %}>reference</option>

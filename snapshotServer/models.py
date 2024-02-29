@@ -273,6 +273,7 @@ class Snapshot(models.Model):
 
     stepResult = models.ForeignKey('StepResult', related_name='snapshots', on_delete=models.CASCADE)
     image = models.ImageField(upload_to='documents/%Y/%m/%d')
+    # a snapshot without refSnapshot is a reference snapshot
     refSnapshot = models.ForeignKey('self', default=None, null=True, on_delete=models.DO_NOTHING)
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)

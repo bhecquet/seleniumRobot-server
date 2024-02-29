@@ -72,14 +72,14 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                         step_snapshot.pixelsDiff = None
                         step_snapshot.save()
                         
-                        # Compute differences for the following snapshots as they will depend on this new ref
-                        for snap in step_snapshot.snapshotsUntilNextRef(previous_snapshot):
-                            DiffComputer.get_instance().add_jobs(step_snapshot, snap)
-                            
                         # copy exclude zones to the new ref so that they may be processed independently
                         for exclude_zone in ExcludeZone.objects.filter(snapshot=previous_snapshot):
                             exclude_zone.copy_to_snapshot(step_snapshot)
                         
+                        # Compute differences for the following snapshots as they will depend on this new ref
+                        for snap in step_snapshot.snapshotsUntilNextRef(previous_snapshot):
+                            DiffComputer.get_instance().add_jobs(step_snapshot, snap)
+                            
                     elif self.request.GET['makeRef'] == 'False' and step_snapshot.refSnapshot is None:
                         # search a reference with a lower id, meaning that it has been recorded before our step
                         # search with the same test case name / same step name / same application version / same environment / same browser / same image name so that comparison
