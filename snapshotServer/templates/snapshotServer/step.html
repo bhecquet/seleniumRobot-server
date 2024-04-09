@@ -18,19 +18,13 @@
 			{% endif %}
 			{% include "snapshotServer/step.html" with actions=action.actions %}
 		{% elif action.type == 'action' %}
-			{% if action.failed and action.exception %}
-				<li class="header-failed">
-	                <div class="message-conf">
-	                    <span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}  {{ action.exception }}
-	                </div>
-	            </li>
-			{% else %}
-				<li>
+			
+				<li {% if action.failed %}class="header-failed"{% endif %}>
 	                <div class="message-conf">
 	                    <span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
 	                </div>
 	            </li>
-			{% endif %}
+			
 		{% elif action.type == 'message' %}
 			 <div class="message-{{ action.messageType|lower }} message-conf">
 			 	<span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
