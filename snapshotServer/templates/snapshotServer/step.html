@@ -19,7 +19,7 @@
 			{% include "snapshotServer/step.html" with actions=action.actions %}
 		{% elif action.type == 'action' %}
 			
-				<li {% if action.failed %}class="header-failed"{% endif %}>
+				<li{% if action.failed %} class="header-failed"{% endif %}>
 	                <div class="message-conf">
 	                    <span class="stepTimestamp mr-1">{{ action.timestamp|timestamp_to_time }}</span> {{ action.name }}
 	                </div>
