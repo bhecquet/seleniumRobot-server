@@ -94,6 +94,7 @@ class Test_TestResultView(SnapshotTestCase):
         self.assertTrue("""Network capture "main" browser:<a href="/snapshot/api/file/92/download/">HAR file</a>""" in html)
         ## no description in details table
         self.assertFalse("""<th>Description</th>""" in html)
+        self.assertFalse("""<th>Started by</th>""" in html)
         
     def test_report_result_ko(self):
         """
@@ -287,6 +288,21 @@ class Test_TestResultView(SnapshotTestCase):
         self.assertTrue("""<th>Description</th><td>Some extra test""" in html)
         self.assertTrue("""&lt;param1&gt; &lt;param2&gt;""" in html)
         self.assertTrue(""";&amp;nbsp;</td>""" in html)
+        
+        
+    def test_report_with_started_by(self):
+        """
+        Check "started by" is displayed
+        """
+        test_case_in_session = TestCaseInSession.objects.get(pk=1)
+        test_case_in_session.session.startedBy = """http://myTestLauncher/foo/bar?test=test1&param=1"""
+        test_case_in_session.session.save()
+        
+        response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        self.assertTrue("""<tr><th>Started by</th><td><a href=http://myTestLauncher/foo/bar?test=test1&amp;param=1>http://myTestLauncher/foo/bar?test=test1&amp;param=1</a></td></tr>""" in html)
+
                  
     def test_report_message_style(self):
         """

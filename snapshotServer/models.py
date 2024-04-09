@@ -192,6 +192,7 @@ class TestSession(models.Model):
     compareSnapshot = models.BooleanField(default=False)                        # if True, this session will be displayed in snapshot comparator
     compareSnapshotBehaviour = models.CharField(max_length=20, default='DISPLAY_ONLY')                  # DISPLAY_ONLY / ADD_TEST_RESULT / CHANGE_TEST_RESULT
     ttl = models.DurationField(default=datetime.timedelta(days=30)) # time to live of the session, in days. After this delay, session may be deleted
+    startedBy = models.CharField(max_length=300, null=True, blank=True) # the URL of the tool that started the test
     
     def __str__(self):
         if self.name:

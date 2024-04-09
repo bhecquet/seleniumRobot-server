@@ -58,6 +58,12 @@
                             <td>{{ currentTest.description }}</td>
                         </tr>
 		    		    {% endif %}
+		    		    {% if currentTest.session.startedBy %}
+		    		    <tr>
+                            <th>Started by</th>
+                            <td><a href={{ currentTest.session.startedBy }}>{{ currentTest.session.startedBy }}</a></td>
+                        </tr>
+                        {% endif %}
                         <tr>
                         	<th>Application type</th>
                         	<td>{{ applicationType }} </td>
