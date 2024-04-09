@@ -194,7 +194,7 @@ class VariableList(mixins.ListModelMixin,
         if self.request.method == "GET":
             return self._filter_get_queryset(queryset)
         elif self.request.method == "DELETE":
-            return 
+            return self._filter_delete_queryset(queryset)
         else:
             return super().filter_queryset(queryset)
         
