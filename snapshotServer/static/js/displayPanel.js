@@ -476,6 +476,11 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
 
     for(let i= 0; i < currentExcludes.length; i++) {
         
+        // do not update new exclude zones
+        if (currentExcludes[i].id.startsWith('new_exclude')) {
+            continue
+        }
+        
         // remove exclude zones that should not be kept
         if (!currentExcludes[i].checked) {
 

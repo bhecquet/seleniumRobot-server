@@ -44,11 +44,10 @@
 							}
 
 							// load exclude list when image is displayed
-							let observer_{{ testStepId }}_{{ snapshot_id }} = new IntersectionObserver(function(entries) {
+							new IntersectionObserver(function(entries) {
 							    if(entries[0].isIntersecting === true)
 							        loadImages_{{ testStepId }}_{{ snapshot_id }}();
-							}, { threshold: [0] });
-							observer_{{ testStepId }}_{{ snapshot_id }}.observe(document.querySelector('#stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}'));
+							}, { threshold: [0] }).observe(document.querySelector('#stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}'));
 							
 						{% endif %}
 					
@@ -214,7 +213,7 @@
 						  	var $button = $(event.target); 
 						
 							$(this).closest('.modal').one('hidden.bs.modal', function() {
-							     // redrax rectangle on static canvas once they have been edited in modal
+							     // redraw rectangle on static canvas once they have been edited in modal
 							    drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
                                                     document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
                                                     'Static',
