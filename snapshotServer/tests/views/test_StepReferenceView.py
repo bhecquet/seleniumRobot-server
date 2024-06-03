@@ -112,24 +112,6 @@ class TestStepReferenceView(APITransactionTestCase):
                 f.unlink(missing_ok=True)
                 
         StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 48
-    
-    def test_clean(self):
-        try:
-            StepReferenceView.DELETE_AFTER = 0
-            StepReferenceView.CLEAN_EVERY_SECONDS = 0
-            
-            self.assertIsNotNone(StepReference.objects.get(pk=3))
-            
-            # add a reference
-            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-                self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
-                time.sleep(0.5) # wait field computing
-                
-            # check old step reference has been deleted
-            self.assertEqual(len(StepReference.objects.filter(pk=3)), 0)
-        finally:
-            StepReferenceView.DELETE_AFTER = 60 * 60 * 24 * 30
-            StepReferenceView.CLEAN_EVERY_SECONDS = 60 * 60 * 24
 
     def test_get_snapshot(self):
         """
@@ -180,7 +162,7 @@ class TestStepReferenceView(APITransactionTestCase):
 
             self.assertTrue(os.path.isfile(os.path.join(self.reference_dir, 'replyDetection.json.png')))
         
-        with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
+        with open('snapshotServer/tests/data/replyDetection2.json.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             time.sleep(0.5) # wait field computing
@@ -225,7 +207,7 @@ class TestStepReferenceView(APITransactionTestCase):
             uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1).last()
             uploaded_file1 = uploaded_reference_1.image.path
             
-        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+        with open('snapshotServer/tests/data/Ibis_Mulhouse.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
             time.sleep(0.5) # wait field computing

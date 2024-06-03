@@ -25,6 +25,10 @@ def _create_allowed_user_and_group():
     group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') , content_type=ct))
     ct = ContentType.objects.get_for_model(snapshotServer.models.Application)
     group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') , content_type=ct))
+    ct = ContentType.objects.get_for_model(snapshotServer.models.File)
+    group.permissions.add(*Permission.objects.filter(Q(codename='add_file') | Q(codename='change_file') , content_type=ct))
+    ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
+    group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') | Q(codename='change_executionlogs') , content_type=ct))
     
     group.user_set.add(user)
     

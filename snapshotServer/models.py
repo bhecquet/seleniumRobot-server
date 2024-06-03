@@ -1,6 +1,6 @@
 
 from django.db import models
-from django.db.models import F, Q
+from django.db.models import Q
 
 from snapshotServer.controllers.PictureComparator import Rectangle
 import pickle
@@ -54,6 +54,7 @@ class TestCaseInSession(models.Model):
     description = models.CharField(max_length=300, null=True)
     status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status
     gridNode = models.CharField(max_length=100, null=True) # name of the grid node on which test has run 
+    optimized = models.IntegerField(default=0) # do attachments have been optimized (deleted, compressed): 0 (no), 10 (html deleted), 20 (images compressed), 30 (video deleted)
     
     def isOkWithSnapshots(self):
         """
@@ -199,22 +200,7 @@ class TestSession(models.Model):
             return self.name
         else:
             return "Session %s with %s" % (self.sessionId, self.browser)
-        
 
-    def save(self, *args, **kwds):
-        """
-        While saving a new session, delete all too old sessions
-        """
-        super().save(*args, **kwds)
-        
-        # search all sessions whose date is older than defined 'ttl' (ttl > 0)
-        # do not select sessions whose snapshot number is > 0 and reference snapshot number is > 0
-        # a sub query is used because we need 'inner join' when filtering and django creates 'left outer join' which gets more than necessary
-        for session in TestSession.objects.filter(ttl__gt=datetime.timedelta(days=0), 
-                                                  date__lt=timezone.now() - F('ttl'))\
-                                            .exclude(id__in=[s.stepResult.testCase.session.id for s in Snapshot.objects.filter(refSnapshot=None).select_related('stepResult__testCase__session')]).distinct():
-            logging.info("deleting session {}-{} of the {}".format(session.id, str(session), session.date))
-            session.delete()
      
 def upload_path(instance, filename):
     return 'documents/references/%s/%s/%s' % (instance.testCase.application, instance.testCase.name, filename)
@@ -250,6 +236,15 @@ class StepReference(models.Model):
         return self.stepResult.step.name
     
     # we could also add: signature, text, fields, for comparison
+
+@receiver(pre_delete, sender=StepReference)
+def delete_step_reference(sender, instance, **kwargs):
+    """
+    When a StepReference is deleted, remove the associated picture
+    """
+    
+    # deletion of image file
+    instance.image.delete() 
     
 class File(models.Model):
     """
@@ -259,12 +254,30 @@ class File(models.Model):
     file = models.FileField(upload_to='documents/%Y/%m/%d')
     stepResult = models.ForeignKey('StepResult', related_name='files', on_delete=models.CASCADE)
     
+@receiver(pre_delete, sender=File)
+def delete_file(sender, instance, **kwargs):
+    """
+    When a File is deleted, remove the associated file on storage
+    """
+    
+    # deletion of file
+    instance.file.delete() 
+    
 class ExecutionLogs(models.Model):
     """
     Class that represents the test case execution logs
     """
     file = models.FileField(upload_to='documents/%Y/%m/%d')
     testCase = models.ForeignKey('TestCaseInSession', related_name='logs', on_delete=models.CASCADE)
+    
+@receiver(pre_delete, sender=ExecutionLogs)
+def delete_execution_logs(sender, instance, **kwargs):
+    """
+    When an ExecutionLogs is deleted, remove the associated file on storage
+    """
+    
+    # deletion of file
+    instance.file.delete(False) 
     
 class Snapshot(models.Model):
     """

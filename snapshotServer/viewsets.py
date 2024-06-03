@@ -13,7 +13,12 @@ from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, 
 from commonsServer.views.viewsets import BaseViewSet
 from commonsServer.views.serializers import ApplicationSerializer
 from rest_framework.decorators import action
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
+from rest_framework.response import Response
+import json
+import zipfile
+import io
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 class TestSessionViewSet(BaseViewSet):
     queryset = TestSession.objects.all()
@@ -60,14 +65,43 @@ class FileViewSet(viewsets.ModelViewSet):
             response = FileResponse(file_handle, content_type='image/png')
         elif instance.file.name.endswith('html'):
             response = FileResponse(file_handle, content_type='text/html')
+        elif instance.file.name.endswith('txt'):
+            response = FileResponse(file_handle, content_type='text/plain')
         elif instance.file.name.endswith('avi'):
             response = FileResponse(file_handle, content_type='video/x-msvideo')
+        elif instance.file.name.endswith('zip'):
+            response = FileResponse(file_handle, content_type='application/zip')
         else:
             response = FileResponse(file_handle, content_type='application/octet-stream')
         response['Content-Length'] = instance.file.size
         response['Content-Disposition'] = 'attachment; filename="%s"' % instance.file.name
 
         return response
+    
+    def create(self, request, *args, **kwargs):
+        """
+        Creates a File object
+        if the file is an HTML file, compress it
+        """
+        
+        try:
+            if request.FILES['file'].name.lower().endswith('.html'):
+            
+                with io.BytesIO() as zip_buffer:
+        
+                    with zipfile.ZipFile(zip_buffer, 'w') as zip:
+                        zip.writestr(request.data['file'].name, request.FILES['file'].file.getvalue(), compress_type=zipfile.ZIP_DEFLATED)
+        
+                    in_memory_uploaded_file = InMemoryUploadedFile(zip_buffer, 'file', request.data['file'].name + '.zip', 'application/zip', zip_buffer.tell(), None)
+                    file = File(stepResult=StepResult.objects.get(pk=int(request.data['stepResult'])), file=in_memory_uploaded_file)
+                    file.save()
+                    response = HttpResponse(json.dumps({'id': file.id}), status=201)
+                    return response
+            else:
+                return super().create(request, *args, **kwargs)
+        except Exception as e:
+            return Response(status=500, data=json.dumps({'error': str(e)}))
+            
     
 class ExecutionLogsViewSet(viewsets.ModelViewSet):
     queryset = ExecutionLogs.objects.all()

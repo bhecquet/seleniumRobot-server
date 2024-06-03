@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'health_check',
+    'django_apscheduler',
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
     'commonsServer.apps.CommonsserverConfig',
@@ -217,3 +218,11 @@ LOGGING = {
         },
     }
 }
+
+DELETE_STEP_REFERENCE_AFTER_DAYS = 30       # number of days after which old references will be deleted if they have not been updated. 30 days by default
+COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS = 5   # number of days after which images of successful test (except step references and snapshot for comparison) will be compressed at 85%
+COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS = 10  # number of days after which images of failed test (except step references and snapshot for comparison) will be compressed at 85%
+DELETE_HTML_FOR_SUCCESS_AFTER_DAYS = 5      # number of days after which HTML of successful test will be replaced by empty code
+DELETE_HTML_FOR_FAILURE_AFTER_DAYS = 10     # number of days after which HTML of failed test will be replaced by empty code
+DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS = 15    # number of days after which HTML of successful test will be deleted
+CLEANING_CRON = "0 3 * * *"                 # clean every day at 3 a.m

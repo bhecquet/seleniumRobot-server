@@ -29,33 +29,15 @@ class StepReferenceView(views.APIView):
     queryset = StepResult.objects.all()
     last_clean = datetime.today()
     last_clean_lock = threading.Lock()
-    
-    DELETE_AFTER = 60 * 60 * 24 * 30                    # number of seconds after which old references will be deleted if they have not been updated. 30 days by default
-    CLEAN_EVERY_SECONDS = 60 * 60 * 24                  # try to clean references every (in seconds) => 24h by default
+
     OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 12    # in case a reference already exist, overwrite it only after X seconds (12 hours by default)
-    
-    def clean(self):
-        """
-        Clean old step references every day
-        This will only 
-        - delete reference from database
-        - delete files associated to StepReference model
-        
-        Files in "detect" folder won't be deleted this way but it's not a problem, as FieldDetector has it's own cleaning method which already deletes old files
-        """
-        with StepReferenceView.last_clean_lock:
-            if datetime.today() - StepReferenceView.last_clean < timedelta(seconds=StepReferenceView.CLEAN_EVERY_SECONDS):
-                return
-        StepReference.objects.filter(date__lt=datetime.today() - timedelta(seconds=StepReferenceView.DELETE_AFTER)).delete()
-        StepReferenceView.last_clean = datetime.today()
-        logging.info('deleting old references')
 
     def post(self, request):
         """
         test with CURL
         curl -u admin:adminServer -F "stepResult=1" -F "image=@/home/worm/Ibis Mulhouse.png"   http://127.0.0.1:8000/stepReference/
         """
-        self.clean()
+
         form = ImageForStepReferenceUploadForm(request.POST, request.FILES)
         
         
@@ -86,16 +68,9 @@ class StepReferenceView(views.APIView):
                 else:
                     
                     if image is not None:
-                        old_path = step_reference.image.path
-                    else:
-                        old_path = None
+                        step_reference.image.delete(save=False)
                     step_reference.image = image
                     step_reference.save()
-                    
-                    try:
-                        os.remove(old_path)
-                    except (FileNotFoundError, TypeError, PermissionError) as e:
-                        pass
                 
                 # detect fields on reference image
                 # then, if an error occurs in test, it won't be necessary to compute both reference image and step image

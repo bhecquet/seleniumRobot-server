@@ -1,0 +1,123 @@
+# see snasphotserver_commons.yaml for init values (env, application, test case)
+-   model: snapshotServer.testsession
+    pk: 1
+    fields:
+        sessionId: '1250'
+        version: 1
+        date: '2023-05-05T16:16:09.184106+01:00'
+        browser: BROWSER:FIREFOX
+        environment: 1
+        compareSnapshot: false
+        compareSnapshotBehaviour: DISPLAY_ONLY
+        name: jenkins
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields:
+        testCase: 1
+        session: 1
+        testSteps: [1]
+        status: SUCCESS
+        optimized: 0
+        stacktrace: >-
+            {                
+                "stacktrace": "",
+                "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
+            }
+          
+
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: 
+        name: "openPage with args: (https://myapp/jenkins/, )" 
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: 
+        step: 1
+        testCase: 1
+        result: true
+        duration: 700
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 14:53:58 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 713,
+                "snapshots": [
+                    {
+                        "idHtml": 87,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 88,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/login?from=%2Fjenkins%2F",
+                        "timestamp": 1698245639884
+                    }
+                ],
+                "videoTimeStamp": 5,
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "name": "Opening page LoginPage",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698245638815
+                    },
+                    {
+                        "name": "setWindowToRequestedSize on on page LoginPage ",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698245638816
+                    },
+                    {
+                        "name": "maximizeWindow on on page LoginPage ",
+                        "failed": false,
+                        "position": 2,
+                        "type": "action",
+                        "timestamp": 1698245638816
+                    },
+                    {
+                        "messageType": "LOG",
+                        "name": "Open web page in :8.905 seconds",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698245638814,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+
+-   model: snapshotServer.file
+    pk: 1
+    fields: 
+        stepResult: 1
+        file: documents/engie.png
+-   model: snapshotServer.file
+    pk: 2
+    fields: 
+        stepResult: 1
+        file: documents/test.html.zip
+-   model: snapshotServer.file
+    pk: 3
+    fields: 
+        stepResult: 1
+        file: documents/videoCapture.avi
+        
+-   model: snapshotServer.stepreference
+    pk: 1
+    fields:
+        testStep: 1
+        testCase: 1
+        version: 1
+        environment: 1
+        date: '2023-05-05T16:16:09.184106+01:00'
+        image: documents/engie.png  
