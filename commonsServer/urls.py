@@ -1,5 +1,5 @@
 
-from django.conf.urls import url, include
+from django.conf.urls import include
 from django.urls import re_path
 from rest_framework import routers
 from commonsServer.views.api.VersionView import VersionView

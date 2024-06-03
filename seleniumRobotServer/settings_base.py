@@ -22,7 +22,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework.authtoken',
-    'health_check',
     'django_apscheduler',
     'snapshotServer.app.SnapshotServerConfig',
     'variableServer.app.VariableserverConfig',
