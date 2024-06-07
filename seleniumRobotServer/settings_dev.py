@@ -104,6 +104,8 @@ DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS'] = {}
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False
  
+# whether scheduler is launched inside django
+EMBED_SCHEDULER = 'True'
 
 # -------- OpenID Authentication -----------------
 OIDC_RP_CLIENT_ID = 'seleniumserver'

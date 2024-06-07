@@ -43,7 +43,8 @@ def getFileList():
 def collectStatic():
     shutil.rmtree(STATIC_ROOT, ignore_errors=True)
     
-    os.environ.setdefault("DJANGO_SETTINGS_MODULE", "seleniumRobotServer.settings_dev")
+    os.environ["DJANGO_SETTINGS_MODULE"] = "seleniumRobotServer.settings_dev"
+    os.environ["RUN_MAIN"] = "True" # to avoid aps_scheduler
     from django.core.management import execute_from_command_line
     execute_from_command_line([root + "/manage.py", "collectstatic"])
                 
