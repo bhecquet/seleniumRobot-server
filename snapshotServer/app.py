@@ -6,7 +6,9 @@ class SnapshotServerConfig(AppConfig):
     verbose_name = "Snapshot Server"
     
     def ready(self):
+
         from snapshotServer.management.commands import scheduler
 
-        if os.environ.get('RUN_MAIN', False):
+        # RUN_MAIN environment is set when running development server (called twice when test execute)
+        if not os.environ.get('RUN_MAIN', False):
             scheduler.start()
