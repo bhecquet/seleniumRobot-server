@@ -63,7 +63,7 @@ def _compress_image_files(test_case_in_session):
         if file.file.name.lower().endswith('.jpg') or file.file.name.lower().endswith('.png'): 
             try:
                 with Image.open(file.file.path) as img:
-                    img = img.resize((int(img.width * 0.4), int(img.height * 0.4)), Image.Resampling.LANCZOS)
+                    img = img.resize((int(img.width * 0.4), int(img.height * 0.4)), Image.LANCZOS)
                     img.save(file.file.path, quality=85, optimize=True)
             except Exception as e:
                 logger.warn(f"Cannot compress image {file.file.path}: {str(e)}")

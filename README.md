@@ -31,7 +31,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 
 
 	LoadFile "<path_to_python_dll>"
-	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp36-win32.pyd"
+	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp38-win32.pyd"
 	WSGIPythonHome "<python_dir>"
 	WSGIApplicationGroup %{GLOBAL}
 	
@@ -58,7 +58,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - If HTTPS is necessary, assuming a virtualenv is created inside <path_to_selenium_server>
 
 	WSGIPythonHome "<path_to_selenium_server>/venv"
-	WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.6/site-packages/:<path_to_selenium_server>
+	WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.8/site-packages/:<path_to_selenium_server>
 	
 	<VirtualHost *:80>
 	  ServerName seleniumRobotServer
@@ -72,7 +72,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	<VirtualHost *:443>
 		ServerName seleniumRobotServer
 		LoadFile "<path_to_python>/libpython3.so"
-		LoadModule wsgi_module "<path_to>/mod_rh-python36-wsgi.so"
+		LoadModule wsgi_module "<path_to>/mod_rh-python38-wsgi.so"
 		
 		WSGIPassAuthorization On
 		WSGIApplicationGroup %{GLOBAL}
@@ -123,8 +123,8 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - configure Apache server with  
 
 
-	LoadFile "/opt/rh/rh-python34/root/lib64/libpython3.so.rh-python34"
-	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python34-wsgi.so"
+	LoadFile "/opt/rh/rh-python38/root/lib64/libpython3.so.rh-python38"
+	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python38-wsgi.so"
 	WSGIPythonHome "<path_to_selenium_server>/venv"
 	
 	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
@@ -148,6 +148,48 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 	</Directory>
 
 
+## Session / data cleaning ##
+
+When selenium server records test results, it stores many data which fills the storage quickly
+To avoid this, there is a django command to clean it regularly
+
+```
+python manage.py scheduler
+```
+
+This starts a scheduler (Django must already be started) which cleans data at regular interval
+
+Configuration for the scheduler and cleaning process can be found in settings_base.py and can be overriden in settings.py
+
+```
+DELETE_STEP_REFERENCE_AFTER_DAYS = 30       # number of days after which old references will be deleted if they have not been updated. 30 days by default
+COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS = 5   # number of days after which images of successful test (except step references and snapshot for comparison) will be compressed at 85%
+COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS = 10  # number of days after which images of failed test (except step references and snapshot for comparison) will be compressed at 85%
+DELETE_HTML_FOR_SUCCESS_AFTER_DAYS = 5      # number of days after which HTML of successful test will be replaced by empty code
+DELETE_HTML_FOR_FAILURE_AFTER_DAYS = 10     # number of days after which HTML of failed test will be replaced by empty code
+DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS = 15    # number of days after which HTML of successful test will be deleted
+CLEANING_CRON = "0 3 * * *"                 # clean every day at 3 a.m
+```
+
+This scheduler can be started as a service 
+
+```
+[Unit]
+Description=Job scheduler for Selenium server
+After=network.target selenium-server.service
+Wants=selenium-server.service
+
+[Service]
+Type=simple
+ExecStart=<install_dir>/venv/bin/python3 <install_dir>/manage.py scheduler
+KillSignal=SIGCONT
+PrivateTmp=true
+User=apache
+Group=apache
+
+[Install]
+WantedBy=multi-user.target
+```
 
 # Configuration # 
 
