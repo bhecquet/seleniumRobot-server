@@ -176,6 +176,8 @@ class Test_TestResultView(SnapshotTestCase):
         
         html = self.remove_spaces(response.rendered_content)
         self.assertTrue('<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>Snapshot comparison' in html)
+        self.assertTrue('<i class="fas fa-file-video"></i>1.171 s<i class="fa-solid fa-code-compare font-success"></i>' in html) # check icon is present when comparison is done in step
+        self.assertEqual(html.count('fa-solid fa-code-compare'), 1, "Only one icon of image comparison should be present")
         self.assertTrue('Snapshot comparison OK' in html)
         
     def test_report_with_snapshot_comparison_ko_display_only(self):
@@ -200,6 +202,8 @@ class Test_TestResultView(SnapshotTestCase):
         # result is OK, but snapshot comparison step is KO
         self.assertTrue('<div class="box collapsed-box failed"><div class="box-header with-border">'
                         '<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>Snapshot comparison' in html)
+        self.assertTrue('<i class="fas fa-file-video"></i>1.171 s<i class="fa-solid fa-code-compare font-failed"></i>' in html) # check icon is present when comparison is done in step
+        self.assertEqual(html.count('fa-solid fa-code-compare'), 1, "Only one icon of image comparison should be present")
         self.assertTrue('Snapshot comparison KO' in html)
          
         

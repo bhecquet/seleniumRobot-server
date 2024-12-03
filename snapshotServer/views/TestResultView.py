@@ -31,7 +31,7 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 step_result.details = details
                 
                 try:
-                    step_snapshots[step_result] = Snapshot.objects.get(stepResult = step_result)
+                    step_snapshots[step_result] = list(Snapshot.objects.filter(stepResult = step_result))
                 except:
                     step_snapshots[step_result] = None
             

@@ -79,12 +79,13 @@
 	                    
 	                    {% for info_name, info in infos.items %}
 	                    <tr>
+	                        <th>{{ info_name }}</th>
                             {% include "snapshotServer/info.html" with info=info %}  
                         </tr>  
                         {% endfor %}                                                                                               
                     </table>
 
-		      		{% for stepResult, snapshot in object_list.items %}
+		      		{% for stepResult, snapshotsCompared in object_list.items %}
 		      			<div class="box collapsed-box {% if stepResult.details.status == 'SUCCESS' %}success{% elif stepResult.details.status == 'FAILED' %}failed{% elif stepResult.details.status == 'WARNING' %}warning{% else %}skipped{% endif %}">
 						<div class="box-header with-border">
 							<button type="button" class="btn btn-box-tool" data-widget="collapse">
@@ -92,7 +93,11 @@
 							</button>
 							<span class="step-title"> {{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs</span>
 							{% if stepResult.details.videoTimeStamp %}
-                            	<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s</span>
+                            	<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s 
+                            	   {% for snapshotCompared in snapshotsCompared %}
+                            	       <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
+                            	   {% endfor %}
+                            	</span>
                             {% endif %}
 						</div>
 						<div class="box-body">

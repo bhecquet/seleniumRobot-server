@@ -105,6 +105,14 @@ body{
 	border-top: 3px solid #FFBF80;
 }
 
+.font-success {
+    color: #97D086;
+}
+
+.font-failed {
+    color: #F9727B;
+}
+
 .success .fa-plus, .success .fa-minus, .success a, .success a:hover{
 	color: #97D086;
 }
@@ -115,6 +123,21 @@ body{
 
 .failed .fa-plus, .failed .fa-minus, .failed a, .failed a:hover{
 	color: #F9727B;
+}
+
+.testSuccess{
+    border-bottom: 2px solid #2BC400;
+    background-color: rgba(151,208,134,0.2);
+}
+
+.testFailed{
+    border-bottom: 2px solid #FF6666;
+    background-color: rgba(255,102,102,0.1);
+}
+
+.testSkipped{
+    border-bottom: 2px solid #00CCFF;
+    background-color: rgba(167,215,243,0.2);
 }
 
 .fa-info-circle {

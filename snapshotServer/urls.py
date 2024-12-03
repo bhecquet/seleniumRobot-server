@@ -20,6 +20,7 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.urls.conf import re_path, path
 from snapshotServer.views.StepReferenceView import StepReferenceView
+from snapshotServer.views.TestSessionSummaryView import TestSessionSummaryView
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
@@ -49,6 +50,7 @@ urlpatterns = [
     
     re_path(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
     re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
+    re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
     re_path(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),

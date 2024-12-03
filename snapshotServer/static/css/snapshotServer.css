@@ -141,9 +141,9 @@ body {
 	padding-top: 5px;
 }
 
-.table>tbody>tr>td {
+/*.table>tbody>tr>td {
 	padding: 4px;
-}
+}*/
 
 #excludeZoneTable>table>tbody>tr {
 	font-size: 10px;
@@ -193,4 +193,8 @@ body {
 .btn-box-tool {
 	padding-top: 10px;
   	padding-bottom: 10px;
+}
+
+.box-black{
+    border-top: 3px solid #000;
 }

@@ -37,5 +37,10 @@ $(function () {
 
 		});
 		
- $('[data-toggle="popover"]').popover();
+console.log("activate popover")		
+
+$(function () {
+  $('[data-toggle="popover"]').popover()
+})
+
 		

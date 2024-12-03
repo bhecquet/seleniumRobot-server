@@ -1,0 +1,97 @@
+{% extends "snapshotServer/base.html" %}
+{% load static %}
+{% load dictvalue %}
+
+{% block head %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot.css' %}">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js" integrity="sha512-k4siP6VHWDrE4iK9tc5xP87gQAXhkOrOVYeOMlkWRe5CjGk+0V6IdO9nVUTByn/LOLXGYp372zWAiHXlvyYttw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script type="text/javascript" src="{% static 'js/seleniumRobot.js' %}"></script>
+
+
+{% endblock %}
+
+{% block body %}
+        <div class="wrapper">
+            <header class='main-header'>
+                <a href='https://github.com/bhecquet/seleniumRobot'>SeleniumRobot</a><br/>
+            </header>
+        </div>
+        <div class="container-fluid">
+            <div class="pieChart">
+                <canvas id="pieChart" style="height:250px"></canvas>
+                <!--<div id="pieChartLegend" class="chart-legend"></div>-->
+            </div>
+    
+            <!-- TODO logs -->
+            <section class="content-header">
+                <h1> Integration tests <span>(<a href="seleniumRobot.log" style="font-size: 15px;">full logs</a>)</span></h1>
+            </section>
+            
+            <section class="content">
+                <div class="row">
+                    <div class="col-xl-12">
+                        <div class="box box-black">
+                            <div class="box-body">
+                                <table class="table">
+                                    <thead>
+                                        <tr>
+                                            <th class="alignleft"> Tests </th>
+                                            <th class="alignleft"> Methods </th>
+                                            <!--
+                                            <th> Passed Steps Count </th>
+                                            <th> Failed Steps Count </th>
+                                            -->
+                                            <th> Steps Count </th>
+                                            <th> Duration </th>
+                                            {% for infoName in testInfoList %}
+                                            <th> {{ infoName }} </th>
+                                            {% endfor %}
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for testCaseInSession, testInfos in object_list.items %}
+                                            <!-- testInfos contains 
+                                                'snapshot comparison result', 
+                                                'step number', 
+                                                'failed steps number', 
+                                                'duration in secs', 
+                                                'info' -->
+                                            
+                                            
+                                            
+                                                <tr class="{% if testCaseInSession.status == 'SUCCESS' %}testSuccess{% elif testCaseInSession.status == 'FAILURE' %}testFailed{% else %}testSkipped{% endif %}">
+                                                <td>{{ testSession.name }}</td>
+                                                <td class="alignleft">
+                                                    {% if testInfos.0 == True %}
+                                                        <i class="fa-solid fa-code-compare font-success" data-toggle="tooltip" title="snapshot comparison successful"></i>
+                                                    {% elif testInfos.0 == False %}
+                                                        <i class="fa-solid fa-code-compare font-failed" data-toggle="tooltip" title="snapshot comparison failed"></i>
+                                                    {% endif %}
+                                                    <a href='{% url 'testResultView' testCaseInSession.id %}' info="{% if testCaseInSession.status == 'SUCCESS' %}ok{% elif testCaseInSession.status == 'FAILURE' %}ko{% else %}skipped{% endif %}" data-toggle="tooltip" title="{% if testCaseInSession.description %}{{ testCaseInSession.description }}{% else %}no description available"{% endif %}>{{ testCaseInSession.name }}</a>
+                                                </td>
+    
+                                                <td name="stepsTotal-{{ forloop.counter }}">{{ testInfos.1 }}
+                                                {% if testInfos.2 > 0 %}
+                                                    <sup>
+                                                        <a href="#" data-toggle="tooltip" class="failedStepsTooltip" title="{{ testInfos.2 }} step(s) failed">*</a>
+                                                    </sup>
+                                                {% endif %}
+                                                </td>
+                                                <td>{{ testInfos.3 }} sec.</td>
+                                                
+                                                {% for infoName in testInfoList %}
+                                                    {% include "snapshotServer/info.html" with info=testInfos.4|get_value:infoName %}  
+                                                {% endfor %}
+                                            </tr>
+                                        {% endfor %}
+                                        
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>   
+
+{% endblock %}

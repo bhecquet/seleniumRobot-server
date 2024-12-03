@@ -124,6 +124,9 @@ class TestCaseInSession(models.Model):
             
         return True
     
+    def duration(self):
+        return sum([step_result.duration for step_result in self.stepresult.all()])
+    
     def __str__(self):
         if self.name:
             return "%s - %s" % (self.name, self.session.version.name)
