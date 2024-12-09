@@ -29,13 +29,6 @@ class Test_TestResultView(SnapshotTestCase):
         super().setUp()
         self.client = Client()
         authenticate_test_client_for_web_view(self.client)
-        
-    def remove_spaces(self, html_code):
-        new_html = html_code.replace("\n", "").replace("\r",  "")
-        new_html = re.sub(">\\s+<", "><", new_html);
-        new_html = re.sub("\\s+<", "<", new_html);
-        new_html = re.sub(">\\s+", ">", new_html);
-        return new_html
            
     def test_report_result_ok(self):
         """

@@ -20,12 +20,12 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         
         session_id = self.kwargs['sessionId']
 
-        return {test_case_in_session: (test_case_in_session.isOkWithSnapshots(), 
-                                       len(test_case_in_session.stepresult.all()), 
-                                       len([sr for sr in test_case_in_session.stepresult.all() if not sr.result]), # failed steps
-                                       int(test_case_in_session.duration() / 1000),
-                                       {info.name: json.loads(info.info) for info in test_case_in_session.testInfos.all()}
-                                       )  for test_case_in_session in TestCaseInSession.objects.filter(session = session_id)}
+        return {test_case_in_session: (test_case_in_session.isOkWithSnapshots(),                                   # no problem with snapshot comparison
+                                       len(test_case_in_session.stepresult.all()),                                 # number of steps
+                                       len([sr for sr in test_case_in_session.stepresult.all() if not sr.result]), # number of failed steps
+                                       int(test_case_in_session.duration() / 1000),                                # duration
+                                       {info.name: json.loads(info.info) for info in test_case_in_session.testInfos.all()} # test infos
+                                       )  for test_case_in_session in TestCaseInSession.objects.filter(session = session_id).order_by("date")}
             
     def get_context_data(self, **kwargs):
         
@@ -37,8 +37,8 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         context['testInfoList'] = []
         for test_case_in_session in context['testSession'].testcaseinsession_set.all():
             for test_info in test_case_in_session.testInfos.all():
-                context['testInfoList'].append(test_info.name)
-
+                if test_info.name not in context['testInfoList']:
+                    context['testInfoList'].append(test_info.name)
         
         return context
     

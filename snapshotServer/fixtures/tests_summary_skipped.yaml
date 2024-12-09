@@ -1,0 +1,27 @@
+# see testssummary_commons.yaml for init values (env, application, test case)
+-   model: snapshotServer.testsession
+    pk: 111
+    fields:
+        sessionId: '1250'
+        version: 1
+        date: '2023-05-05T16:16:09.184106+01:00'
+        browser: BROWSER:FIREFOX
+        environment: 1
+        compareSnapshot: false
+        compareSnapshotBehaviour: DISPLAY_ONLY
+        name: jenkins
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 111
+    fields:
+        testCase: 1
+        name: testJenkins
+        session: 111
+        testSteps: []
+        status: SKIPPED
+        stacktrace: >-
+            {                
+                "stacktrace": "",
+                "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
+            }
+          

@@ -6,6 +6,7 @@ import snapshotServer
 import django.test
 from snapshotServer.controllers.DiffComputer import DiffComputer
 import logging
+import re
 
 def _create_allowed_user_and_group():
     
@@ -63,3 +64,11 @@ class SnapshotTestCase(django.test.TestCase):
         DiffComputer.stopThread()
         logging.error("Stop threads")
         super().tearDown()
+        
+            
+    def remove_spaces(self, html_code):
+        new_html = html_code.replace("\n", "").replace("\r",  "")
+        new_html = re.sub(">\\s+<", "><", new_html);
+        new_html = re.sub("\\s+<", "<", new_html);
+        new_html = re.sub(">\\s+", ">", new_html);
+        return new_html

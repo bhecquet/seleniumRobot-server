@@ -72,7 +72,8 @@ if (SECURITY_API_ENABLED):
     REST_FRAMEWORK = {
         # Use Django's standard `django.contrib.auth` permissions,
         'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.DjangoModelPermissions'
+        #    'rest_framework.permissions.DjangoModelPermissions'
+            'seleniumRobotServer.permissions.Permissions'
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': [
             'rest_framework.authentication.TokenAuthentication',   # for API calls

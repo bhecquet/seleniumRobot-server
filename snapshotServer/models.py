@@ -55,6 +55,7 @@ class TestCaseInSession(models.Model):
     status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status
     gridNode = models.CharField(max_length=100, null=True) # name of the grid node on which test has run 
     optimized = models.IntegerField(default=0) # do attachments have been optimized (deleted, compressed): 0 (no), 10 (html deleted), 20 (images compressed), 30 (video deleted)
+    date = models.DateTimeField(blank=True, null=True)
     
     def isOkWithSnapshots(self):
         """

@@ -16,6 +16,27 @@ class TestApiView(APITestCase):
     Client handles patch / put cases
     '''
     fixtures = ['varServer.yaml']
+    
+    # tests for permissions on API
+    # - API
+    #    . no security => access all resource (create / delete / modify)
+    #    . security enabled
+    #        * without token => access denied (for all operations)
+    #        * with token and no staff => access denied
+    #        * with token and staff / no rights => access denied
+    #        * with token / staff / rights for a single application 
+    #            => access allowed for variables / versions on that application: create / modify / delete
+    #            => access denied for other applications
+    #            => access denied
+    #            => cannot create application
+    #        * with token / staff / rights for view applications => can view all application data
+    # - IHM
+    #    . with application view => can view only application (standard Django behaviour)
+    #    . with specific application view 
+    #        => can view application / version / variables for an application: create / modify / delete
+    #        => cannot create an application
+    #    . permission on results based on a specific group
+    #    . global groups are not set anymore
 
     
     

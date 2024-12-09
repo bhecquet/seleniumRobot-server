@@ -1,4 +1,4 @@
-                            
+                        {% if info %}    
                             {% if info.type == 'string' %}
                             <td>{{ info.info }}</td>
                             {% elif info.type == 'log' %}
@@ -34,4 +34,7 @@
                                 {% endfor %}
                             </td>
                             {% endif %}
+                        {% else %}
+                            <td></td>
+                        {% endif %}
                             

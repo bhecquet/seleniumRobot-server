@@ -1,0 +1,427 @@
+# see testresult_commons.yaml for init values (env, application, test case)
+-   model: snapshotServer.testsession
+    pk: 11
+    fields:
+        sessionId: '1250'
+        version: 1
+        date: '2023-05-05T16:16:09.184106+01:00'
+        browser: BROWSER:FIREFOX
+        environment: 1
+        compareSnapshot: false
+        compareSnapshotBehaviour: DISPLAY_ONLY
+        name: jenkins
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 11
+    fields:
+        testCase: 1
+        name: testJenkinsKo
+        date: '2023-05-05T16:16:08.184106+01:00'
+        session: 11
+        testSteps: [11, 12, 13, 14]
+        status: FAILURE
+        stacktrace: >-
+            {                
+                "stacktrace": "line1\nline2",
+                "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid <;>\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
+            }
+   
+- model: snapshotServer.testinfo
+  pk: 11
+  fields:
+    testCase: 11
+    name: Last State
+    info: '{"type":"multipleinfo","infos":[{"type":"log","info":"Browsermob proxy
+      (captureNetwork option) is only compatible with DIRECT and <MANUAL>"}]}' 
+-   model: snapshotServer.teststep
+    pk: 11
+    fields: 
+        name: "openPage" 
+-   model: snapshotServer.teststep
+    pk: 12
+    fields: 
+        name: "loginInvalid with args: (foo, bar, )"
+-   model: snapshotServer.teststep
+    pk: 13
+    fields: 
+        name: getErrorMessage<>
+-   model: snapshotServer.teststep
+    pk: 14
+    fields: 
+        name: Test end  
+
+-   model: snapshotServer.stepresult
+    pk: 11
+    fields: 
+        step: 11
+        testCase: 11
+        result: true
+        duration: 700
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 18:06:03 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 737,
+                "snapshots": [
+                    {
+                        "idHtml": 102,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 103,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/login?from=%2Fjenkins%2F",
+                        "timestamp": 1698257164631
+                    }
+                ],
+                "videoTimeStamp": 6,
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "name": "Opening page LoginPage",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698257163525
+                    },
+                    {
+                        "name": "setWindowToRequestedSize on on page LoginPage ",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698257163526
+                    },
+                    {
+                        "name": "maximizeWindow on on page LoginPage ",
+                        "failed": false,
+                        "position": 2,
+                        "type": "action",
+                        "timestamp": 1698257163526
+                    },
+                    {
+                        "messageType": "LOG",
+                        "name": "Open web page in :8.151 seconds",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698257163525,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 12
+    fields: 
+        step: 12
+        testCase: 11
+        result: true
+        duration: 2000
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 18:06:04 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 2869,
+                "snapshots": [
+                    {
+                        "idHtml": 104,
+                        "displayInReport": true,
+                        "name": "drv:main-login screen",
+                        "idImage": 105,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "login screen",
+                        "snapshotCheckType": "FULL",
+                        "url": "https://jenkins/jenkins/login?from=%2Fjenkins%2F",
+                        "timestamp": 1698257166090
+                    }
+                ],
+                "videoTimeStamp": 1222,
+                "name": "loginInvalid with args: (foo, bar, )",
+                "files": [],
+                "position": 1,
+                "actions": [
+                    {
+                        "name": "sendKeys on TextFieldElement user, by={By.id: j_username} with args: (true, true, [foo,], )",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698257164742
+                    },
+                    {
+                        "name": "sendKeys on TextFieldElement password, by={By.name: j_password} with args: (true, true, [bar,], )",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698257165143
+                    },
+                    {
+                        "name": "robotConfig on on page LoginPage ",
+                        "failed": false,
+                        "position": 2,
+                        "type": "action",
+                        "timestamp": 1698257165687
+                    },
+                    {
+                        "name": "click on ButtonElement connect, by={By.name: Submit} ",
+                        "failed": false,
+                        "position": 3,
+                        "type": "action",
+                        "timestamp": 1698257166116
+                    },
+                    {
+                        "name": "createOrUpdateParam on on page LoginPage with args: (loginJenkins, Done, false, 3, false, )",
+                        "failed": false,
+                        "position": 4,
+                        "type": "action",
+                        "timestamp": 1698257167817
+                    }
+                ],
+                "timestamp": 1698257164741,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 13
+    fields: 
+        step: 13
+        testCase: 11
+        result: false
+        duration: 5000
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 18:06:07 CEST 2023",
+                "failed": true,
+                "type": "step",
+                "duration": 5539,
+                "snapshots": [
+                    {
+                        "idHtml": 106,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 107,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174035
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Step beginning state",
+                        "idImage": 108,
+                        "failed": false,
+                        "position": 1,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE_REFERENCE",
+                        "timestamp": 1698257175623
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Valid-reference",
+                        "idImage": 109,
+                        "failed": false,
+                        "position": 2,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE",
+                        "timestamp": 1698257180743
+                    }
+                ],
+                "videoTimeStamp": 4350,
+                "name": "getErrorMessage<> ",
+                "files": [],
+                "position": 2,
+                "actions": [
+                    {
+                        "name": "waitForPresent on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} with args: (15, )",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698257167870
+                    },
+                    {
+                        "name": "getText on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} ",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698257168565
+                    },
+                    {
+                        "messageType": "ERROR",
+                        "name": "!!!FAILURE ALERT!!! - Assertion Failure: expected [false] but found [true]",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698257167869,
+                "status": "FAILED",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 14
+    fields: 
+        step: 14
+        testCase: 11
+        result: false
+        duration: 200
+        stacktrace: >
+            {
+                "exception": "class java.lang.AssertionError",
+                "date": "Wed Oct 25 18:06:14 CEST 2023",
+                "failed": true,
+                "type": "step",
+                "duration": 277,
+                "snapshots": [
+                    {
+                        "idHtml": 110,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 111,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174417
+                    }
+                ],
+                "videoTimeStamp": 10519,
+                "name": "Test end",
+                "files": [
+                    {
+                        "name": "Video capture",
+                        "id": 112,
+                        "type": "file"
+                    }
+                ],
+                "position": 3,
+                "actions": [
+                    {
+                        "messageType": "LOG",
+                        "name": "Test is KO with error: class java.lang.AssertionError: expected [false] but <> found [true]",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "WARNING",
+                        "name": "[NOT RETRYING] max retry count (0) reached",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "INFO",
+                        "name": "Video file copied to videoCapture.avi",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "LOG",
+                        "name": "quiting webdriver 15",
+                        "type": "message"
+                    }
+                ],
+                "exceptionMessage": "class java.lang.AssertionError: expected [false] but <_> found [true]",
+                "timestamp": 1698257174038,
+                "status": "FAILED",
+                "harCaptures": [
+                    {
+                        "name": "main",
+                        "id": 113,
+                        "type": "networkCapture"
+                    }
+                ]
+            }
+            
+   
+# this step is a step OK with a sub step failing, to test that reports shows it in warning   
+# to be used, the 'testSteps' list of 'testcaseinsession' above has to be modified before test starts  
+-   model: snapshotServer.teststep
+    pk: 15
+    fields: 
+        name: getErrorMessage warn  
+-   model: snapshotServer.stepresult
+    pk: 15
+    fields: 
+        step: 15
+        testCase: 11
+        result: false
+        duration: 5000
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 18:06:07 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 5539,
+                "snapshots": [
+                    {
+                        "idHtml": 106,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 107,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174035
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Step beginning state",
+                        "idImage": 108,
+                        "failed": false,
+                        "position": 1,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE_REFERENCE",
+                        "timestamp": 1698257175623
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Valid-reference",
+                        "idImage": 109,
+                        "failed": false,
+                        "position": 2,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE",
+                        "timestamp": 1698257180743
+                    }
+                ],
+                "videoTimeStamp": 4350,
+                "name": "getErrorMessage warn",
+                "files": [],
+                "position": 2,
+                "actions": [
+                    {
+                        "name": "waitForPresent on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} with args: (15, )",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698257167870
+                    },
+                    {
+                        "name": "getText on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} ",
+                        "failed": true,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698257168565
+                    },
+                    {
+                        "messageType": "ERROR",
+                        "name": "!!!FAILURE ALERT!!! - Assertion Failure: expected [false] but found [true]",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698257167869,
+                "status": "WARNING",
+                "harCaptures": []
+            }
