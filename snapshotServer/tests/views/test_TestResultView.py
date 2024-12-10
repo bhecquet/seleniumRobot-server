@@ -62,7 +62,7 @@ class Test_TestResultView(SnapshotTestCase):
         self.assertTrue('<th>Issue</th><td><a href="https://jiraserver/PROJECT/PRO-1">Issue</a></td></tr>'
         "<tr><th>Some information</th><td>some text</td></tr>"
         '<tr><th>Last State</th><td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a>'
-        '<a href="/snapshot/api/file/91/download/"><i class="fas fa-file-video" aria-hidden="true"></i></a>' in html)
+        '<a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a>' in html)
         ## steps / sub-steps
         self.assertTrue("""<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">openPage with args: (https://jenkins/jenkins/, )  - 0.7 secs</span><span><i class="fas fa-file-video"></i>0.005 s</span>""" in html) 
         self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.815</span>Opening page LoginPage""" in html)
