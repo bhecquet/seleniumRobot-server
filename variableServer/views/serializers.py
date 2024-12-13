@@ -9,7 +9,7 @@ from rest_framework import serializers
 from django.conf import settings
 
 from variableServer.models import Variable, TestCase
-from variableServer.admin import is_user_authorized
+from variableServer.admin_site.base_model_admin import is_user_authorized
         
 class VariableSerializer(serializers.ModelSerializer):
     

@@ -20,7 +20,7 @@ from django.utils import timezone
 import commonsServer
 from commonsServer.models import Application, Version
 import variableServer
-from variableServer.admin import ApplicationAdmin, VariableAdmin, is_user_authorized, \
+from variableServer.admin_site import ApplicationAdmin, VariableAdmin, is_user_authorized, \
     BaseServerModelAdmin, VariableForm, VersionFilter, EnvironmentFilter, \
     TestCaseAdmin, VersionAdmin
 from variableServer.models import Variable

@@ -12,7 +12,7 @@ from commonsServer.views import viewsets
 router = routers.DefaultRouter()
 router.register(r'application', viewsets.ApplicationViewSet)
 router.register(r'version', viewsets.VersionViewSet)
-router.register(r'testcase', viewsets.TestCaseViewSet) 
+router.register(r'testcase', viewsets.TestCaseViewSet, 'testcase') 
 router.register(r'environment', viewsets.TestEnvironmentViewSet)
 
 urlpatterns = [

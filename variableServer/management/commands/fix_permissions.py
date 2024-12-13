@@ -1,12 +1,5 @@
 from __future__ import unicode_literals, absolute_import, division
-'''
-Created on 8 dec. 2017
 
-@author: S047432
-'''
-from commonsServer.models import Application
-import variableServer
-import snapshotServer
 
 """Add permissions for proxy model.
 This is needed because of the bug https://code.djangoproject.com/ticket/11154
@@ -21,7 +14,10 @@ itself, in order to have the proper entries displayed in the admin.
 
 
 import sys
+import variableServer
+import snapshotServer
 
+from variableServer.models import Application
 from django.contrib.auth.management import _get_all_permissions
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
@@ -49,7 +45,7 @@ class Command(BaseCommand):
 
         # add application specific rights
         for app in Application.objects.all():
-            content_type = ContentType.objects.get_for_model(Application)
+            content_type = ContentType.objects.get_for_model(Application, False)
             Permission.objects.get_or_create(
                 codename=Application.appPermissionCode + app.name,
                 name='Can view application and related variables and versions for ' + app.name,

@@ -43,7 +43,7 @@ def copyVariables(request):
         reservable = False
     
     # init message   
-    from variableServer.admin import VariableAdmin 
+    from variableServer.admin_site import VariableAdmin 
     varAdmin = VariableAdmin(Variable, admin.site)
     
     if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
@@ -108,7 +108,7 @@ def changeVariables(request):
         reservable = False
     
     # init message     
-    from variableServer.admin import VariableAdmin
+    from variableServer.admin_site import VariableAdmin
     varAdmin = VariableAdmin(Variable, admin.site)
     
     if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
