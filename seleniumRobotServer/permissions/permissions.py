@@ -23,4 +23,17 @@ class ApplicationSpecificPermissions(GenericPermissions):
     """
     Permissions to apply to any model that need the allow access to a specific application
     """
-    pass
+    def has_permission(self, request, view):
+        """
+        Allow acces to model if model permissions are set, or any application specific permission is set
+        In the later case, object filtering will be done later
+        """
+        
+        has_model_permission = super().has_permission(request, view)
+        
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
+            return has_model_permission
+
+        
+        return len([p for p in request.user.get_all_permissions() if p.startswith(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX)]) > 0 \
+                or has_model_permission
