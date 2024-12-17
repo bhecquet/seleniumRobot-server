@@ -32,6 +32,7 @@ from django.test.testcases import TestCase
 # - copy several variables, one with tests, other without and check that resulting test is none
 # - copy several variables, all with tests and check that resulting tests are the same as from variables
 # - check filtering of tests and version when modifying a variable
+
 class MockRequest(object):
     def __init__(self, user=None):
         self.user = user
@@ -78,17 +79,5 @@ class TestAdmin(TestCase):
     
     def _format_content(self, content):
         return re.sub('>\s+<', '><', str(content).replace('\\n', ''))
-        
-    
-### is_user_authorized ###    
-    
 
-    
-### Environment Filter ###
-    
-    
-        
-### TestCaseAdmin ###
-
-   
     

@@ -1,27 +1,18 @@
-import datetime
-import re
 
-from django import forms
-from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.test.client import Client
-from django.test.testcases import TestCase
-from django.urls.base import reverse
-from django.utils import timezone
 
-import commonsServer
-from commonsServer.models import Application, Version
 import variableServer
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin,\
     is_user_authorized
-from variableServer.models import Variable
+from variableServer.models import Variable, Application
 from variableServer.tests.test_admin import MockRequestWithApplication,\
-    MockRequest
+    MockRequest, TestAdmin
 
-class TestBaseModelAdmin(TestCase):
+class TestBaseModelAdmin(TestAdmin):
     
     def test_has_add_permission_superuser(self):
         
@@ -34,45 +25,43 @@ class TestBaseModelAdmin(TestCase):
         Add variable on application
         user:
         - is authenticated
-        - can add variable
-        - can view app1
+        - has add variable permission
         
-        restriction on application is not applied
+        User can add variable
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='add_variable')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
         self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))        
         
-    def test_has_add_permission_allowed_and_authenticated_with_restrictions(self):
+    def test_has_not_add_permission_allowed_and_authenticated(self):
         """
         Add variable on application
         user:
         - is authenticated
-        - can add variable
-        - can view app1
+        - has NOT add variable permission
         
-        restriction on application is applied
+        User can NOT add variable
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='add_variable')))
-            self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+        self.assertFalse(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))        
             
-    def test_has_add_permission_not_allowed_and_authenticated_with_restrictions(self):
+    def test_has_add_permission_with_add_variable_permission_and_restriction_on_application(self):
         """
         Add variable on application
         user:
         - is authenticated
-        - can add variable
-        - can NOT view app1
+        - has add variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can add variable as 'add_variable' permission is less restrictive
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -80,17 +69,37 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
-            self.assertFalse(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
               
-    def test_has_add_permission_not_allowed_and_authenticated(self):
+    def test_has_add_permission_with_add_variable_permission_and_app_permission_and_restriction_on_application(self):
         """
         Add variable on application without being allowed to add variable
         user:
         - is authenticated
-        - can NOT add variable
-        - can view app1
+        - has add variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can add variable for that application
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable') | Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+              
+    def test_has_add_permission_allowed_and_restriction_on_application(self):
+        """
+        Add variable on application without being allowed to add variable
+        user:
+        - is authenticated
+        - has NOT add variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can add variable for that application
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -98,11 +107,34 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+              
+    def test_has_add_permission_not_allowed_and_restriction_on_application(self):
+        """
+        Add variable on application without being allowed on that application
+        user:
+        - is authenticated
+        - has NOT add variable permission
+        - has view/edit permission on 'app2'
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can NOT add variable for that application as it has no rights on it
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+            self.assertFalse(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
             
 
     def test_has_change_permission_superuser(self):
-        
+        """
+        Super user can change data
+        """
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
         user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
@@ -135,27 +167,62 @@ class TestBaseModelAdmin(TestCase):
         change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can view app1
+        - has change variable permission
         
-        restriction on application is not applied
+        User can change variable
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='change_variable')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
         self.assertTrue(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))        
+        
+    def test_has_change_permission_not_allowed_and_authenticated(self):
+        """
+        change variable on application
+        user:
+        - is authenticated
+        - has add variable permission
+        
+        User can NOT change variable
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+        self.assertFalse(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))        
         
     def test_has_change_permission_allowed_and_authenticated_with_restrictions(self):
         """
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can view app1
+        - has change variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can change variable
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+            self.assertTrue(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_change_permission_not_allowed_and_authenticated_with_restrictions(self):
+        """
+        Change variable on application
+        user:
+        - is authenticated
+        - has change variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can change variable
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -164,34 +231,17 @@ class TestBaseModelAdmin(TestCase):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='change_variable')))
             self.assertTrue(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
-            
-    def test_has_change_permission_not_allowed_and_authenticated_with_restrictions(self):
+              
+    def test_has_change_permission_with_application_permission_and_authenticated(self):
         """
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can NOT view app1
+        - has NOT change variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
-        """
-        # be sure permission for application is created
-        Application.objects.get(pk=1).save()
-        
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
-            self.assertFalse(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
-              
-    def test_has_change_permission_not_allowed_and_authenticated(self):
-        """
-        Change variable on application without being allowed to change variable
-        user:
-        - is authenticated
-        - can NOT change variable
-        - can view app1
-        
-        restriction on application is applied
+        User can change variable
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -199,18 +249,39 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertTrue(base_admin.has_change_permission(request=MockRequest(user=user)))
             
-    def test_has_change_permission_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+    def test_has_change_permission_with_other_application_permission_and_authenticated(self):
         """
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can view app1
+        - has NOT change variable permission
+        - has view/edit permission on 'app2'
+        - restriction per application is set
         
-        restriction on application is applied
-        variable do not reference application
+        User can NOT change variable
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+            self.assertFalse(base_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_change_permission_and_authenticated_with_restrictions_variable_without_application(self):
+        """
+        Change variable on application
+        user:
+        - is authenticated
+        - has NOT change variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can NOT change variable
+        variable does NOT reference application
         method is not POST
         """
         # be sure permission for application is created
@@ -218,18 +289,19 @@ class TestBaseModelAdmin(TestCase):
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='change_variable')))
-            self.assertTrue(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertFalse(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
             
-    def test_has_change_permission_allowed_and_authenticated_with_restrictions_variable_with_application(self):
+    def test_has_change_permission_and_authenticated_with_restrictions_variable_with_application(self):
         """
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can view app1
+        - has NOT change variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can change variable
         variable reference application
         method is not POST
         """
@@ -238,18 +310,41 @@ class TestBaseModelAdmin(TestCase):
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='change_variable')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self.assertTrue(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
             
-    def test_has_change_permission_not_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+    def test_has_change_permission_and_authenticated_with_restrictions_variable_with_application2(self):
         """
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can NOT view app1
+        - has NOT change variable permission
+        - has view/edit permission on 'app2'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can NOT change variable
+        variable reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+            self.assertFalse(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            
+    def test_has_change_permission_and_authenticated_with_restrictions_variable_without_application2(self):
+        """
+        Change variable on application
+        user:
+        - is authenticated
+        - has change variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can change variable
         variable do not reference application
         method is not POST
         """
@@ -267,10 +362,11 @@ class TestBaseModelAdmin(TestCase):
         Change variable on application
         user:
         - is authenticated
-        - can change variable
-        - can NOT view app1
+        - has change variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can change variable
         variable reference application
         method is not POST
         """
@@ -280,17 +376,18 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
-            self.assertFalse(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertTrue(base_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
               
     def test_has_change_permission_not_allowed_and_authenticated_none_variable(self):
         """
         Change variable on application without being allowed to change variable
         user:
         - is authenticated
-        - can change variable
-        - can NOT view app1
+        - has change variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can change variable
         variable is NONE
         method is not POST
         """
@@ -302,9 +399,279 @@ class TestBaseModelAdmin(TestCase):
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
             self.assertTrue(base_admin.has_change_permission(request=MockRequest(user=user)))
             
+    def test_has_view_permission_superuser(self):
+        """
+        Test superuser can view
+        """
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
+        self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user), obj=Variable.objects.get(pk=1)))
+        
+    def test_has_view_permission_superuser_with_application(self):
+        """
+        view permission on variable with application
+        """
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
+        self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user), obj=Variable.objects.get(pk=3)))
+        
+    def test_has_view_permission_superuser_with_application_and_restrictions(self):
+        """
+        view permission on variable with application, when restrictions are applied
+        """
+        
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
+            self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user), obj=Variable.objects.get(pk=3)))
+        
+    def test_has_view_permission_allowed_and_authenticated(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is NOT set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user)))   
+             
+    def test_has_view_permission_not_allowed_and_authenticated(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is NOT set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+        self.assertFalse(base_admin.has_view_permission(request=MockRequestWithApplication(user=user)))        
+        
+    def test_has_view_permission_allowed_and_authenticated_with_restrictions(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='view_variable')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_view_permission_and_authenticated_with_restrictions(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequestWithApplication(user=user)))
+              
+    def test_has_view_permission_and_authenticated_and_application_permissions(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user)))
+              
+    def test_has_view_permission_and_authenticated_and_other_application_permissions(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has view/edit permission on 'app2'
+        - restriction per application is set
+        
+        User can view
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+            self.assertFalse(base_admin.has_view_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_view_permission_with_application_permission_and_variable_without_application(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User cannot view variable
+        variable do not reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertFalse(base_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            
+    def test_has_view_permission_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view variable
+        variable do not reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            
+    def test_has_view_permission_allowed_and_authenticated_with_restrictions_variable_with_application(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view application
+        variable reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            
+    def test_has_view_permission_and_authenticated_with_restrictions_variable_with_application2(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view application
+        variable reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='view_variable')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+              
+    def test_has_view_permission_and_authenticated_none_variable(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has view variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view variable
+        variable is NONE
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user)))
+            
+    def test_has_view_permission_and_authenticated_none_variable_and_application_permission(self):
+        """
+        view variable on application
+        user:
+        - is authenticated
+        - has NOT view variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can view variable
+        variable is NONE
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_view_permission(request=MockRequest(user=user)))
 
     def test_has_delete_permission_superuser(self):
-        
+        """
+        Test superuser can delete
+        """
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
         user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
@@ -337,27 +704,47 @@ class TestBaseModelAdmin(TestCase):
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can view app1
+        - has delete variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is NOT set
         
-        restriction on application is not applied
+        User can delete
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='delete_variable')))
-        self.assertTrue(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))        
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+        self.assertTrue(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))   
+             
+    def test_has_delete_permission_not_allowed_and_authenticated(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has NOT delete variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is NOT set
+        
+        User can delete
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+        self.assertFalse(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))        
         
     def test_has_delete_permission_allowed_and_authenticated_with_restrictions(self):
         """
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can view app1
+        - has delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can delete
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -367,15 +754,17 @@ class TestBaseModelAdmin(TestCase):
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='delete_variable')))
             self.assertTrue(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
             
-    def test_has_delete_permission_not_allowed_and_authenticated_with_restrictions(self):
+    def test_has_delete_permission_and_authenticated_with_restrictions(self):
         """
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can NOT view app1
+        - has delete variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can delete
+        Request is POST
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -383,17 +772,19 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
-            self.assertFalse(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
-              
-    def test_has_delete_permission_not_allowed_and_authenticated(self):
+            self.assertTrue(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_delete_permission_on_post_and_authenticated_with_restrictions(self):
         """
-        delete variable on application without being allowed to delete variable
+        delete variable on application
         user:
         - is authenticated
-        - can NOT delete variable
-        - can view app1
+        - has NOT delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can delete
+        Request is POST
         """
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -401,17 +792,57 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_delete_permission(request=MockRequest(user=user)))
-            
-    def test_has_delete_permission_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+            self.assertTrue(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+              
+    def test_has_delete_permission_and_authenticated_and_application_permissions(self):
         """
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can view app1
+        - has NOT delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can delete
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user)))
+              
+    def test_has_delete_permission_and_authenticated_and_other_application_permissions(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has NOT delete variable permission
+        - has view/edit permission on 'app2'
+        - restriction per application is set
+        
+        User can delete
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+            self.assertFalse(base_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+            
+    def test_has_delete_permission_with_application_permission_and_variable_without_application(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has NOT delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User cannot delete variable
         variable do not reference application
         method is not POST
         """
@@ -420,7 +851,28 @@ class TestBaseModelAdmin(TestCase):
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='delete_variable')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertFalse(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            
+    def test_has_delete_permission_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has delete variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can delete variable
+        variable do not reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
             self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
             
     def test_has_delete_permission_allowed_and_authenticated_with_restrictions_variable_with_application(self):
@@ -428,10 +880,32 @@ class TestBaseModelAdmin(TestCase):
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can view app1
+        - has NOT delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
+        User can delete application
+        variable reference application
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            
+    def test_has_delete_permission_and_authenticated_with_restrictions_variable_with_application2(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can delete application
         variable reference application
         method is not POST
         """
@@ -442,57 +916,17 @@ class TestBaseModelAdmin(TestCase):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='delete_variable')))
             self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
-            
-    def test_has_delete_permission_not_allowed_and_authenticated_with_restrictions_variable_without_application(self):
+              
+    def test_has_delete_permission_and_authenticated_none_variable(self):
         """
         delete variable on application
         user:
         - is authenticated
-        - can delete variable
-        - can NOT view app1
+        - has delete variable permission
+        - has NOT view/edit permission on 'app1'
+        - restriction per application is set
         
-        restriction on application is applied
-        variable do not reference application
-        method is not POST
-        """
-        # be sure permission for application is created
-        Application.objects.get(pk=1).save()
-        
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
-            self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
-              
-            
-    def test_has_delete_permission_not_allowed_and_authenticated_with_restrictions_variable_with_application(self):
-        """
-        delete variable on application
-        user:
-        - is authenticated
-        - can delete variable
-        - can NOT view app1
-        
-        restriction on application is applied
-        variable reference application
-        method is not POST
-        """
-        # be sure permission for application is created
-        Application.objects.get(pk=1).save()
-        
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
-            self.assertFalse(base_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
-              
-    def test_has_delete_permission_not_allowed_and_authenticated_none_variable(self):
-        """
-        delete variable on application without being allowed to delete variable
-        user:
-        - is authenticated
-        - can delete variable
-        - can NOT view app1
-        
-        restriction on application is applied
+        User can delete variable
         variable is NONE
         method is not POST
         """
@@ -502,6 +936,27 @@ class TestBaseModelAdmin(TestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+            self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user)))
+            
+    def test_has_delete_permission_on_get_and_authenticated_none_variable_and_application_permission(self):
+        """
+        delete variable on application
+        user:
+        - is authenticated
+        - has NOT delete variable permission
+        - has view/edit permission on 'app1'
+        - restriction per application is set
+        
+        User can see 'delete' on variable
+        variable is NONE
+        method is not POST
+        """
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user)))
             
     def test_is_user_authorized_standard_user(self):
@@ -523,7 +978,7 @@ class TestBaseModelAdmin(TestCase):
        
     def test_is_user_authorized_authenticated_user_with_permission(self):
         """
-        Check that standard user will not have right to see protected variabls
+        Check that standard user will not have right to see protected variable
         """
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
         client = Client()

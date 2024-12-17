@@ -1,18 +1,17 @@
 
 from django.contrib.admin.sites import AdminSite
-from django.test.testcases import TestCase
 
 from django.db.models import Q
 
 from variableServer.admin_site.version_admin import VersionFilter, VersionAdmin
 from variableServer.models import Variable, Version, Application
 from variableServer.admin_site.variable_admin import VariableAdmin
-from variableServer.tests.test_admin import MockRequest, request
+from variableServer.tests.test_admin import MockRequest, request, TestAdmin
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 import commonsServer
 
-class TestVersionAdmin(TestCase):
+class TestVersionAdmin(TestAdmin):
     
     def test_version_filter_lookup_without_application(self):
         """

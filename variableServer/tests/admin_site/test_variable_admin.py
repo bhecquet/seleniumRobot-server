@@ -1,14 +1,11 @@
 import datetime
-import re
 
 from django import forms
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import User, Permission, Group
+from django.contrib.auth.models import User, Permission
 from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
-from django.test.client import Client
-from django.test.testcases import TestCase
 from django.urls.base import reverse
 from django.utils import timezone
 
@@ -17,10 +14,10 @@ from commonsServer.models import Application, Version
 import variableServer
 from variableServer.admin_site.variable_admin import VariableAdmin
 from variableServer.models import Variable
-from variableServer.tests.test_admin import MockRequest, request
+from variableServer.tests.test_admin import MockRequest, request, TestAdmin
 
 
-class TestVariableAdmin(TestCase):
+class TestVariableAdmin(TestAdmin):
 
     def test_variable_get_list_display_with_authorized_user(self):
         """

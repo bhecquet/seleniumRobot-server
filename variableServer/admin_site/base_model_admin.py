@@ -40,7 +40,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         
         if request.method == 'POST' and request.POST.get('application'):
             application = Application.objects.get(pk=int(request.POST['application']))
-            return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name)                               
+            return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name)                        
             
         elif obj and obj.application:
             return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name)
@@ -65,7 +65,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         """
         perm = super(BaseServerModelAdmin, self).has_view_permission(request, obj)
 
-        return perm or self._has_app_permission(perm, request)
+        return perm or self._has_app_permission(perm, request, obj)
 
     def has_change_permission(self, request, obj=None):
         """

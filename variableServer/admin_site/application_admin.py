@@ -5,6 +5,7 @@ Created on 12 déc. 2024
 from django import forms
 from django.contrib import admin
 from variableServer.models import Variable, Application, TestCase
+import logging
 
 class ApplicationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

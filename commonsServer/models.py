@@ -35,7 +35,7 @@ class Application(models.Model):
      
     def save(self, *args, **kwargs):
         super(Application, self).save(*args, **kwargs)
-        content_type = ContentType.objects.get_for_model(Application)
+        content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
         Permission.objects.get_or_create(
             codename=Application.appPermissionCode + self.name,
             name='Can view application and related variables and versions for ' + self.name,

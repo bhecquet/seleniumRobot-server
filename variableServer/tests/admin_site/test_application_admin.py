@@ -2,17 +2,18 @@
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
 from django.db.models import Q
-from django.test.testcases import TestCase
 
 import commonsServer
 from commonsServer.models import Application
 
 from variableServer.admin_site.application_admin import ApplicationAdmin
 from variableServer.models import Variable
-from variableServer.tests.test_admin import request, MockRequest
+from variableServer.tests.test_admin import request, MockRequest, TestAdmin
 
 
-class TestAdminApplication(TestCase):
+class TestApplicationAdmin(TestAdmin):
+    
+    fixtures = ['varServer']
 
     def test_application_fieldset_with_variables(self):
         """
@@ -177,4 +178,17 @@ class TestAdminApplication(TestCase):
         app = Application.objects.get(name="toto3")
         application_admin.delete_model(obj=app, request=MockRequest(user=super_user))
         self.assertEqual(len(Permission.objects.filter(codename='can_view_application_toto3')), 0)
+        
+    def test_user_cannot_see_applications_without_global_rights(self):
+        """
+        Check  user cannot list application with only application specific rights: can_view_application_app1
+        """
+        application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self.assertFalse(application_admin.has_view_permission(request=MockRequest(user=user)))
+        self.assertFalse(application_admin.has_view_permission(request=MockRequest(user=user), obj=Application.objects.get(pk=1)))
+        self.assertFalse(application_admin.has_add_permission(request=MockRequest(user=user)))
+        self.assertFalse(application_admin.has_change_permission(request=MockRequest(user=user)))
+        self.assertFalse(application_admin.has_delete_permission(request=MockRequest(user=user)))
+        
         

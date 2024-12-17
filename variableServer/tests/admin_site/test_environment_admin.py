@@ -1,15 +1,12 @@
 
 from django.contrib.admin.sites import AdminSite
 
-from django.test.testcases import TestCase
-
-
 from variableServer.models import Variable
 from variableServer.admin_site.variable_admin import VariableAdmin
-from variableServer.tests.test_admin import MockRequest
+from variableServer.tests.test_admin import MockRequest, TestAdmin
 from variableServer.admin_site.environment_admin import EnvironmentFilter
 
-class TestEnvironmentAdmin(TestCase):
+class TestEnvironmentAdmin(TestAdmin):
     
     def test_environment_filter_lookup_without_application(self):
         """
