@@ -200,21 +200,34 @@ class VariableAdmin(BaseServerModelAdmin):
         args.update(csrf(request))
 
         return render(request, "variableServer/admin/copyTo.html", args)
-    copyTo.short_description = 'copier les variables'
+    copyTo.short_description = 'copy variables'
     
     def changeValuesAtOnce(self, request, queryset):
         """
-        Action permettant de modifier plusieurs variables d'un coup
-        On reprend les valeurs communes des variables pour les proposer au moment de l'écran de saisie
+        Action allowing to change multiple variables at once
+        Take common values for all variables so that they are shown to user
         """
-        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
+        queryset = Variable.objects.filter(id__in=request.POST.getlist(ACTION_CHECKBOX_NAME))
+
+        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
+            for application in Application.objects.all():
+                if queryset.filter(application__name=application.name) \
+                    and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name) \
+                    and not request.user.has_perm('variableServer.change_variable'):
+                    queryset = queryset.exclude(application__name=application.name)
+                    self.message_user(request, "You do not have right to delete variables from application %s" % (application.name,), level=messages.ERROR)
+        
+        elif not request.user.has_perm('variableServer.change_variable'):
+            queryset = Variable.objects.none()
+        
+        selected = [var.id for var in queryset]
         args = {'ids': ','.join(selected), 
                 'form': VariableForm2(initial=self._get_default_values(selected)),
-                'queryString': request.META['QUERY_STRING']} # permettra de revenir à la liste des variables filtrée
+                'queryString': request.META['QUERY_STRING']} # Allow to go back to filtered list
         args.update(csrf(request))
 
         return render(request, "variableServer/admin/changeTo.html", args)
-    changeValuesAtOnce.short_description = 'modifier les variables'
+    changeValuesAtOnce.short_description = 'change variables'
     
     def delete_selected(self, request, queryset):
         """
@@ -224,24 +237,38 @@ class VariableAdmin(BaseServerModelAdmin):
         if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             # prevent deleting objects we do not have right for
             for application in Application.objects.all():
-                if queryset.filter(application__name=application.name) and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name):
+                if queryset.filter(application__name=application.name) \
+                    and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name) \
+                    and not request.user.has_perm('variableServer.delete_variable'):
                     queryset = queryset.exclude(application__name=application.name)
                     self.message_user(request, "You do not have right to delete variables from application %s" % (application.name,), level=messages.ERROR)
       
         return django_delete_selected(self, request, queryset)
-    delete_selected.short_description = 'supprimer les variables'
+    delete_selected.short_description = 'delete variables'
     
     def unreserveVariable(self, request, queryset):
         """
-        action permettant de déreserver les variables (enlever l'information de releaseDate)
+        Allow to unreserve variables (remove releaseDate)
         """
-        selected = request.POST.getlist(ACTION_CHECKBOX_NAME)
-        for var_id in selected:
+        queryset = Variable.objects.filter(id__in=request.POST.getlist(ACTION_CHECKBOX_NAME))
+        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
+            # prevent unreserving varialbes we do not have right for
+            for application in Application.objects.all():
+                if queryset.filter(application__name=application.name) \
+                    and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name) \
+                    and not request.user.has_perm('variableServer.change_variable'):
+                    queryset = queryset.exclude(application__name=application.name)
+                    self.message_user(request, "You do not have right to unreserve variables from application %s" % (application.name,), level=messages.ERROR)
+        
+        # change permission must be available for user
+        elif not request.user.has_perm('variableServer.change_variable'):
+            queryset = Variable.objects.none()
+        
+        for variable in queryset:
             try:
-                variable = Variable.objects.get(id=var_id)
                 variable.releaseDate = None
                 variable.save()
             except Exception as e:
                 pass
-    unreserveVariable.short_description = 'déréserver les variables'
+    unreserveVariable.short_description = 'unreserve variables'
     

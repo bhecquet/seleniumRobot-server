@@ -45,8 +45,8 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         elif obj and obj.application:
             return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name)
              
-        # if user has at least a permission on any application, let him see models
-        elif not obj and request.method == 'GET' and [p for p in request.user.get_all_permissions() if p.startswith(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX)]:
+        # if user has at least a permission on any application, let him see models and do actions (delete action / modify / ...)
+        elif not obj and [p for p in request.user.get_all_permissions() if p.startswith(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX)]:
             return True 
             
         return global_permission

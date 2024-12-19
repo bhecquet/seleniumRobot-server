@@ -4,7 +4,7 @@ from django.contrib.auth.models import User, Permission
 from django.db.models import Q
 
 import commonsServer
-from commonsServer.models import Application
+from variableServer.models import Application
 
 from variableServer.admin_site.application_admin import ApplicationAdmin
 from variableServer.models import Variable

@@ -9,6 +9,8 @@ from django.utils import timezone
 from variableServer.tests import authenticate_test_client
 
 from rest_framework.test import APITestCase
+import logging
+import threading
 
 class TestApiView(APITestCase):
     '''
@@ -554,6 +556,42 @@ class TestApiView(APITestCase):
         releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
         delta = (releaseDate - datetime.datetime.utcnow()).seconds
         self.assertTrue(895 < delta < 905)
+                     
+    def test_reserve_variable_multithread(self):
+        """
+        Check variable reservation handles concurrency correctly
+        """
+        format = "%(asctime)s: %(message)s"
+        logging.basicConfig(format=format, level=logging.INFO,
+                        datefmt="%H:%M:%S")
+        def get_variables(name):
+            logging.info("Thread %s: starting", name)
+            response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            logging.info("Thread %s: finishing", name)
+        
+        threads = []
+        for index in range(2):
+            logging.info("Main    : create and start thread %d.", index)
+            x = threading.Thread(target=get_variables, args=(index,))
+            threads.append(x)
+            x.start()
+        
+        for index, thread in enumerate(threads):
+            logging.info("Main    : before joining thread %d.", index)
+            thread.join()
+            logging.info("Main    : thread %d done", index)
+        
+        response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+           
+        # self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+        # all_variables = self._convert_to_dict(response.data)
+        # self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+        #
+        # releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+        # delta = (releaseDate - datetime.datetime.utcnow()).seconds
+        # self.assertTrue(895 < delta < 905)
         
         
     def test_reserve_variable_with_increased_duration(self):

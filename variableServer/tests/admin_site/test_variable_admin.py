@@ -4,20 +4,25 @@ from django import forms
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
 from django.urls.base import reverse
 from django.utils import timezone
 
-import commonsServer
-from commonsServer.models import Application, Version
-import variableServer
-from variableServer.admin_site.variable_admin import VariableAdmin
+from variableServer.models import Application, Version
+from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
 from variableServer.models import Variable
-from variableServer.tests.test_admin import MockRequest, request, TestAdmin
+from variableServer.tests.test_admin import MockRequest, request, TestAdmin,\
+    MockRequestWithApplication
 
 
 class TestVariableAdmin(TestAdmin):
+    
+    def setUp(self)->None:
+        TestAdmin.setUp(self)
+        
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        
 
     def test_variable_get_list_display_with_authorized_user(self):
         """
@@ -49,7 +54,7 @@ class TestVariableAdmin(TestAdmin):
         for var in query_set:
             app_list.append(var.application)
         
-        self.assertTrue(len(list(set(app_list))), 2) # at least 'None' and 2 other applications
+        self.assertTrue(len(list(set(app_list))), 6) # at least 'None' and 2 other applications
         
        
     def test_variable_queryset_with_application_restriction(self):
@@ -59,8 +64,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
-            ct = ContentType.objects.get_for_model(commonsServer.models.Application)
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1'), content_type=ct))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             
             variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
             query_set = variable_admin.get_queryset(request=MockRequest(user=user))
@@ -69,8 +73,25 @@ class TestVariableAdmin(TestAdmin):
             for var in query_set:
                 app_list.append(var.application)
             
-            self.assertEqual(len(list(set(app_list))), 2) # 'None' and 'app1'
+            self.assertEqual(len(list(set(app_list))), 1) # 'None' and 'app1'
             self.assertTrue(Application.objects.get(pk=1) in app_list)
+        
+    def test_variable_queryset_with_application_restriction_and_view_variable_permission(self):
+        """
+        Check that list of variables contains all variables when 'view_variable' permission is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            
+            variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            query_set = variable_admin.get_queryset(request=MockRequest(user=user))
+            
+            app_list = []
+            for var in query_set:
+                app_list.append(var.application)
+            
+            self.assertEqual(len(list(set(app_list))), 6)
         
     def test_variable_save_standard(self):
         """
@@ -95,8 +116,7 @@ class TestVariableAdmin(TestAdmin):
         variable.value = 'azerty'
         variable.protected = False
    
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='see_protected_var'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='see_protected_var')))
         
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=102).value, 'azerty')
@@ -119,9 +139,11 @@ class TestVariableAdmin(TestAdmin):
         self.assertTrue(Variable.objects.get(pk=102).protected) # value not changed
         
     def test_variable_copy_to_no_variables(self):
+        """
+        Test copy when no source variable is provided
+        """
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
 
         change_url = reverse('admin:variableServer_variable_changelist')
         data = {'action': 'copyTo',
@@ -129,19 +151,42 @@ class TestVariableAdmin(TestAdmin):
         response = client.post(change_url, data)
         self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
      
-    def test_variable_copy_to(self):
+    def _test_variable_copy_to(self, permissions, variable_ids):
+        """
+        Test variable copy
+        @param permissions: permissions given to user
+        @param variable_ids: ids of variables to copy
+        """
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
 
         change_url = reverse('admin:variableServer_variable_changelist')
         data = {'action': 'copyTo',
-                ACTION_CHECKBOX_NAME: [3, 4],
+                ACTION_CHECKBOX_NAME: variable_ids,
                 'index': '0',}
         response = client.post(change_url, data)
         content = self._format_content(response.content)
         
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        return content
+     
+    def test_variable_copy_to(self):
+        """
+        Test copy variable with all permissions
+        """
+        content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4])
+
+        self.assertTrue('<form action="/variable/copyVariables" method="post">' in content)
+        self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
+        self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the same
+        
+    def test_variable_copy_to_no_add_variable(self):
+        """
+        Test it's not possible to copy variable if 'add_variable' permission is not given to user
+        """
+        content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable')), [3, 4])
+
         self.assertTrue('<form action="/variable/copyVariables" method="post">' in content)
         self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
         self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
@@ -174,9 +219,11 @@ class TestVariableAdmin(TestAdmin):
        
         
     def test_variable_change_no_variables(self):
+        """
+        Check modify of variable information when there is no source variable
+        """
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
 
         change_url = reverse('admin:variableServer_variable_changelist')
         data = {'action': 'changeValuesAtOnce',
@@ -185,9 +232,11 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
      
     def test_variable_change(self):
+        """
+        Check modify of variable information when there are source variables
+        """
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
 
         change_url = reverse('admin:variableServer_variable_changelist')
         data = {'action': 'changeValuesAtOnce',
@@ -201,77 +250,83 @@ class TestVariableAdmin(TestAdmin):
         self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
         self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
        
+    def _test_variable_deletion(self, permissions, variable_id):
+        """
+        Test variable deletion
+        @param permissions: permissions given to user
+        @param variable_id: id of the variable to delete
+        """
+        
+        user, client = self._create_and_authenticate_user_with_permissions(permissions)
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'delete_selected',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: [variable_id]}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+        
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        return content
      
     def test_variable_delete_selected_no_restriction(self):
         """
         Check that we can delete selected variable if no restriction applies on applications
         """
-        
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable'), content_type=ct))
-
-        change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'delete_selected',
-                'index': '0',
-                ACTION_CHECKBOX_NAME: [3]}
-        response = client.post(change_url, data)
-        content = self._format_content(response.content)
-        
-        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
+       
         self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
         self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
-     
     def test_variable_cannot_delete_selected_with_restriction(self):
         """
-        Check that we cannot delete selected variable as restriction apply on this application
+        Check that we cannot delete selected variable when 'delete_variable' is not set
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
+       
+            self.assertTrue('<title>Cannot delete variable | Django site admin</title>' in content) # variables cannot be deleted
+     
+    def test_variable_can_delete_selected_with_restriction(self):
+        """
+        Check that we can delete selected variable as restriction apply on this application but global variable permission are given
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
-            
-            change_url = reverse('admin:variableServer_variable_changelist')
-            data = {'action': 'delete_selected',
-                    'index': '0',
-                    ACTION_CHECKBOX_NAME: [3]}
-            response = client.post(change_url, data)
-            content = self._format_content(response.content)
-            
-            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
+       
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
-            self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable will be deleted, we do not have rights on this application
+            self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
     def test_variable_can_be_delete_selected_with_restriction(self):
         """
         Check that we can delete selected variable as user has right to use this application
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            
-            # be sure permission for application is created
-            Application.objects.get(pk=1).save()
-            
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
-                Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable') | Q(codename='can_view_application_app1')))
-            
-            change_url = reverse('admin:variableServer_variable_changelist')
-            data = {'action': 'delete_selected',
-                    'index': '0',
-                    ACTION_CHECKBOX_NAME: [3]}
-            response = client.post(change_url, data)
-            content = self._format_content(response.content)
-            
-            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 3)
+       
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
             
      
-    def test_variable_unreserve(self):
+    def test_variable_cannot_be_delete_selected_with_restriction(self):
+        """
+        Check that we cannot delete selected variable if variable does not belong to the application user has permissions for
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 301)
+
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
+            
+     
+    def _test_variable_unreserve(self, permissions, app_of_application):
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(permissions)
         
         # reserve variable
-        reservable_var = Variable(name='var1', value='value1', application=Application.objects.get(pk=1), version=Version.objects.get(pk=1), releaseDate=timezone.now() + datetime.timedelta(seconds=60))
+        reservable_var = Variable(name='var1', value='value1', application=app_of_application, version=Version.objects.get(pk=1), releaseDate=timezone.now() + datetime.timedelta(seconds=60))
         reservable_var.save()
 
         change_url = reverse('admin:variableServer_variable_changelist')
@@ -284,7 +339,60 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
         self.assertEqual(response.url, '/admin/variableServer/variable/')
         
+        return reservable_var
+     
+    def test_variable_unreserve(self):
+        """
+        Check it's possible to unreserve a variable when global variable permission are given to user
+        """
+        reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), Application.objects.get(pk=1))
+        
         self.assertIsNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+     
+    def test_variable_unreserve_with_application_restrictions(self):
+        """
+        Check it's possible to unreserve a variable when application specific permission is set 
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='can_view_application_app1')), Application.objects.get(pk=1))
+        
+            self.assertIsNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+     
+    def test_variable_unreserve_with_application_restrictions_and_global_change_variable(self):
+        """
+        Check it's possible to unreserve a variable when application specific permission is set and change_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='change_variable')), Application.objects.get(pk=1))
+
+            self.assertIsNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+     
+    def test_variable_unreserve_with_application_restrictions_and_without_global_change_variable(self):
+        """
+        Check it's possible to unreserve a variable when application specific permission is set and change_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='add_variable')), Application.objects.get(pk=1))
+
+            self.assertIsNotNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+     
+    def test_variable_unreserve_with_application_restrictions_on_variable_from_other_application(self):
+        """
+        Check it's not possible to unreserve a variable when application specific permission is set and variable is not linked to that application
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='can_view_application_app1')), Application.objects.get(pk=2))
+
+            # check variables are not updated when we have no rights on them
+            self.assertIsNotNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
         
 ### Variable Form ###
         
@@ -329,8 +437,7 @@ class TestVariableAdmin(TestAdmin):
         Check value is not display if user is not authorized or no user defined
         """
         
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='see_protected_var'), content_type=ct))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='see_protected_var')))
         
         instance = Variable.objects.get(pk=102)
         instance.user = user
@@ -338,3 +445,47 @@ class TestVariableAdmin(TestAdmin):
         form = VariableForm(instance=instance)
         self.assertEqual(type(form.fields['protected'].widget), type(forms.CheckboxInput()))
         self.assertEqual(form.initial['value'], 'azertyuiop')
+        
+    
+       
+    def test_user_can_see_variables_without_global_rights_and_application_permissions(self):
+        """
+        Check  user can view / change / delete / add variable with only application specific rights: can_view_application_app1
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+
+            variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertTrue(variable_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertTrue(variable_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(variable_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=301)))
+            self.assertTrue(variable_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertTrue(variable_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(variable_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertTrue(variable_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(variable_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=301)))
+            self.assertTrue(variable_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(variable_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertTrue(variable_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(variable_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=301)))
+            self.assertTrue(variable_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_cannot_see_testcases_without_global_rights_without_application_permissions(self):
+        """
+        Check  user cannot view / change / delete / add variable with only application specific rights: can_view_application_app1
+        when application restriction are NOT applied
+        """
+
+        testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+        self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+        self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+        self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+        self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+        self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+        self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+        self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+        self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+        self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))

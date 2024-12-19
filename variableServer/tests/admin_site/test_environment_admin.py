@@ -1,10 +1,13 @@
 
 from django.contrib.admin.sites import AdminSite
 
-from variableServer.models import Variable
+from variableServer.models import Variable, TestEnvironment
 from variableServer.admin_site.variable_admin import VariableAdmin
 from variableServer.tests.test_admin import MockRequest, TestAdmin
-from variableServer.admin_site.environment_admin import EnvironmentFilter
+from variableServer.admin_site.environment_admin import EnvironmentFilter,\
+    EnvironmentAdmin
+from django.contrib.auth.models import Permission
+from django.db.models import Q
 
 class TestEnvironmentAdmin(TestAdmin):
     
@@ -92,3 +95,16 @@ class TestEnvironmentAdmin(TestAdmin):
         
         # check only variables without version are displayed
         self.assertEqual(len(queryset), 0)
+        
+       
+    def test_user_cannot_see_environments_without_global_rights(self):
+        """
+        Check  user cannot list environment with only application specific rights: can_view_application_app1
+        """
+        environment_admin = EnvironmentAdmin(model=TestEnvironment, admin_site=AdminSite())
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self.assertFalse(environment_admin.has_view_permission(request=MockRequest(user=user)))
+        self.assertFalse(environment_admin.has_view_permission(request=MockRequest(user=user), obj=TestEnvironment.objects.get(pk=1)))
+        self.assertFalse(environment_admin.has_add_permission(request=MockRequest(user=user)))
+        self.assertFalse(environment_admin.has_change_permission(request=MockRequest(user=user)))
+        self.assertFalse(environment_admin.has_delete_permission(request=MockRequest(user=user)))
