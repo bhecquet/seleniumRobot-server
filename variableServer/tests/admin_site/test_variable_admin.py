@@ -146,7 +146,7 @@ class TestVariableAdmin(TestAdmin):
         user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
 
         change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'copyTo',
+        data = {'action': 'copy_to',
                 'index': '0',}
         response = client.post(change_url, data)
         self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
@@ -158,10 +158,10 @@ class TestVariableAdmin(TestAdmin):
         @param variable_ids: ids of variables to copy
         """
         
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
+        user, client = self._create_and_authenticate_user_with_permissions(permissions)
 
         change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'copyTo',
+        data = {'action': 'copy_to',
                 ACTION_CHECKBOX_NAME: variable_ids,
                 'index': '0',}
         response = client.post(change_url, data)
@@ -188,8 +188,61 @@ class TestVariableAdmin(TestAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable')), [3, 4])
 
         self.assertTrue('<form action="/variable/copyVariables" method="post">' in content)
-        self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
-        self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
+        self.assertTrue('<select name="application" id="id_application"><option value="" selected>' in content) # no app selected
+        self.assertTrue('<select name="version" id="id_version"><option value="" selected>' in content) # check no version is selected 
+       
+    def test_variable_copy_to_multiple_application(self):
+        """
+        Check it's possible to copy multiple variables when global variable permission are given to user
+        """
+        content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4, 9, 10])
+        
+        self.assertTrue('<input type="hidden" name="ids" value=3,4,9,10 />' in content) # check 4 variables will be copied
+     
+    def test_variable_copy_to_with_application_restrictions(self):
+        """
+        Check it's possible to copy multiple variables when application specific permission is set 
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
+        
+            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be copied
+     
+    def test_variable_copy_to_with_application_restrictions_and_global_change_variable(self):
+        """
+        Check it's possible to copy multiple variables when application specific permission is set and add_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='add_variable') | Q(codename='view_variable')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3,
+
+            self.assertTrue('<input type="hidden" name="ids" value=3,4,9,10 />' in content) # check both variables will be copied
+     
+    def test_variable_copy_to_with_application_restrictions_and_without_global_add_variable(self):
+        """
+        Check it's possible to copy multiple variables when application specific permission is set and change_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='change_variable')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
+
+            self.assertTrue('<input type="hidden" name="ids" value= />' in content) # check no variable is kept => no permissions
+
+     
+    def test_variable_copy_to_with_application_restrictions_on_variable_from_other_application(self):
+        """
+        Check it's not possible to copy multiple variables when application specific permission is set and variable is not linked to that application
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
+
+            self.assertTrue('<input type="hidden" name="ids" value=4 />' in content) # check only variable which is associated to application 1 is kept
         
     def test_variable_get_default_values_single_variable(self):
         """
@@ -201,8 +254,21 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(default_values['environment'].name, 'DEV1')
         self.assertEqual(default_values['application'].name, 'app1')
         self.assertEqual(default_values['version'].name, '2.5')
-        self.assertEqual(default_values['reservable'], True)
+        self.assertTrue(default_values['reservable'])
         self.assertEqual(len(default_values['test'].all()), 1)
+        
+    def test_variable_get_default_values_no_variables(self):
+        """
+        Check default values are the one from the variable
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        default_values = variable_admin._get_default_values([])
+        
+        self.assertIsNone(default_values['environment'])
+        self.assertIsNone(default_values['application'])
+        self.assertIsNone(default_values['version'])
+        self.assertFalse(default_values['reservable'])
+        self.assertIsNone(default_values['test'])
         
     def test_variable_get_default_values_multiple_variables(self):
         """
@@ -214,41 +280,8 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(default_values['environment'].name, 'DEV1')
         self.assertEqual(default_values['application'].name, 'app1')
         self.assertEqual(default_values['version'], None)
-        self.assertEqual(default_values['reservable'], False)
+        self.assertFalse(default_values['reservable'])
         self.assertEqual(default_values['test'], None)
-       
-        
-    def test_variable_change_no_variables(self):
-        """
-        Check modify of variable information when there is no source variable
-        """
-        
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
-
-        change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'changeValuesAtOnce',
-                'index': '0',}
-        response = client.post(change_url, data)
-        self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
-     
-    def test_variable_change(self):
-        """
-        Check modify of variable information when there are source variables
-        """
-        
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
-
-        change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'changeValuesAtOnce',
-                'index': '0',
-                ACTION_CHECKBOX_NAME: [3, 4]}
-        response = client.post(change_url, data)
-        content = self._format_content(response.content)
-        
-        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        self.assertTrue('<form action="/variable/changeVariables" method="post">' in content)
-        self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
-        self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
        
     def _test_variable_deletion(self, permissions, variable_id):
         """
@@ -287,7 +320,8 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
        
-            self.assertTrue('<title>Cannot delete variable | Django site admin</title>' in content) # variables cannot be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
      
     def test_variable_can_delete_selected_with_restriction(self):
         """
@@ -308,6 +342,16 @@ class TestVariableAdmin(TestAdmin):
        
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
+            
+    def test_variable_cannot_be_delete_with_restriction_and_no_linked_application(self):
+        """
+        Check that we cannot delete variable without linked application when application specific permission is the only available
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 9)
+       
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
             
      
     def test_variable_cannot_be_delete_selected_with_restriction(self):
@@ -330,7 +374,7 @@ class TestVariableAdmin(TestAdmin):
         reservable_var.save()
 
         change_url = reverse('admin:variableServer_variable_changelist')
-        data = {'action': 'unreserveVariable',
+        data = {'action': 'unreserve_variable',
                 'index': '0',
                 ACTION_CHECKBOX_NAME: [reservable_var.id]}
         response = client.post(change_url, data)
@@ -378,7 +422,20 @@ class TestVariableAdmin(TestAdmin):
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             
-            reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='add_variable')), Application.objects.get(pk=1))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+        
+            # reserve variable
+            reservable_var = Variable(name='var1', value='value1', application=Application.objects.get(pk=1), version=Version.objects.get(pk=1), releaseDate=timezone.now() + datetime.timedelta(seconds=60))
+            reservable_var.save()
+    
+            change_url = reverse('admin:variableServer_variable_changelist')
+            data = {'action': 'unreserve_variable',
+                    'index': '0',
+                    ACTION_CHECKBOX_NAME: [reservable_var.id]}
+            response = client.post(change_url, data)
+            content = self._format_content(response.content)
+            
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
 
             self.assertIsNotNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
      
@@ -393,6 +450,107 @@ class TestVariableAdmin(TestAdmin):
 
             # check variables are not updated when we have no rights on them
             self.assertIsNotNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+            
+        
+    def _test_variable_change_values_at_once(self, permissions, variable_ids):
+        
+        user, client = self._create_and_authenticate_user_with_permissions(permissions)
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'change_values_at_once',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: variable_ids}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+        
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        self.assertTrue('<form action="/variable/changeVariables" method="post">' in content)
+        
+        return content
+    
+    def test_variable_change_no_variables(self):
+        """
+        Check modify of variable information when there is no source variable
+        """
+        
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')))
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'change_values_at_once',
+                'index': '0',}
+        response = client.post(change_url, data)
+        self.assertEqual(response.status_code, 302, 'status code should be 302: ' + str(response.content))
+     
+
+    def test_variable_change_values_at_once(self):
+        """
+        Check it's possible to change multiple variables when global variable permission are given to user
+        """
+        content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4])
+        
+        self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
+        self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
+        self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be modified
+     
+    def test_variable_change_values_at_once_multiple_application(self):
+        """
+        Check it's possible to change multiple variables when global variable permission are given to user
+        """
+        content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4, 9, 10])
+        
+        self.assertTrue('<input type="hidden" name="ids" value=3,4,9,10 />' in content) # check 4 variables will be modified
+     
+    def test_variable_change_values_at_once_with_application_restrictions(self):
+        """
+        Check it's possible to change multiple variables when application specific permission is set 
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
+        
+            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be modified
+     
+    def test_variable_change_values_at_once_with_application_restrictions_and_global_change_variable(self):
+        """
+        Check it's possible to change multiple variables when application specific permission is set and change_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='change_variable')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3,
+
+            self.assertTrue('<input type="hidden" name="ids" value=3,4,9,10 />' in content) # check both variables will be modified
+     
+    def test_variable_change_values_at_once_with_application_restrictions_and_without_global_change_variable(self):
+        """
+        Check it's possible to change multiple variables when application specific permission is set and change_variable permission is given to user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+
+            change_url = reverse('admin:variableServer_variable_changelist')
+            data = {'action': 'change_values_at_once',
+                    'index': '0',
+                    ACTION_CHECKBOX_NAME: [3, 4]}
+            response = client.post(change_url, data)
+            content = self._format_content(response.content)
+        
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
+     
+    def test_variable_change_values_at_once_with_application_restrictions_on_variable_from_other_application(self):
+        """
+        Check it's not possible to change multiple variables when application specific permission is set and variable is not linked to that application
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            
+            content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
+
+            self.assertTrue('<input type="hidden" name="ids" value=4 />' in content) # check only variable which is associated to application 1 is kept
         
 ### Variable Form ###
         

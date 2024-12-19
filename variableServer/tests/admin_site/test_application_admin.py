@@ -4,11 +4,13 @@ from django.contrib.auth.models import User, Permission
 from django.db.models import Q
 
 import commonsServer
-from variableServer.models import Application
+from variableServer.models import Application, Version
 
-from variableServer.admin_site.application_admin import ApplicationAdmin
+from variableServer.admin_site.application_admin import ApplicationAdmin,\
+    ApplicationFilter
 from variableServer.models import Variable
 from variableServer.tests.test_admin import request, MockRequest, TestAdmin
+from variableServer.admin_site.version_admin import VersionAdmin
 
 
 class TestApplicationAdmin(TestAdmin):
@@ -191,4 +193,49 @@ class TestApplicationAdmin(TestAdmin):
         self.assertFalse(application_admin.has_change_permission(request=MockRequest(user=user)))
         self.assertFalse(application_admin.has_delete_permission(request=MockRequest(user=user)))
         
+    def test_application_filter_lookup_no_restriction(self): 
+        """
+        Without restrictions, all applications are shown
+        """
+        version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
+        
+        request = MockRequest()
+        
+        application_filter = ApplicationFilter(request, {}, Application, version_admin)
+        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        
+        # applications should be present
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4')])
+        
+    def test_application_filter_lookup_application_restriction(self): 
+        """
+        With application restriction applied and user has right to see 1 application, this application only is returned
+        """
+        Application.objects.get(pk=1).save()
+        version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
+        
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        request = MockRequest(user=user)
+        
+        application_filter = ApplicationFilter(request, {}, Application, version_admin)
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+            
+            # only app1 is present
+            self.assertEqual(filtered_applications,  [(1, 'app1')])
+
+    def test_application_filter_queryset_no_restriction(self): 
+        """
+        Without restrictions, all objects linked to selected application are shown
+        """
+        version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
+        
+        request = MockRequest()
+        
+        application_filter = ApplicationFilter(request, {}, Application, version_admin)
+        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        
+        # applications should be present
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4')])
         

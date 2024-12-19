@@ -6,6 +6,35 @@ from django import forms
 from django.contrib import admin
 from variableServer.models import Variable, Application, TestCase
 import logging
+from django.conf import settings
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+
+class ApplicationFilter(admin.SimpleListFilter):
+    """
+    Filter on application visible to the user
+    """
+    title = 'Application'
+    parameter_name = 'application'
+
+    def lookups(self, request, model_admin):
+        queryset = Application.objects.all()
+        
+        # remove applications that user has not permissions on
+        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN and not request.user.has_perm('variableServer.view_application'):
+            for application in Application.objects.all():
+                if not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name):
+                    queryset = queryset.exclude(name=application.name)
+
+        return [(app.id, str(app)) for app in queryset]
+
+    def queryset(self, request, queryset):
+        
+        if self.value():
+            queryset = queryset.filter(application__id__exact=self.value())
+       
+        return queryset
+    
+        
 
 class ApplicationForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):

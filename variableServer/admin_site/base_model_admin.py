@@ -25,8 +25,6 @@ def is_user_authorized(user):
 class BaseServerModelAdmin(admin.ModelAdmin):
     """
     Base class to restrict access to application objects the user has rights to see
-    
-    TODO: unit tests not created!!!
     """
     
     APP_SPECIFIC_PERMISSION_PREFIX = 'variableServer.can_view_application_'
@@ -40,12 +38,18 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         
         if request.method == 'POST' and request.POST.get('application'):
             application = Application.objects.get(pk=int(request.POST['application']))
-            return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name)                        
+            return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name)  
+        
+        # submiting a new variable with no application will lead to and empty string application
+        # in this case, we do not allow adding this
+        elif request.method == 'POST' and request.POST.get('application') == '':
+            return False             
             
         elif obj and obj.application:
             return request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name)
              
         # if user has at least a permission on any application, let him see models and do actions (delete action / modify / ...)
+        # TODO: not filtering on method verb allow a user with any application specific permission to add a variable not linked to application
         elif not obj and [p for p in request.user.get_all_permissions() if p.startswith(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX)]:
             return True 
             

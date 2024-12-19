@@ -9,6 +9,7 @@ from variableServer.models import Version, TestEnvironment, Application,\
     TestCase
 from variableServer.exceptions.VariableSetException import VariableSetException
 from seleniumRobotServer.settings import RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN as FLAG_RESTRICT_APP
+from variableServer.admin_site.variable_admin import VariableAdmin
 
 def copyVariables(request):
     """
@@ -43,7 +44,6 @@ def copyVariables(request):
         reservable = False
     
     # init message   
-    from variableServer.admin_site import VariableAdmin 
     varAdmin = VariableAdmin(Variable, admin.site)
     
     if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):
@@ -108,7 +108,6 @@ def changeVariables(request):
         reservable = False
     
     # init message     
-    from variableServer.admin_site import VariableAdmin
     varAdmin = VariableAdmin(Variable, admin.site)
     
     if FLAG_RESTRICT_APP and application and not request.user.has_perm('commonsServer.can_view_application_' + application.name):

@@ -12,6 +12,7 @@ from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
 from django import forms
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+from variableServer.admin_site.application_admin import ApplicationFilter
 
 class VersionFilter(SimpleListFilter):
     """
@@ -31,12 +32,11 @@ class VersionFilter(SimpleListFilter):
     def queryset(self, request, queryset):
         if self.value():
             if self.value() == '_None_':
-                return queryset.filter(version__id__exact=None)
+                queryset = queryset.filter(version__id__exact=None)
             else:
-                return queryset.filter(version__id__exact=self.value())
-            
-        else:
-            return queryset
+                queryset = queryset.filter(version__id__exact=self.value())
+
+        return queryset
         
         
 class VersionForm(forms.ModelForm):
@@ -45,7 +45,7 @@ class VersionForm(forms.ModelForm):
         
 class VersionAdmin(BaseServerModelAdmin): 
     list_display = ('name', 'application')
-    list_filter = ('application',)
+    list_filter = (ApplicationFilter,)
     form = VersionForm
     
     # deactivate all actions so that deleting a version must be done from detailed view
@@ -74,7 +74,7 @@ class VersionAdmin(BaseServerModelAdmin):
         Do not display delete button if some tests / variables are linked to this application
         """
         
-        can_delete = admin.ModelAdmin.has_delete_permission(self, request, obj=obj)
+        can_delete = super().has_delete_permission(request, obj=obj)
         
         # when no object provided, default behavior
         if not obj:
