@@ -20,6 +20,7 @@ from builtins import ValueError
 import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from django.db import transaction
 
 logger = logging.getLogger(__name__)
 
@@ -160,22 +161,26 @@ class VariableList(mixins.ListModelMixin,
         # in case value is provided, filter variables
         if variable_value:
             variables = variables.filter(value=variable_value)
-        
-        variable_names = list(set([v.name for v in variables]))
-        
-        unique_variable_list = self._unique_variable(variables.filter(releaseDate=None))
-        
-        # check we still have all variables after filtering. Else test may fail
-        filtered_variable_names = list(set([v.name for v in unique_variable_list]))
-        if (len(filtered_variable_names) < len(variable_names)):
-            raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
-        
-        initial_list = []
-        if reserve_reservable_variables:            
-            initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)]
-        else:
-            initial_list = [v for v in unique_variable_list]
             
+        variable_names = list(set([v.name for v in variables]))
+            
+        filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables])
+        
+        with transaction.atomic():
+            
+            unique_variable_list = self._unique_variable(filtered_variables)
+            
+            # check we still have all variables after filtering. Else test may fail
+            filtered_variable_names = list(set([v.name for v in unique_variable_list]))
+            if (len(filtered_variable_names) < len(variable_names)):
+                raise AllVariableAlreadyReservedException([v for v in variable_names if v not in filtered_variable_names])
+            
+            initial_list = []
+            if reserve_reservable_variables:            
+                initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)]
+            else:
+                initial_list = [v for v in unique_variable_list]
+                
         initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
         
         return initial_list
