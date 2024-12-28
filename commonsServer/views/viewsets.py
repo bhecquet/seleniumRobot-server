@@ -48,10 +48,14 @@ class ApplicationSpecificViewSet(BaseViewSet):
         """
         Prevent creating / updating objects on restricted applications
         """
+        model_name = self.serializer_class.Meta.model.__name__.lower()
+        #model_cls._meta.model_name
+        
         if (not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN 
-            or self.request.user.has_perm('variableServer.add_%s' % self.serializer_class.Meta.model.model_name)
-            or self.request.user.has_perm('variableServer.change_%s' % self.serializer_class.Meta.model.model_name)):
+            or self.request.user.has_perm('variableServer.add_%s' % model_name)
+            or self.request.user.has_perm('variableServer.change_%s' % model_name)):
             super().perform_create(serializer)
+            return
         
         allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in self.request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
         
@@ -75,9 +79,21 @@ class ApplicationSpecificViewSet(BaseViewSet):
         return obj
         
     def check_object_permissions(self, request, obj):
+        """
+        Check user has permission on object
+        It has permission if:
+        - it has permission on model
+        - it has permission on application, if application restriction is set
+        """
         
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
-            viewsets.ModelViewSet.check_object_permissions(self, request, obj)
+        model_permissions = []
+        for permission in self.get_permissions():
+            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
+            
+        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
+            
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+            return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
         if obj and obj.application:
             permission = BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name

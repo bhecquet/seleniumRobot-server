@@ -2,17 +2,18 @@
 from django.urls.base import reverse
 from variableServer.utils.utils import  updateVariables
 from variableServer.models import Variable, Version,\
-    TestEnvironment, TestCase
+    TestEnvironment, TestCase, Application
 import time
 import datetime
 from django.utils import timezone
 from variableServer.tests import authenticate_test_client
+from django.db.models import Q
 
-from rest_framework.test import APITestCase
-import logging
-import threading
+from django.contrib.auth.models import Permission
+from variableServer.tests.test_base import create_and_authenticate_user_with_permissions
+from variableServer.tests.test_api import TestApi
 
-class TestApiView(APITestCase):
+class TestApiView(TestApi):
     '''
     Using APITestCase as we call the REST Framework API
     Client handles patch / put cases
@@ -36,12 +37,19 @@ class TestApiView(APITestCase):
     #    . permission on results based on a specific group
     #    . global groups are not set anymore
 
+# permissions:
+#     - delete
+#     - ajout de variable 
+#     - modification de variable
+#
+# Test le VariableViewSet seul => il doit suivre les mêmes contraintes de droits que les autres objets
+# vérifier que si on restreint les applications, on n'a que les variables de l'application
+# vérifier que si on restreint les applications mais qu'on a view_variable, on a l'ensemble des variables
     
     
     def setUp(self):
-        authenticate_test_client(self.client)
+        Application.objects.get(pk=1).save()
         
-         
     def test_ping(self):
         """
         Check 'ping' api can be called without security token
@@ -90,10 +98,98 @@ class TestApiView(APITestCase):
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
      
+    def test_get_all_variables_no_permissions(self):
+        """
+        Check that at least 'view_variable' permissions is required to get variables
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+       
+    def test_get_all_variables_view_permissions(self):
+        """
+        Check that at least 'view_variable' permissions is required to get variables
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        apps = []
+        for variable in response.data:
+            apps.append(variable['application'])
+            
+        # check we have variables from 1 application and not linked to any application
+        self.assertTrue(len(list(set(apps))) > 1)
+       
+    def test_get_all_variables_view_application_restriction(self):
+        """
+        Application restriction is set
+        User:
+        - has NOT permission on app1
+        - has NOT view permission
+        
+        User can NOT get variables
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+       
+    def test_get_all_variables_view_permission_and_application_permission(self):
+        """
+        Check that at least 'view_variable' permissions is required to get variables
+        
+        Application restriction is set
+        User:
+        - has NOT permission on app1
+        - has view permission
+        
+        User can get variables
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            
+            apps = []
+            for variable in response.data:
+                apps.append(variable['application'])
+                
+            # check we have variables from 1 application and not linked to any application
+            self.assertTrue(len(list(set(apps))) > 1)   
+       
+    def test_get_all_variables_view_application_restriction_and_app1_permission(self):
+        """
+        Application restriction is set
+        User:
+        - has permission on app1
+        - has NOT view permission
+        
+        User can get variables of app1 only
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            
+            # check we get only variables from app1
+            for variable in response.data:
+                self.assertTrue(variable['application'] == 1)
+                
+       
+    def test_get_all_variables_add_permissions(self):
+        """
+        Check that add_variable permission does not allow to get variables
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+       
     def test_get_all_variables(self):
         """
         Check a reference is created when none is found
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -117,6 +213,7 @@ class TestApiView(APITestCase):
         """
         Check we filter variables by name and get only one variable
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'proxyPassword'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -130,6 +227,7 @@ class TestApiView(APITestCase):
         """
         Check we filter variables by value and get only one variable
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'value': 'logs_dev'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -144,6 +242,7 @@ class TestApiView(APITestCase):
         """
         Check we filter variables by value/name and get only one variable
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'logs', 'value': 'logs_dev'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -158,6 +257,7 @@ class TestApiView(APITestCase):
         """
         Check we filter variables by value/name and get only one variable
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'name': 'login'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -173,6 +273,7 @@ class TestApiView(APITestCase):
         """
         Check that test parameter is not mandatory
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
@@ -193,6 +294,7 @@ class TestApiView(APITestCase):
         """
         Check that environment parameter is  mandatory
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'test': 1})
         self.assertEqual(response.status_code, 400, 'status code should be 400: ' + str(response.content))
          
@@ -200,6 +302,7 @@ class TestApiView(APITestCase):
         """
         Check that environment parameter is  mandatory
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'test': 1, 'environment': 3})
         self.assertEqual(response.status_code, 400, 'status code should be 400: ' + str(response.content))
             
@@ -208,6 +311,7 @@ class TestApiView(APITestCase):
         """
         Check Variables are get when requesting them with environment name, application name, test name, ...
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'application': 'app1', 'version': '2.5', 'environment': 'DEV1', 'test': 'test1 with some spaces'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
@@ -228,6 +332,7 @@ class TestApiView(APITestCase):
         """
         Check error is raised when application name is missing (mandatory for finding version from its name)
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': '2.5', 'environment': 'DEV1', 'test': 'test1 with some spaces'})
         self.assertEqual(response.status_code, 400, 'status code should be 400: ' + str(response.content))
    
@@ -239,6 +344,7 @@ class TestApiView(APITestCase):
         - releaseDate is None
         - releaseDate is in the past (then it should be set to None)
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         version = Version.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, version=version).save()
         Variable(name='var1', value='value1', application=version.application, version=version, releaseDate=timezone.now() + datetime.timedelta(seconds=60)).save()
@@ -267,10 +373,12 @@ class TestApiView(APITestCase):
         - specific to tuple (application / environment / test)
         - specific to tuple (application / version / environment / test)
         """
+        
         version = Version.objects.get(pk=3)
         Variable(name='var0', value='value0').save()
         Variable(name='var0', value='value1', application=version.application).save()
              
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -293,6 +401,7 @@ class TestApiView(APITestCase):
         Variable(name='var0', value='value0', application=version.application).save()
         Variable(name='var0', value='value1', application=version.application, version=version).save()
              
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -315,7 +424,8 @@ class TestApiView(APITestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, version=version).save()
         Variable(name='var0', value='value1', environment=env).save()
-             
+         
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))    
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -339,7 +449,8 @@ class TestApiView(APITestCase):
         gen_env = TestEnvironment.objects.get(pk=1)
         Variable(name='var0', value='value0', environment=gen_env).save()
         Variable(name='var0', value='value1', environment=env).save()
-             
+           
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))  
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -365,7 +476,8 @@ class TestApiView(APITestCase):
         Variable(name='var0', value='value0', environment=gen_env2).save()
         Variable(name='var0', value='value1', environment=gen_env1).save()
         Variable(name='var0', value='value2', environment=env).save()
-             
+            
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable'))) 
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 4, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -390,7 +502,8 @@ class TestApiView(APITestCase):
         gen_env2 = TestEnvironment.objects.get(pk=1)
         Variable(name='var0', value='value0', environment=gen_env2).save()
         Variable(name='var0', value='value1', environment=gen_env1).save()
-             
+           
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))  
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 4, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -417,6 +530,7 @@ class TestApiView(APITestCase):
         var1.save()
         var1.test.add(test)
              
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -442,7 +556,8 @@ class TestApiView(APITestCase):
         var0.save()
         var0.test.add(test)
         Variable(name='var0', value='value1', application=version.application, environment=env).save()
-             
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))     
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -465,7 +580,8 @@ class TestApiView(APITestCase):
         env = TestEnvironment.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, environment=env).save()
         Variable(name='var0', value='value1', application=version.application, version=version, environment=env).save()
-             
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))     
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -491,7 +607,8 @@ class TestApiView(APITestCase):
         var1 = Variable(name='var0', value='value1', application=version.application, version=version, environment=env)
         var1.save()
         var1.test.add(test)
-             
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))     
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -517,7 +634,8 @@ class TestApiView(APITestCase):
         var1 = Variable(name='var0', value='value1', application=version.application, environment=env)
         var1.save()
         var1.test.add(test)
-             
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))     
         response = self.client.get(reverse('variableApi'), data={'version': version.id, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         all_variables = self._convert_to_dict(response.data)
@@ -529,6 +647,7 @@ class TestApiView(APITestCase):
         """
         Check we get only one value for the variable 'dupVariable'
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
              
@@ -542,6 +661,7 @@ class TestApiView(APITestCase):
         Check we get only one value for the variable 'login' and this is marked as reserved (release date not null)
         This is the default behaviour when 'reserve' parameter is not given
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
            
@@ -557,6 +677,7 @@ class TestApiView(APITestCase):
         """
         Check that we can specify an other duration for reservation
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reservationDuration': 1000})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
            
@@ -573,6 +694,7 @@ class TestApiView(APITestCase):
         Check we get only one value for the variable 'login' and this is marked as reserved (release date not null)
         We request to reserve it via 'reserve=True' parameter
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reserve': 'true'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
            
@@ -584,6 +706,7 @@ class TestApiView(APITestCase):
         """
         Check we get only one value for the variable 'login' and this is marked not reserved if we request not to reserve it via 'reserve=False' parameter
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1, 'reserve': 'false'})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
            
@@ -591,10 +714,92 @@ class TestApiView(APITestCase):
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNone(all_variables['login']['releaseDate'], 'releaseDate should be null as variable should not be reserved')
              
+    def test_reservable_state_correction_without_permission(self):
+        """
+        Check 'add_variable' permission is required to set reservable state
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        version = Version.objects.get(pk=3)
+        Variable(name='var0', value='value0', application=version.application, reservable=True).save()
+             
+        response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
+    def test_create_variable(self):
+        """
+        Check it's possible to create a variable
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+        version = Version.objects.get(pk=3)
+             
+        response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+        self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+
+        self.assertEqual('value1', Variable.objects.get(name='var0').value)
+
+    def test_create_variable_no_permission(self):
+        """
+        Check it's NOT possible to create a variable without add_variable permission
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        version = Version.objects.get(pk=3)
+             
+        response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+        
+    def test_create_variable_with_application_restriction(self):
+        """
+        Check its possible to create a variable with application restriction when app1 permission is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            version = Version.objects.get(pk=1)
+
+            response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+               
+            self.assertEqual('value1', Variable.objects.get(name='var0').value)
+
+    def test_create_variable_with_application_restriction2(self):
+        """
+        Check its possible to create a variable with application restriction when 'add_variable' permission is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+            version = Version.objects.get(pk=1)
+                 
+            response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+               
+            self.assertEqual('value1', Variable.objects.get(name='var0').value)
+
+    def test_create_variable_with_application_restriction_and_no_permission_on_variable(self):
+        """
+        Check its NOT possible to create a variable with application restriction when app1 permission is set and variable does not belong to this application
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            version = Version.objects.get(pk=3)
+                 
+            response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
+    def test_create_variable_with_application_restriction_and_no_permissions(self):
+        """
+        Check its NOT possible to create a variable with application restriction
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            version = Version.objects.get(pk=3)
+                 
+            response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
     def test_reservable_state_correction(self):
         """
         Check that when a variable is added with the same characteristics of another, reservable state is set to the newly created variable
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
         version = Version.objects.get(pk=3)
         Variable(name='var0', value='value0', application=version.application, reservable=True).save()
              
@@ -604,7 +809,6 @@ class TestApiView(APITestCase):
         for v in Variable.objects.filter(name='var0'):
             self.assertFalse(v.reservable)
               
-             
     def test_reservable_state_correction_with_test(self):
         """
         Check that when a variable is added with the same characteristics of another, reservable state is set to the newly created variable
@@ -615,13 +819,111 @@ class TestApiView(APITestCase):
         var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
         var0.save()
         var0.test.add(test)
-             
+          
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))   
         response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False, 'test': [1]})
         self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
            
         for v in Variable.objects.filter(name='var0'):
             self.assertFalse(v.reservable)
+        
+    def test_update_variable(self):
+        """
+        Check that the 'change_variable' permissions is required to change variable reservable state
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+        var0.save()
+        var0.test.add(test)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+        response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+        
+        self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
+        
+    def test_update_variable_no_permission(self):
+        """
+        Check that the 'change_variable' permissions is required to update variable
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+        var0.save()
+        var0.test.add(test)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+    
+    def test_update_variable_with_application_restriction(self):
+        """
+        Check that with application restriction set, it's possible to update a variable if it's linked to the application user is authorized on
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=1)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+            var0.save()
+            var0.test.add(test)
+    
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
             
+            self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
+    
+    def test_update_variable_with_application_restriction2(self):
+        """
+        Check that with application restriction set, it's possible to update a variable if it's linked to the application user is authorized on
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+            var0.save()
+            var0.test.add(test)
+    
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+            response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            
+            self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
+    
+    def test_update_variable_with_application_restriction_and_no_permission_on_variable(self):
+        """
+        Check that with application restriction set, it's not possible to update a variable on an application user has no permission
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+            var0.save()
+            var0.test.add(test)
+    
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+            
+    def test_update_variable_with_application_restriction_and_no_permission(self):
+        """
+        Check that with application restriction set, it's not possible to update a variable on an application user has no permission
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+            var0.save()
+            var0.test.add(test)
+    
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
     def test_update_reservable_state_correction_with_test(self):
         """
         Check that when a variable is changed with the same characteristics of another, reservable state is set to the updated variable
@@ -636,6 +938,7 @@ class TestApiView(APITestCase):
         var1.save()
         var1.test.add(test)
             
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
         response = self.client.patch(reverse('variableApiPut', args=[var1.id]), {'reservable': False, 'test': [1]})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
           
@@ -655,6 +958,7 @@ class TestApiView(APITestCase):
         var1 = Variable(name='var0', value='value0', application=version.application, reservable=True)
         var1.save()
             
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
         response = self.client.patch(reverse('variableApiPut', args=[var1.id]), {'reservable': False, 'test': [1]})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
           
@@ -662,11 +966,12 @@ class TestApiView(APITestCase):
         self.assertTrue(Variable.objects.get(pk=var0.id).reservable)
         self.assertFalse(Variable.objects.get(pk=var1.id).reservable)
               
-          
     def test_variable_already_reserved(self):
         """
-        When variable cannot be reserved because all are alrealdy taken by other test, an error should be raised
+        When variable cannot be reserved because all are already taken by other test, an error should be raised
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        
         # login variable is defined twice, reserve it 3 times
         self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
         self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
@@ -685,7 +990,8 @@ class TestApiView(APITestCase):
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
                  creationDate=timezone.now() - datetime.timedelta(2), 
                  timeToLive=1).save()
-            
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))    
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -704,7 +1010,8 @@ class TestApiView(APITestCase):
         Variable(name='oldVar', value='oldValue', application=version.application, version=version, environment=env, 
                  creationDate=timezone.now() - datetime.timedelta(0, 23 * 60 * 60), 
                  timeToLive=1).save()
-            
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))    
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -726,7 +1033,8 @@ class TestApiView(APITestCase):
         Variable(name='oldVar2', value='oldValue2', application=version.application, version=version, environment=env, 
                  creationDate=timezone.now() - datetime.timedelta(seconds=23 * 60 * 60), # almost 1 day
                  timeToLive=5).save()
-             
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))     
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 1})
              
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -750,6 +1058,7 @@ class TestApiView(APITestCase):
                  creationDate=timezone.now() - datetime.timedelta(1), 
                  timeToLive=5).save()
     
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
              
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -775,6 +1084,7 @@ class TestApiView(APITestCase):
                  timeToLive=5).save()
    
         time.sleep(0.5) # wait so that comparing variable time is not a problem
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': 0})
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -800,6 +1110,7 @@ class TestApiView(APITestCase):
                  timeToLive=5).save()
    
         time.sleep(0.5) # wait so that comparing variable time is not a problem
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'olderThan': -1})
             
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -814,6 +1125,7 @@ class TestApiView(APITestCase):
         """
         Check that if a linked application is defined, it's variables are get
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 5, 'environment': 1, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         
@@ -833,6 +1145,7 @@ class TestApiView(APITestCase):
         Check that application that the link between application is not in both directions
         app1 => app2 does not mean app2 => app1
         """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 6, 'environment': 1, 'test': 1})
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         
@@ -857,8 +1170,104 @@ class TestApiView(APITestCase):
         var0.save()
         var0.test.add(test)
         
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
         response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
         self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+        
+    def test_delete_internal_variable_no_permission(self):
+        """
+        Test custom variable deletion without 'delete_variable' permission
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+        var0.save()
+        var0.test.add(test)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+        
+    def test_delete_internal_variable_with_application_restriction(self):
+        """
+        Test custom variable deletion with application restriction and user has permission on the application linked to variable
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=1)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+            var0.save()
+            var0.test.add(test)
+            
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+        
+    def test_delete_internal_variable_with_application_restriction2(self):
+        """
+        Test custom variable deletion with application restriction and user has permission on all variables
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=1)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+            var0.save()
+            var0.test.add(test)
+            
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+            response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+        
+    def test_delete_internal_variable_with_application_restriction_and_no_permission_on_variable(self):
+        """
+        Test custom variable deletion with application restriction and user has permission on app1, not app2
+        It should not be able to delete the variable
+        We get a 404 because in this case, no variable is returned by the filter
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+            var0.save()
+            var0.test.add(test)
+            
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+            self.assertEqual(response.status_code, 404, 'status code should be 404: ' + str(response.content))
+        
+    def test_delete_internal_variable_with_application_restriction_and_no_permission(self):
+        """
+        Test custom variable deletion with application restriction and no permission for user
+        """
+        
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+            var0.save()
+            var0.test.add(test)
+            
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+        
+    def test_delete_internal_variable_without_permission(self):
+        """
+        Test custom variable deletion
+        It should be allowed
+        """
+        test = TestCase.objects.get(pk=1)
+        version = Version.objects.get(pk=3)
+        var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+        var0.save()
+        var0.test.add(test)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
         
             
     def test_delete_variable_forbidden(self):
@@ -872,6 +1281,7 @@ class TestApiView(APITestCase):
         var0.save()
         var0.test.add(test)
         
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
         response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
         self.assertEqual(response.status_code, 404, 'status code should be 404: ' + str(response.content))
         

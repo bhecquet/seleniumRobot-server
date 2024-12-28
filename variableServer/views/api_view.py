@@ -8,7 +8,7 @@ import time
 import logging
 
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, generics, permissions
+from rest_framework import mixins, generics, permissions, filters
 from rest_framework.exceptions import ValidationError
 
 from variableServer.models import Variable, TestEnvironment, Version, TestCase
@@ -21,6 +21,11 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import transaction
+from commonsServer.views.viewsets import ApplicationSpecificFilter, BaseViewSet,\
+    ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions
+from django.conf import settings
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 
 logger = logging.getLogger(__name__)
 
@@ -33,45 +38,52 @@ class Ping(APIView):
     
     def get(self, request, *args, **kwargs):
         return Response("OK")
+    
+class VariableQuerySet(list):
 
-class VariableList(mixins.ListModelMixin,
-                  mixins.CreateModelMixin,
-                  mixins.UpdateModelMixin,
-                  mixins.DestroyModelMixin,
-                  generics.GenericAPIView):
-    
-    serializer_class = VariableSerializer
-    
-    queryset = Variable.objects.none()
-    
-    def _reset_past_release_dates(self):
-        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
-            var.releaseDate = None
-            var.save()
-            logger.info("unreserve variable [%d] automatically %s=%s " % (var.id, var.name, var.value))
+    def __init__(self, *args, **kwargs):
+        self.model = Variable
+        super().__init__(*args, **kwargs)
+
+    def filter(self, *args, **kwargs):
         
-    def _delete_old_variables(self):
-        """
-        Delete variables which contains a positive value for 'timeToLive' and which are still there whereas they expired
-        """
-        for var in Variable.objects.filter(timeToLive__gt=0):
-            if timezone.now() - datetime.timedelta(var.timeToLive) > var.creationDate:
-                var.delete()
-                
-    def _filter_get_queryset(self, queryset):
+        return VariableQuerySet(self._filter(*args, **kwargs))
+
+    def order_by(self, *args, **kwargs):
+        return self
+    
+    def get(self, *args, **kwargs):
+        new_list = self._filter(*args, **kwargs)
+        if not new_list:
+            raise ValueError            
+                    
+        return new_list[0]
+    
+    def _filter(self, *args, **kwargs):
+        new_list = []
+        for key, value in kwargs.items():
+            for el in self:
+                if str(getattr(el, key, None)) == str(value):
+                    new_list.append(el)
+                    
+        return new_list
+    
+class VariableFilter(ApplicationSpecificFilter): 
+    
+    def _filter_get_queryset(self, request, queryset, view):
         """
         Filter to apply when GET method is called
         We return a list of variables
         """
-        version_id = self.request.query_params.get('version', None)
-        application_id = self.request.query_params.get('application', None)
-        environment_id = self.request.query_params.get('environment', None)
-        test_id = self.request.query_params.get('test', None)
-        older_than = int(self.request.query_params.get('olderThan', '0'))
-        reservation_duration = int(self.request.query_params.get('reservationDuration', '900'))
-        variable_name = self.request.query_params.get('name', None)
-        variable_value = self.request.query_params.get('value', None)
-        reserve_reservable_variables = self.request.query_params.get('reserve', 'true') == 'true'
+        version_id = request.query_params.get('version', None)
+        application_id = request.query_params.get('application', None)
+        environment_id = request.query_params.get('environment', None)
+        test_id = request.query_params.get('test', None)
+        older_than = int(request.query_params.get('olderThan', '0'))
+        reservation_duration = int(request.query_params.get('reservationDuration', '900'))
+        variable_name = request.query_params.get('name', None)
+        variable_value = request.query_params.get('value', None)
+        reserve_reservable_variables = request.query_params.get('reserve', 'true') == 'true'
         
         version_name = 'N/A'
         application_name = 'N/A'
@@ -79,8 +91,8 @@ class VariableList(mixins.ListModelMixin,
         test_name = 'N/A'
          
         # return all variables if no filter is provided
-        if 'pk' in self.kwargs:
-            return queryset.filter(pk=self.kwargs['pk'])
+        if 'pk' in view.kwargs:
+            return queryset.filter(pk=view.kwargs['pk'])
         
         if not version_id:
             raise ValidationError("version parameter is mandatory. Typical request is http://<host>:<port>/variable/api/variable?version=<id_version>&environment=<id_env>&test=<id_test>")
@@ -185,24 +197,33 @@ class VariableList(mixins.ListModelMixin,
         
         return initial_list
     
-    def _filter_delete_queryset(self, queryset):
+    def _filter_delete_queryset(self, request, queryset, view):
         """
         Only allow "internal" variables deletion
         """
-        return queryset.filter(pk=self.kwargs['pk'], internal=True)
+        return queryset.filter(pk=view.kwargs['pk'], internal=True)
     
-    def get_queryset(self):
-        return Variable.objects.all()
+    def filter_queryset(self, request, queryset, view):
+        
+        if request.method == "GET":
+            variable_list = self._filter_get_queryset(request, queryset, view)
+            permission = 'variableServer.view_%s' % queryset.model._meta.model_name
+        elif request.method == "DELETE":
+            variable_list = self._filter_delete_queryset(request, queryset, view)
+            permission = 'variableServer.delete_%s' % queryset.model._meta.model_name
+        # for POST / PATCH / PUT requests, further filtering is done, so we need a queryset
+        # moreover, no filtering needs to be done for these
+        else: 
+            return queryset
+
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or request.user.has_perm(permission):
+            return VariableQuerySet(variable_list)
+        
+        allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
+        
+        filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_aplications]
+        return VariableQuerySet(filtered_variables)
     
-    def filter_queryset(self, queryset):
-        
-        if self.request.method == "GET":
-            return self._filter_get_queryset(queryset)
-        elif self.request.method == "DELETE":
-            return self._filter_delete_queryset(queryset)
-        else:
-            return super().filter_queryset(queryset)
-        
     def _unique_variable(self, variable_query_set):
         """
         render a list where each variable is unique (according to it's name)
@@ -245,7 +266,6 @@ class VariableList(mixins.ListModelMixin,
         Get all variables of the applications linked to the requested application
         """
         
-        
         linked_application_variables = Variable.objects.none()
         if application.linkedApplication:
             for linked_application in application.linkedApplication.all():
@@ -259,6 +279,34 @@ class VariableList(mixins.ListModelMixin,
             updated_linked_application_variables.append(Variable(name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
  
         return updated_linked_application_variables
+    
+       
+
+class VariableList(ApplicationSpecificViewSet):
+    
+    serializer_class = VariableSerializer
+    filter_backends = [VariableFilter]
+    permission_classes = [ApplicationSpecificPermissions]
+    queryset = Variable.objects.none()
+    
+    def _reset_past_release_dates(self):
+        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
+            var.releaseDate = None
+            var.save()
+            logger.info("unreserve variable [%d] automatically %s=%s " % (var.id, var.name, var.value))
+        
+    def _delete_old_variables(self):
+        """
+        Delete variables which contains a positive value for 'timeToLive' and which are still there whereas they expired
+        """
+        for var in Variable.objects.filter(timeToLive__gt=0):
+            if timezone.now() - datetime.timedelta(var.timeToLive) > var.creationDate:
+                var.delete()
+                
+    
+    def get_queryset(self):
+        return Variable.objects.all()
+    
 
     def get(self, request, *args, **kwargs):
         """

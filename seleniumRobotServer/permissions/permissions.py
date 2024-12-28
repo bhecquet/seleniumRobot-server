@@ -34,6 +34,5 @@ class ApplicationSpecificPermissions(GenericPermissions):
         if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return has_model_permission
 
-        
         return len([p for p in request.user.get_all_permissions() if p.startswith(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX)]) > 0 \
                 or has_model_permission
