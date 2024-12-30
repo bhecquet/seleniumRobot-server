@@ -140,7 +140,7 @@ class TestVersionAdmin(TestAdmin):
         no variable/test linked to this application exist
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version', content_type=self.content_type_version)))
         
         # search a version which has no variable
         version_with_variables = [v.version.id for v in Variable.objects.exclude(version=None)]
@@ -158,7 +158,7 @@ class TestVersionAdmin(TestAdmin):
         a variable linked to this application exist
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version', content_type=self.content_type_version)))
         
         # search a version which has no variable
         version_with_variables = [v.version for v in Variable.objects.exclude(version=None)][0]
@@ -175,7 +175,7 @@ class TestVersionAdmin(TestAdmin):
         application is NONE
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version', content_type=self.content_type_version)))
         self.assertTrue(version_admin.has_delete_permission(request=MockRequest(user=user)))
         
     def test_version_has_delete_permission_allowed_and_authenticated_with_application_restriction_and_application_permission(self):
@@ -205,7 +205,7 @@ class TestVersionAdmin(TestAdmin):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version', content_type=self.content_type_version)))
             self.assertTrue(version_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
         
     def test_version_has_delete_permission_allowed_and_authenticated_with_application_restriction_and_change_permission(self):
@@ -220,7 +220,7 @@ class TestVersionAdmin(TestAdmin):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_version')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_version', content_type=self.content_type_version)))
             self.assertFalse(version_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
               
     def test_version_has_delete_permission_not_allowed_and_authenticated_none_version(self):
@@ -233,7 +233,7 @@ class TestVersionAdmin(TestAdmin):
         application is NONE
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_version')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_version', content_type=self.content_type_version)))
         self.assertFalse(version_admin.has_delete_permission(request=MockRequest(user=user)))
         
     def test_version_queryset_without_application_restriction(self):
@@ -273,7 +273,7 @@ class TestVersionAdmin(TestAdmin):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_version')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_version', content_type=self.content_type_version)))
             
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
             query_set = version_admin.get_queryset(request=MockRequest(user=user))

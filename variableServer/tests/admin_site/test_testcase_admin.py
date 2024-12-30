@@ -73,7 +73,7 @@ class TestTestCaseAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testcase')))
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testcase', content_type=self.content_type_testcase)))
             
             testcase_admin = TestCaseAdmin(model=commonsServer.models.TestCase, admin_site=AdminSite())
             query_set = testcase_admin.get_queryset(request=MockRequest(user=user))

@@ -10,6 +10,8 @@ from django.contrib.auth.models import User, Group
 
 from django.test.client import Client
 from django.test.testcases import TestCase
+from django.contrib.contenttypes.models import ContentType
+import variableServer
 
 
 
@@ -56,6 +58,14 @@ request.user = MockSuperUser()
 class TestAdmin(TestCase):
     
     fixtures = ['varServer']
+    
+    def setUp(self):
+        
+        self.content_type_testcase = ContentType.objects.get_for_model(variableServer.models.TestCase, for_concrete_model=False)
+        self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)
+        self.content_type_version = ContentType.objects.get_for_model(variableServer.models.Version, for_concrete_model=False)
+        self.content_type_environment = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
+    
     
     def _create_and_authenticate_user_with_permissions(self, permissions):
         """

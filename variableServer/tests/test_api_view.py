@@ -10,6 +10,8 @@ from django.db.models import Q
 
 from django.contrib.auth.models import Permission
 from commonsServer.tests.test_api import TestApi
+from django.contrib.contenttypes.models import ContentType
+import variableServer
 
 class TestApiView(TestApi):
     '''

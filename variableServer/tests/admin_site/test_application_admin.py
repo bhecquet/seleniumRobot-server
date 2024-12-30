@@ -57,7 +57,7 @@ class TestApplicationAdmin(TestAdmin):
         no variable/test linked to this application exist
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application', content_type=self.content_type_application)))
         
         # search an application which has variable and no test
         app_with_tests = [t.application.id for t in commonsServer.models.TestCase.objects.all()]
@@ -77,7 +77,7 @@ class TestApplicationAdmin(TestAdmin):
         a variable linked to this application exist
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application', content_type=self.content_type_application)))
         
         # search an application which has variable and no test
         app_with_tests = [t.application.id for t in commonsServer.models.TestCase.objects.all()]
@@ -97,7 +97,7 @@ class TestApplicationAdmin(TestAdmin):
         a test linked to this application exist
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application', content_type=self.content_type_application)))
         
         # search an application which has variable and no test
         app_with_tests = [t.application.id for t in commonsServer.models.TestCase.objects.all()]
@@ -116,7 +116,7 @@ class TestApplicationAdmin(TestAdmin):
         application is NONE
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_application', content_type=self.content_type_application)))
         self.assertTrue(application_admin.has_delete_permission(request=MockRequest(user=user)))
               
     def test_application_has_delete_permission_not_allowed_and_authenticated_none_application(self):
@@ -129,7 +129,7 @@ class TestApplicationAdmin(TestAdmin):
         application is NONE
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application', content_type=self.content_type_application)))
         self.assertFalse(application_admin.has_delete_permission(request=MockRequest(user=user)))
         
         
