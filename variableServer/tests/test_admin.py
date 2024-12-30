@@ -14,13 +14,11 @@ from django.test.testcases import TestCase
 
 
 # tests we should add to check admin view behavior
-# - when permissions are set for application, 
 # - change multiple variables at once
 # - copy multiple variables
 # - copy several variables, one with tests, other without and check that resulting test is none
 # - copy several variables, all with tests and check that resulting tests are the same as from variables
 # - check filtering of tests and version when modifying a variable
-# - 'varActionView' => add restrictions
 
 class MockRequest(object):
     def __init__(self, user=None):

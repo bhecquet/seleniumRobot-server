@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 
 class CommonBackend:
     
+    # DEPRECATED
     def _add_user_to_groups(self, user):
         """
         Add permissions to user if user is allowed to have them (staff member or superuser)

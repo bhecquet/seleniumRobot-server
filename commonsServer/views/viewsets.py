@@ -5,7 +5,7 @@ Created on 4 mai 2017
 '''
 
 from rest_framework import viewsets, filters
-from commonsServer.models import Application, TestEnvironment, \
+from variableServer.models import Application, TestEnvironment, \
     TestCase, Version
 from django.db.models.aggregates import Count
 from commonsServer.views.serializers import ApplicationSerializer,\
@@ -14,7 +14,8 @@ from rest_framework.exceptions import ValidationError
 from django.conf import settings
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions
-from django.contrib.auth.models import Permission
+from rest_framework.generics import get_object_or_404, CreateAPIView,\
+    RetrieveAPIView
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -48,8 +49,7 @@ class ApplicationSpecificViewSet(BaseViewSet):
         """
         Prevent creating / updating objects on restricted applications
         """
-        model_name = self.serializer_class.Meta.model.__name__.lower()
-        #model_cls._meta.model_name
+        model_name = self.queryset.model._meta.model_name
         
         if (not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN 
             or self.request.user.has_perm('variableServer.add_%s' % model_name)
@@ -59,7 +59,13 @@ class ApplicationSpecificViewSet(BaseViewSet):
         
         allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in self.request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
         
-        if serializer.validated_data['application'].name in allowed_aplications:
+        if 'application' not in serializer.validated_data:
+            self.permission_denied(
+                    self.request,
+                    message="You don't have rights on %s" % model_name,
+                    code=None
+                )
+        elif serializer.validated_data['application'].name in allowed_aplications:
             super().perform_create(serializer)
         else:
             self.permission_denied(
@@ -67,16 +73,6 @@ class ApplicationSpecificViewSet(BaseViewSet):
                     message="You don't have rights for application %s" % serializer.validated_data['application'],
                     code=None
                 )
-            
-    def get_object(self):
-        """
-        check object permission
-        """
-        obj = super().get_object()
-
-        self.check_object_permissions(self.request, obj)
-
-        return obj
         
     def check_object_permissions(self, request, obj):
         """
@@ -106,6 +102,7 @@ class ApplicationSpecificViewSet(BaseViewSet):
         else:
             viewsets.ModelViewSet.check_object_permissions(self, request, obj)
             
+       
 class ApplicationSpecificFilter(filters.BaseFilterBackend):
     """
     This filter only applies to models that have an 'application' field
@@ -120,23 +117,47 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
         allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
         
         return queryset.filter(application__name__in=allowed_aplications)
-
-class ApplicationViewSet(BaseViewSet):
-    queryset = Application.objects.all()
-    serializer_class = ApplicationSerializer
     
-class VersionViewSet(BaseViewSet):
-    queryset = Version.objects.all()
-    serializer_class = VersionSerializer
-    
-class TestEnvironmentViewSet(BaseViewSet):
-    queryset = TestEnvironment.objects.all()
-    serializer_class = TestEnvironmentSerializer
-
-class TestCaseViewSet(ApplicationSpecificViewSet):
-    queryset = TestCase.objects.all()
-    serializer_class = TestCaseSerializer
+class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView, ApplicationSpecificViewSet):
     permission_classes = [ApplicationSpecificPermissions]
     filter_backends = [ApplicationSpecificFilter]
+    
+    def get_object(self, model):
+        name = self.request.query_params.get('name', None)
+        if not name:
+            raise ValidationError("name parameter is mandatory")
+        
+        obj = get_object_or_404(model, name=name)
+        self.check_object_permissions(self.request, obj)
+        
+        return obj
+
+class ApplicationViewSet(RetrieveByNameViewSet):
+    queryset = Application.objects.none()
+    serializer_class = ApplicationSerializer
+    
+    def get_object(self):
+        return super().get_object(Application)
+    
+class VersionViewSet(RetrieveByNameViewSet):
+    queryset = Version.objects.none()
+    serializer_class = VersionSerializer
+    
+    def get_object(self):
+        return super().get_object(Version)
+    
+class TestEnvironmentViewSet(RetrieveByNameViewSet):
+    queryset = TestEnvironment.objects.none()
+    serializer_class = TestEnvironmentSerializer
+    
+    def get_object(self):
+        return super().get_object(TestEnvironment)
+
+class TestCaseViewSet(RetrieveByNameViewSet):
+    queryset = TestCase.objects.none()
+    serializer_class = TestCaseSerializer
+    
+    def get_object(self):
+        return super().get_object(TestCase)
     
     

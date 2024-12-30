@@ -6,12 +6,10 @@ from variableServer.models import Variable, Version,\
 import time
 import datetime
 from django.utils import timezone
-from variableServer.tests import authenticate_test_client
 from django.db.models import Q
 
 from django.contrib.auth.models import Permission
-from variableServer.tests.test_base import create_and_authenticate_user_with_permissions
-from variableServer.tests.test_api import TestApi
+from commonsServer.tests.test_api import TestApi
 
 class TestApiView(TestApi):
     '''
@@ -25,26 +23,14 @@ class TestApiView(TestApi):
     #    . no security => access all resource (create / delete / modify)
     #    . security enabled
     #        * without token => access denied (for all operations)
-    #        * with token and no staff => access denied
-    #        * with token and staff / no rights => access denied
-    #        * with token / staff / rights for a single application 
-    #            => access allowed for variables / versions on that application: create / modify / delete
-    #            => access denied for other applications
-    #            => access denied
-    #            => cannot create application
+
     #        * with token / staff / rights for view applications => can view all application data
+    #    . remove authenticate_test_client & authenticate_test_client_with_see_protected_vars
     # - IHM
     #    . permission on results based on a specific group
     #    . global groups are not set anymore
+    
 
-# permissions:
-#     - delete
-#     - ajout de variable 
-#     - modification de variable
-#
-# Test le VariableViewSet seul => il doit suivre les mêmes contraintes de droits que les autres objets
-# vérifier que si on restreint les applications, on n'a que les variables de l'application
-# vérifier que si on restreint les applications mais qu'on a view_variable, on a l'ensemble des variables
     
     
     def setUp(self):
