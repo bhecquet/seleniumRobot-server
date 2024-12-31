@@ -2,16 +2,14 @@ from rest_framework import views
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
-from snapshotServer.controllers.DiffComputer import DiffComputer
+from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.forms import ImageForComparisonUploadForm,\
     ImageForComparisonUploadFormNoStorage
 from snapshotServer.models import Snapshot, StepResult
 import json
 from django.http.response import HttpResponse
-import base64
 import io
 from PIL import Image
-from tempfile import NamedTemporaryFile
 import os
 
 

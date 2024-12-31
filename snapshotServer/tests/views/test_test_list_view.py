@@ -8,7 +8,7 @@ from django.urls.base import reverse
 from snapshotServer.tests.views.test_views import TestViews
 
 
-class Test_TestListView(TestViews):
+class TestTestListView(TestViews):
 
 
     def test_test_exists(self):

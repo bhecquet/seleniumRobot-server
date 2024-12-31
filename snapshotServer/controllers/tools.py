@@ -5,7 +5,7 @@ Created on 15 mai 2017
 '''
 import traceback
 
-def isTestMode():
+def is_test_mode():
     """
     Returns true if we detect the TestCase class in stack
     """

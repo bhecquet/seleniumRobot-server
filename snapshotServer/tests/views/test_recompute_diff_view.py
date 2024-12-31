@@ -8,7 +8,7 @@ from django.urls.base import reverse
 from snapshotServer.tests.views.test_views import TestViews
 
 
-class Test_RecomputeDiffView(TestViews):
+class TestRecomputeDiffView(TestViews):
 
    
     def test_recompute_diff_snapshot_exist_no_ref(self):

@@ -4,7 +4,7 @@ from rest_framework.authtoken.models import Token
 from django.db.models import Q
 import snapshotServer
 import django.test
-from snapshotServer.controllers.DiffComputer import DiffComputer
+from snapshotServer.controllers.diff_computer import DiffComputer
 import logging
 import re
 

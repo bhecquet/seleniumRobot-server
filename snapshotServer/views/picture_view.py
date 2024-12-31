@@ -7,14 +7,12 @@ import pickle
 
 from django.views.generic.base import TemplateView
 
-from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import Snapshot, TestCaseInSession, TestSession, \
-    TestStep, ExcludeZone
+from snapshotServer.controllers.diff_computer import DiffComputer
+from snapshotServer.models import Snapshot, TestCaseInSession, TestStep, ExcludeZone
 import base64
-import sys
 import io
 from PIL import Image
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 import os
 from django.conf import settings
 
@@ -124,7 +122,7 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                 if diff_pixels_bin and snapshot_width and snapshot_height:
                     try:
                         diff_pixels = pickle.loads(diff_pixels_bin)
-                        diff_picture = base64.b64encode(DiffComputer.get_instance().mark_diff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
+                        diff_picture = base64.b64encode(diff_computer.get_instance().mark_diff(step_snapshot.image.width, step_snapshot.image.height, diff_pixels)).decode('ascii')
                         diff_pixels_percentage = 0.0
                     except Exception:
 #                         diff_picture_bin

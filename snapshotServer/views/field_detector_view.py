@@ -1,27 +1,20 @@
-'''
-Created on 18 avr. 2023
 
-@author: S047432
-'''
-import base64
-import json
 import logging
 import os
 from pathlib import Path
 
 from django.conf import settings
 from django.http.response import HttpResponse
-import dramatiq
+
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-import unidecode
 
 from snapshotServer.controllers.FieldDetector import FieldDetector, \
     FieldDetectorThread
 from snapshotServer.forms import ImageForFieldDetectionForm,\
     DataForFieldDetectionForm
-from snapshotServer.models import Application, Snapshot, StepReference, \
+from snapshotServer.models import Snapshot, StepReference, \
     StepResult
 
 

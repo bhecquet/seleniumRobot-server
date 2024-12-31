@@ -9,7 +9,7 @@ from snapshotServer.tests.views.test_views import TestViews
 import json
 from snapshotServer.models import Snapshot
 import pickle
-from snapshotServer.controllers.PictureComparator import Pixel
+from snapshotServer.controllers.picture_comparator import Pixel
 
 
 class TestStatusView(TestViews):

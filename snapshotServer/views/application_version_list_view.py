@@ -1,7 +1,7 @@
 from django.views.generic.list import ListView
 from snapshotServer.models import Version
 from django.shortcuts import render, redirect
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class ApplicationVersionListView(LoginRequiredMixinConditional, ListView):

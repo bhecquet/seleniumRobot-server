@@ -10,7 +10,7 @@ from unittest.mock import MagicMock, patch
 
 from django.core.files.images import ImageFile
 
-from snapshotServer.controllers.DiffComputer import DiffComputer
+from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot, StepResult, ExcludeZone
 from django.conf import settings
 from snapshotServer.tests import SnapshotTestCase
@@ -81,7 +81,7 @@ class TestDiffComputer(SnapshotTestCase):
             img = ImageFile(imgFile, name="img.png")
             s1 = Snapshot(stepResult=StepResult.objects.get(id=1), image=img, refSnapshot=None, pixelsDiff=None)
             
-            # as we do not save any snapshot, image has to be copied manually where DiffComputer expects it
+            # as we do not save any snapshot, image has to be copied manually where diff_computer expects it
             shutil.copyfile("snapshotServer/tests/data/test_Image1.png", settings.MEDIA_ROOT + os.sep + "img.png")
  
             s2 = Snapshot(stepResult=StepResult.objects.get(id=2), image=img, refSnapshot=None, pixelsDiff=None)
@@ -251,7 +251,7 @@ class TestDiffComputer(SnapshotTestCase):
         diff_computer._compute_diff = MagicMock(side_effect=Exception("error while computing"))
         diff_computer.add_jobs(s1, s2, check_test_mode=False)
         time.sleep(0.7)
-        self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
+        self.assertIsNotNone(diff_computer._instance, "thread should still be running")
          
     def test_error_while_computing_computed_flag_set(self):
         """
@@ -274,7 +274,7 @@ class TestDiffComputer(SnapshotTestCase):
                 diff_computer.mark_diff = MagicMock(side_effect=Exception("error while computing"))
                 diff_computer.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
                 time.sleep(2)
-                self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
+                self.assertIsNotNone(diff_computer._instance, "thread should still be running")
                 
                 # check error has been saved
                 self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)
@@ -302,15 +302,15 @@ class TestDiffComputer(SnapshotTestCase):
                 diff_computer.mark_diff = MagicMock(side_effect=Exception("error while computing"))
                 diff_computer.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
                 time.sleep(1)
-                self.assertIsNotNone(DiffComputer._instance, "thread should still be running")
+                self.assertIsNotNone(diff_computer._instance, "thread should still be running")
                 
                 # check error has been saved
                 self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)
                 self.assertEqual(Snapshot.objects.get(id=step_snapshot.id).computingError, "error while computing")
                 
                 # check error has been removed as computing is ok
-                DiffComputer.stopThread() # reset DiffComputer instance
-                diff_computer_ok = DiffComputer.get_instance()
+                diff_computer.stopThread() # reset diff_computer instance
+                diff_computer_ok = diff_computer.get_instance()
                 diff_computer_ok.add_jobs(ref_snapshot, step_snapshot, check_test_mode=True)
                 time.sleep(1)
                 self.assertTrue(Snapshot.objects.get(id=step_snapshot.id).computed)

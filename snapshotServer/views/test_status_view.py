@@ -10,7 +10,7 @@ from django.http.response import HttpResponse
 from django.views.generic.base import View
 
 from snapshotServer.models import TestCaseInSession, Snapshot
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class TestStatusView(LoginRequiredMixinConditional, View):

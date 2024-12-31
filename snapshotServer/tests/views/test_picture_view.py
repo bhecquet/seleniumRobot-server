@@ -7,8 +7,8 @@ Created on 26 juil. 2017
 from django.core.files.images import ImageFile
 from django.urls.base import reverse
 
-from snapshotServer.controllers.DiffComputer import DiffComputer
-from snapshotServer.models import Snapshot, TestStep, ExcludeZone
+from snapshotServer.controllers.diff_computer import DiffComputer
+from snapshotServer.models import Snapshot, ExcludeZone
 from snapshotServer.tests.views.test_views import TestViews
 from django.test.client import Client
 from django.contrib.auth.models import User

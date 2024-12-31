@@ -2,25 +2,24 @@ from django.conf.urls import include
 from rest_framework import routers
 
 from snapshotServer import viewsets
-from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
-from snapshotServer.views.ExcludeZoneListView import ExclusionZoneListView
-from snapshotServer.views.FileUploadView import FileUploadView
-from snapshotServer.views.PictureView import PictureView
-from snapshotServer.views.RecomputeDiffView import RecomputeDiffView
-from snapshotServer.views.SessionListView import SessionListView
-from snapshotServer.views.StepListView import StepListView
-from snapshotServer.views.TestListView import TestListView
-from snapshotServer.views.TestStatusView import TestStatusView
-from snapshotServer.views.TestResultTableView import TestResultTableView
-from snapshotServer.views.TestResultView import TestResultView
-from snapshotServer.views.FieldDetectorView import FieldDetectorView
+from snapshotServer.views.application_version_list_view import ApplicationVersionListView
+from snapshotServer.views.exclude_zone_list_view import ExclusionZoneListView
+from snapshotServer.views.file_upload_view import FileUploadView
+from snapshotServer.views.picture_view import PictureView
+from snapshotServer.views.recompute_diff_view import RecomputeDiffView
+from snapshotServer.views.session_list_view import SessionListView
+from snapshotServer.views.step_list_view import StepListView
+from snapshotServer.views.test_list_view import TestListView
+from snapshotServer.views.test_status_view import TestStatusView
+from snapshotServer.views.test_result_table_view import TestResultTableView
+from snapshotServer.views.test_result_view import TestResultView
+from snapshotServer.views.field_detector_view import FieldDetectorView
 
-from commonsServer.views.viewsets import ApplicationViewSet
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.urls.conf import re_path, path
-from snapshotServer.views.StepReferenceView import StepReferenceView
-from snapshotServer.views.TestSessionSummaryView import TestSessionSummaryView
+from snapshotServer.views.step_reference_view import StepReferenceView
+from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)

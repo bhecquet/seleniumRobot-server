@@ -8,18 +8,14 @@ from django.urls.base import reverse
 
 from snapshotServer.models import StepResult, Snapshot, TestSession,\
     TestCaseInSession
-from snapshotServer.tests.views.test_views import TestViews
-from snapshotServer.views.TestResultView import TestResultView
 from django.conf import settings
 from snapshotServer.tests import SnapshotTestCase,\
     authenticate_test_client_for_web_view
 import os
 from django.test.client import Client
 import json
-import re
 
-
-class Test_TestResultView(SnapshotTestCase):
+class TestTestResultView(SnapshotTestCase):
 
     fixtures = ['testresult_commons.yaml', 'testresult_ok.yaml', 'testresult_ko.yaml', 'test_result_snapshot_comparison.yaml']
     dataDir = 'snapshotServer/tests/data/'

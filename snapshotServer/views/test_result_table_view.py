@@ -6,11 +6,11 @@ Created on 1 août 2017
 from django.views.generic.base import TemplateView
 from snapshotServer.models import Version, TestSession, TestEnvironment,\
     TestCaseInSession, TestCase
-from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
+from snapshotServer.views.application_version_list_view import ApplicationVersionListView
 from datetime import datetime, timedelta
 from django.shortcuts import render
 import pytz
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 class TestResultTableView(LoginRequiredMixinConditional, TemplateView):
     """

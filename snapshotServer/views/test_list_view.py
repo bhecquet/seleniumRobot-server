@@ -6,7 +6,7 @@ Created on 26 juil. 2017
 from django.views.generic.list import ListView
 
 from snapshotServer.models import TestCaseInSession
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class TestListView(LoginRequiredMixinConditional, ListView):

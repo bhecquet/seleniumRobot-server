@@ -12,10 +12,8 @@ import numpy
 
 import cv2 
 
-from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
-import math
-import time
-from numpy import int32, uint8
+from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
+from numpy import uint8
 
 
 Rectangle = collections.namedtuple("Rectangle", ['x', 'y', 'width', 'height'])

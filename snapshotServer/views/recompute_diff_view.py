@@ -6,9 +6,9 @@ Created on 26 juil. 2017
 from django.http.response import HttpResponse
 from django.views.generic.base import View
 
-from snapshotServer.controllers.DiffComputer import DiffComputer
+from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class RecomputeDiffView(LoginRequiredMixinConditional, View):

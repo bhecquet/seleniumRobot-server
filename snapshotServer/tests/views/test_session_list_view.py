@@ -10,7 +10,7 @@ from snapshotServer.models import TestEnvironment
 from snapshotServer.tests.views.test_views import TestViews
 
 
-class Test_SessionListView(TestViews):
+class TestSessionListView(TestViews):
 
 
     def test_no_filter(self):

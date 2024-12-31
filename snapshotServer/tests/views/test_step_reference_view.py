@@ -22,7 +22,7 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
 from snapshotServer.tests import authenticate_test_client_for_api
 from django.test.utils import override_settings
 from pathlib import Path
-from snapshotServer.views.StepReferenceView import StepReferenceView
+from snapshotServer.views.step_reference_view import StepReferenceView
 
 @override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestStepReferenceView(APITransactionTestCase):

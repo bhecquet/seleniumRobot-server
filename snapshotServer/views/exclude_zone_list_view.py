@@ -7,9 +7,7 @@ from django.views.generic.list import ListView
 from django.db.models import Q
 
 from snapshotServer.models import ExcludeZone
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
-
-
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
     """

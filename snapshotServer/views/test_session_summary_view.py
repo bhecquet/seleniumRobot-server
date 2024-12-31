@@ -3,7 +3,7 @@ Created on 3 déc. 2024
 
 @author: S047432
 '''
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 from django.views.generic.list import ListView
 from snapshotServer.models import TestSession, TestCaseInSession
 import json

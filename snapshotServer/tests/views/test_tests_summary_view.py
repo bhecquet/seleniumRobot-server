@@ -8,7 +8,7 @@ from snapshotServer.models import StepResult, Snapshot, TestSession,\
     TestCaseInSession
 
 
-class Test_TestsSummaryView(SnapshotTestCase):
+class TestTestsSummaryView(SnapshotTestCase):
 
     fixtures = ['tests_summary_commons.yaml', 'tests_summary_ok.yaml', 'tests_summary_ko.yaml', 'tests_summary_skipped.yaml', 'tests_summary_snapshot_comparison.yaml']
     dataDir = 'snapshotServer/tests/data/'

@@ -5,11 +5,11 @@ Created on 8 mars 2017
 '''
 
 from snapshotServer.utils.utils import getTestDirectory
-from snapshotServer.controllers.PictureComparator import PictureComparator,\
-    Pixel, Rectangle
-from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+from snapshotServer.controllers.picture_comparator import Pixel, Rectangle
+from snapshotServer.controllers.picture_comparator import PictureComparator
+from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
 import numpy
-from numpy import int32, uint8
+from numpy import uint8
 from snapshotServer.tests import SnapshotTestCase
 
 

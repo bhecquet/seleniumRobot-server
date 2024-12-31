@@ -10,8 +10,8 @@ from django.views.generic.base import TemplateView
 
 from snapshotServer.models import Version, TestSession, TestEnvironment, \
     TestCaseInSession, TestCase
-from snapshotServer.views.ApplicationVersionListView import ApplicationVersionListView
-from snapshotServer.views.LoginRequiredMixinConditional import LoginRequiredMixinConditional
+from snapshotServer.views.application_version_list_view import ApplicationVersionListView
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class SessionListView(LoginRequiredMixinConditional, TemplateView):

@@ -1,19 +1,12 @@
-'''
-Created on 15 mai 2017
 
-@author: bhecquet
-'''
-import pickle
 import threading
 import time
 
-from snapshotServer.controllers import Tools
+from snapshotServer.controllers import tools
 from django.db.models import Q
-from snapshotServer.controllers.PictureComparator import PictureComparator,\
-    Pixel
-from snapshotServer.exceptions.PictureComparatorError import PictureComparatorError
+from snapshotServer.controllers.picture_comparator import PictureComparator
+from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
 from snapshotServer.models import ExcludeZone
-from PIL import Image, ImageDraw
 import io
 import logging
 import cv2
@@ -53,7 +46,7 @@ class DiffComputer(threading.Thread):
         step_snapshot.computed = False
         step_snapshot.save()
         
-        if Tools.isTestMode() and check_test_mode:
+        if tools.is_test_mode() and check_test_mode:
             self.compute_now(ref_snapshot, step_snapshot)
    
         else:

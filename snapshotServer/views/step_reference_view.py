@@ -1,9 +1,7 @@
-import datetime
 import json
 import mimetypes
-import os
 
-from django.http.response import HttpResponse, StreamingHttpResponse
+from django.http.response import HttpResponse
 from rest_framework import views
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
@@ -11,8 +9,7 @@ from rest_framework.response import Response
 from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.forms import ImageForStepReferenceUploadForm
 from snapshotServer.models import StepResult, StepReference
-from datetime import timedelta, datetime
-import logging
+from datetime import datetime
 import threading
 from django.utils import timezone
 
