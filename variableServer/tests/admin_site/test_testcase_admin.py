@@ -82,7 +82,7 @@ class TestTestCaseAdmin(TestAdmin):
             for test_case in query_set:
                 app_list.append(test_case.application.name)
             
-            self.assertEqual(list(set(app_list)), ['app1', 'app5NoVar']) # no application
+            self.assertEqual(sorted(list(set(app_list))), ['app1', 'app5NoVar']) # no application
 
        
     def test_user_can_see_testcases_without_global_rights_and_application_permissions(self):

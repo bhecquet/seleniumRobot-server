@@ -34,9 +34,10 @@ class VariableSerializer(serializers.ModelSerializer):
         return instance
         
     def to_representation(self, instance):
-        """Convert `username` to lowercase."""
+        """
+        Mask value if user has not permission to see it
+        """
         ret = super().to_representation(instance)
-        
         
         if (self.security_api_enabled and not is_user_authorized(self.context['request'].user)):
             ret['value'] = instance.valueProtected()
