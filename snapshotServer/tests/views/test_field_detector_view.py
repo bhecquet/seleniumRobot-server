@@ -41,7 +41,7 @@ class TestFieldDetectorView(APITransactionTestCase): # use APITransactionTestCas
 
 
     def setUp(self):
-        print(unittest.TestCase.id(self))
+
         authenticate_test_client_for_api(self.client)
         
         self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))

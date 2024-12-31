@@ -5,25 +5,25 @@ Created on 26 juil. 2017
 '''
 
 from django.urls.base import reverse
-from snapshotServer.tests.views.Test_Views import TestViews
+from snapshotServer.tests.views.test_views import TestViews
 import json
 from snapshotServer.models import Snapshot
 import pickle
 from snapshotServer.controllers.PictureComparator import Pixel
 
 
-class Test_StatusView(TestViews):
+class TestStatusView(TestViews):
     
-    def test_sessionStatusOkOnReference(self):
+    def test_session_status_ok_on_reference(self):
         """
         Test the result of a test session status when looking for reference
         """
         response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+        data = json.loads(response.content.decode('UTF-8'))
         self.assertTrue(data['5'])
           
-    def test_sessionStatusOkOnNonReference(self):
+    def test_session_status_ok_on_non_reference(self):
         """
         Test the result of a test session status when snapshot are not reference
         """
@@ -40,10 +40,10 @@ class Test_StatusView(TestViews):
           
         response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+        data = json.loads(response.content.decode('UTF-8'))
         self.assertTrue(data['8'])
           
-    def test_sessionStatusKo(self):
+    def test_session_status_ko(self):
         """
         Test the result of a test session status when snapshot are not reference
         """
@@ -60,16 +60,16 @@ class Test_StatusView(TestViews):
           
         response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+        data = json.loads(response.content.decode('UTF-8'))
         self.assertTrue(data['8'])
         self.assertTrue(data['9'])
         self.assertFalse(data['10'])
          
-    def test_stepStatus(self):
+    def test_step_status(self):
         """
         Test the result of a test session status when looking for reference
         """
         response = self.client.get(reverse('testStepStatusView', kwargs={'testCaseId': 5, 'testStepId': 2}))
         self.assertEqual(response.status_code, 200)
-        data = json.loads(response.content.decode('UTF-8'), encoding='UTF-8')
+        data = json.loads(response.content.decode('UTF-8'))
         self.assertTrue(data['5'])

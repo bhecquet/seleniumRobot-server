@@ -11,7 +11,6 @@ from rest_framework import viewsets, renderers
 from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
     StepReference, File, ExecutionLogs, TestInfo
 from commonsServer.views.viewsets import BaseViewSet
-from commonsServer.views.serializers import ApplicationSerializer
 from rest_framework.decorators import action
 from django.http.response import FileResponse, HttpResponse
 from rest_framework.response import Response

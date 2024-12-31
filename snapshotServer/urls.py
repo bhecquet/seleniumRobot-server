@@ -24,7 +24,6 @@ from snapshotServer.views.TestSessionSummaryView import TestSessionSummaryView
 
 router = routers.DefaultRouter()
 router.register(r'snapshot', viewsets.SnapshotViewSet)
-router.register(r'application', ApplicationViewSet)
 router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
 router.register(r'testinfo', viewsets.TestInfoSessionViewSet)
 router.register(r'teststep', viewsets.TestStepViewSet)

@@ -91,12 +91,12 @@ class ApplicationSpecificViewSet(BaseViewSet):
         if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
-        if obj and obj.application:
+        elif obj and obj.application:
             permission = BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name
             if not self.request.user.has_perm(permission):
                 self.permission_denied(
                     request,
-                    message="You don't have rights for application %s" % obj.application,
+                    message="You don't have rights for application %s" % obj.application.name,
                     code=None
                 )
         else:
@@ -139,6 +139,32 @@ class ApplicationViewSet(RetrieveByNameViewSet):
     def get_object(self):
         return super().get_object(Application)
     
+    def check_object_permissions(self, request, obj):
+        """
+        Check user has permission on object
+        It has permission if:
+        - it has permission on model
+        - it has permission on application, if application restriction is set
+        """
+        
+        model_permissions = []
+        for permission in self.get_permissions():
+            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
+            
+        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
+            
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+            return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
+        
+        permission = BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.name
+        if not self.request.user.has_perm(permission):
+            self.permission_denied(
+                request,
+                message="You don't have rights for application %s" % obj.name,
+                code=None
+            )
+        
+    
 class VersionViewSet(RetrieveByNameViewSet):
     queryset = Version.objects.none()
     serializer_class = VersionSerializer
@@ -152,6 +178,32 @@ class TestEnvironmentViewSet(RetrieveByNameViewSet):
     
     def get_object(self):
         return super().get_object(TestEnvironment)
+    
+    def check_object_permissions(self, request, obj):
+        """
+        Check user has permission on object
+        It has permission if:
+        - it has permission on model
+        - it has permission on application, if application restriction is set
+        """
+        
+        model_permissions = []
+        for permission in self.get_permissions():
+            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
+            
+        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
+            
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+            return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
+        
+        if self.request.method != 'GET':
+            self.permission_denied(
+                request,
+                message="You don't have rights to change environment %s" % obj.name,
+                code=None
+            )
+        
+        # when application restrictions is set, we allow to see all environments as there is no link between application and environment
 
 class TestCaseViewSet(RetrieveByNameViewSet):
     queryset = TestCase.objects.none()

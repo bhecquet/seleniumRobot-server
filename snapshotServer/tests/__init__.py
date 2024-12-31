@@ -18,9 +18,9 @@ def _create_allowed_user_and_group():
     ct = ContentType.objects.get_for_model(snapshotServer.models.ExcludeZone)
     group.permissions.add(*Permission.objects.filter(Q(codename='add_excludezone') | Q(codename='change_excludezone') | Q(codename='delete_excludezone') , content_type=ct))
     ct = ContentType.objects.get_for_model(snapshotServer.models.Snapshot)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot') | Q(codename='change_snapshot') | Q(codename='delete_snapshot') , content_type=ct))
+    group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot') | Q(codename='change_snapshot') | Q(codename='view_snapshot') | Q(codename='delete_snapshot') , content_type=ct))
     ct = ContentType.objects.get_for_model(snapshotServer.models.StepResult)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult') , content_type=ct))
+    group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult') | Q(codename='view_stepresult') , content_type=ct))
     
     ct = ContentType.objects.get_for_model(snapshotServer.models.TestCaseInSession)
     group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') , content_type=ct))

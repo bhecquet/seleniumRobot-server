@@ -17,39 +17,6 @@ class TestViewset(APITestCase):
     def setUp(self):
         authenticate_test_client_for_api(self.client)
     
-         
-    def test_creation_when_not_exist_no_security(self):
-        """
-        Check we cannot access API without API token
-        """
-        with self.settings(REST_FRAMEWORK={'DEFAULT_PERMISSION_CLASSES': ['rest_framework.permissions.AllowAny'
-        ]
-    }):
-            self.client.credentials()
-           
-            response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
-            self.assertEqual(response.status_code, 401)
-    
-    def test_creation_when_not_exist(self):
-        """
-        Test creation of object when it does not exist
-        ex: we try to get an application, if it does not exist, it's created
-        """
-        response = self.client.post('/snapshot/api/application/', data={'name': 'test'})
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in json.loads(response.content))
-        self.assertEqual(json.loads(response.content)['name'], 'test')
-    
-    def test_no_creation_when_exist(self):
-        """
-        Test creation of object when it does exist
-        ex: we try to get an application, if it does not exist, it's created
-        """
-        response = self.client.post('/snapshot/api/application/', data={'name': 'infotel'})
-        self.assertEqual(response.status_code, 201)
-        self.assertTrue('id' in json.loads(response.content))
-        self.assertEqual(json.loads(response.content)['name'], 'infotel')
-        self.assertEqual(json.loads(response.content)['id'], 1)
     
     def test_creation_when_exist_without_test_steps(self):
         """

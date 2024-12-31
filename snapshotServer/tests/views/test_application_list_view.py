@@ -5,7 +5,7 @@ Created on 26 juil. 2017
 '''
 
 from django.urls.base import reverse
-from snapshotServer.tests.views.Test_Views import TestViews
+from snapshotServer.tests.views.test_views import TestViews
 
 
 class Test_ApplicationListView(TestViews):

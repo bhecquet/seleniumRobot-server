@@ -184,6 +184,32 @@ class TestViewsets(TestApi):
         self.client.post(reverse('application'), data={'name': 'newapp'})
         self.assertEqual(1, len(Application.objects.filter(name='newapp')))
         
+    def test_get_application_by_name(self):
+        """
+        Check it's possible to get an application case by name
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_application', content_type=self.content_type_application)))
+        response = self.client.get(reverse('application'), data={'name': 'app1'})
+        self.assertEqual(1, response.data['id'])
+        
+    def test_get_application_by_name_with_application_restriction(self):
+        """
+        Check it's possible to get an application case by name when application restriction is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1', content_type=self.content_type_application)))
+            response = self.client.get(reverse('application'), data={'name': 'app1'})
+            self.assertEqual(1, response.data['id'])
+        
+    def test_get_application_by_name_with_application_restriction2(self):
+        """
+        Check it's NOT possible to get an application case by name when application restriction is set and the application does not correspond to app on which user has permission
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.get(reverse('application'), data={'name': 'app2'})
+            self.assertEqual(403, response.status_code)
+        
     def test_create_application_forbidden(self):
         """
         Check it's NOT possible to add an application without 'add_application' permission
@@ -241,6 +267,24 @@ class TestViewsets(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             response = self.client.post(reverse('environment'), data={'name': 'newenv'})
             self.assertEqual(403, response.status_code)
+            
+    def test_get_environment_by_name(self):
+        """
+        Check it's possible to get an environment case by name
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment', content_type=self.content_type_environment)))
+        response = self.client.get(reverse('environment'), data={'name': 'DEV'})
+        self.assertEqual(1, response.data['id'])
+        
+    def test_get_environment_by_name_with_application_restriction(self):
+        """
+        Check it's possible to get an environment by name when application restriction is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.get(reverse('environment'), data={'name': 'DEV'})
+            self.assertEqual(1, response.data['id'])
+        
         
     def test_create_environment_with_application_restriction2(self):
         """

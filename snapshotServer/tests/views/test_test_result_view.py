@@ -8,7 +8,7 @@ from django.urls.base import reverse
 
 from snapshotServer.models import StepResult, Snapshot, TestSession,\
     TestCaseInSession
-from snapshotServer.tests.views.Test_Views import TestViews
+from snapshotServer.tests.views.test_views import TestViews
 from snapshotServer.views.TestResultView import TestResultView
 from django.conf import settings
 from snapshotServer.tests import SnapshotTestCase,\

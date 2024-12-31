@@ -6,8 +6,8 @@ Created on 28 juin 2019
 from django.urls.base import reverse
 from rest_framework.test import APITestCase
 from elementInfoServer.models import ElementInfo
-from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
+from django.contrib.auth.models import User, Group, Permission
+from django.db.models import Q
 
 class TestApi(APITestCase):
     '''
@@ -16,14 +16,18 @@ class TestApi(APITestCase):
     '''
     fixtures = ['elementInfoServer.yaml']
     
+    
     def setUp(self):
         """
         Set up token connection
         """
-        self.user = User.objects.create_user(username='user', password='pwd')
-        token = Token.objects.get_or_create(user=self.user)[0]
-        self.client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
-
+        self.user = User.objects.create_user(username='userApi', password='pwd')
+        self.client.force_authenticate(user=self.user)
+        
+        users_group, created = Group.objects.get_or_create(name='Users')
+        
+        users_group.permissions.add(*Permission.objects.filter(Q(codename='view_elementinfo')))
+        users_group.user_set.add(self.user)
 
     def test_elementinfo_deletion(self):
         """

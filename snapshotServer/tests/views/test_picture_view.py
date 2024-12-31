@@ -9,7 +9,7 @@ from django.urls.base import reverse
 
 from snapshotServer.controllers.DiffComputer import DiffComputer
 from snapshotServer.models import Snapshot, TestStep, ExcludeZone
-from snapshotServer.tests.views.Test_Views import TestViews
+from snapshotServer.tests.views.test_views import TestViews
 from django.test.client import Client
 from django.contrib.auth.models import User
 
