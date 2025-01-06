@@ -15,6 +15,7 @@ from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.admin_site.environment_admin import EnvironmentFilter
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from variableServer.admin_site.application_admin import ApplicationFilter
+from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker
 
 
 class VariableForm(forms.ModelForm):
@@ -114,19 +115,7 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         Filter the returned variables with the application user is allowed to see
         """
-        qs = super(VariableAdmin, self).get_queryset(request)
-        
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
-            return qs
-         
-        for application in Application.objects.all():
-            if not (request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name) or request.user.has_perm('variableServer.view_variable')):
-                qs = qs.exclude(application__name=application.name)
-                
-        if not request.user.has_perm('variableServer.view_variable'):
-            qs = qs.exclude(application=None)
-    
-        return qs
+        return super().get_queryset(request, 'variableServer.view_variable')
 
     def save_model(self, request, obj, form, change):
         """
@@ -262,22 +251,10 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         Filters the queryset variable depending on permissions
         """
+        queryset, forbidden_applications = ApplicationPermissionChecker.filter_queryset(request, queryset, global_permission_code_name)
         
-        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
-            if not request.user.has_perm(global_permission_code_name):
-                queryset = queryset.exclude(application=None)
-            
-            # prevent unreserving varialbes we do not have right for
-            for application in Application.objects.all():
-                if queryset.filter(application__name=application.name) \
-                    and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name) \
-                    and not request.user.has_perm(global_permission_code_name):
-                    queryset = queryset.exclude(application__name=application.name)
-                    self.message_user(request, "You do not have right to %s variables from application %s" % (message, application.name,), level=messages.ERROR)
-        
-        # change permission must be available for user
-        elif not request.user.has_perm(global_permission_code_name):
-            queryset = Variable.objects.none()
-            
+        for application in forbidden_applications:
+            self.message_user(request, "You do not have right to %s variables from application %s" % (message, application), level=messages.ERROR)
+
         return queryset
     

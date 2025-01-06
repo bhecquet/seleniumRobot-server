@@ -21,16 +21,4 @@ class TestCaseAdmin(BaseServerModelAdmin):
         """
         Filter the returned versions with the application user is allowed to see
         """
-        qs = super(TestCaseAdmin, self).get_queryset(request)
-        
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or request.user.has_perm('variableServer.view_testcase'):
-            return qs
-         
-        for application in Application.objects.all():
-            if not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name):
-                qs = qs.exclude(application__name=application.name)
-                
-        if not request.user.has_perm('variableServer.view_testcase'):
-            qs = qs.exclude(application=None)
-                 
-        return qs  
+        return super().get_queryset(request, 'variableServer.view_testcase')

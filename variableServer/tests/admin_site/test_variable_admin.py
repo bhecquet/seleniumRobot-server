@@ -223,7 +223,7 @@ class TestVariableAdmin(TestAdmin):
      
     def test_variable_copy_to_with_application_restrictions_and_without_global_add_variable(self):
         """
-        Check it's possible to copy multiple variables when application specific permission is set and change_variable permission is given to user
+        Check it's NOT possible to copy multiple variables when application specific permission is set and change_variable permission is given to user
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
@@ -312,7 +312,16 @@ class TestVariableAdmin(TestAdmin):
         self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
         self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
-    def test_variable_cannot_delete_selected_with_restriction(self):
+    def test_variable_delete_selected_no_restriction_no_delete_permission(self):
+        """
+        Check that we can NOT delete selected variable if delete_variable is not given to user
+        """
+        content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
+       
+        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
+        self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
+     
+    def test_variable_delete_selected_with_restriction_and_no_delete_permission(self):
         """
         Check that we cannot delete selected variable when 'delete_variable' is not set
         """
@@ -323,9 +332,9 @@ class TestVariableAdmin(TestAdmin):
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
      
-    def test_variable_can_delete_selected_with_restriction(self):
+    def test_variable_delete_selected_with_restriction_and_delete_permission(self):
         """
-        Check that we can delete selected variable as restriction apply on this application but global variable permission are given
+        Check that we can NOT delete selected variable as restriction apply on this application but global variable permission are given
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
@@ -333,7 +342,7 @@ class TestVariableAdmin(TestAdmin):
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
-    def test_variable_can_be_delete_selected_with_restriction(self):
+    def test_variable_delete_selected_with_application_restrictions_and_app1_permission(self):
         """
         Check that we can delete selected variable as user has right to use this application
         """
@@ -343,7 +352,7 @@ class TestVariableAdmin(TestAdmin):
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
             
-    def test_variable_cannot_be_delete_with_restriction_and_no_linked_application(self):
+    def test_variable_delete_with_restriction_and_no_linked_application(self):
         """
         Check that we cannot delete variable without linked application when application specific permission is the only available
         """
@@ -354,7 +363,7 @@ class TestVariableAdmin(TestAdmin):
             self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
             
      
-    def test_variable_cannot_be_delete_selected_with_restriction(self):
+    def test_variable_delete_selected_with_restriction_and_other_application_permission(self):
         """
         Check that we cannot delete selected variable if variable does not belong to the application user has permissions for
         """
@@ -392,6 +401,14 @@ class TestVariableAdmin(TestAdmin):
         reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), Application.objects.get(pk=1))
         
         self.assertIsNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
+     
+    def test_variable_unreserve_no_change_permission(self):
+        """
+        Check it's possible to unreserve a variable when global variable permission are given to user
+        """
+        reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='view_variable') | Q(codename='add_variable')), Application.objects.get(pk=1))
+        
+        self.assertIsNotNone(Variable.objects.get(pk=reservable_var.id).releaseDate)
      
     def test_variable_unreserve_with_application_restrictions(self):
         """
@@ -491,6 +508,21 @@ class TestVariableAdmin(TestAdmin):
         self.assertTrue('<option value="1" selected>app1</option>' in content) # check 'app1' is already selected as both variables have the same application
         self.assertTrue('Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content) # check no version is selected as variables have the the same
         self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be modified
+
+    def test_variable_change_values_at_once_no_change_permission(self):
+        """
+        Check it's not possible to change multiple variables when global change variable permission are NOT given to user
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+
+        change_url = reverse('admin:variableServer_variable_changelist')
+        data = {'action': 'change_values_at_once',
+                'index': '0',
+                ACTION_CHECKBOX_NAME: [3, 4]}
+        response = client.post(change_url, data)
+        content = self._format_content(response.content)
+    
+        self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
      
     def test_variable_change_values_at_once_multiple_application(self):
         """
@@ -628,6 +660,103 @@ class TestVariableAdmin(TestAdmin):
             self.assertTrue(variable_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
             self.assertFalse(variable_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=301)))
             self.assertTrue(variable_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+           
+    def test_user_can_see_variables_with_application_restrictions_and_view_permission(self):
+        """
+        Check  user can view / change / delete / add with global view permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_add_variables_with_application_restrictions_and_add_permission(self):
+        """
+        Check  user can view / change / delete / add with global add permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_change_variables_with_application_restrictions_and_change_permission(self):
+        """
+        Check  user can view / change / delete / add with global change permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_variable')))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_delete_variables_with_application_restrictions_and_delete_permission(self):
+        """
+        Check  user can view / change / delete / add with global change permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=Variable.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
        
     def test_user_cannot_see_testcases_without_global_rights_without_application_permissions(self):
         """

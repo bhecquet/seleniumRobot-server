@@ -7,10 +7,9 @@ from django.http.response import HttpResponseRedirect
 from django.contrib import admin, messages
 from variableServer.models import Version, TestEnvironment, Application,\
     TestCase
-from variableServer.exceptions.VariableSetException import VariableSetException
 from variableServer.admin_site.variable_admin import VariableAdmin
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from django.conf import settings
+from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_PERMISSION_PREFIX
 
 def copy_variables(request):
     """
@@ -133,7 +132,7 @@ def _has_application_permission(request, application, variable_ids, has_global_p
     
     if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
         # check user has permission to destination application
-        if application and not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name):
+        if application and not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application.name):
             return False, application
         
         # user cannot change to 'no application'
@@ -142,7 +141,7 @@ def _has_application_permission(request, application, variable_ids, has_global_p
             
         # check user has permission to source application
         for app in [var.application for var in Variable.objects.filter(id__in=variable_ids)]:
-            if app is None or not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + app.name):
+            if app is None or not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + app.name):
                 return False, app
             
     else:

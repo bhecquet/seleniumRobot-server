@@ -23,7 +23,8 @@ from rest_framework.response import Response
 from django.db import transaction
 from commonsServer.views.viewsets import ApplicationSpecificFilter, BaseViewSet,\
     ApplicationSpecificViewSet
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
+    ApplicationPermissionChecker
 from django.conf import settings
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 
@@ -216,10 +217,10 @@ class VariableFilter(ApplicationSpecificFilter):
         else: 
             return queryset
 
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or request.user.has_perm(permission):
+        if ApplicationPermissionChecker.bypass_application_permissions(request, permission):
             return VariableQuerySet(variable_list)
         
-        allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
+        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
         
         filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_aplications]
         return VariableQuerySet(filtered_variables)

@@ -55,7 +55,7 @@ class TestViewsets(TestApi):
     def test_create_testcase_with_application_restriction_and_add_permission(self):
         """
         User
-        - has view_testcase permission
+        - has add_testcase permission
         - has NOT app1 permission
         
         User can add test case
@@ -68,7 +68,7 @@ class TestViewsets(TestApi):
     def test_create_testcase_with_application_restriction_and_app1_permission(self):
         """
         User
-        - has NOT view_testcase permission
+        - has NOT add_testcase permission
         - has app1 permission
         
         User can add test case on app1
@@ -81,13 +81,26 @@ class TestViewsets(TestApi):
     def test_create_testcase_with_application_restriction_and_app1_permission2(self):
         """
         User
-        - has NOT view_testcase permission
+        - has NOT add_testcase permission
         - has app1 permission
         
         User can NOT add test case on an other application than app1
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.post(reverse('testcase'), data={'name': 'myTestCase', 'application': 2})
+            self.assertEqual(403, response.status_code)
+        
+    def test_create_testcase_with_application_restriction_and_change_permission(self):
+        """
+        User
+        - has change_testcase permission
+        - has NOT app1 permission
+        
+        User can NOT add test case
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testcase')))
             response = self.client.post(reverse('testcase'), data={'name': 'myTestCase', 'application': 2})
             self.assertEqual(403, response.status_code)
         

@@ -5,9 +5,8 @@ Created on 12 déc. 2024
 from django import forms
 from django.contrib import admin
 from variableServer.models import Variable, Application, TestCase
-import logging
-from django.conf import settings
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker,\
+    APP_SPECIFIC_PERMISSION_PREFIX
 
 class ApplicationFilter(admin.SimpleListFilter):
     """
@@ -19,11 +18,13 @@ class ApplicationFilter(admin.SimpleListFilter):
     def lookups(self, request, model_admin):
         queryset = Application.objects.all()
         
+        if ApplicationPermissionChecker.bypass_application_permissions(request, 'variableServer.view_application'):
+            return [(app.id, str(app)) for app in queryset]
+        
         # remove applications that user has not permissions on
-        if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN and not request.user.has_perm('variableServer.view_application'):
-            for application in Application.objects.all():
-                if not request.user.has_perm(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + application.name):
-                    queryset = queryset.exclude(name=application.name)
+        for application in Application.objects.all():
+            if not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application.name):
+                queryset = queryset.exclude(name=application.name)
 
         return [(app.id, str(app)) for app in queryset]
 

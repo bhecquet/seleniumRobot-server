@@ -109,6 +109,102 @@ class TestTestCaseAdmin(TestAdmin):
             self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
             self.assertTrue(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
        
+    def test_user_can_see_testcases_with_application_restrictions_and_view_permission(self):
+        """
+        Check  user can view / change / delete / add with global view permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testcase')))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_add_testcases_with_application_restrictions_and_add_permission(self):
+        """
+        Check  user can view / change / delete / add with global add permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testcase')))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_change_testcases_with_application_restrictions_and_change_permission(self):
+        """
+        Check  user can view / change / delete / add with global change permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testcase')))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
+    def test_user_can_delete_testcases_with_application_restrictions_and_delete_permission(self):
+        """
+        Check  user can view / change / delete / add with global change permission
+        when application restriction are applied
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+            
+            testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_testcase')))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertFalse(testcase_admin.has_change_permission(request=MockRequestWithApplication(user=user)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=1)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequest(user=user), obj=TestCase.objects.get(pk=3)))
+            self.assertTrue(testcase_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
+       
     def test_user_cannot_see_testcases_without_global_rights_without_application_permissions(self):
         """
         Check  user cannot view / change / delete / add with only application specific rights: can_view_application_app1

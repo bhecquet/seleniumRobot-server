@@ -12,6 +12,7 @@ from dramatiq.broker import get_broker
 from dramatiq.worker import Worker
 from pathlib import Path
 from django.test.utils import override_settings
+import time
 
 
 @override_settings(FIELD_DETECTOR_ENABLED='True')
@@ -78,6 +79,7 @@ class TestFieldDetector(TestCase):
             FieldDetector.DELETE_AFTER = 0    
             with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
                 FieldDetector().detect(fp.read(), 'replyDetection2.json.png', 'field_processor', 1.0)
+                time.sleep(1)
                 
                 # check previous files are removed
                 self.assertFalse(Path(self.detect_dir, 'replyDetection.json.png').exists())

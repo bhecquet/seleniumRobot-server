@@ -12,8 +12,8 @@ from commonsServer.views.serializers import ApplicationSerializer,\
     VersionSerializer, TestEnvironmentSerializer, TestCaseSerializer
 from rest_framework.exceptions import ValidationError
 from django.conf import settings
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
+    ApplicationPermissionChecker, APP_SPECIFIC_PERMISSION_PREFIX
 from rest_framework.generics import get_object_or_404, CreateAPIView,\
     RetrieveAPIView
 
@@ -45,19 +45,21 @@ class ApplicationSpecificViewSet(BaseViewSet):
     Applies filtering on GET request when a single object is requested
     """
     
+    def bypass_application_permissions(self):
+        has_model_permission = ApplicationPermissionChecker.has_model_permission(self.request, self.queryset.model, self.get_permissions())
+        return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission
+    
     def perform_create(self, serializer):
         """
         Prevent creating / updating objects on restricted applications
         """
         model_name = self.queryset.model._meta.model_name
-        
-        if (not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN 
-            or self.request.user.has_perm('variableServer.add_%s' % model_name)
-            or self.request.user.has_perm('variableServer.change_%s' % model_name)):
+
+        if self.bypass_application_permissions():
             super().perform_create(serializer)
             return
         
-        allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in self.request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
+        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(self.request)
         
         if 'application' not in serializer.validated_data:
             self.permission_denied(
@@ -81,18 +83,12 @@ class ApplicationSpecificViewSet(BaseViewSet):
         - it has permission on model
         - it has permission on application, if application restriction is set
         """
-        
-        model_permissions = []
-        for permission in self.get_permissions():
-            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
-            
-        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
-            
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+
+        if self.bypass_application_permissions():
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
         elif obj and obj.application:
-            permission = BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name
+            permission = APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name
             if not self.request.user.has_perm(permission):
                 self.permission_denied(
                     request,
@@ -111,10 +107,10 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
     
     def filter_queryset(self, request, queryset, view):
         
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or request.user.has_perm('variableServer.view_%s' % queryset.model._meta.model_name):
+        if ApplicationPermissionChecker.bypass_application_permissions(request, 'variableServer.view_%s' % queryset.model._meta.model_name):
             return queryset
         
-        allowed_aplications = [p.replace(BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX, '') for p in request.user.get_all_permissions() if BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX in p]
+        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
         
         return queryset.filter(application__name__in=allowed_aplications)
     
@@ -146,17 +142,11 @@ class ApplicationViewSet(RetrieveByNameViewSet):
         - it has permission on model
         - it has permission on application, if application restriction is set
         """
-        
-        model_permissions = []
-        for permission in self.get_permissions():
-            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
-            
-        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
-            
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+
+        if self.bypass_application_permissions():
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
-        permission = BaseServerModelAdmin.APP_SPECIFIC_PERMISSION_PREFIX + obj.name
+        permission = APP_SPECIFIC_PERMISSION_PREFIX + obj.name
         if not self.request.user.has_perm(permission):
             self.permission_denied(
                 request,
@@ -186,14 +176,8 @@ class TestEnvironmentViewSet(RetrieveByNameViewSet):
         - it has permission on model
         - it has permission on application, if application restriction is set
         """
-        
-        model_permissions = []
-        for permission in self.get_permissions():
-            model_permissions += permission.get_required_permissions(request.method, obj.__class__)
-            
-        has_model_permission = any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
-            
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission:
+
+        if self.bypass_application_permissions():
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
         if self.request.method != 'GET':
