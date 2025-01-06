@@ -9,7 +9,7 @@ from rest_framework import serializers
 from django.conf import settings
 
 from variableServer.models import Variable, TestCase
-from variableServer.admin import is_user_authorized
+from variableServer.admin_site.base_model_admin import is_user_authorized
         
 class VariableSerializer(serializers.ModelSerializer):
     
@@ -34,9 +34,10 @@ class VariableSerializer(serializers.ModelSerializer):
         return instance
         
     def to_representation(self, instance):
-        """Convert `username` to lowercase."""
+        """
+        Mask value if user has not permission to see it
+        """
         ret = super().to_representation(instance)
-        
         
         if (self.security_api_enabled and not is_user_authorized(self.context['request'].user)):
             ret['value'] = instance.valueProtected()

@@ -3,7 +3,7 @@
 
 {% block content %}
 
-<form action="{% url 'changeVariables' %}" method="post">{% csrf_token %}
+<form action="{% url 'change_variables' %}" method="post">{% csrf_token %}
 	{{ form.as_p }}
 	<input type="hidden" name="ids" value={{ ids }} /> 
 	<input type="hidden" name="nexturl" value="{% url 'admin:variableServer_variable_changelist' %}?{{ queryString }}" /> 

@@ -1,12 +1,5 @@
 from __future__ import unicode_literals, absolute_import, division
-'''
-Created on 8 dec. 2017
 
-@author: S047432
-'''
-from commonsServer.models import Application
-import variableServer
-import snapshotServer
 
 """Add permissions for proxy model.
 This is needed because of the bug https://code.djangoproject.com/ticket/11154
@@ -21,7 +14,10 @@ itself, in order to have the proper entries displayed in the admin.
 
 
 import sys
+import variableServer
+import snapshotServer
 
+from variableServer.models import Application
 from django.contrib.auth.management import _get_all_permissions
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
@@ -49,7 +45,7 @@ class Command(BaseCommand):
 
         # add application specific rights
         for app in Application.objects.all():
-            content_type = ContentType.objects.get_for_model(Application)
+            content_type = ContentType.objects.get_for_model(Application, False)
             Permission.objects.get_or_create(
                 codename=Application.appPermissionCode + app.name,
                 name='Can view application and related variables and versions for ' + app.name,
@@ -61,13 +57,13 @@ class Command(BaseCommand):
         
         # Add permissions to 'Variable Users' group
         ct = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') , content_type=ct))
+        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') | Q(codename='view_application') , content_type=ct))
         ct = ContentType.objects.get_for_model(variableServer.models.TestCase, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcase') | Q(codename='change_testcase') , content_type=ct))
+        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcase') | Q(codename='change_testcase') | Q(codename='view_testcase') , content_type=ct))
         ct = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testenvironment') | Q(codename='change_testenvironment') , content_type=ct))
+        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testenvironment') | Q(codename='change_testenvironment') | Q(codename='view_testenvironment') , content_type=ct))
         ct = ContentType.objects.get_for_model(variableServer.models.Version, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_version') | Q(codename='change_version') , content_type=ct))
+        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_version') | Q(codename='change_version') | Q(codename='view_version'), content_type=ct))
         ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
         variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') , content_type=ct))
         
@@ -79,15 +75,21 @@ class Command(BaseCommand):
         ct = ContentType.objects.get_for_model(snapshotServer.models.ExcludeZone)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_excludezone') | Q(codename='change_excludezone') | Q(codename='delete_excludezone') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.Snapshot) # for upload
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot') | Q(codename='change_snapshot') , content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestCaseInSession)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') , content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.StepResult)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult') , content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestSession)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testsession') | Q(codename='change_testsession') , content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testsession'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestStep)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_teststep') | Q(codename='change_teststep') , content_type=ct))
+        ct = ContentType.objects.get_for_model(snapshotServer.models.StepReference)
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepreference') , content_type=ct))
+        ct = ContentType.objects.get_for_model(snapshotServer.models.File)
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_file') , content_type=ct))
+        ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') , content_type=ct))
 
         print("Groups and permissions added")
         

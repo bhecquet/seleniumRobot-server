@@ -2,15 +2,12 @@
 from django.db import models
 from django.db.models import Q
 
-from snapshotServer.controllers.PictureComparator import Rectangle
+from snapshotServer.controllers.picture_comparator import Rectangle
 import pickle
 import commonsServer.models
 from django.dispatch.dispatcher import receiver
-from django.db.models.signals import post_delete, pre_delete
-from django.utils import timezone
+from django.db.models.signals import  pre_delete
 import datetime
-from django.db.models.aggregates import Count
-import logging
 from commonsServer.models import TruncatingCharField
 from django.utils.safestring import mark_safe
 
@@ -360,7 +357,7 @@ def submission_delete(sender, instance, **kwargs):
     Also rebuild reference tree for snapshots that could have referenced this one
     """
 
-    from snapshotServer.controllers.DiffComputer import DiffComputer
+    from snapshotServer.controllers.diff_computer import DiffComputer
     
     # deletion of image file
     instance.image.delete(False) 

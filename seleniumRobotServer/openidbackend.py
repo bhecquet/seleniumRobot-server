@@ -5,7 +5,7 @@ Created on 3 juin 2020
 '''
 from mozilla_django_oidc.auth import OIDCAuthenticationBackend
 from seleniumRobotServer.CommonBackend import CommonBackend
-
+from django.contrib.auth.backends import ModelBackend
 
 class NameOIDCAB(OIDCAuthenticationBackend, CommonBackend):
     """
@@ -40,9 +40,6 @@ class NameOIDCAB(OIDCAuthenticationBackend, CommonBackend):
         
         user = self.UserModel.objects.create_user(username, is_staff=is_staff, is_superuser=is_superuser)
         
-        if user is not None:
-            self._add_user_to_groups(user)
-        
         return user
 
     def update_user(self, user, claims):
@@ -59,4 +56,18 @@ class NameOIDCAB(OIDCAuthenticationBackend, CommonBackend):
         user.save()
         
         return user
+    
+    def has_perm(self, user, perm, obj=None):
+        
+        # use django permission model instead of LDAP group permissions as we want permissions per application
+        return ModelBackend.has_perm(self, user, perm, obj=obj)
+    
+    def get_all_permissions(self, user, obj=None):
+        return ModelBackend.get_all_permissions(self, user, obj=obj)
+    
+    def get_group_permissions(self, user, obj=None):
+        return ModelBackend.get_group_permissions(self, user, obj=obj)
+    
+    def get_user_permissions(self, user_obj, obj=None):
+        return ModelBackend.get_user_permissions(self, user_obj, obj=obj)
     

@@ -304,6 +304,10 @@ Allow a user to add / modify variable assets, and also delete variables
 #### Snapshot Users ####
 Allow a user to view / add / edit snapshot comparisons
 
+### Restrict access to a specific application ###
+
+Setting `RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN` to `'True'` allow to restrict variable / result access to a specific application
+
 ## User interface ##
 
 ### Variable Server ###

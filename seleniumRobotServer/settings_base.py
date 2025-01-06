@@ -193,7 +193,7 @@ LOGGING = {
         },
     },
     'loggers': {
-        'variableServer.views.apiView': {
+        'variableServer.views.api_view': {
             'handlers': ['console', 'variableReservation_logfile'],
             'level': 'INFO',
          },
