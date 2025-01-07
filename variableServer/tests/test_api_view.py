@@ -83,6 +83,15 @@ class TestApiView(TestApi):
         self.client.credentials()
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
         self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
+               
+    def test_get_all_variables_no_permissions_and_api_security_disabled(self):
+        """
+        Check that without API security, no permission is required to get variables
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
      
     def test_get_all_variables_no_permissions(self):
         """
@@ -658,6 +667,23 @@ class TestApiView(TestApi):
         releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
         delta = (releaseDate - datetime.datetime.utcnow()).seconds
         self.assertTrue(895 < delta < 905)
+                 
+    def test_reserve_variable_no_api_security(self):
+        """
+        Check it's possible to reserve variable without API security and no permissions
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('variableApi'), data={'version': 4, 'environment': 3, 'test': 1})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+               
+            self.assertEqual(1, len([v for v in response.data if v['name'] == 'login']), "Only one value should be get")
+            all_variables = self._convert_to_dict(response.data)
+            self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
+            
+            releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
+            delta = (releaseDate - datetime.datetime.utcnow()).seconds
+            self.assertTrue(895 < delta < 905)
    
     def test_reserve_variable_with_increased_duration(self):
         """
@@ -722,6 +748,19 @@ class TestApiView(TestApi):
         self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
 
         self.assertEqual('value1', Variable.objects.get(name='var0').value)
+
+    def test_create_variable_no_api_security(self):
+        """
+        Check it's possible to create a variable when API security is disabled and no permissions are set
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            version = Version.objects.get(pk=3)
+                 
+            response = self.client.post(reverse('variableApi'), data={'name': 'var0', 'value': 'value1', 'application': version.application.id, 'reservable': False})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+    
+            self.assertEqual('value1', Variable.objects.get(name='var0').value)
 
     def test_create_variable_no_permission(self):
         """
@@ -828,6 +867,23 @@ class TestApiView(TestApi):
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
         
         self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
+        
+    def test_update_variable_no_api_security(self):
+        """
+        Check it's possible to update a variable when API security is disabled and no permissions are set
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
+            var0.save()
+            var0.test.add(test)
+    
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.patch(reverse('variableApiPut', args=[var0.id]), {'reservable': False, 'test': [1]})
+            self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+            
+            self.assertFalse(Variable.objects.get(pk=var0.id).reservable)
         
     def test_update_variable_no_permission(self):
         """
@@ -1159,6 +1215,22 @@ class TestApiView(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
         response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
         self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
+        
+    def test_delete_internal_variable_no_api_security(self):
+        """
+        Test custom variable deletion when API security is disabled
+        It should be allowed
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            test = TestCase.objects.get(pk=1)
+            version = Version.objects.get(pk=3)
+            var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
+            var0.save()
+            var0.test.add(test)
+            
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
+            self.assertEqual(response.status_code, 204, 'status code should be 204: ' + str(response.content))
         
     def test_delete_internal_variable_no_permission(self):
         """

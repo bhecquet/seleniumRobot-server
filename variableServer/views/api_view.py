@@ -217,7 +217,7 @@ class VariableFilter(ApplicationSpecificFilter):
         else: 
             return queryset
 
-        if ApplicationPermissionChecker.bypass_application_permissions(request, permission):
+        if view.bypass_application_permissions():
             return VariableQuerySet(variable_list)
         
         allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)

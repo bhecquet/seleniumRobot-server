@@ -31,6 +31,15 @@ class TestViewsets(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testcase', content_type=self.content_type_testcase)))
         self.client.post(reverse('testcase'), data={'name': 'myTestCase', 'application': 1})
         self.assertEqual(1, len(TestCase.objects.filter(name='myTestCase')))
+    
+    def test_create_testcase_no_api_security(self):
+        """
+        Check it's possible to add a testcase when API security is disabled and user has no permissions
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            self.client.post(reverse('testcase'), data={'name': 'myTestCase', 'application': 1})
+            self.assertEqual(1, len(TestCase.objects.filter(name='myTestCase')))
         
     def test_create_testcase_forbidden(self):
         """
@@ -128,6 +137,15 @@ class TestViewsets(TestApi):
         response = self.client.get(reverse('testcase'), data={'name': 'test1 with some spaces'})
         self.assertEqual(1, response.data['id'])
         
+    def test_get_testcase_by_name_no_api_security(self):
+        """
+        Check it's possible to get a test case by name when API security is disabled
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('testcase'), data={'name': 'test1 with some spaces'})
+            self.assertEqual(1, response.data['id'])
+        
     def test_get_testcase_by_name_with_application_restriction_and_view_permission(self):
         """
         User
@@ -189,14 +207,6 @@ class TestViewsets(TestApi):
         application_viewset = ApplicationViewSet()
         self.assertTrue(isinstance(application_viewset, RetrieveByNameViewSet))
         
-    def test_create_application(self):
-        """
-        Check it's possible to add an application with 'add_application' permission
-        """
-        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application', content_type=self.content_type_application)))
-        self.client.post(reverse('application'), data={'name': 'newapp'})
-        self.assertEqual(1, len(Application.objects.filter(name='newapp')))
-        
     def test_get_application_by_name(self):
         """
         Check it's possible to get an application case by name
@@ -204,6 +214,15 @@ class TestViewsets(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_application', content_type=self.content_type_application)))
         response = self.client.get(reverse('application'), data={'name': 'app1'})
         self.assertEqual(1, response.data['id'])
+        
+    def test_get_application_by_name_no_api_security(self):
+        """
+        Check it's possible to get an application case by name when API security is disabled and no permission given to user
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('application'), data={'name': 'app1'})
+            self.assertEqual(1, response.data['id'])
         
     def test_get_application_by_name_with_application_restriction(self):
         """
@@ -222,6 +241,23 @@ class TestViewsets(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             response = self.client.get(reverse('application'), data={'name': 'app2'})
             self.assertEqual(403, response.status_code)
+        
+    def test_create_application(self):
+        """
+        Check it's possible to add an application with 'add_application' permission
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application', content_type=self.content_type_application)))
+        self.client.post(reverse('application'), data={'name': 'newapp'})
+        self.assertEqual(1, len(Application.objects.filter(name='newapp')))
+        
+    def test_create_application_no_api_security(self):
+        """
+        Check it's possible to add an application when API security is disabled and no permission given to user
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            self.client.post(reverse('application'), data={'name': 'newapp'})
+            self.assertEqual(1, len(Application.objects.filter(name='newapp')))
         
     def test_create_application_forbidden(self):
         """
@@ -264,6 +300,15 @@ class TestViewsets(TestApi):
         self.client.post(reverse('environment'), data={'name': 'newenv'})
         self.assertEqual(1, len(TestEnvironment.objects.filter(name='newenv')))
         
+    def test_create_environment_no_api_security(self):
+        """
+        Check it's possible to add an environment when application restriction is set and the application does not correspond to app on which user has permission
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            self.client.post(reverse('environment'), data={'name': 'newenv'})
+            self.assertEqual(1, len(TestEnvironment.objects.filter(name='newenv')))
+        
     def test_create_environment_forbidden(self):
         """
         Check it's NOT possible to add an environment without 'add_environment' permission
@@ -280,24 +325,6 @@ class TestViewsets(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             response = self.client.post(reverse('environment'), data={'name': 'newenv'})
             self.assertEqual(403, response.status_code)
-            
-    def test_get_environment_by_name(self):
-        """
-        Check it's possible to get an environment case by name
-        """
-        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment', content_type=self.content_type_environment)))
-        response = self.client.get(reverse('environment'), data={'name': 'DEV'})
-        self.assertEqual(1, response.data['id'])
-        
-    def test_get_environment_by_name_with_application_restriction(self):
-        """
-        Check it's possible to get an environment by name when application restriction is set
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            response = self.client.get(reverse('environment'), data={'name': 'DEV'})
-            self.assertEqual(1, response.data['id'])
-        
         
     def test_create_environment_with_application_restriction2(self):
         """
@@ -307,6 +334,32 @@ class TestViewsets(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testenvironment')))
             response = self.client.post(reverse('environment'), data={'name': 'newenv'})
             self.assertEqual(201, response.status_code)
+            
+    def test_get_environment_by_name(self):
+        """
+        Check it's possible to get an environment case by name
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment', content_type=self.content_type_environment)))
+        response = self.client.get(reverse('environment'), data={'name': 'DEV'})
+        self.assertEqual(1, response.data['id'])
+            
+    def test_get_environment_by_name_no_api_security(self):
+        """
+        Check it's possible to get an environment case by name when application restriction is set and the application does not correspond to app on which user has permission
+        """
+        with self.settings(SECURITY_API_ENABLED=''):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+            response = self.client.get(reverse('environment'), data={'name': 'DEV'})
+            self.assertEqual(1, response.data['id'])
+        
+    def test_get_environment_by_name_with_application_restriction(self):
+        """
+        Check it's possible to get an environment by name when application restriction is set
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            response = self.client.get(reverse('environment'), data={'name': 'DEV'})
+            self.assertEqual(1, response.data['id'])
         
     def test_version_viewset(self):
         """
