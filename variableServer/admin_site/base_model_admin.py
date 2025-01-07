@@ -23,6 +23,19 @@ def is_user_authorized(user):
         return True
     else:
         return False
+    
+def bypass_application_permissions(request, global_permission_code_name):
+    """
+    check if we need to apply or bypass application specific permissions
+    
+    we bypass in case
+    - application permissions are disabled
+    - application permissions are enabled and user has global permission
+    
+    Returns false if application permissions should be checked
+    """
+
+    return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or request.user.has_perm(global_permission_code_name)
 
 class BaseServerModelAdmin(admin.ModelAdmin):
     """
@@ -60,9 +73,40 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         Returns the queryset, filtered with only values that the user has rights to see
         """
         queryset = super().get_queryset(request)
-        queryset, forbidden_applications = ApplicationPermissionChecker.filter_queryset(request, queryset, requested_permission)
+        queryset, forbidden_applications = self._filter_queryset(request, queryset, requested_permission)
                  
-        return queryset  
+        return queryset 
+    
+    def _filter_queryset(self, request, queryset, global_permission_code_name):
+        """
+        filter the input queryset based on application specific permissions
+        if application restrictions are disabled, queryset is filtered based on global permissions
+        
+        @param request: the request sent by user
+        @param queryset: initial queryset
+        @param global_permission_code_name: name of the permission to check on the user. If user has this permission, the queryset won't be filtered
+        """
+        
+        forbidden_applications = []
+        
+        if bypass_application_permissions(request, global_permission_code_name):
+            
+            # in case we are here and we have not global permissions, do not return any data
+            if request.user.has_perm(global_permission_code_name):
+                return queryset, forbidden_applications
+            else:                        
+                return queryset.none(), forbidden_applications
+        
+        for application in Application.objects.all():
+            if not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application.name):
+                queryset = queryset.exclude(application__name=application.name)
+                forbidden_applications.append(application.name)
+                
+        queryset = queryset.exclude(application=None)
+            
+        return queryset, forbidden_applications 
+    
+   
     
     def has_add_permission(self, request):
         """

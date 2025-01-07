@@ -3,10 +3,9 @@ Created on 12 déc. 2024
 
 '''
 from django import forms
-from variableServer.models import Variable, TestCase, Version, Application
+from variableServer.models import Variable, TestCase, Version
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin,\
     is_user_authorized
-from django.conf import settings
 from django.contrib import admin, messages
 from django.shortcuts import render
 from django.template.context_processors import csrf
@@ -15,7 +14,6 @@ from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.admin_site.environment_admin import EnvironmentFilter
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from variableServer.admin_site.application_admin import ApplicationFilter
-from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker
 
 
 class VariableForm(forms.ModelForm):
@@ -251,7 +249,7 @@ class VariableAdmin(BaseServerModelAdmin):
         """
         Filters the queryset variable depending on permissions
         """
-        queryset, forbidden_applications = ApplicationPermissionChecker.filter_queryset(request, queryset, global_permission_code_name)
+        queryset, forbidden_applications = self._filter_queryset(request, queryset, global_permission_code_name)
         
         for application in forbidden_applications:
             self.message_user(request, "You do not have right to %s variables from application %s" % (message, application), level=messages.ERROR)

@@ -39,6 +39,19 @@ class BaseViewSet(viewsets.ModelViewSet):
         else:
             serializer.data.serializer._data.update({'id': objects[0].id})
             
+    def has_model_permission(self):
+        """
+        Returns True if user has the required permission on the model
+        """
+        if not settings.SECURITY_API_ENABLED:
+            return True
+
+        model_permissions = []
+        for permission in self.get_permissions():
+            model_permissions += permission.get_required_permissions(self.request.method, self.queryset.model)
+            
+        return any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
+            
 class ApplicationSpecificViewSet(BaseViewSet):
     """
     View that applies restrictions on values returned by viewset, base on the application linked to the object
@@ -46,8 +59,19 @@ class ApplicationSpecificViewSet(BaseViewSet):
     """
     
     def bypass_application_permissions(self):
-        has_model_permission = ApplicationPermissionChecker.has_model_permission(self.request, self.queryset.model, self.get_permissions())
-        return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission
+        """
+        check if we need to apply or bypass application specific permissions
+        
+        we bypass in case
+        - application permissions are disabled
+        - application permissions are enabled and user has global permission
+        - api security is disabled
+        
+        Returns false if application permissions should be checked
+        """
+        
+        has_model_permission = self.has_model_permission()
+        return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission or not settings.SECURITY_API_ENABLED
     
     def perform_create(self, serializer):
         """
@@ -107,7 +131,7 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
     
     def filter_queryset(self, request, queryset, view):
         
-        if ApplicationPermissionChecker.bypass_application_permissions(request, 'variableServer.view_%s' % queryset.model._meta.model_name):
+        if view.bypass_application_permissions():
             return queryset
         
         allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
