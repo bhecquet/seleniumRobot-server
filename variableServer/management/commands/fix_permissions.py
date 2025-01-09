@@ -65,7 +65,7 @@ class Command(BaseCommand):
         ct = ContentType.objects.get_for_model(variableServer.models.Version, for_concrete_model=False)
         variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_version') | Q(codename='change_version') | Q(codename='view_version'), content_type=ct))
         ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') , content_type=ct))
+        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') | Q(codename='view_variable') , content_type=ct))
         
             
         # add 'Variable Users' group
