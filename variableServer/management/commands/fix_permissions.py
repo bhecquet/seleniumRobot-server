@@ -77,7 +77,7 @@ class Command(BaseCommand):
         ct = ContentType.objects.get_for_model(snapshotServer.models.Snapshot) # for upload
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestCaseInSession)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession'), content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') | Q(codename='view_testcaseinsession'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.StepResult)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult'), content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestSession)
@@ -90,6 +90,8 @@ class Command(BaseCommand):
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_file') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') , content_type=ct))
+        ct = ContentType.objects.get_for_model(snapshotServer.models.TestStep)
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testinfo') | Q(codename='change_testinfo') , content_type=ct))
 
         print("Groups and permissions added")
         
