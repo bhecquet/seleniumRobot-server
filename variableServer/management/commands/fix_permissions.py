@@ -90,7 +90,7 @@ class Command(BaseCommand):
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_file') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.TestStep)
+        ct = ContentType.objects.get_for_model(snapshotServer.models.TestInfo)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testinfo') | Q(codename='change_testinfo') , content_type=ct))
 
         print("Groups and permissions added")
