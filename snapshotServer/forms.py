@@ -98,6 +98,7 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
         if self.cleaned_data['diffTolerance'] == None:
             self.cleaned_data['diffTolerance'] = 0.0
         
+        # TODO: handle other cases
         if self.cleaned_data['compare'] not in ['true', 'false']:
             self.cleaned_data['compare'] = 'true'
 

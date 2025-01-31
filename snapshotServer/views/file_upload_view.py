@@ -61,7 +61,7 @@ class FileUploadView(views.APIView):
                                                       stepResult__testCase__testCase__name=step_result.testCase.testCase.name,              # same test case
                                                       stepResult__testCase__session__version=step_result.testCase.session.version,          # same version
                                                       stepResult__testCase__session__environment=step_result.testCase.session.environment,  # same environment
-                                                      stepResult__testCase__session__browser=step_result.testCase.session.browser,          # same browser
+                                                      stepResult__testCase__session__browser__contains=step_result.testCase.session.browser,          # same browser
                                                       refSnapshot=None,                                                                     # a reference image
                                                       name=name).order_by('pk').last()                                                                          # same snapshot name
         
@@ -72,7 +72,7 @@ class FileUploadView(views.APIView):
                                                               stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
                                                               stepResult__testCase__session__version=app_version, 
                                                               stepResult__testCase__session__environment=step_result.testCase.session.environment, 
-                                                              stepResult__testCase__session__browser=step_result.testCase.session.browser, 
+                                                              stepResult__testCase__session__browser__contains=step_result.testCase.session.browser, 
                                                               refSnapshot=None,
                                                               name=name).order_by('pk').last()     
                 if most_recent_reference_snapshot:

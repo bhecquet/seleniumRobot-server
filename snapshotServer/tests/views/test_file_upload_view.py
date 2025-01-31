@@ -32,33 +32,40 @@ class TestFileUploadView(APITestCase):
         self.testCase.save()
         self.step1 = TestStep.objects.get(id=1)
         
-        self.session1 = TestSession(sessionId="8888", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
+        self.session1 = TestSession(sessionId="8888", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
         self.session1.save()
         self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
         self.tcs1.save()
         self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
         self.sr1.save()
         
-        self.session_same_env = TestSession(sessionId="8889", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
+        self.session_same_env = TestSession(sessionId="8889", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
         self.session_same_env.save()
         self.tcs_same_env = TestCaseInSession(testCase=self.testCase, session=self.session_same_env)
         self.tcs_same_env.save()
         self.step_result_same_env = StepResult(step=self.step1, testCase=self.tcs_same_env, result=True)
         self.step_result_same_env.save()
         
-        self.session_other_env = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=2), ttl=datetime.timedelta(0))
+        self.session_other_env = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=2), ttl=datetime.timedelta(0))
         self.session_other_env.save()
         self.tcs_other_env = TestCaseInSession(testCase=self.testCase, session=self.session_other_env)
         self.tcs_other_env.save()
         self.step_result_other_env = StepResult(step=self.step1, testCase=self.tcs_other_env, result=True)
         self.step_result_other_env.save()
         
-        self.session_other_browser = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="chrome", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
+        self.session_other_browser = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:CHROME", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
         self.session_other_browser.save()
         self.tcs_other_browser = TestCaseInSession(testCase=self.testCase, session=self.session_other_browser)
         self.tcs_other_browser.save()
         self.step_result_other_browser = StepResult(step=self.step1, testCase=self.tcs_other_browser, result=True)
         self.step_result_other_browser.save()
+        
+        self.session_app_test = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="APP:myapp.apk", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
+        self.session_app_test.save()
+        self.tcs_app_test = TestCaseInSession(testCase=self.testCase, session=self.session_app_test)
+        self.tcs_app_test.save()
+        self.step_result_app_test = StepResult(step=self.step1, testCase=self.tcs_app_test, result=True)
+        self.step_result_app_test.save()
         
         
     def tearDown(self):
@@ -129,6 +136,62 @@ class TestFileUploadView(APITestCase):
             # both snapshots are marked as computed as they have been uploaded
             self.assertTrue(uploaded_snapshot_1.computed)
             self.assertTrue(uploaded_snapshot_2.computed)
+            
+            
+    # POST and PUT methods share the same code
+    # here we only check the retrieving of parameters sent to PUT
+    def test_put_snapshot_existing_ref(self):
+        """
+        Check we find the reference snapshot when it exists in the same version / same name
+        """
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.put(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 
+                                                                               'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'full',
+                                                                               'diffTolerance': '0.0',
+                                                                               'versionId': 1,
+                                                                               'environmentId': 1,
+                                                                               'browser': 'BROWSER:FIREFOX',
+                                                                               'testCaseName': 'test upload',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            data = json.loads(response.content.decode('UTF-8'))
+            self.assertTrue(data['computed'])
+            
+            uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
+            self.assertIsNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
+            
+    def test_put_snapshot_existing_ref_app_test(self):
+        """
+        Check we find the reference snapshot when it exists in the same version / same name in mobile test
+        In case of mobile tests, session is recorded with the full application name, and comparison is done with only "APP"
+        """
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            self.client.post(reverse('upload', args=['img']), data={'stepResult': self.step_result_app_test.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+            uploaded_snapshot_1 = Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last()
+            
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.put(reverse('upload', args=['img']), data={'stepResult': self.step_result_same_env.id, 
+                                                                               'image': fp, 
+                                                                               'name': 'img', 
+                                                                               'compare': 'full',
+                                                                               'diffTolerance': '0.0',
+                                                                               'versionId': 1,
+                                                                               'environmentId': 1,
+                                                                               'browser': 'APP',
+                                                                               'testCaseName': 'test upload',
+                                                                               'stepName': 'Step 1'})
+            self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+            data = json.loads(response.content.decode('UTF-8'))
+            self.assertTrue(data['computed'])
+            
+        
+            uploaded_snapshot_2 = Snapshot.objects.filter(stepResult__testCase=self.tcs_same_env, stepResult__step__id=1).last()
+            self.assertIsNone(uploaded_snapshot_2, "the uploaded snapshot should be recorded")
             
     def test_post_snapshot_multiple_existing_ref(self):
         """
