@@ -96,11 +96,11 @@ class BaseServerModelAdmin(admin.ModelAdmin):
                 return queryset, forbidden_applications
             else:                        
                 return queryset.none(), forbidden_applications
-        
-        for application in Application.objects.all():
-            if not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application.name):
-                queryset = queryset.exclude(application__name=application.name)
-                forbidden_applications.append(application.name)
+            
+        for application_id, application_name in queryset.values_list('application', 'application__name').distinct().exclude(application=None):
+            if not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application_name):
+                queryset = queryset.exclude(application__name=application_name)
+                forbidden_applications.append(application_name)
                 
         queryset = queryset.exclude(application=None)
             
