@@ -2,7 +2,7 @@ PyYAML==6.0.2
 Django==3.2.25
 django-filter==2.4.0
 djangorestframework==3.12.4
-numpy==2.2.2
+numpy==1.24.4
 opencv-python==4.11.0.86
 Pillow==8.3.2
 pytz==2017.2
