@@ -68,6 +68,8 @@ class FileViewSet(viewsets.ModelViewSet):
             response = FileResponse(file_handle, content_type='text/plain')
         elif instance.file.name.endswith('avi'):
             response = FileResponse(file_handle, content_type='video/x-msvideo')
+        elif instance.file.name.endswith('mp4'):
+            response = FileResponse(file_handle, content_type='video/mp4')
         elif instance.file.name.endswith('zip'):
             response = FileResponse(file_handle, content_type='application/zip')
         else:
