@@ -4,6 +4,7 @@ import time
 
 from snapshotServer.controllers import tools
 from django.db.models import Q
+from django.db import close_old_connections
 from snapshotServer.controllers.picture_comparator import PictureComparator
 from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
 from snapshotServer.models import ExcludeZone
@@ -87,6 +88,8 @@ class DiffComputer(threading.Thread):
                     tmp_jobs = self.jobs[:]
                     self.jobs = []
 
+                if tmp_jobs:
+                    close_old_connections()
                 for ref_snapshot, step_snapshot in tmp_jobs:
                     try:
                         self._compute_diff(ref_snapshot, step_snapshot)
