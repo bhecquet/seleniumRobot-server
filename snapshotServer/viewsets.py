@@ -9,7 +9,7 @@ from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
     TestInfoSerializer
 from rest_framework import viewsets, renderers
 from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
-    StepReference, File, ExecutionLogs, TestInfo
+    StepReference, File, ExecutionLogs, TestInfo, Error
 from commonsServer.views.viewsets import BaseViewSet
 from rest_framework.decorators import action
 from django.http.response import FileResponse, HttpResponse
@@ -18,6 +18,8 @@ import json
 import zipfile
 import io
 from django.core.files.uploadedfile import InMemoryUploadedFile
+import datetime
+from django.utils import timezone
 
 class TestSessionViewSet(BaseViewSet):
     queryset = TestSession.objects.all()
@@ -111,6 +113,74 @@ class ExecutionLogsViewSet(viewsets.ModelViewSet):
 class StepResultViewSet(viewsets.ModelViewSet):
     queryset = StepResult.objects.all()
     serializer_class = StepResultSerializer
+    
+    def perform_update(self, serializer):
+        super().perform_update(serializer)
+        self.parse_stacktrace(serializer)
+        
+    def parse_stacktrace(self, serializer):
+        """
+        parse the stacktrace, looking for action in error
+        """
+        if not serializer.data['result']:
+            try:
+                step_result_details = json.loads(serializer.validated_data['stacktrace'])
+                if step_result_details['name'] == 'Test end':
+                    return
+                
+                failed_action, exception, exception_message = self.search_failed_action(step_result_details, step_result_details['action'])
+                
+                failed_action = failed_action if failed_action else step_result_details['name']
+                exception = exception if exception else step_result_details['exception']
+                exception_message = exception_message if exception_message else step_result_details['exceptionMessage']
+
+                error = Error(stepResult = serializer.instance,
+                              action = failed_action,
+                              exception = exception,
+                              errorMessage = exception_message,
+                              )
+                related_errors = self.search_related_errors(error)
+                error.save()
+                error.relatedErrors.set(related_errors)
+                
+            except Exception as e:
+                pass
+            
+    def search_related_errors(self, error):
+        """
+        Search for similar errors in a time frame of 1 hour
+        
+        """
+        return Error.objects.filter(
+            action = error.action,
+            exception = error.exception,
+            errorMessage = error.errorMessage,
+            stepResult__testCase__date__gte=timezone.now() - datetime.timedelta(seconds=3600)
+            )
+
+    def search_failed_action(self, data, path=''):
+        """
+        Look for an action that has the 'failed' flag set to true and return the name and the exception message, if it's present
+        """
+
+        if 'actions' in data:
+
+            for action in data['actions']:
+                
+                if action.get('type') == 'step' and 'actions' in action:
+                    failed_action, exception, exception_message = self.search_failed_action(action, path + '>' + action['action'])
+                    if failed_action:
+                        return failed_action, exception, exception_message
+
+                if action.get('failed', False):
+                    if action.get('element', ''):
+                        return f"{path}>{action['action']} on {action['origin']}.{action['element']}", action.get('exception', None), action.get('exceptionMessage', None)
+                    else:
+                        return f"{path}>{action['action']} in {action['origin']}", action.get('exception', None), action.get('exceptionMessage', None)
+
+        return None, None, None
+
+
     
 class ExcludeZoneViewSet(BaseViewSet):
     queryset = ExcludeZone.objects.all()

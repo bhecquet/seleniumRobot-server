@@ -440,6 +440,7 @@ class ErrorCauseFromUser(models.Model):
     """
     Table that will store information given by user about the cause of an error at a specific step
     For example, it could say that "NoSuchElementException" at step "login" is caused by "Environment" because the "authentication" application is not available
+    It's a knowledge base
     """
     
     testCase = models.ForeignKey(TestCase, on_delete=models.CASCADE, related_name='declaredErrorCauses', null=True, blank=True)
@@ -449,14 +450,15 @@ class ErrorCauseFromUser(models.Model):
     errorMessage = models.CharField(max_length=1000, default=".*")  # the exception message associated to the exception. Used for correlation
     type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
     
-class ErrorCauseDetected(models.Model):
+class Error(models.Model):
     """
-    Table that will store error cause that may have been detected by the server. For example, if error message is found in snapshot, or if there is a difference in network capture
-    This is linked to the step result as it's specific to this execution
+    Table that stores error that may have been raised during a test
+    This table will help grouping of tests in error
     """
-    stepResult = models.ForeignKey('StepResult', related_name='detectedErrorCauses', on_delete=models.CASCADE)
-    description = models.CharField(max_length=200, null=False)      # some details about the error
-    type = models.CharField(max_length=100, null=False)             # the type of error: 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
-    
-    
+    stepResult = models.ForeignKey(StepResult, related_name='errors', on_delete=models.CASCADE)
+    action = TruncatingCharField(max_length=250, default="", null=True)         # the step / action name for which the user defined the error
+    exception = models.CharField(max_length=100, default="", null=True)         # the exception raised by the test. Used for correlation
+    errorMessage = models.CharField(max_length=1000, default="", null=True)     # the exception message associated to the exception. Used for correlation
+    cause = models.CharField(max_length=100, null=True)                         # the cause of error (if any detected): 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    relatedErrors = models.ManyToManyField('self')                              # errors related to this one
     

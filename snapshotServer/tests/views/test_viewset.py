@@ -55,4 +55,3 @@ class TestViewset(APITestCase):
         self.assertTrue('id' in json.loads(response.content))
         self.assertEquals(json.loads(response.content)['testSteps'], []) # steps has been removed
         self.assertEqual(json.loads(response.content)['id'], 8)
-    
