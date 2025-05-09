@@ -6,7 +6,6 @@
     <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot_solo.css' %}">
  
     <script type="text/javascript" src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
- 	<script type="text/javascript" src="{% static 'js/seleniumRobot.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/compare.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>	
 
@@ -31,11 +30,10 @@
 	<!-- Modal for displaying pictures -->
     <div class="modal fade" id="imagemodal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
          aria-hidden="true">
-        <div class="modal-dialog modal-xl">
+        <div class="modal-dialog modal-fullscreen">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span
-                            aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <img src="" id="imagepreview" style="width: 80%;">
@@ -205,20 +203,28 @@
 	</div>		
 </div>
 <script>
-	$('[data-toggle="popover"]').popover();
-	var elements = document.getElementsByClassName("stepTimestamp");
-	
-	function toggleTimestamps() {
-	    for (var i = 0; i < elements.length; i++) {
-	        var element = elements[i];
-	        if (element.style.display === "none") {
-	            element.style.display = "block";
-	        } else {
-	            element.style.display = "none";
-	        }
-	    }
-	}
-	
-	document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
+    var elements = document.getElementsByClassName("stepTimestamp");
+    
+    function toggleTimestamps() {
+        for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            if (element.style.display === "none") {
+                element.style.display = "block";
+            } else {
+                element.style.display = "none";
+            }
+        }
+    }
+    
+    document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
+
+
+	var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
+	var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
+	  return new bootstrap.Popover(popoverTriggerEl)
+	})
+	console.log(popoverList);
+
+
 </script>
 {% endblock %}

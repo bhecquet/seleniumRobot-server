@@ -198,3 +198,11 @@ body {
 .box-black{
     border-top: 3px solid #000;
 }
+
+.offcanvas-end {
+  width: 600px;
+}
+
+.tooltip-inner {
+    max-width: 500px !important; 
+}

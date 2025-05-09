@@ -105,6 +105,91 @@ class TestViewsetStepResult(APITestCase):
     "harCaptures": []
 }"""
 
+    step_multiple_actions_ko_details = """
+        {
+    "exception": "org.openqa.selenium.NoSuchElementException",
+    "date": "Fri May 02 17:44:55 CEST 2025",
+    "origin": "company.pic.jenkins.tests.selenium.webpage.LoginPage",
+    "failed": true,
+    "type": "step",
+    "duration": 32298,
+    "snapshots": [
+        {
+            "exception": "org.openqa.selenium.NoSuchElementException",
+            "idHtml": null,
+            "displayInReport": false,
+            "name": "Step beginning state",
+            "idImage": 67,
+            "failed": false,
+            "position": 0,
+            "type": "snapshot",
+            "snapshotCheckType": "NONE_REFERENCE",
+            "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found\\n",
+            "timestamp": 1746207928066
+        }
+    ],
+    "videoTimeStamp": 1256,
+    "name": "_loginInvalid with args: (foo, bar, )",
+    "action": "_loginInvalid",
+    "files": [],
+    "position": 2,
+    "actions": [
+        {
+            "exception": "org.openqa.selenium.NoSuchElementException",
+            "date": "Fri May 02 17:44:55 CEST 2025",
+            "origin": "company.pic.jenkins.tests.selenium.webpage.LoginPage",
+            "failed": true,
+            "type": "step",
+            "duration": 0,
+            "snapshots": [],
+            "videoTimeStamp": 0,
+            "name": "connect with args: (foo, bar, )",
+            "action": "connect",
+            "files": [],
+            "position": 0,
+            "actions": [
+                {
+                    "exception": "org.openqa.selenium.NoSuchElementException",
+                    "origin": "company.pic.jenkins.tests.selenium.webpage.LoginPage",
+                    "name": "sendKeys on TextFieldElement user, by={By.id: j_username} with args: (true, true, [foo,], )",
+                    "action": "sendKeys",
+                    "failed": true,
+                    "position": 0,
+                    "type": "action",
+                    "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+                    "timestamp": 1746207895053,
+                    "element": "user"
+                },
+                {
+                    "exception": "org.openqa.selenium.NoSuchElementException",
+                    "origin": "company.pic.jenkins.tests.selenium.webpage.LoginPage",
+                    "name": "sendKeys on TextFieldElement password, by={By.name: j_passwor} with args: (true, true, [bar,], )",
+                    "action": "sendKeys",
+                    "failed": true,
+                    "position": 1,
+                    "type": "action",
+                    "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+                    "timestamp": 1746207895478,
+                    "element": "password"
+                },
+                {
+                    "messageType": "WARNING",
+                    "name": "Warning: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found\\nFor documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#no-such-element-exception\\nBuild info: version: '4.28.1', revision: '73f5ad48a2'\\nSystem info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.1'\\nDriver info: driver.version: unknown\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage.connect_aroundBody12(LoginPage.java:55)\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage.connect(LoginPage.java:53)\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage.connect_aroundBody6(LoginPage.java:43)\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid_aroundBody8(LoginPage.java:43)\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid_aroundBody10(LoginPage.java:42)\\nat company.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid(LoginPage.java:42)",
+                    "type": "message"
+                }
+            ],
+            "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+            "timestamp": 1746207895052,
+            "status": "FAILED",
+            "harCaptures": []
+        }
+    ],
+    "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement password, by={By.name: j_passwor}] from page 'company.pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+    "timestamp": 1746207895052,
+    "status": "FAILED",
+    "harCaptures": []
+}"""
+
     step_ok_details = """
         {
     "exception": "",
@@ -178,6 +263,13 @@ class TestViewsetStepResult(APITestCase):
         Check an error is created when a step action failed
         """
         response = self.client.patch('/snapshot/api/stepresult/13/', data={'stacktrace':  self.step_ko_details})
+        self.assertEqual(len(Error.objects.filter(exception="org.openqa.selenium.NoSuchElementException")), 1)
+        
+    def test_parse_step_result_ko2(self):
+        """
+        Check only one error is created when multiple step action fail
+        """
+        response = self.client.patch('/snapshot/api/stepresult/13/', data={'stacktrace':  self.step_multiple_actions_ko_details})
         self.assertEqual(len(Error.objects.filter(exception="org.openqa.selenium.NoSuchElementException")), 1)
         
     def test_parse_step_result_ko_test_end_step(self):

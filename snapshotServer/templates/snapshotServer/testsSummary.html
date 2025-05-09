@@ -1,6 +1,7 @@
 {% extends "snapshotServer/base.html" %}
 {% load static %}
 {% load dictvalue %}
+{% load tz %}
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot.css' %}">
@@ -37,6 +38,7 @@
                                             <th> Failed Steps Count </th>
                                             -->
                                             <th> Steps Count </th>
+                                            <th> Related Errors </th>
                                             <th> Duration </th>
                                             {% for infoName in testInfoList %}
                                             <th> {{ infoName }} </th>
@@ -58,11 +60,12 @@
                                                 <td>{{ testSession.name }}</td>
                                                 <td class="alignleft">
                                                     {% if testInfos.0 == True %}
-                                                        <i class="fa-solid fa-code-compare font-success" data-toggle="tooltip" title="snapshot comparison successful"></i>
+                                                        <i class="fa-solid fa-code-compare font-success" data-bs-toggle="tooltip" title="snapshot comparison successful"></i>
                                                     {% elif testInfos.0 == False %}
-                                                        <i class="fa-solid fa-code-compare font-failed" data-toggle="tooltip" title="snapshot comparison failed"></i>
+                                                        <i class="fa-solid fa-code-compare font-failed" data-bs-toggle="tooltip" title="snapshot comparison failed"></i>
                                                     {% endif %}
-                                                    <a href='{% url 'testResultView' testCaseInSession.id %}' info="{% if testCaseInSession.status == 'SUCCESS' %}ok{% elif testCaseInSession.status == 'FAILURE' %}ko{% else %}skipped{% endif %}" data-toggle="tooltip" title="{% if testCaseInSession.description %}{{ testCaseInSession.description }}{% else %}no description available"{% endif %}>{{ testCaseInSession.name }}</a>
+                                                    <a href='{% url 'testResultView' testCaseInSession.id %}' info="{% if testCaseInSession.status == 'SUCCESS' %}ok{% elif testCaseInSession.status == 'FAILURE' %}ko{% else %}skipped{% endif %}" data-bs-toggle="tooltip" title="{% if testCaseInSession.description %}{{ testCaseInSession.description }}{% else %}no description available"{% endif %}>{{ testCaseInSession.name }}</a>
+                                                    <span class="badge bg-primary" style="background-color: {{ testInfos.5.color }} !important" data-bs-toggle="tooltip" title="{{ testInfos.5.error }}">{{ testInfos.5.error_short }}</span>
                                                 </td>
     
                                                 <td name="stepsTotal-{{ forloop.counter }}">{{ testInfos.1 }}
@@ -72,10 +75,38 @@
                                                     </sup>
                                                 {% endif %}
                                                 </td>
+                                                <td name="relatedErrors-{{ forloop.counter }}">
+                                                    {% if testInfos.4|length > 0 %}
+	                                                    <a  href="#" data-bs-toggle="offcanvas" data-bs-target="#offcanvas-{{ testCaseInSession.id }}" aria-controls="offcanvasRight">{{ testInfos.4|length }}</a>
+	                                                    
+	                                                    <!-- canvas showing related errors -->
+	                                                    <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-{{ testCaseInSession.id }}" aria-labelledby="offcanvasRightLabel">
+	                                                        <div class="offcanvas-header">
+	                                                            <h5 id="offcanvasRightLabel">Related errors</h5>
+	                                                            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+	                                                        </div>
+	                                                        <div class="offcanvas-body">
+	                                                            <table class="table">
+	                                                                <th>Session</td>
+	                                                                <th>Test name</td>
+	                                                                <th>Test date</td>
+	                                                            {% for relatedTestCaseInSessionError in testInfos.4 %}
+	                                                                <tr>
+	                                                                    <td>{{ relatedTestCaseInSessionError.session.date|localtime }}</td>
+	                                                                    <td><a href='{% url 'testResultView' relatedTestCaseInSessionError.id %}'>{{ relatedTestCaseInSessionError.name }}</a></td>
+	                                                                    <td>{{ relatedTestCaseInSessionError.date }}</td>
+	                                                                </tr>
+	                                                            {% endfor %}
+	                                                            </table>
+	                                                        </div>
+	                                                    </div>  
+	                                                {% endif %}
+                                                </td>
                                                 <td>{{ testInfos.3 }} sec.</td>
                                                 
+                                                
                                                 {% for infoName in testInfoList %}
-                                                    {% include "snapshotServer/info.html" with info=testInfos.4|get_value:infoName %}  
+                                                    {% include "snapshotServer/info.html" with info=testInfos.6|get_value:infoName %}  
                                                 {% endfor %}
                                             </tr>
                                         {% endfor %}
@@ -87,6 +118,7 @@
                     </div>
                 </div>
             </section>
-        </div>   
+        </div> 
+        
 
 {% endblock %}

@@ -3,7 +3,7 @@
                             <td>{{ info.info }}</td>
                             {% elif info.type == 'log' %}
                             <td>
-                                <a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="{{ info.info }}"></i></a>
+                                <a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="{{ info.info }}"><i class="fas fa-file-alt" aria-hidden="true"></i></a>
                             </td>
                             {% elif info.type == 'hyperlink' %}
                             <td>
@@ -23,7 +23,7 @@
                                     {% if sub_info.type == 'string' %}
                                         <br/>{{ sub_info.info }}
                                     {% elif sub_info.type == 'log' %}
-                                        <a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="{{ sub_info.info }}"></i></a>
+                                        <a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="{{ sub_info.info }}"><i class="fas fa-file-alt" aria-hidden="true"></i></a>
                                     {% elif sub_info.type == 'hyperlink' %}
                                         <br/> <a href="{{ sub_info.link }}">{{ sub_info.info }}</a>
                                     {% elif sub_info.type == 'imagelink' %}

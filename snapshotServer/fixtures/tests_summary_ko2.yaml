@@ -1,6 +1,8 @@
 # see testresult_commons.yaml for init values (env, application, test case)
+# same as testresult_ko.yaml, so that we can have multiple sessions with failing tests
+# to be used with testresult_ko.yaml
 -   model: snapshotServer.testsession
-    pk: 11
+    pk: 110
     fields:
         sessionId: '1250'
         version: 1
@@ -12,12 +14,12 @@
         name: jenkins
         ttl: '0'  # set to 0 to avoid automatic deletion
 -   model: snapshotServer.testcaseinsession
-    pk: 11
+    pk: 110
     fields:
         testCase: 1
-        name: testJenkinsKo
-        date: '2023-05-05T16:16:08.184106+01:00'
-        session: 11
+        name: testJenkinsKo2
+        date: '2023-05-05T16:20:08.184106+01:00'
+        session: 110
         testSteps: [11, 12, 13, 14]
         status: FAILURE
         stacktrace: >-
@@ -27,34 +29,18 @@
             }
    
 - model: snapshotServer.testinfo
-  pk: 11
+  pk: 110
   fields:
-    testCase: 11
+    testCase: 110
     name: Last State
     info: '{"type":"multipleinfo","infos":[{"type":"log","info":"Browsermob proxy
       (captureNetwork option) is only compatible with DIRECT and <MANUAL>"}]}' 
--   model: snapshotServer.teststep
-    pk: 11
-    fields: 
-        name: "openPage" 
--   model: snapshotServer.teststep
-    pk: 12
-    fields: 
-        name: "loginInvalid with args: (foo, bar, )"
--   model: snapshotServer.teststep
-    pk: 13
-    fields: 
-        name: getErrorMessage<>
--   model: snapshotServer.teststep
-    pk: 14
-    fields: 
-        name: Test end  
 
 -   model: snapshotServer.stepresult
-    pk: 11
+    pk: 110
     fields: 
         step: 11
-        testCase: 11
+        testCase: 110
         result: true
         duration: 700
         stacktrace: >
@@ -115,10 +101,10 @@
                 "harCaptures": []
             }
 -   model: snapshotServer.stepresult
-    pk: 12
+    pk: 120
     fields: 
         step: 12
-        testCase: 11
+        testCase: 110
         result: true
         duration: 2000
         stacktrace: >
@@ -144,14 +130,11 @@
                 ],
                 "videoTimeStamp": 1222,
                 "name": "loginInvalid with args: (foo, bar, )",
-                "action": "loginInvalid"
                 "files": [],
                 "position": 1,
                 "actions": [
                     {
                         "name": "sendKeys on TextFieldElement user, by={By.id: j_username} with args: (true, true, [foo,], )",
-                        "action": "sendKeys",
-                        "element": "user",
                         "failed": false,
                         "position": 0,
                         "type": "action",
@@ -159,8 +142,6 @@
                     },
                     {
                         "name": "sendKeys on TextFieldElement password, by={By.name: j_password} with args: (true, true, [bar,], )",
-                        "action": "sendKeys",
-                        "element": "password",
                         "failed": false,
                         "position": 1,
                         "type": "action",
@@ -193,10 +174,10 @@
                 "harCaptures": []
             }
 -   model: snapshotServer.stepresult
-    pk: 13
+    pk: 130
     fields: 
         step: 13
-        testCase: 11
+        testCase: 110
         result: false
         duration: 5000
         stacktrace: >
@@ -272,10 +253,10 @@
                 "harCaptures": []
             }
 -   model: snapshotServer.stepresult
-    pk: 14
+    pk: 140
     fields: 
         step: 14
-        testCase: 11
+        testCase: 110
         result: false
         duration: 200
         stacktrace: >
@@ -344,89 +325,4 @@
                 ]
             }
             
-   
-# this step is a step OK with a sub step failing, to test that reports shows it in warning   
-# to be used, the 'testSteps' list of 'testcaseinsession' above has to be modified before test starts  
--   model: snapshotServer.teststep
-    pk: 15
-    fields: 
-        name: getErrorMessage warn  
--   model: snapshotServer.stepresult
-    pk: 15
-    fields: 
-        step: 15
-        testCase: 11
-        result: false
-        duration: 5000
-        stacktrace: >
-            {
-                "date": "Wed Oct 25 18:06:07 CEST 2023",
-                "failed": false,
-                "type": "step",
-                "duration": 5539,
-                "snapshots": [
-                    {
-                        "idHtml": 106,
-                        "displayInReport": true,
-                        "name": "drv:main",
-                        "idImage": 107,
-                        "failed": false,
-                        "position": 0,
-                        "type": "snapshot",
-                        "title": "Current Window: S'identifier [Jenkins]",
-                        "snapshotCheckType": "NONE",
-                        "url": "https://jenkins/jenkins/loginError",
-                        "timestamp": 1698257174035
-                    },
-                    {
-                        "idHtml": null,
-                        "displayInReport": true,
-                        "name": "Step beginning state",
-                        "idImage": 108,
-                        "failed": false,
-                        "position": 1,
-                        "type": "snapshot",
-                        "snapshotCheckType": "NONE_REFERENCE",
-                        "timestamp": 1698257175623
-                    },
-                    {
-                        "idHtml": null,
-                        "displayInReport": true,
-                        "name": "Valid-reference",
-                        "idImage": 109,
-                        "failed": false,
-                        "position": 2,
-                        "type": "snapshot",
-                        "snapshotCheckType": "NONE",
-                        "timestamp": 1698257180743
-                    }
-                ],
-                "videoTimeStamp": 4350,
-                "name": "getErrorMessage warn",
-                "files": [],
-                "position": 2,
-                "actions": [
-                    {
-                        "name": "waitForPresent on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} with args: (15, )",
-                        "failed": false,
-                        "position": 0,
-                        "type": "action",
-                        "timestamp": 1698257167870
-                    },
-                    {
-                        "name": "getText on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} ",
-                        "failed": true,
-                        "position": 1,
-                        "type": "action",
-                        "timestamp": 1698257168565
-                    },
-                    {
-                        "messageType": "ERROR",
-                        "name": "!!!FAILURE ALERT!!! - Assertion Failure: expected [false] but found [true]",
-                        "type": "message"
-                    }
-                ],
-                "timestamp": 1698257167869,
-                "status": "WARNING",
-                "harCaptures": []
-            }
+ 

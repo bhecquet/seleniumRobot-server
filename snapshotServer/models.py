@@ -457,8 +457,11 @@ class Error(models.Model):
     """
     stepResult = models.ForeignKey(StepResult, related_name='errors', on_delete=models.CASCADE)
     action = TruncatingCharField(max_length=250, default="", null=True)         # the step / action name for which the user defined the error
-    exception = models.CharField(max_length=100, default="", null=True)         # the exception raised by the test. Used for correlation
-    errorMessage = models.CharField(max_length=1000, default="", null=True)     # the exception message associated to the exception. Used for correlation
-    cause = models.CharField(max_length=100, null=True)                         # the cause of error (if any detected): 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    exception = TruncatingCharField(max_length=100, default="", null=True)         # the exception raised by the test. Used for correlation
+    errorMessage = TruncatingCharField(max_length=1000, default="", null=True)     # the exception message associated to the exception. Used for correlation
+    cause = TruncatingCharField(max_length=100, null=True)                         # the cause of error (if any detected): 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
     relatedErrors = models.ManyToManyField('self')                              # errors related to this one
+    
+    def __str__(self):
+        return f'Error {self.errorMessage} in {self.action}'
     

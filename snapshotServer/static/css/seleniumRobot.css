@@ -116,3 +116,6 @@ a.errorTooltip {
 .font-failed {
     color: #F9727B;
 }
+a {
+    text-decoration: none;
+}
