@@ -2,21 +2,14 @@ from django.conf.urls import include
 from rest_framework import routers
 
 from snapshotServer import viewsets
-from snapshotServer.views.application_version_list_view import ApplicationVersionListView
 from snapshotServer.views.exclude_zone_list_view import ExclusionZoneListView
 from snapshotServer.views.file_upload_view import FileUploadView
 from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
-from snapshotServer.views.session_list_view import SessionListView
-from snapshotServer.views.step_list_view import StepListView
-from snapshotServer.views.test_list_view import TestListView
 from snapshotServer.views.test_status_view import TestStatusView
-from snapshotServer.views.test_result_table_view import TestResultTableView
 from snapshotServer.views.test_result_view import TestResultView
 from snapshotServer.views.field_detector_view import FieldDetectorView
 
-from django.views.decorators.clickjacking import xframe_options_exempt
-from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
 from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
@@ -40,21 +33,15 @@ urlpatterns = [
 
     # image-field-detector
     re_path(r'^detect/$', FieldDetectorView.as_view(), name="detect"),
-
-    re_path(r'^$', ApplicationVersionListView.as_view(), name='home'),
     
     path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
     re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     
-    re_path(r'^testResults/(?P<version_id>[0-9]+)/$', TestResultTableView.as_view(), name='testResultTableView'),
     re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
-    re_path(r'^compare/(?P<version_id>[0-9]+)/$', SessionListView.as_view(), name='sessionListView'),
     re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
-    re_path(r'^compare/testList/(?P<sessionId>[0-9]+)/$', TestListView.as_view(), name="testlistView"),  
-    # force view to set CSRF cookie so that editing exclusion zones do not fail 
-    re_path(r'^compare/stepList/(?P<testCaseInSessionId>[0-9]+)/$', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(StepListView.as_view()))), name="steplistView"), 
+    # force view to set CSRF cookie so that editing exclusion zones do not fail  
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/noheader/$', PictureView.as_view(), name="pictureViewNoHeader"), 
     re_path(r'^compare/excludeList/(?P<ref_snapshot_id>None|[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
