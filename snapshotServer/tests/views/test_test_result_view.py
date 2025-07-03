@@ -108,7 +108,7 @@ class TestTestResultView(SnapshotTestCase):
          
         # error message
         ## in header
-        self.assertTrue('<tr><th>Last State</th><td><a class="errorTooltip"><i class="fas fa-file-alt" aria-hidden="true" data-toggle="popover" title="Exception" data-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"></i></a></td></tr>' in html)
+        self.assertTrue('<tr><th>Last State</th><td><a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td></tr>' in html)
         ## on last step
         self.assertTrue('<div class="message-log message-conf"><span class="stepTimestamp mr-1"></span>Test is KO with error: class java.lang.AssertionError: expected [false] but &lt;&gt; found [true]' in html)
         ## error message on step
@@ -142,9 +142,9 @@ class TestTestResultView(SnapshotTestCase):
         
         # logs are encoded
         self.assertTrue("""<div>INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid &lt;;&gt;""" in html)
-        
+
         # last state is encoded
-        self.assertTrue("""data-toggle="popover" title="Exception" data-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;""" in html)
+        self.assertTrue("""data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;""" in html)
         
     def test_report_with_snapshot_comparison_ok_display_only(self):
         """
