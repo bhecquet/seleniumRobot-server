@@ -10,21 +10,33 @@ import pickle
 from django.urls.base import reverse
 from django.db.models import Q
 from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
 from snapshotServer.tests.views.test_views import TestViews
 from snapshotServer.models import Snapshot
 from snapshotServer.controllers.picture_comparator import Pixel
 from snapshotServer.tests import authenticate_test_client_for_web_view_with_permissions
+from variableServer.models import Application
+import variableServer
 
 
 class TestTestStatusView(TestViews):
     
+    def setUp(self):
+        super().setUp()
+        
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        
+        self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)        
+        
 
     def test_session_status_no_security_not_authenticated(self):
         """
         Check that with security disabled, we  access view without authentication
         """
-        with self.settings(SECURITY_WEB_ENABLED=''):
+        with self.settings(SECURITY_API_ENABLED=''):
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             self.assertEqual(200, response.status_code)
         
@@ -35,8 +47,7 @@ class TestTestStatusView(TestViews):
         response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
         
         # check we are redirected to login
-        self.assertEqual(302, response.status_code)
-        self.assertEqual("/accounts/login/?next=/snapshot/status/5/", response.url)
+        self.assertEqual(401, response.status_code)
         
     def test_session_status_security_authenticated_no_permission(self):
         """
@@ -46,7 +57,7 @@ class TestTestStatusView(TestViews):
         We cannot view status => error page displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             
             # check we have no permission to view the report
@@ -61,7 +72,7 @@ class TestTestStatusView(TestViews):
         We can view status
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             
             # check we have no permission to view the report
@@ -76,7 +87,7 @@ class TestTestStatusView(TestViews):
         We get 404 error
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 568}))
             
             # check we have no permission to view the report
@@ -87,7 +98,7 @@ class TestTestStatusView(TestViews):
         Test the result of a test session status when looking for reference
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             self.assertEqual(response.status_code, 200)
@@ -110,7 +121,7 @@ class TestTestStatusView(TestViews):
         s3.save()
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
           
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
             self.assertEqual(response.status_code, 200)
@@ -133,7 +144,7 @@ class TestTestStatusView(TestViews):
         s3.save()
           
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
             self.assertEqual(response.status_code, 200)
@@ -147,7 +158,7 @@ class TestTestStatusView(TestViews):
         Test the result of a test session status when looking for reference
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStepStatusView', kwargs={'testCaseId': 5, 'testStepId': 2}))
             self.assertEqual(response.status_code, 200)

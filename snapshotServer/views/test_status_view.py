@@ -7,16 +7,17 @@ import json
 import pickle
 
 from django.http.response import HttpResponse
-from django.views.generic.base import View
 
 from snapshotServer.models import TestCaseInSession, Snapshot
-from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from commonsServer.views.viewsets import ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 
 
-class TestStatusView(LoginRequiredMixinConditional, View):
+class TestStatusView(ApplicationSpecificViewSet):
     
     
     queryset = TestCaseInSession.objects.none()
+    permission_classes = [ApplicationSpecificPermissionsResultRecording]
     
     """
     API to get the test session status according to comparison results

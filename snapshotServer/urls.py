@@ -47,8 +47,8 @@ urlpatterns = [
     re_path(r'^compare/excludeList/(?P<ref_snapshot_id>None|[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
-    re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
-    re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view({'get': 'get'}), name="testStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view({'get': 'get'}), name="testStepStatusView"), 
 
     
 ]
