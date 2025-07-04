@@ -38,7 +38,7 @@ class Application(models.Model):
         content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
         Permission.objects.get_or_create(
             codename=Application.appPermissionCode + self.name,
-            name='Can view application and related variables and versions for ' + self.name,
+            name='Can view application and related items for ' + self.name,
             content_type=content_type,
             )
         

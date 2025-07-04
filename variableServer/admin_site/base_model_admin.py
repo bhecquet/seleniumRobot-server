@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.conf import settings
 from variableServer.models import Application
 from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker,\
-    APP_SPECIFIC_PERMISSION_PREFIX
+    APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
 
 
 def is_user_authorized(user):
@@ -51,7 +51,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         
         if request.method == 'POST' and request.POST.get('application'):
             application = Application.objects.get(pk=int(request.POST['application']))
-            return request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application.name)  
+            return request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX+ application.name)  
         
         # submiting a new variable with no application will lead to and empty string application
         # in this case, we do not allow adding this
@@ -59,7 +59,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
             return False             
             
         elif obj and obj.application:
-            return request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name)
+            return request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX+ obj.application.name)
              
         # if user has at least a permission on any application, let him see models and do actions (delete action / modify / ...)
         # TODO: not filtering on method verb allow a user with any application specific permission to add a variable not linked to application
@@ -98,7 +98,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
                 return queryset.none(), forbidden_applications
             
         for application_id, application_name in queryset.values_list('application', 'application__name').distinct().exclude(application=None):
-            if not request.user.has_perm(APP_SPECIFIC_PERMISSION_PREFIX + application_name):
+            if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX+ application_name):
                 queryset = queryset.exclude(application__name=application_name)
                 forbidden_applications.append(application_name)
                 

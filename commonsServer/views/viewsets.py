@@ -5,17 +5,19 @@ Created on 4 mai 2017
 '''
 
 from rest_framework import viewsets, filters
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404, CreateAPIView,\
+    RetrieveAPIView
 from variableServer.models import Application, TestEnvironment, \
     TestCase, Version
 from django.db.models.aggregates import Count
+from django.conf import settings
+
 from commonsServer.views.serializers import ApplicationSerializer,\
     VersionSerializer, TestEnvironmentSerializer, TestCaseSerializer
-from rest_framework.exceptions import ValidationError
-from django.conf import settings
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
-    ApplicationPermissionChecker, APP_SPECIFIC_PERMISSION_PREFIX
-from rest_framework.generics import get_object_or_404, CreateAPIView,\
-    RetrieveAPIView
+from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX,\
+    ApplicationSpecificPermissionsVariables
+
 
 
 class BaseViewSet(viewsets.ModelViewSet):
@@ -112,7 +114,7 @@ class ApplicationSpecificViewSet(BaseViewSet):
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
         elif obj and obj.application:
-            permission = APP_SPECIFIC_PERMISSION_PREFIX + obj.application.name
+            permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.application.name
             if not self.request.user.has_perm(permission):
                 self.permission_denied(
                     request,
@@ -139,7 +141,7 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
         return queryset.filter(application__name__in=allowed_aplications)
     
 class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView, ApplicationSpecificViewSet):
-    permission_classes = [ApplicationSpecificPermissions]
+    permission_classes = [ApplicationSpecificPermissionsVariables]
     filter_backends = [ApplicationSpecificFilter]
     
     def get_object(self, model):
@@ -170,7 +172,7 @@ class ApplicationViewSet(RetrieveByNameViewSet):
         if self.bypass_application_permissions():
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
-        permission = APP_SPECIFIC_PERMISSION_PREFIX + obj.name
+        permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.name
         if not self.request.user.has_perm(permission):
             self.permission_denied(
                 request,

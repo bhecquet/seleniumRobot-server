@@ -8,7 +8,7 @@ from snapshotServer.controllers.diff_computer import DiffComputer
 import logging
 import re
 
-def _create_allowed_user_and_group():
+def _create_allowed_user_and_group(permissions=[]):
     
     try:
         user = User.objects.get(username='user')
@@ -31,16 +31,18 @@ def _create_allowed_user_and_group():
     ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
     group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') | Q(codename='change_executionlogs') , content_type=ct))
     
+    group.permissions.add(*permissions)
+    
     group.user_set.add(user)
     
-    return user
+    return user, group
 
 def authenticate_test_client_for_api(client):
     """
     from client of django rest_framework, creates a user / group and add HTTP_AUTHORIZATION header to request
     @param client: DRF client
     """
-    user = _create_allowed_user_and_group()
+    user, group = _create_allowed_user_and_group()
     
     token = Token.objects.get_or_create(user=user)[0]
     client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
@@ -50,7 +52,17 @@ def authenticate_test_client_for_web_view(client):
     from client of django web views, creates a user / group and login
     @param client: django client
     """
-    user = _create_allowed_user_and_group()
+    user, group = _create_allowed_user_and_group()
+    client.login(username='user', password='pwd')
+    
+    
+def authenticate_test_client_for_web_view_with_permissions(client, permissions):
+    """
+    from client of django web views, creates a user / group and login, plus permissions
+    @param client: django client
+    @param permissions: permissions to add to group
+    """
+    user, group = _create_allowed_user_and_group(permissions)
     client.login(username='user', password='pwd')
     
     

@@ -1,6 +1,6 @@
 -   model: snapshotServer.application
     pk: 1
-    fields: {name: infotel}
+    fields: {name: myapp}
 -   model: snapshotServer.application
     pk: 2
     fields: {name: company}

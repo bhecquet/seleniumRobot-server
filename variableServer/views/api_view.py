@@ -8,7 +8,7 @@ import time
 import logging
 
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, generics, permissions, filters
+from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 
 from variableServer.models import Variable, TestEnvironment, Version, TestCase
@@ -21,12 +21,9 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import transaction
-from commonsServer.views.viewsets import ApplicationSpecificFilter, BaseViewSet,\
-    ApplicationSpecificViewSet
+from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
-    ApplicationPermissionChecker
-from django.conf import settings
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+    ApplicationPermissionChecker, ApplicationSpecificPermissionsVariables
 
 logger = logging.getLogger(__name__)
 
@@ -287,7 +284,7 @@ class VariableList(ApplicationSpecificViewSet):
     
     serializer_class = VariableSerializer
     filter_backends = [VariableFilter]
-    permission_classes = [ApplicationSpecificPermissions]
+    permission_classes = [ApplicationSpecificPermissionsVariables]
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):

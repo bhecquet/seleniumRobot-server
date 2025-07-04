@@ -34,8 +34,8 @@ urlpatterns = [
     # image-field-detector
     re_path(r'^detect/$', FieldDetectorView.as_view(), name="detect"),
     
-    path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
-    re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
+    path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view({'get': 'get'}), name='stepReference'),
+    re_path(r'^stepReference/$', StepReferenceView.as_view({'post': 'post'}), name='uploadStepRef'),
     
     re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),

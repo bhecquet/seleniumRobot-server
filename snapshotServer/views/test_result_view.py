@@ -4,6 +4,7 @@ Created on 4 sept. 2017
 @author: worm
 '''
 from django.views.generic.list import ListView
+from django.shortcuts import get_object_or_404
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot
 import json
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
@@ -42,7 +43,7 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         
     def get_context_data(self, **kwargs):
         context = super(TestResultView, self).get_context_data(**kwargs)
-        current_test = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
+        current_test = get_object_or_404(TestCaseInSession, pk=self.kwargs['testCaseInSessionId'])
         context['currentTest'] = current_test
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
         context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
@@ -84,6 +85,12 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 
 
         return context
+    
+    def get_target_application(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId'])
+        return test_case_in_session.session.version.application
+
+        
     
 # Tests
 # - Standard test OK

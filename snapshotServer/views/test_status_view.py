@@ -50,4 +50,7 @@ class TestStatusView(LoginRequiredMixinConditional, View):
         except:
             return HttpResponse(status=404, reason="Could not find one or more objects")
         
+    def get_target_application(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['testCaseId'])
+        return test_case_in_session.session.version.application
         

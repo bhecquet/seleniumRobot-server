@@ -1,31 +1,39 @@
 import json
 import mimetypes
+import threading
+
+from datetime import datetime
 
 from django.http.response import HttpResponse
-from rest_framework import views
+from django.utils import timezone
+
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.forms import ImageForStepReferenceUploadForm
 from snapshotServer.models import StepResult, StepReference
-from datetime import datetime
-import threading
-from django.utils import timezone
+from commonsServer.views.viewsets import ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from rest_framework.generics import get_object_or_404
 
 
-class StepReferenceView(views.APIView):
+class StepReferenceView(ApplicationSpecificViewSet):
     """
     View of the API to upload a file with step reference (mainly, a snapshot)
+    SeleniumRobot-core will get this reference when a step fails
     This will try to detect fields / texts / errors on the reference
     
-    Different from FileUploadView which aims at comparing snapshot with a reference
+    StepReferenceView is only used by core for result pushing / getting results
+    
+    Different from FileUploadView which aims at comparing snapshot with a reference for visual non-regression
     """
     
     parser_classes = (MultiPartParser,)
-    queryset = StepResult.objects.all()
+    queryset = StepReference.objects.none()
     last_clean = datetime.today()
     last_clean_lock = threading.Lock()
+    permission_classes = [ApplicationSpecificPermissionsResultRecording]
 
     OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 12    # in case a reference already exist, overwrite it only after X seconds (12 hours by default)
 
@@ -87,7 +95,7 @@ class StepReferenceView(views.APIView):
         Get the reference image corresponding to this StepResult. We get the application / version / test case / environment from this StepResult 
         """
         
-        step_result = StepResult.objects.get(id=step_result_id)
+        step_result = get_object_or_404(StepResult, id=step_result_id)
         
         # get the step reference corresponding to the same testCase/testStep
         step_reference = StepReference.objects.filter(testCase=step_result.testCase.testCase, 
