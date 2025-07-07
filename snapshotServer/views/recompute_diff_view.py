@@ -4,20 +4,23 @@ Created on 26 juil. 2017
 @author: worm
 '''
 from django.http.response import HttpResponse
-from django.views.generic.base import View
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot
-from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from commonsServer.views.viewsets import ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultConsultation
 
 
-class RecomputeDiffView(LoginRequiredMixinConditional, View):
+class RecomputeDiffView(ApplicationSpecificViewSet):
     """
     API to compute diff from a REST request
     Called when changes has been applied to the list of exclude zones in step snapshot
+    
+    This API is called only from Web interface for now
     """
     
     queryset = Snapshot.objects.none()
+    permission_classes = [ApplicationSpecificPermissionsResultConsultation]
     
     def post(self, request, *args, **kwargs):
         try:

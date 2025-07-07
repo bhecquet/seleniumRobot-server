@@ -40,7 +40,7 @@ urlpatterns = [
     re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
-    re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
+    re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view({'post': 'post'}), name='recompute'),
     # force view to set CSRF cookie so that editing exclusion zones do not fail  
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
     re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/noheader/$', PictureView.as_view(), name="pictureViewNoHeader"), 

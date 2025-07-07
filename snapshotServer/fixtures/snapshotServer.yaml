@@ -3,7 +3,7 @@
     fields: {name: myapp}
 -   model: snapshotServer.application
     pk: 2
-    fields: {name: company}
+    fields: {name: myapp2}
 -   model: snapshotServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}

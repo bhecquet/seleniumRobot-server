@@ -185,7 +185,3 @@ class StepResultViewSet(viewsets.ModelViewSet):
 class ExcludeZoneViewSet(BaseViewSet):
     queryset = ExcludeZone.objects.all()
     serializer_class = ExcludeZoneSerializer
-    
-class StepReferenceViewSet(viewsets.ModelViewSet):
-    queryset = StepReference.objects.all()
-    serializer_class = StepReferenceSerializer

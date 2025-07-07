@@ -75,11 +75,16 @@ class ApplicationSpecificViewSet(BaseViewSet):
         has_model_permission = self.has_model_permission()
         return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission or not settings.SECURITY_API_ENABLED
     
+    def get_application(self, serializer):
+        """
+        Method to override to get Application object from child view
+        """
+        return getattr(serializer.validated_data, 'application', None)
+    
     def perform_create(self, serializer):
         """
         Prevent creating / updating objects on restricted applications
         """
-        model_name = self.queryset.model._meta.model_name
 
         if self.bypass_application_permissions():
             super().perform_create(serializer)
@@ -87,20 +92,25 @@ class ApplicationSpecificViewSet(BaseViewSet):
         
         allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(self.request)
         
-        if 'application' not in serializer.validated_data:
-            self.permission_denied(
-                    self.request,
-                    message="You don't have rights on %s" % model_name,
-                    code=None
-                )
-        elif serializer.validated_data['application'].name in allowed_aplications:
+        application = self.get_application(serializer)
+       
+        if application and application.name in allowed_aplications:
             super().perform_create(serializer)
         else:
             self.permission_denied(
                     self.request,
-                    message="You don't have rights for application %s" % serializer.validated_data['application'],
+                    message="You don't have rights for application %s" % application,
                     code=None
                 )
+            
+    def get_object_application(self, obj):
+        """
+        Returns the application object associated to this object
+        """
+        if obj:
+            return obj.application
+        
+        return None
         
     def check_object_permissions(self, request, obj):
         """
@@ -109,16 +119,18 @@ class ApplicationSpecificViewSet(BaseViewSet):
         - it has permission on model
         - it has permission on application, if application restriction is set
         """
+        
+        application = self.get_object_application(obj)
 
         if self.bypass_application_permissions():
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
-        elif obj and obj.application:
-            permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.application.name
+        elif obj and application:
+            permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name
             if not self.request.user.has_perm(permission):
                 self.permission_denied(
                     request,
-                    message="You don't have rights for application %s" % obj.application.name,
+                    message="You don't have rights for application %s" % application.name,
                     code=None
                 )
         else:

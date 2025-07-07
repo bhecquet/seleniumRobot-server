@@ -360,7 +360,7 @@ class TestStepReferenceView(TestApi):
                 
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.step_result_same_env.id, 'image': fp})
-                self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+                self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
                 time.sleep(0.5) # wait field computing
                 
                 uploaded_reference_2 = StepReference.objects.filter(testCase=self.tcs_same_env.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
@@ -423,7 +423,7 @@ class TestStepReferenceView(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id})
-            self.assertEqual(response.status_code, 500, 'status code should be 500')
+            self.assertEqual(response.status_code, 400, 'status code should be 500')
         
     def test_post_snapshot_missing_step(self):
         
@@ -432,5 +432,5 @@ class TestStepReferenceView(TestApi):
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'image': fp})
-                self.assertEqual(response.status_code, 500, 'status code should be 500')
+                self.assertEqual(response.status_code, 400, 'status code should be 500')
   
