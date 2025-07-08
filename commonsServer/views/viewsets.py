@@ -59,6 +59,7 @@ class ApplicationSpecificViewSet(BaseViewSet):
     View that applies restrictions on values returned by viewset, base on the application linked to the object
     Applies filtering on GET request when a single object is requested
     """
+    prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     
     def bypass_application_permissions(self):
         """
@@ -126,7 +127,7 @@ class ApplicationSpecificViewSet(BaseViewSet):
             return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
         
         elif obj and application:
-            permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name
+            permission = self.prefix + application.name
             if not self.request.user.has_perm(permission):
                 self.permission_denied(
                     request,

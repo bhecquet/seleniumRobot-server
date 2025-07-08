@@ -4,17 +4,21 @@ Created on 26 juil. 2017
 @author: worm
 '''
 import pickle
+import base64
+import io
+import os
+
+from PIL import Image
 
 from django.views.generic.base import TemplateView
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot, TestCaseInSession, TestStep, ExcludeZone
-import base64
-import io
-from PIL import Image
+
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
-import os
-from django.conf import settings
+
 
 
 class PictureView(LoginRequiredMixinConditional, TemplateView):
@@ -23,6 +27,10 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
     """
     
     template_name = "snapshotServer/displayPanel.html"
+    
+    def get_target_application(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId'])
+        return test_case_in_session.session.version.application
 
     def get_context_data(self, **kwargs):
         """
@@ -38,25 +46,15 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
         context['testCaseId'] = self.kwargs['testCaseInSessionId']
         context['testStepId'] = self.kwargs['testStepId']
         
-        step = TestStep.objects.get(pk=self.kwargs['testStepId'])
+        step = get_object_or_404(TestStep, pk=self.kwargs['testStepId'])
+        test_case_in_session = get_object_or_404(TestCaseInSession, pk=self.kwargs['testCaseInSessionId'])
         
-
         context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
+        context['editable'] = True
+        context['editButtonText'] = 'Edit'
         
-        # check that the user has permissions to edit exclusion zones. If not buttons will be disabled
-        authenticated_to_edit = not self.security_enabled or (self.security_enabled and self.request.user.is_authenticated)
-        allowed_to_edit = not self.security_enabled or (self.security_enabled and self.request.user.has_perms(['snapshotServer.add_excludezone', 'snapshotServer.change_excludezone', 'snapshotServer.delete_excludezone']))
-        
-        context['editable'] = authenticated_to_edit and allowed_to_edit
-        if context['editable']:
-            context['editButtonText'] = 'Edit'
-        elif not authenticated_to_edit:
-            context['editButtonText'] = 'You must log in to edit.'
-        elif not allowed_to_edit:
-            context['editButtonText'] = "You don't have right to edit"
-        
-        step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'],
-                                               stepResult__step=self.kwargs['testStepId']).order_by('id')
+        step_snapshots = Snapshot.objects.filter(stepResult__testCase=test_case_in_session,
+                                               stepResult__step=step).order_by('id')
         
         for step_snapshot in step_snapshots:
             if step_snapshot:
