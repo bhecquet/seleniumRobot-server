@@ -193,7 +193,7 @@ class TestStepReferenceView(TestApi):
                 
             response = self.client.get(reverse('stepReference', kwargs={'step_result_id': self.sr1.id}))
             
-            # check we have no permission to view the report
+            # check we have permission to get step reference
             self.assertEqual(200, response.status_code)
             
             
@@ -209,8 +209,8 @@ class TestStepReferenceView(TestApi):
             
             response = self.client.get(reverse('stepReference', kwargs={'step_result_id': 1234}))
             
-            # check we have no permission to view the report
-            self.assertEqual(404, response.status_code)
+            # check we have no permission to get step reference
+            self.assertEqual(403, response.status_code)
 
     def test_get_snapshot(self):
         """
@@ -432,5 +432,5 @@ class TestStepReferenceView(TestApi):
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'image': fp})
-                self.assertEqual(response.status_code, 400, 'status code should be 500')
+                self.assertEqual(response.status_code, 403, 'status code should be 403') # as step result is not provided, it's not possible to check permissions and we get permission denied
   

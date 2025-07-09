@@ -25,9 +25,25 @@ class ApplicationSpecificPermissions(GenericPermissions):
     prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     security_key = 'SECURITY_API_ENABLED'
     
-    """
-    Permissions to apply to any model that need the allow access to a specific application
-    """
+    def _has_model_permission(self, request, view):
+        """
+        Returns True if user has the required permission on the model
+        """
+        if not getattr(settings, self.security_key):
+            return True
+
+        queryset = self._queryset(view)
+        model_permissions = self.get_required_permissions(request.method, queryset.model)
+            
+        return any([request.user.has_perm(model_permission) for model_permission in model_permissions])
+    
+    def get_application(self, request, view):
+        """
+        Method to override to get Application object from child view
+        """
+        return getattr(request.data, 'application', None)
+    
+
     def has_permission(self, request, view):
         """
         Allow acces to model if model permissions are set, or any application specific permission is set
@@ -41,9 +57,53 @@ class ApplicationSpecificPermissions(GenericPermissions):
         
         if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
             return has_model_permission
+        
+        try:
+            application = self.get_application(request, view)
+        except:
+            # if we cannot check the application, stop
+            return has_model_permission
+        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
 
-        return len([p for p in request.user.get_all_permissions() if p.startswith(self.prefix)]) > 0 \
-                or has_model_permission
+        return application and application.name in allowed_aplications or has_model_permission
+                
+    def _bypass_application_permissions(self, request, view):
+        """
+        check if we need to apply or bypass application specific permissions
+        
+        we bypass in case
+        - application permissions are disabled
+        - application permissions are enabled and user has global permission
+        - api security is disabled
+        
+        Returns false if application permissions should be checked
+        """
+        
+        has_model_permission = self._has_model_permission(request, view)
+        return not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN or has_model_permission or not getattr(settings, self.security_key)
+    
+    def get_object_application(self, obj):
+        """
+        Returns the application object associated to this object
+        """
+        if obj:
+            return obj.application
+        
+        return None
+                
+    def has_object_permission(self, request, view, obj):
+        
+        application = self.get_object_application(obj)
+
+        if self._bypass_application_permissions(request, view):
+            return super().has_object_permission(request, view, obj)
+        
+        elif obj and application:
+            permission = self.prefix + application.name
+            return request.user.has_perm(permission)
+        else:
+            return super().has_object_permission(request, view, obj)
+        
                 
 class ApplicationSpecificPermissionsResultRecording(ApplicationSpecificPermissions):
     """
@@ -73,9 +133,9 @@ class ApplicationPermissionChecker:
     """
 
     @staticmethod
-    def get_allowed_applications(request):
+    def get_allowed_applications(request, prefix=APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX):
         """
         Returns the list of applications a user has rights on
         """
-        return [p.replace(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX, '') for p in request.user.get_all_permissions() if APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX in p]
+        return [p.replace(prefix, '') for p in request.user.get_all_permissions() if prefix in p]
    

@@ -14,7 +14,8 @@ from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.models import StepResult, StepReference
 from commonsServer.views.viewsets import ApplicationSpecificViewSet
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from rest_framework.generics import get_object_or_404
+from rest_framework.generics import get_object_or_404, GenericAPIView,\
+    RetrieveAPIView, CreateAPIView
 from rest_framework import serializers
 
 class NoStepReferenceToCreate(Exception):
@@ -72,8 +73,24 @@ class StepReferenceSerializer(serializers.ModelSerializer):
         
         else:
             raise NoStepReferenceToCreate()
+        
+class StepReferencePermission(ApplicationSpecificPermissionsResultRecording):
+    
+    def get_object_application(self, step_result):
+        if step_result:
+            return step_result.testCase.session.version.application
+        else:
+            return ''
+        
+    def get_application(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return self.get_object_application(StepResult.objects.get(pk=request.data['stepResult']))
+        elif view.kwargs.get('step_result_id', ''): # GET
+            return self.get_object_application(StepResult.objects.get(pk=view.kwargs['step_result_id']))
+        else:
+            return ''
 
-class StepReferenceView(ApplicationSpecificViewSet):
+class StepReferenceView(CreateAPIView, RetrieveAPIView):
     """
     View of the API to upload a file with step reference (mainly, a snapshot)
     SeleniumRobot-core will get this reference when a step fails
@@ -88,14 +105,10 @@ class StepReferenceView(ApplicationSpecificViewSet):
     queryset = StepReference.objects.none()
     last_clean = datetime.today()
     last_clean_lock = threading.Lock()
-    permission_classes = [ApplicationSpecificPermissionsResultRecording]
+    permission_classes = [StepReferencePermission]
     serializer_class = StepReferenceSerializer
 
     OVERWRITE_REFERENCE_AFTER_SECONDS = 60 * 60 * 12    # in case a reference already exist, overwrite it only after X seconds (12 hours by default)
-
-    def get_application(self, serializer):
-        # after validation, stepResult (id) has been translated to StepResult object 
-        return self.get_object_application(serializer.validated_data.get('stepResult', ''))
 
     def post(self, request, *args, **kwargs):
         """
@@ -108,20 +121,12 @@ class StepReferenceView(ApplicationSpecificViewSet):
         except NoStepReferenceToCreate as e:
             return HttpResponse(json.dumps({'result': 'OK'}), content_type='application/json', status=200)
 
-        
-    def get_object_application(self, step_result):
-        if step_result:
-            return step_result.testCase.session.version.application
-        else:
-            return ''
-
     def get(self, request, step_result_id):
         """
         Get the reference image corresponding to this StepResult. We get the application / version / test case / environment from this StepResult 
         """
         
         step_result = get_object_or_404(StepResult, id=step_result_id)
-        self.check_object_permissions(request, step_result)
         
         # get the step reference corresponding to the same testCase/testStep
         step_reference = StepReference.objects.filter(testCase=step_result.testCase.testCase, 
