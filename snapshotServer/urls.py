@@ -37,18 +37,18 @@ urlpatterns = [
     path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
     re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     
-    re_path(r'^testResults/result/(?P<testCaseInSessionId>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
+    re_path(r'^testResults/result/(?P<test_case_in_session_id>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
-    re_path(r'^compare/compute/([0-9]+)/$', RecomputeDiffView.as_view({'post': 'post'}), name='recompute'),
+    re_path(r'^compare/compute/(?P<snapshot_id>[0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
     # force view to set CSRF cookie so that editing exclusion zones do not fail  
-    re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
-    re_path(r'^compare/picture/(?P<testCaseInSessionId>[0-9]+)/(?P<testStepId>[0-9]+)/noheader/$', PictureView.as_view(), name="pictureViewNoHeader"), 
+    re_path(r'^compare/picture/(?P<test_case_in_session_id>[0-9]+)/(?P<test_step_id>[0-9]+)/$', PictureView.as_view(), name="pictureView"), 
+    re_path(r'^compare/picture/(?P<test_case_in_session_id>[0-9]+)/(?P<test_step_id>[0-9]+)/noheader/$', PictureView.as_view(), name="pictureViewNoHeader"), 
     re_path(r'^compare/excludeList/(?P<ref_snapshot_id>None|[0-9]+)/(?P<step_snapshot_id>[0-9]+)/$', ExclusionZoneListView.as_view(), name="excludeListView"),
     
     # get status of test session or test step
-    re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view({'get': 'get'}), name="testStatusView"), 
-    re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view({'get': 'get'}), name="testStepStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
+    re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
 
     
 ]

@@ -29,27 +29,27 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
     template_name = "snapshotServer/displayPanel.html"
     
     def get_target_application(self):
-        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['testCaseInSessionId'])
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
         return test_case_in_session.session.version.application
 
     def get_context_data(self, **kwargs):
         """
         Look for the snapshot of our session
         @param sessionId
-        @param testCaseId    a TestCaseInSession object id
-        @param testStepId    a TestStep object id
+        @param test_case_in_session_id    a TestCaseInSession object id
+        @param test_step_id    a TestStep object id
         """
         
             
         context = super(PictureView, self).get_context_data(**kwargs)
         context['captureList'] = []
-        context['testCaseId'] = self.kwargs['testCaseInSessionId']
-        context['testStepId'] = self.kwargs['testStepId']
+        context['testCaseId'] = self.kwargs['test_case_in_session_id']
+        context['testStepId'] = self.kwargs['test_step_id']
         
-        step = get_object_or_404(TestStep, pk=self.kwargs['testStepId'])
-        test_case_in_session = get_object_or_404(TestCaseInSession, pk=self.kwargs['testCaseInSessionId'])
+        step = get_object_or_404(TestStep, pk=self.kwargs['test_step_id'])
+        test_case_in_session = get_object_or_404(TestCaseInSession, pk=self.kwargs['test_case_in_session_id'])
         
-        context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
+        context['status'] = step.isOkWithSnapshots(self.kwargs['test_case_in_session_id'])
         context['editable'] = True
         context['editButtonText'] = 'Edit'
         
@@ -86,7 +86,7 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                                                                stepResult__testCase__session__version=test_case.session.version,
                                                                stepResult__testCase__session__environment=test_case.session.environment,
                                                                stepResult__testCase__session__browser=test_case.session.browser,
-                                                               stepResult__step=self.kwargs['testStepId'],
+                                                               stepResult__step=self.kwargs['test_step_id'],
                                                                refSnapshot=None,
                                                                id__lt=step_snapshot.id,
                                                                name=step_snapshot.name)

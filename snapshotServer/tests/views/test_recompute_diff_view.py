@@ -128,7 +128,7 @@ class TestRecomputeDiffView(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[222]))
-            self.assertEqual(response.status_code, 404)
+            self.assertEqual(response.status_code, 403)
    
     def test_recompute_diff_snapshot_exist_no_ref(self):
         """

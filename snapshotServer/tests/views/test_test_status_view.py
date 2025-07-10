@@ -90,8 +90,8 @@ class TestTestStatusView(TestViews):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 568}))
             
-            # check we have no permission to view the report
-            self.assertEqual(404, response.status_code)
+            # check we have no permission to get status as test_case_in_session is unkown
+            self.assertEqual(403, response.status_code)
     
     def test_session_status_ok_on_reference(self):
         """

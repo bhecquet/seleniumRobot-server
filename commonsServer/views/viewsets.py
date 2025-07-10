@@ -76,7 +76,7 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
         
         return queryset.filter(application__name__in=allowed_aplications)
     
-class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView, ApplicationSpecificViewSet):
+class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView):
     permission_classes = [ApplicationSpecificPermissionsVariables]
     filter_backends = [ApplicationSpecificFilter]
     

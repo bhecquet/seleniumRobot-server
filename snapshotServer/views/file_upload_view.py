@@ -1,20 +1,39 @@
-from rest_framework import views
 from rest_framework.parsers import MultiPartParser
 from rest_framework.response import Response
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.forms import ImageForComparisonUploadForm,\
     ImageForComparisonUploadFormNoStorage
-from snapshotServer.models import Snapshot, StepResult
+from snapshotServer.models import Snapshot, StepResult, Version
 import json
 from django.http.response import HttpResponse
 import io
 from PIL import Image
 import os
+from rest_framework.generics import CreateAPIView, UpdateAPIView
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 
+class FileUploadPermission(ApplicationSpecificPermissionsResultRecording):
+    
+    def get_application_from_step_result(self, step_result):
+        if step_result:
+            return step_result.testCase.session.version.application
+        return ''
+    
+    def get_application_from_version(self, version):
+        if version:
+            return version.application
+        return ''
+        
+    def get_application(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return self.get_application_from_step_result(StepResult.objects.get(pk=request.POST['stepResult']))
+        elif request.POST.get('versionId', ''): #PUT
+            return self.get_application_from_version(Version.objects.get(pk=request.POST['versionId']))
+        else:
+            return ''
 
-
-class FileUploadView(views.APIView):
+class FileUploadView(CreateAPIView, UpdateAPIView):
     """
     View of the API to upload a file with snapshot informations
     It creates the snapshot and detects if a reference already exists for this snapshot
@@ -22,6 +41,7 @@ class FileUploadView(views.APIView):
     
     parser_classes = (MultiPartParser,)
     queryset = Snapshot.objects.all()
+    permission_classes = [FileUploadPermission]
 
     # test with CURL
     # curl -u admin:adminServer -F "step=1" -F "stepResult=1234" -F "image=@/home/worm/Ibis Mulhouse.png" -F "compare=true"   http://127.0.0.1:8000/upload/toto
