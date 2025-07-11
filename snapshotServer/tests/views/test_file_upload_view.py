@@ -12,14 +12,13 @@ import json
 from django.urls.base import reverse
 from django.conf import settings
 from django.db.models import Q
+from django.contrib.auth.models import Permission
+from django.contrib.contenttypes.models import ContentType
 
-from snapshotServer.tests import authenticate_test_client_for_api
 from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, Snapshot, TestCaseInSession, \
     StepResult
-from django.contrib.auth.models import Permission
 from commonsServer.tests.test_api import TestApi
-from django.contrib.contenttypes.models import ContentType
 from variableServer.models import Application
 
 
