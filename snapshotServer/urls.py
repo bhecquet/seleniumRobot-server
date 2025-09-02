@@ -15,19 +15,20 @@ from snapshotServer.views.step_reference_view import StepReferenceView
 from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
 
 router = routers.DefaultRouter()
-router.register(r'snapshot', viewsets.SnapshotViewSet)
 router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
 router.register(r'testinfo', viewsets.TestInfoSessionViewSet)
 router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'stepresult', viewsets.StepResultViewSet)
 router.register(r'exclude', viewsets.ExcludeZoneViewSet)
-router.register(r'session', viewsets.TestSessionViewSet)
 # curl -X POST http://localhost:8000/snapshot/api/file/ -F "file=@D:\Dev\seleniumRobot\seleniumRobot-jenkins\covea.pic.jenkins.tests.selenium\jenkins\test-output\loginInvalid\screenshots\login_screen-b7c449.png " -F "stepResult=486"
 router.register(r'file', viewsets.FileViewSet)
 router.register(r'logs', viewsets.ExecutionLogsViewSet)
 
 urlpatterns = [
     re_path(r'^api/', include(router.urls), name='api'),
+    
+    re_path(r'^api/session', viewsets.TestSessionViewSet.as_view(), name='session'),
+    
     re_path(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 

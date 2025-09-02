@@ -9,7 +9,6 @@ import pickle
 from django.http.response import HttpResponse
 
 from snapshotServer.models import TestCaseInSession, Snapshot
-from commonsServer.views.viewsets import ApplicationSpecificViewSet
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 from rest_framework.generics import RetrieveAPIView
 

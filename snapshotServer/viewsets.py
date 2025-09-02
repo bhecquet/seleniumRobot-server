@@ -7,9 +7,9 @@ from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
     TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer,\
     StepResultSerializer, StepReferenceSerializer, FileSerializer, ExecutionLogsSerializer,\
     TestInfoSerializer
-from rest_framework import viewsets, renderers
+from rest_framework import viewsets, renderers, mixins
 from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
-    StepReference, File, ExecutionLogs, TestInfo, Error
+    StepReference, File, ExecutionLogs, TestInfo, Error, Version
 from commonsServer.views.viewsets import BaseViewSet
 from rest_framework.decorators import action
 from django.http.response import FileResponse, HttpResponse
@@ -20,26 +20,77 @@ import io
 from django.core.files.uploadedfile import InMemoryUploadedFile
 import datetime
 from django.utils import timezone
+from rest_framework.generics import UpdateAPIView, CreateAPIView,\
+    RetrieveAPIView
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from django.db.models.aggregates import Count
 
-class TestSessionViewSet(BaseViewSet):
-    queryset = TestSession.objects.all()
+class ResultRecordingViewSet(CreateAPIView, # POST
+                             RetrieveAPIView, # GET
+                             UpdateAPIView # PATCH
+                             ):
+    permission_classes = [ApplicationSpecificPermissionsResultRecording]
+    recreate_existing_instance = True 
+    
+    def perform_create(self, serializer):
+        """
+        Check if we need to recreate or not the object
+        """
+        if self.recreate_existing_instance:
+            super().perform_create(serializer)
+            return
+        
+        # Do not create an object if it already exists
+        objects = self.serializer_class.Meta.model.objects.all()
+        for key, value in serializer.validated_data.items():
+            if type(value) == list:
+                objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
+                if len(value) > 0:
+                    for v in value:
+                        objects = objects.filter(**{key: v})
+            else:
+                objects = objects.filter(**{key: value})
+    
+        if not objects:
+            super().perform_create(serializer)
+        else:
+            serializer.data.serializer._data.update({'id': objects[0].id})
+
+class TestSessionPermission(ApplicationSpecificPermissionsResultRecording):
+    """
+    Redefine permission class so that it's possible to get application from data
+    """
+    
+    def get_object_application(self, version):
+        if version:
+            return version.application
+        else:
+            return ''
+        
+    def get_application(self, request, view):
+        if request.POST.get('version', ''): # POST
+            return self.get_object_application(Version.objects.get(pk=request.data['version']))
+        else:
+            return ''
+
+class TestSessionViewSet(ResultRecordingViewSet): # post
+    http_method_names = ['post']
+    queryset = TestSession.objects.none()
     serializer_class = TestSessionSerializer
+    recreate_existing_instance = False 
+    permission_classes = [TestSessionPermission]
 
-class TestCaseInSessionViewSet(viewsets.ModelViewSet):
+class TestCaseInSessionViewSet(viewsets.ModelViewSet): # post / get / patch
     queryset = TestCaseInSession.objects.all()
     serializer_class = TestCaseInSessionSerializer
 
-class TestInfoSessionViewSet(viewsets.ModelViewSet):
+class TestInfoSessionViewSet(viewsets.ModelViewSet): # post
     queryset = TestInfo.objects.all()
     serializer_class = TestInfoSerializer
 
-class TestStepViewSet(BaseViewSet):
+class TestStepViewSet(BaseViewSet): # post 
     queryset = TestStep.objects.all()
     serializer_class = TestStepSerializer
-    
-class SnapshotViewSet(viewsets.ModelViewSet):
-    queryset = Snapshot.objects.all()
-    serializer_class = SnapshotSerializer
     
 class PassthroughRenderer(renderers.BaseRenderer):
     """
@@ -50,7 +101,7 @@ class PassthroughRenderer(renderers.BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
     
-class FileViewSet(viewsets.ModelViewSet):
+class FileViewSet(viewsets.ModelViewSet): # post
     queryset = File.objects.all()
     serializer_class = FileSerializer
     
@@ -106,11 +157,11 @@ class FileViewSet(viewsets.ModelViewSet):
             return Response(status=500, data=json.dumps({'error': str(e)}))
             
     
-class ExecutionLogsViewSet(viewsets.ModelViewSet):
+class ExecutionLogsViewSet(viewsets.ModelViewSet): # post
     queryset = ExecutionLogs.objects.all()
     serializer_class = ExecutionLogsSerializer
 
-class StepResultViewSet(viewsets.ModelViewSet):
+class StepResultViewSet(viewsets.ModelViewSet): # post / patch
     queryset = StepResult.objects.all()
     serializer_class = StepResultSerializer
     
@@ -182,6 +233,6 @@ class StepResultViewSet(viewsets.ModelViewSet):
 
 
     
-class ExcludeZoneViewSet(BaseViewSet):
+class ExcludeZoneViewSet(BaseViewSet): # post
     queryset = ExcludeZone.objects.all()
     serializer_class = ExcludeZoneSerializer

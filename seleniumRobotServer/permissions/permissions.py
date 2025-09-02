@@ -108,13 +108,17 @@ class ApplicationSpecificPermissions(GenericPermissions):
 class ApplicationSpecificPermissionsResultRecording(ApplicationSpecificPermissions):
     """
     Permissions asssociated to result recording via API
+    
+    Result recording is associated to variable handling of the same application as recording is merely done by
+    - CI => it must also have rights on variables
+    - automation engineer => it already has right on sensible data of application
     """
     prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     security_key = 'SECURITY_API_ENABLED'
                 
 class ApplicationSpecificPermissionsResultConsultation(ApplicationSpecificPermissions):
     """
-    Permissions asssociated to result consultation via API
+    Permissions asssociated to result consultation via GUI
     """
     prefix = APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX
     security_key = 'SECURITY_WEB_ENABLED'

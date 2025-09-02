@@ -9,7 +9,6 @@ from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultConsultation
 from rest_framework.generics import get_object_or_404, CreateAPIView
-from seleniumRobotServer.permissions import permissions
 
 class RecomputeDiffPermission(ApplicationSpecificPermissionsResultConsultation):
     

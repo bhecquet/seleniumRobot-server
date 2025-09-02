@@ -8,14 +8,11 @@ from django.http.response import HttpResponse
 from django.utils import timezone
 
 from rest_framework.parsers import MultiPartParser
-from rest_framework.response import Response
 
 from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.models import StepResult, StepReference
-from commonsServer.views.viewsets import ApplicationSpecificViewSet
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from rest_framework.generics import get_object_or_404, GenericAPIView,\
-    RetrieveAPIView, CreateAPIView
+from rest_framework.generics import get_object_or_404, RetrieveAPIView, CreateAPIView
 from rest_framework import serializers
 
 class NoStepReferenceToCreate(Exception):

@@ -4,14 +4,9 @@ Created on 16 mai 2017
 @author: bhecquet
 '''
 
-import django.test
-from django.test.client import Client
-from django.contrib.auth.models import User
-import json
 from rest_framework.test import APITestCase
 from snapshotServer.tests import authenticate_test_client_for_api
-from snapshotServer.models import Error, StepResult, TestCase, Snapshot,\
-    TestStep, TestSession, TestCaseInSession, TestEnvironment
+from snapshotServer.models import Error, StepResult, TestCase, TestStep, TestSession, TestCaseInSession, TestEnvironment
 import datetime
 import pytz
 from variableServer.models import Version
