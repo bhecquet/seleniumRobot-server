@@ -4,6 +4,8 @@ from commonsServer.models import Application
 
 APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX = 'variableServer.can_view_application_'
 APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX = 'snapshotServer.can_view_application_'
+class BYPASS_APPLICATION_CHECK:
+    name = '_BYPASS_APPLICATION_CHECK_'
 
 class GenericPermissions(DjangoModelPermissions):
     """
@@ -24,6 +26,7 @@ class ApplicationSpecificPermissions(GenericPermissions):
     
     prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     security_key = 'SECURITY_API_ENABLED'
+    bypass_application_check = 'BYPASS_APPLICATION_CHECK'
     
     def _has_model_permission(self, request, view):
         """
@@ -40,6 +43,8 @@ class ApplicationSpecificPermissions(GenericPermissions):
     def get_application(self, request, view):
         """
         Method to override to get Application object from child view
+        It's possible to return BYPASS_APPLICATION_CHECK key so that, during "has_permission" phase, we can delegate to 'has_object_permission'
+        ex: PATCH / PUT request may do 'has_permission' prior to 'has_object_permission', in this case, controlling the application to times is unecessary
         """
         return getattr(request.data, 'application', None)
     

@@ -16,6 +16,7 @@ from snapshotServer.views.test_session_summary_view import TestSessionSummaryVie
 
 router = routers.DefaultRouter()
 router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
+router.register(r'session', viewsets.TestSessionViewSet)
 router.register(r'testinfo', viewsets.TestInfoSessionViewSet)
 router.register(r'teststep', viewsets.TestStepViewSet)
 router.register(r'stepresult', viewsets.StepResultViewSet)
@@ -26,9 +27,11 @@ router.register(r'logs', viewsets.ExecutionLogsViewSet)
 
 urlpatterns = [
     re_path(r'^api/', include(router.urls), name='api'),
-    
-    re_path(r'^api/session', viewsets.TestSessionViewSet.as_view(), name='session'),
-    
+
+    #re_path(r'^api/session', viewsets.TestSessionViewSet.as_view(), name='session'),
+    #re_path(r'^api/testcaseinsession', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession'),
+    #re_path(r'^api/testcaseinsession/(?P<pk>[^/.]+)/', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession_patch'),
+
     re_path(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 

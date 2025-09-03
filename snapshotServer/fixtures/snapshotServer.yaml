@@ -55,6 +55,7 @@
 -   model: snapshotServer.testcaseinsession
     pk: 1
     fields:
+        name: 'foo'
         testCase: 1
         session: 1
         #testSteps: [1]     # kept to show that a step is linked

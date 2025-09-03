@@ -3,29 +3,37 @@ Created on 4 mai 2017
 
 @author: bhecquet
 '''
-from snapshotServer.serializers import SnapshotSerializer, TestStepSerializer, \
-    TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer,\
-    StepResultSerializer, StepReferenceSerializer, FileSerializer, ExecutionLogsSerializer,\
-    TestInfoSerializer
-from rest_framework import viewsets, renderers, mixins
-from snapshotServer.models import Snapshot, TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult,\
-    StepReference, File, ExecutionLogs, TestInfo, Error, Version
-from commonsServer.views.viewsets import BaseViewSet
-from rest_framework.decorators import action
-from django.http.response import FileResponse, HttpResponse
-from rest_framework.response import Response
+import datetime
+import io
 import json
 import zipfile
-import io
-from django.core.files.uploadedfile import InMemoryUploadedFile
-import datetime
-from django.utils import timezone
-from rest_framework.generics import UpdateAPIView, CreateAPIView,\
-    RetrieveAPIView
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from django.db.models.aggregates import Count
 
-class ResultRecordingViewSet(CreateAPIView, # POST
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.db.models.aggregates import Count
+from django.http.response import FileResponse, HttpResponse
+from django.utils import timezone
+from rest_framework import viewsets, renderers
+from rest_framework.decorators import action
+from rest_framework.generics import UpdateAPIView, CreateAPIView, \
+    RetrieveAPIView
+from rest_framework.response import Response
+from rest_framework.viewsets import ViewSet
+from rest_framework.permissions import IsAuthenticated
+
+from commonsServer.views.viewsets import BaseViewSet
+from seleniumRobotServer.permissions import permissions
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording, \
+    ApplicationPermissionChecker
+from snapshotServer.models import TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult, \
+    File, ExecutionLogs, TestInfo, Error, Version, Application
+from snapshotServer.serializers import TestStepSerializer, \
+    TestSessionSerializer, ExcludeZoneSerializer, TestCaseInSessionSerializer, \
+    StepResultSerializer, FileSerializer, ExecutionLogsSerializer, \
+    TestInfoSerializer
+
+
+class ResultRecordingViewSet(ViewSet,
+                             CreateAPIView, # POST
                              RetrieveAPIView, # GET
                              UpdateAPIView # PATCH
                              ):
@@ -56,20 +64,19 @@ class ResultRecordingViewSet(CreateAPIView, # POST
         else:
             serializer.data.serializer._data.update({'id': objects[0].id})
 
+    @classmethod
+    def get_extra_actions(cls):
+        return []
+
+
 class TestSessionPermission(ApplicationSpecificPermissionsResultRecording):
     """
     Redefine permission class so that it's possible to get application from data
     """
-    
-    def get_object_application(self, version):
-        if version:
-            return version.application
-        else:
-            return ''
-        
+
     def get_application(self, request, view):
         if request.POST.get('version', ''): # POST
-            return self.get_object_application(Version.objects.get(pk=request.data['version']))
+            return Version.objects.get(pk=request.data['version']).application
         else:
             return ''
 
@@ -80,18 +87,64 @@ class TestSessionViewSet(ResultRecordingViewSet): # post
     recreate_existing_instance = False 
     permission_classes = [TestSessionPermission]
 
-class TestCaseInSessionViewSet(viewsets.ModelViewSet): # post / get / patch
+class TestCaseInSessionPermission(ApplicationSpecificPermissionsResultRecording):
+    """
+    Redefine permission class so that it's possible to get application from data
+    """
+
+    def get_object_application(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.version.application
+        else:
+            return ''
+
+    def get_application(self, request, view):
+        if request.POST.get('session', ''): # POST
+            return TestSession.objects.get(pk=request.data['session']).version.application
+        elif view.kwargs.get('pk', ''): # PATCH / GET, needed so that we can refuse access if object is unknown
+            return self.get_object_application(TestCaseInSession.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
+
+class TestCaseInSessionViewSet(ResultRecordingViewSet): # post / get / patch
+    http_method_names = ['post', 'get', 'patch']
     queryset = TestCaseInSession.objects.all()
     serializer_class = TestCaseInSessionSerializer
+    permission_classes = [TestCaseInSessionPermission]
 
-class TestInfoSessionViewSet(viewsets.ModelViewSet): # post
+class TestInfoSessionPermission(ApplicationSpecificPermissionsResultRecording):
+
+    def get_application(self, request, view):
+        if request.POST.get('testCase', ''): # POST
+            return TestCaseInSession.objects.get(pk=request.data['testCase']).session.version.application
+        else:
+            return ''
+
+class TestInfoSessionViewSet(ResultRecordingViewSet): # post
+    http_method_names = ['post']
     queryset = TestInfo.objects.all()
     serializer_class = TestInfoSerializer
+    permission_classes = [TestInfoSessionPermission]
 
-class TestStepViewSet(BaseViewSet): # post 
+class TestStepPermission(ApplicationSpecificPermissionsResultRecording):
+    """
+    Allow any user that has right on at least an application, to create step
+    """
+
+    def get_application(self, request, view):
+        allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+        if allowed_applications:
+            return Application.objects.get(name=allowed_applications[0])
+        else:
+            return ''
+
+class TestStepViewSet(ResultRecordingViewSet): # post
+    http_method_names = ['post']
     queryset = TestStep.objects.all()
     serializer_class = TestStepSerializer
-    
+    recreate_existing_instance = False
+    permission_classes = [TestStepPermission]
+
 class PassthroughRenderer(renderers.BaseRenderer):
     """
         Return data as-is. View should supply a Response.
