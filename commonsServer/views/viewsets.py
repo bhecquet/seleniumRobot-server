@@ -11,14 +11,31 @@ from rest_framework.generics import get_object_or_404, CreateAPIView,\
 from variableServer.models import Application, TestEnvironment, \
     TestCase, Version
 from django.db.models.aggregates import Count
-from django.conf import settings
+
 
 from commonsServer.views.serializers import ApplicationSerializer,\
     VersionSerializer, TestEnvironmentSerializer, TestCaseSerializer
 from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX,\
     ApplicationSpecificPermissionsVariables
 
+def perform_create(viewset_type, view, serializer):
+    """
+    Do not create an object if it already exists
+    """
+    objects = view.serializer_class.Meta.model.objects.all()
+    for key, value in serializer.validated_data.items():
+        if type(value) == list:
+            objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
+            if len(value) > 0:
+                for v in value:
+                    objects = objects.filter(**{key: v})
+        else:
+            objects = objects.filter(**{key: value})
 
+    if not objects:
+        super(viewset_type, view).perform_create(serializer)
+    else:
+        serializer.data.serializer._data.update({'id': objects[0].id})
 
 class BaseViewSet(viewsets.ModelViewSet):
     
@@ -26,34 +43,8 @@ class BaseViewSet(viewsets.ModelViewSet):
         """
         Do not create an object if it already exists
         """
-        objects = self.serializer_class.Meta.model.objects.all()
-        for key, value in serializer.validated_data.items():
-            if type(value) == list:
-                objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
-                if len(value) > 0:
-                    for v in value:
-                        objects = objects.filter(**{key: v})
-            else:
-                objects = objects.filter(**{key: value})
-    
-        if not objects:
-            super().perform_create(serializer)
-        else:
-            serializer.data.serializer._data.update({'id': objects[0].id})
-            
-    def has_model_permission(self):
-        """
-        Returns True if user has the required permission on the model
-        """
-        if not settings.SECURITY_API_ENABLED:
-            return True
+        perform_create(BaseViewSet, self, serializer)
 
-        model_permissions = []
-        for permission in self.get_permissions():
-            model_permissions += permission.get_required_permissions(self.request.method, self.queryset.model)
-            
-        return any([self.request.user.has_perm(model_permission) for model_permission in model_permissions])
-            
 class ApplicationSpecificViewSet(BaseViewSet):
     """
     View that applies restrictions on values returned by viewset, base on the application linked to the object
@@ -79,81 +70,95 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
 class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView):
     permission_classes = [ApplicationSpecificPermissionsVariables]
     filter_backends = [ApplicationSpecificFilter]
-    
+
+    def perform_create(self, serializer):
+        """
+        Do not create an object if it already exists
+        """
+        perform_create(RetrieveByNameViewSet, self, serializer)
+
     def get_object(self, model):
         name = self.request.query_params.get('name', None)
         if not name:
             raise ValidationError("name parameter is mandatory")
         
         obj = get_object_or_404(model, name=name)
-        self.check_object_permissions(self.request, obj)
+#        self.check_object_permissions(self.request, obj)
         
         return obj
+
+class ApplicationPermission(ApplicationSpecificPermissionsVariables):
+
+    def get_application(self, request, view):
+        try:
+            return Application.objects.get(name=request.query_params.get('name', ''))
+        except:
+            return ''
 
 class ApplicationViewSet(RetrieveByNameViewSet):
     queryset = Application.objects.none()
     serializer_class = ApplicationSerializer
-    
+    permission_classes = [ApplicationPermission]
+    http_method_names = ['get', 'post']
+
     def get_object(self):
         return super().get_object(Application)
-    
-    def check_object_permissions(self, request, obj):
-        """
-        Check user has permission on object
-        It has permission if:
-        - it has permission on model
-        - it has permission on application, if application restriction is set
-        """
 
-        if self.bypass_application_permissions():
-            return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
-        
-        permission = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.name
-        if not self.request.user.has_perm(permission):
-            self.permission_denied(
-                request,
-                message="You don't have rights for application %s" % obj.name,
-                code=None
-            )
-        
-    
+class VersionPermission(ApplicationSpecificPermissionsVariables):
+
+    def get_application(self, request, view):
+        try:
+            return Application.objects.get(pk=request.POST['application'])
+        except:
+            return ''
+
 class VersionViewSet(RetrieveByNameViewSet):
     queryset = Version.objects.none()
     serializer_class = VersionSerializer
-    
-    def get_object(self):
-        return super().get_object(Version)
-    
+    permission_classes = [VersionPermission]
+    http_method_names = ['post']
+
+class EnvironmentPermission(ApplicationSpecificPermissionsVariables):
+    """
+    Allow any user that has right on at least an application, to get environment
+    Create environment is only allowed to user having "add_testenvironment" permission
+    """
+
+    def get_application(self, request, view):
+        if request.method == 'GET':
+            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            if allowed_applications:
+                return Application.objects.get(name=allowed_applications[0])
+            else:
+                return ''
+        else:
+            return ''
+
 class TestEnvironmentViewSet(RetrieveByNameViewSet):
     queryset = TestEnvironment.objects.none()
     serializer_class = TestEnvironmentSerializer
+    http_method_names = ['get', 'post']
+    permission_classes = [EnvironmentPermission]
     
     def get_object(self):
         return super().get_object(TestEnvironment)
-    
-    def check_object_permissions(self, request, obj):
-        """
-        Check user has permission on object
-        It has permission if:
-        - it has permission on model
-        - it has permission on application, if application restriction is set
-        """
 
-        if self.bypass_application_permissions():
-            return viewsets.ModelViewSet.check_object_permissions(self, request, obj)
-        
-        if self.request.method != 'GET':
-            self.permission_denied(
-                request,
-                message="You don't have rights to change environment %s" % obj.name,
-                code=None
-            )
-        
-        # when application restrictions is set, we allow to see all environments as there is no link between application and environment
+class TestCasePermission(ApplicationSpecificPermissionsVariables):
+
+    def get_application(self, request, view):
+        try:
+            if request.method == 'POST':
+                return Application.objects.get(pk=request.POST['application'])
+            else:
+                return Application.objects.get(pk=request.query_params.get('application', ''))
+        except:
+            return ''
 
 class TestCaseViewSet(RetrieveByNameViewSet):
     queryset = TestCase.objects.none()
     serializer_class = TestCaseSerializer
+    http_method_names = ['get', 'post']
+    permission_classes = [TestCasePermission]
     
     def get_object(self):
         return super().get_object(TestCase)
