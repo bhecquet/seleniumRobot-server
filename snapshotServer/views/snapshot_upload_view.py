@@ -33,7 +33,7 @@ class FileUploadPermission(ApplicationSpecificPermissionsResultRecording):
         else:
             return ''
 
-class FileUploadView(CreateAPIView, UpdateAPIView):
+class SnapshotUploadView(CreateAPIView, UpdateAPIView):
     """
     View of the API to upload a file with snapshot informations
     It creates the snapshot and detects if a reference already exists for this snapshot

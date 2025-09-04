@@ -12,16 +12,17 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models.aggregates import Count
 from django.http.response import FileResponse, HttpResponse
 from django.utils import timezone
+
 from rest_framework import viewsets, renderers
 from rest_framework.decorators import action
 from rest_framework.generics import UpdateAPIView, CreateAPIView, \
     RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+from rest_framework.permissions import AllowAny
 
-from commonsServer.views.viewsets import BaseViewSet
-from seleniumRobotServer.permissions import permissions
+from commonsServer.views.viewsets import BaseViewSet, perform_create
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording, \
     ApplicationPermissionChecker
 from snapshotServer.models import TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult, \
@@ -31,6 +32,15 @@ from snapshotServer.serializers import TestStepSerializer, \
     StepResultSerializer, FileSerializer, ExecutionLogsSerializer, \
     TestInfoSerializer
 
+class Ping(APIView):
+
+    # allow anyone on this view
+    queryset = TestSession.objects.none()
+    authentication_classes = []
+    permission_classes = [AllowAny]
+
+    def get(self, request, *args, **kwargs):
+        return Response("OK")
 
 class ResultRecordingViewSet(ViewSet,
                              CreateAPIView, # POST
@@ -49,24 +59,8 @@ class ResultRecordingViewSet(ViewSet,
             return
         
         # Do not create an object if it already exists
-        objects = self.serializer_class.Meta.model.objects.all()
-        for key, value in serializer.validated_data.items():
-            if type(value) == list:
-                objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
-                if len(value) > 0:
-                    for v in value:
-                        objects = objects.filter(**{key: v})
-            else:
-                objects = objects.filter(**{key: value})
-    
-        if not objects:
-            super().perform_create(serializer)
-        else:
-            serializer.data.serializer._data.update({'id': objects[0].id})
+        perform_create(ResultRecordingViewSet, self, serializer)
 
-    @classmethod
-    def get_extra_actions(cls):
-        return []
 
 
 class TestSessionPermission(ApplicationSpecificPermissionsResultRecording):
@@ -153,10 +147,40 @@ class PassthroughRenderer(renderers.BaseRenderer):
     format = ''
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
-    
-class FileViewSet(viewsets.ModelViewSet): # post
+
+class FilePermission(ApplicationSpecificPermissionsResultRecording):
+    """
+    Redefine permission class so that it's possible to get application from data
+    """
+
+    def get_object_application(self, file):
+        if file:
+            return file.stepResult.testCase.session.version.application
+        else:
+            return ''
+
+    def get_application(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return StepResult.objects.get(pk=request.data['stepResult']).testCase.session.version.application
+        elif view.kwargs.get('pk', ''): # GET, needed so that we can refuse access if object is unknown
+            return self.get_object_application(File.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
+
+class FileViewSet(ResultRecordingViewSet): # post
+    """
+    View allowing to upload any file that has been produced by test
+    - logs
+    - video
+    - pictures
+    - html
+    - ...
+    """
+
+    http_method_names = ['post', 'get']
     queryset = File.objects.all()
     serializer_class = FileSerializer
+    permission_classes = [FilePermission]
     
     @action(methods=['get'], detail=True, renderer_classes=(PassthroughRenderer,))
     def download(self, *args, **kwargs):
@@ -181,7 +205,8 @@ class FileViewSet(viewsets.ModelViewSet): # post
         else:
             response = FileResponse(file_handle, content_type='application/octet-stream')
         response['Content-Length'] = instance.file.size
-        response['Content-Disposition'] = 'attachment; filename="%s"' % instance.file.name
+        filename = instance.name if instance.name else instance.file.name
+        response['Content-Disposition'] = 'attachment; filename="%s"' % filename
 
         return response
     

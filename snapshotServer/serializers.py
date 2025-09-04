@@ -94,7 +94,7 @@ class SnapshotSerializer(serializers.ModelSerializer):
 class FileSerializer(serializers.ModelSerializer):
     class Meta:
         model = File
-        fields = ('id', 'stepResult', 'file')
+        fields = ('id', 'stepResult', 'file', 'name')
         
 class ExecutionLogsSerializer(serializers.ModelSerializer):
     class Meta:

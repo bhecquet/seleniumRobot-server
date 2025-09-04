@@ -3,7 +3,7 @@ from rest_framework import routers
 
 from snapshotServer import viewsets
 from snapshotServer.views.exclude_zone_list_view import ExclusionZoneListView
-from snapshotServer.views.file_upload_view import FileUploadView
+from snapshotServer.views.snapshot_upload_view import SnapshotUploadView
 from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
@@ -26,13 +26,14 @@ router.register(r'file', viewsets.FileViewSet)
 router.register(r'logs', viewsets.ExecutionLogsViewSet)
 
 urlpatterns = [
+    re_path(r'^$',  viewsets.Ping.as_view(), name='snapshotPing'),
     re_path(r'^api/', include(router.urls), name='api'),
 
     #re_path(r'^api/session', viewsets.TestSessionViewSet.as_view(), name='session'),
     #re_path(r'^api/testcaseinsession', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession'),
     #re_path(r'^api/testcaseinsession/(?P<pk>[^/.]+)/', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession_patch'),
 
-    re_path(r'^upload/(?P<filename>[^/]+)$', FileUploadView.as_view(), name='upload'),
+    re_path(r'^upload/(?P<filename>[^/]+)$', SnapshotUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
     # image-field-detector
