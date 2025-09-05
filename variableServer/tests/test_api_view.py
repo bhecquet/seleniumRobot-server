@@ -1294,7 +1294,7 @@ class TestApiView(TestApi):
             
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
-            self.assertEqual(response.status_code, 404, 'status code should be 404: ' + str(response.content))
+            self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
         
     def test_delete_internal_variable_with_application_restriction_and_no_permission(self):
         """

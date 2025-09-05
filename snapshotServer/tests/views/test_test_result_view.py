@@ -35,14 +35,14 @@ class TestTestResultView(SnapshotTestCase):
         Check that with security disabled, we  access view without authentication
         """
         with self.settings(SECURITY_WEB_ENABLED=''):
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(200, response.status_code)
         
     def test_report_result_security_not_authenticated(self):
         """
         Check that with security enabled, we cannot access view without authentication
         """
-        response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         
         # check we are redirected to login
         self.assertEqual(302, response.status_code)
@@ -57,7 +57,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             
             # check we have no permission to view the report
             self.assertEqual(403, response.status_code)
@@ -72,7 +72,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
@@ -86,7 +86,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 909}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 909}))
             
             # check we have no permission to view the report
             self.assertEqual(404, response.status_code)
@@ -98,7 +98,7 @@ class TestTestResultView(SnapshotTestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(len(response.context['object_list']), 4)
             
             # check order of steps
@@ -165,7 +165,7 @@ class TestTestResultView(SnapshotTestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 11}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             self.assertEqual(len(response.context['object_list']), 4)
             self.assertEqual(response.context['status'], "FAILURE")
             
@@ -198,7 +198,7 @@ class TestTestResultView(SnapshotTestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 11}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             self.assertEqual(len(response.context['object_list']), 4)
             self.assertEqual(response.context['status'], "FAILURE")
             
@@ -236,7 +236,7 @@ class TestTestResultView(SnapshotTestCase):
             session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
             session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(response.context['status'], "SUCCESS")
             
             html = self.remove_spaces(response.rendered_content)
@@ -262,7 +262,7 @@ class TestTestResultView(SnapshotTestCase):
             session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
             session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(response.context['status'], "SUCCESS")
             
             html = self.remove_spaces(response.rendered_content)
@@ -292,7 +292,7 @@ class TestTestResultView(SnapshotTestCase):
             session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
             session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(response.context['status'], "FAILURE")
             
             html = self.remove_spaces(response.rendered_content)
@@ -316,7 +316,7 @@ class TestTestResultView(SnapshotTestCase):
             session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
             session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             self.assertEqual(response.context['status'], "SUCCESS")
     
             html = self.remove_spaces(response.rendered_content)
@@ -334,7 +334,7 @@ class TestTestResultView(SnapshotTestCase):
             test_case_in_session.gridNode = "mynode.domain.com"
             test_case_in_session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             html = self.remove_spaces(response.rendered_content)
             
             # details table
@@ -351,7 +351,7 @@ class TestTestResultView(SnapshotTestCase):
             test_case_in_session.testSteps.set([11, 12, 15, 14])
             test_case_in_session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 11}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             html = self.remove_spaces(response.rendered_content)
     
             self.assertTrue("""<div class="box collapsed-box warning"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
@@ -369,7 +369,7 @@ class TestTestResultView(SnapshotTestCase):
 ;&nbsp;"""
             test_case_in_session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             html = self.remove_spaces(response.rendered_content)
     
             self.assertTrue("""<th>Description</th><td>Some extra test""" in html)
@@ -388,7 +388,7 @@ class TestTestResultView(SnapshotTestCase):
             test_case_in_session.session.startedBy = """http://myTestLauncher/foo/bar?test=test1&param=1"""
             test_case_in_session.session.save()
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 1}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             html = self.remove_spaces(response.rendered_content)
     
             self.assertTrue("""<tr><th>Started by</th><td><a href=http://myTestLauncher/foo/bar?test=test1&amp;param=1>http://myTestLauncher/foo/bar?test=test1&amp;param=1</a></td></tr>""" in html)
@@ -401,7 +401,7 @@ class TestTestResultView(SnapshotTestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 11}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             self.assertEqual(len(response.context['object_list']), 4)
             self.assertEqual(response.context['status'], "FAILURE")
             
@@ -421,7 +421,7 @@ class TestTestResultView(SnapshotTestCase):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
             
-            response = self.client.get(reverse('testResultView', kwargs={'testCaseInSessionId': 11}))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             self.assertEqual(len(response.context['object_list']), 4)
             self.assertEqual(len(response.context['stacktrace']), 2)
             self.assertTrue('line1' in response.context['stacktrace'][0])

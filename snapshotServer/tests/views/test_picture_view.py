@@ -24,14 +24,14 @@ class TestPictureView(TestViews):
         Check that with security disabled, we  access view without authentication
         """
         with self.settings(SECURITY_WEB_ENABLED=''):
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             self.assertEqual(200, response.status_code)
         
     def test_pictures_security_not_authenticated(self):
         """
         Check that with security enabled, we cannot access view without authentication
         """
-        response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
         
         # check we are redirected to login
         self.assertEqual(302, response.status_code)
@@ -46,7 +46,7 @@ class TestPictureView(TestViews):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
             # check we have no permission to view the report
             self.assertEqual(403, response.status_code)
@@ -61,7 +61,7 @@ class TestPictureView(TestViews):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
@@ -75,7 +75,7 @@ class TestPictureView(TestViews):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 147, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 147, 'test_step_id': 1}))
             
             # check we have no permission to view the report
             self.assertEqual(404, response.status_code)
@@ -89,7 +89,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             self.assertIsNotNone(response.context['captureList'][0]['reference'])
             self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'])
               
@@ -110,7 +110,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureViewNoHeader', kwargs={'testCaseInSessionId': 100, 'testStepId': 1}))
+            response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             self.assertIsNotNone(response.context['captureList'][0]['reference'])
             self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'])
               
@@ -131,7 +131,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureViewNoHeader', kwargs={'testCaseInSessionId': 100, 'testStepId': 2}))
+            response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 2}))
             self.assertEqual(len(response.context['captureList']), 0)
           
             # we should get the page, and exclude zones should be editable
@@ -148,7 +148,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 1, 'testStepId': 2}))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 1, 'test_step_id': 2}))
             self.assertEqual(response.status_code, 200)
             self.assertEqual(len(response.context['captureList']), 0, "No picture should be returned")
           
@@ -182,7 +182,7 @@ class TestPictureView(TestViews):
                 snapshot_same_env.image.save("img", img)
                 snapshot_same_env.save()
                   
-                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
+                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
                   
                 # check display
                 self.assertIsNone(response.context['captureList'][0]['reference'], "new reference should be the snapshot itself")
@@ -233,12 +233,12 @@ class TestPictureView(TestViews):
                     snapshot_same_env.save()
                       
                     # force computing
-                    self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
+                    self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}) + "?makeRef=True&snapshotId=" + str(snapshot_future_ref_same_env.id))
     
                     DiffComputer.stopThread()
                     
                     # ask for the step snapshot and look for data
-                    response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs_same_env.id, 'testStepId': 1}) + "?snapshotId=" + str(snapshot_same_env.id))
+                    response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs_same_env.id, 'test_step_id': 1}) + "?snapshotId=" + str(snapshot_same_env.id))
                     self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff) 
                     self.assertTrue(response.context['captureList'][0]['diffPercentage'] > 0.086)   
           
@@ -264,7 +264,7 @@ class TestPictureView(TestViews):
                 snapshot_same_env.image.save("img", img)
                 snapshot_same_env.save()
                   
-                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}))
+                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}))
                 self.assertEqual(len(response.context['captureList']), 2, "2 snapshots should be returned")
                 self.assertEqual(response.context['captureList'][0]['name'], 'cap1')
                 self.assertEqual(response.context['captureList'][1]['name'], 'cap2')
@@ -297,7 +297,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 3, 'testStepId': 1}) + "?makeRef=True&snapshotId=3")
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=True&snapshotId=3")
               
             # check display
             self.assertIsNone(response.context['captureList'][0]['reference'], "picture is still a reference")
@@ -332,7 +332,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):  
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
         
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 3, 'testStepId': 1}) + "?makeRef=False&snapshotId=3")
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=False&snapshotId=3")
               
             # check display
             self.assertIsNone(response.context['captureList'][0]['reference'], "picture is still a reference")
@@ -367,7 +367,7 @@ class TestPictureView(TestViews):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True): 
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
          
-            response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': 4, 'testStepId': 1}) + "?makeRef=False&snapshotId=4")
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 4, 'test_step_id': 1}) + "?makeRef=False&snapshotId=4")
               
             # check display
             self.assertIsNotNone(response.context['captureList'][0]['reference'], "picture is still not a reference")
@@ -396,7 +396,7 @@ class TestPictureView(TestViews):
                 snapshot_same_env.image.save("img", img)
                 snapshot_same_env.save()
                   
-                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
+                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
                   
                 # check display
                 self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
@@ -439,7 +439,7 @@ class TestPictureView(TestViews):
                 snapshot_same_env.save()
                 
                   
-                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
+                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
                   
                 # check display
                 self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")
@@ -481,7 +481,7 @@ class TestPictureView(TestViews):
                 snapshot_same_env.save()
                 
                   
-                response = self.client.get(reverse('pictureView', kwargs={'testCaseInSessionId': self.tcs1.id, 'testStepId': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
+                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(snapshot_ref_same_env.id))
                   
                 # check display
                 self.assertEqual(response.context['captureList'][0]['reference'], self.initialRefSnapshot, "new reference should be the first snapshot")

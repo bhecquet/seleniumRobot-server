@@ -46,7 +46,15 @@ class ApplicationSpecificPermissions(GenericPermissions):
         It's possible to return BYPASS_APPLICATION_CHECK key so that, during "has_permission" phase, we can delegate to 'has_object_permission'
         ex: PATCH / PUT request may do 'has_permission' prior to 'has_object_permission', in this case, controlling the application to times is unecessary
         """
-        return getattr(request.data, 'application', None)
+        try:
+            if request.POST.get('application', ''):
+                return Application.objects.get(id=request.data['application'])
+            elif view.kwargs.get('pk', ''): # GET, needed so that we can refuse access if object is unknown
+                return self.get_object_application(view.queryset.model.objects.get(pk=view.kwargs['pk']))
+            else:
+                return ''
+        except:
+            return ''
     
 
     def has_permission(self, request, view):
@@ -90,6 +98,7 @@ class ApplicationSpecificPermissions(GenericPermissions):
     def get_object_application(self, obj):
         """
         Returns the application object associated to this object
+        To be overriden in subclass if access to Application object is different
         """
         if obj:
             return obj.application

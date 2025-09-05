@@ -1,4 +1,9 @@
 import json
+import os
+from pathlib import Path
+
+from django.conf import settings
+
 from variableServer.models import Application
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -8,6 +13,7 @@ from commonsServer.tests.test_api import TestApi
 
 class TestViewsetExecutionLogs(TestApi):
     fixtures = ['snapshotServer.yaml']
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
 
     def setUp(self):
 
@@ -16,6 +22,17 @@ class TestViewsetExecutionLogs(TestApi):
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_executionlogs = ContentType.objects.get_for_model(ExecutionLogs)
+
+    def tearDown(self):
+        """
+        Remove generated files
+        """
+
+        super().tearDown()
+
+        for f in os.listdir(self.media_dir):
+            if f.startswith('engie') or f.startswith('replyDetection'):
+                os.remove(self.media_dir + os.sep + f)
 
     def _create_executionlogs(self, expected_status):
         with open('snapshotServer/tests/data/logs.txt', 'r') as f:
@@ -122,3 +139,18 @@ class TestViewsetExecutionLogs(TestApi):
                 response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': f})
                 self.assertEqual(201, response.status_code)
                 self.assertEqual(2, len(ExecutionLogs.objects.filter(file__contains='logs')))
+
+    def test_delete_file(self):
+        """
+        Check file is uploaded
+        """
+
+        with open('snapshotServer/tests/data/test.html', 'rb') as fp:
+            response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = ExecutionLogs.objects.filter(testCase__id=1).last()
+            file_path = Path(file.file.path)
+            self.assertTrue(file_path.exists())
+            file.delete()
+            self.assertFalse(file_path.exists())

@@ -1,13 +1,12 @@
 import json
 import zipfile
 import io
-from http.client import HTTPResponse
 
 from rest_framework import renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.response import Response
 
-from django.http.response import FileResponse
+from django.http.response import FileResponse, HttpResponse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
@@ -109,7 +108,7 @@ class FileViewSet(ResultRecordingViewSet): # post
                     in_memory_uploaded_file = InMemoryUploadedFile(zip_buffer, 'file', request.data['file'].name + '.zip', 'application/zip', zip_buffer.tell(), None)
                     file = File(stepResult=StepResult.objects.get(pk=int(request.data['stepResult'])), file=in_memory_uploaded_file)
                     file.save()
-                    response = HTTPResponse(json.dumps({'id': file.id}), status=201)
+                    response = HttpResponse(json.dumps({'id': file.id}), status=201)
                     return response
             else:
                 return super().create(request, *args, **kwargs)

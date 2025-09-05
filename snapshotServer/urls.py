@@ -13,6 +13,7 @@ from snapshotServer.views.field_detector_view import FieldDetectorView
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
 from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
+from snapshotServer.views.viewsets.viewset_excludezone import ExcludeZoneViewSet
 from snapshotServer.views.viewsets.viewset_executionlogs import ExecutionLogsViewSet
 from snapshotServer.views.viewsets.viewset_file import FileViewSet
 from snapshotServer.views.viewsets.viewset_stepresult import StepResultViewSet
@@ -27,7 +28,7 @@ router.register(r'session', TestSessionViewSet)
 router.register(r'testinfo', TestInfoSessionViewSet)
 router.register(r'teststep', TestStepViewSet)
 router.register(r'stepresult', StepResultViewSet)
-router.register(r'exclude', viewsets.ExcludeZoneViewSet)
+router.register(r'exclude', ExcludeZoneViewSet)
 # curl -X POST http://localhost:8000/snapshot/api/file/ -F "file=@D:\Dev\seleniumRobot\seleniumRobot-jenkins\covea.pic.jenkins.tests.selenium\jenkins\test-output\loginInvalid\screenshots\login_screen-b7c449.png " -F "stepResult=486"
 router.register(r'file', FileViewSet)
 router.register(r'logs', ExecutionLogsViewSet)

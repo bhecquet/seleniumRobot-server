@@ -13,7 +13,7 @@ from django.utils import timezone
 from rest_framework import viewsets, renderers, serializers
 from rest_framework.decorators import action
 from rest_framework.generics import UpdateAPIView, CreateAPIView, \
-    RetrieveAPIView
+    RetrieveAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
@@ -23,7 +23,8 @@ from commonsServer.views.viewsets import BaseViewSet, perform_create
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording, \
     ApplicationPermissionChecker
 from snapshotServer.models import TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult, \
-    File, ExecutionLogs, TestInfo, Error, Version, Application
+    File, ExecutionLogs, TestInfo, Error, Version, Application, Snapshot
+
 
 class Ping(APIView):
 
@@ -38,7 +39,8 @@ class Ping(APIView):
 class ResultRecordingViewSet(ViewSet,
                              CreateAPIView, # POST
                              RetrieveAPIView, # GET
-                             UpdateAPIView # PATCH
+                             UpdateAPIView, # PATCH
+                             DestroyAPIView # DELETE
                              ):
     permission_classes = [ApplicationSpecificPermissionsResultRecording]
     recreate_existing_instance = True 
@@ -57,12 +59,4 @@ class ResultRecordingViewSet(ViewSet,
 
 
 
-class ExcludeZoneSerializer(serializers.ModelSerializer):
 
-    class Meta:
-        model = ExcludeZone
-        fields = ('id', 'x', 'y', 'width', 'height', 'snapshot')
-    
-class ExcludeZoneViewSet(BaseViewSet): # post
-    queryset = ExcludeZone.objects.all()
-    serializer_class = ExcludeZoneSerializer

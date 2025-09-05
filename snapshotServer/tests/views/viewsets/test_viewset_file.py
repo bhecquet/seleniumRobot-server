@@ -1,9 +1,13 @@
+import os
+import zipfile
+from pathlib import Path
 
 from variableServer.models import Application
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from snapshotServer.models import File
 from django.contrib.auth.models import Permission
+from django.conf import settings
 from commonsServer.tests.test_api import TestApi
 
 from PIL import Image
@@ -12,6 +16,7 @@ from io import BytesIO
 
 class TestViewsetFile(TestApi):
     fixtures = ['snapshotServer.yaml']
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
 
     def setUp(self):
 
@@ -20,6 +25,74 @@ class TestViewsetFile(TestApi):
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_file = ContentType.objects.get_for_model(File)
+
+    def tearDown(self):
+        """
+        Remove generated files
+        """
+
+        super().tearDown()
+
+        for f in os.listdir(self.media_dir):
+            if f.startswith('engie') or f.startswith('replyDetection'):
+                os.remove(self.media_dir + os.sep + f)
+
+
+    def test_upload_image_file(self):
+        """
+        Check file is uploaded
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = File.objects.filter(stepResult__id=1).last()
+            self.assertTrue(file.file.name.endswith(".png"))
+            self.assertTrue(Path(file.file.path).exists())
+
+
+    def test_delete_file(self):
+        """
+        Check file is uploaded
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = File.objects.filter(stepResult__id=1).last()
+            file_path = Path(file.file.path)
+            self.assertTrue(file_path.exists())
+            file.delete()
+            self.assertFalse(file_path.exists())
+
+    def test_upload_html_file(self):
+        """
+        Check file is uploaded and zipped at the same time
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/test.html', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = File.objects.filter(stepResult__id=1).last()
+            self.assertTrue(file.file.name.endswith(".zip"))
+            self.assertTrue(Path(file.file.path).exists())
+
+            with zipfile.ZipFile(file.file.path) as zip:
+                with zip.open('test.html', 'r') as myfile:
+                    self.assertTrue('<html>' in myfile.read().decode('utf-8'))
+
+    def test_upload_html_file_in_error(self):
+        """
+        Check file is uploaded and zipped at the same time
+        """
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        response = self.client.post('/snapshot/api/file/', data={'stepResult': 1})
+        self.assertEqual(response.status_code, 500, 'status code should be 201')
+
 
     def _create_file(self, expected_status):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:

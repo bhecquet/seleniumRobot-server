@@ -81,7 +81,7 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                         # search with the same test case name / same step name / same application version / same environment / same browser / same image name so that comparison
                         # is done on same basis
                         # TODO: reference could be searched in previous versions
-                        test_case = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
+                        test_case = TestCaseInSession.objects.get(pk=self.kwargs['test_case_in_session_id'])
                         ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name,
                                                                stepResult__testCase__session__version=test_case.session.version,
                                                                stepResult__testCase__session__environment=test_case.session.environment,
