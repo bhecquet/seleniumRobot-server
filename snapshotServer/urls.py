@@ -13,25 +13,28 @@ from snapshotServer.views.field_detector_view import FieldDetectorView
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
 from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
+from snapshotServer.views.viewsets.viewset_executionlogs import ExecutionLogsViewSet
+from snapshotServer.views.viewsets.viewset_file import FileViewSet
+from snapshotServer.views.viewsets.viewset_stepresult import StepResultViewSet
+from snapshotServer.views.viewsets.viewset_testcaseinsession import TestCaseInSessionViewSet
+from snapshotServer.views.viewsets.viewset_testinfo import TestInfoSessionViewSet
+from snapshotServer.views.viewsets.viewset_testsession import TestSessionViewSet
+from snapshotServer.views.viewsets.viewset_teststep import TestStepViewSet
 
 router = routers.DefaultRouter()
-router.register(r'testcaseinsession', viewsets.TestCaseInSessionViewSet)
-router.register(r'session', viewsets.TestSessionViewSet)
-router.register(r'testinfo', viewsets.TestInfoSessionViewSet)
-router.register(r'teststep', viewsets.TestStepViewSet)
-router.register(r'stepresult', viewsets.StepResultViewSet)
+router.register(r'testcaseinsession', TestCaseInSessionViewSet)
+router.register(r'session', TestSessionViewSet)
+router.register(r'testinfo', TestInfoSessionViewSet)
+router.register(r'teststep', TestStepViewSet)
+router.register(r'stepresult', StepResultViewSet)
 router.register(r'exclude', viewsets.ExcludeZoneViewSet)
 # curl -X POST http://localhost:8000/snapshot/api/file/ -F "file=@D:\Dev\seleniumRobot\seleniumRobot-jenkins\covea.pic.jenkins.tests.selenium\jenkins\test-output\loginInvalid\screenshots\login_screen-b7c449.png " -F "stepResult=486"
-router.register(r'file', viewsets.FileViewSet)
-router.register(r'logs', viewsets.ExecutionLogsViewSet)
+router.register(r'file', FileViewSet)
+router.register(r'logs', ExecutionLogsViewSet)
 
 urlpatterns = [
     re_path(r'^$',  viewsets.Ping.as_view(), name='snapshotPing'),
     re_path(r'^api/', include(router.urls), name='api'),
-
-    #re_path(r'^api/session', viewsets.TestSessionViewSet.as_view(), name='session'),
-    #re_path(r'^api/testcaseinsession', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession'),
-    #re_path(r'^api/testcaseinsession/(?P<pk>[^/.]+)/', viewsets.TestCaseInSessionViewSet.as_view(), name='testcaseinsession_patch'),
 
     re_path(r'^upload/(?P<filename>[^/]+)$', SnapshotUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),

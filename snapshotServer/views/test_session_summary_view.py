@@ -60,6 +60,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         error = self.get_error_in_test(step_results)
         
         if error:
+            # relatedErrors contains the error itself its related, so remove our error
             return [e.stepResult.testCase for e in error.relatedErrors.exclude(id=error.id)]
         else:
             return []

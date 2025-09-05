@@ -13,7 +13,7 @@ import os
 from rest_framework.generics import CreateAPIView, UpdateAPIView
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 
-class FileUploadPermission(ApplicationSpecificPermissionsResultRecording):
+class SnapshotUploadPermission(ApplicationSpecificPermissionsResultRecording):
     
     def get_application_from_step_result(self, step_result):
         if step_result:
@@ -41,7 +41,7 @@ class SnapshotUploadView(CreateAPIView, UpdateAPIView):
     
     parser_classes = (MultiPartParser,)
     queryset = Snapshot.objects.all()
-    permission_classes = [FileUploadPermission]
+    permission_classes = [SnapshotUploadPermission]
 
     # test with CURL
     # curl -u admin:adminServer -F "step=1" -F "stepResult=1234" -F "image=@/home/worm/Ibis Mulhouse.png" -F "compare=true"   http://127.0.0.1:8000/upload/toto

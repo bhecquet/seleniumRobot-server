@@ -118,6 +118,53 @@ class TestViewsetTestCaseInSession(TestApi):
             # only 1 item is created as serializer perform step update
             self.assertEqual(1, len(TestCaseInSession.objects.filter(name='bla')))
 
+    def test_creation_when_exist_without_test_steps(self):
+        """
+        New testCaseInSession should be created as it does not match any existing testCaseInSession (no test steps)
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4})
+            self.assertEqual(response.status_code, 201)
+            self.assertTrue('id' in response.data)
+            self.assertNotEqual(response.data['id'], 1)
+
+    def test_creation_when_exist_with_test_steps(self):
+        """
+        New testCaseInSession should be created as it does not match any existing testCaseInSession (with test steps)
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4, 'testSteps': [2, 3, 4]})
+            self.assertEqual(response.status_code, 201)
+            self.assertTrue('id' in response.data)
+            self.assertEquals(response.data['testSteps'], [2, 3, 4]) # steps has been added
+            self.assertNotEqual(response.data['id'], 1)
+
+    def test_no_creation_when_exist_with_many_to_many_fields(self):
+        """
+        New testCaseInSession should not be created as it does match an existing testCaseInSession
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 7, 'testCase': 4, 'testSteps': [2, 3, 4]})
+            self.assertEqual(response.status_code, 201)
+            self.assertTrue('id' in response.data)
+            self.assertEqual(response.data['id'], 6)
+
+    def test_no_creation_when_exist_with_many_to_many_fields_empty(self):
+        """
+        New session should not be created as there are no test steps
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 2, 'testSteps': []})
+            self.assertEqual(response.status_code, 201)
+            self.assertTrue('id' in response.data)
+            self.assertEquals(response.data['testSteps'], []) # steps has been removed
+            self.assertEqual(response.data['id'], 8)
+
+
     def _update_testcaseinsession(self, expected_status):
         response = self.client.patch(f'/snapshot/api/testcaseinsession/1/', data={'name': 'bla2'})
         self.assertEqual(expected_status, response.status_code)
@@ -220,3 +267,4 @@ class TestViewsetTestCaseInSession(TestApi):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._retrieve_testcaseinsession(403)
+

@@ -1,5 +1,5 @@
 from django.contrib import admin
-from snapshotServer.models import TestSession, Snapshot, StepReference
+from snapshotServer.models import TestSession, Snapshot, StepReference, ExcludeZone
 from django.contrib.admin.utils import get_deleted_objects
 from django.contrib.admin.filters import SimpleListFilter
 
