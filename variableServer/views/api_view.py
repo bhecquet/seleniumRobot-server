@@ -11,7 +11,7 @@ from django.shortcuts import get_object_or_404
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 
-from variableServer.models import Variable, TestEnvironment, Version, TestCase
+from variableServer.models import Variable, TestEnvironment, Version, TestCase, Application
 from variableServer.utils.utils import updateVariables
 from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
@@ -279,13 +279,30 @@ class VariableFilter(ApplicationSpecificFilter):
  
         return updated_linked_application_variables
     
-       
+class VariablesPermissions(ApplicationSpecificPermissionsVariables):
+    """
+    We get variables by various parameters: "name", "environment", "application", ...
+    Search criteria cannot always help associating an application.
+    So, in case of GET request, let user go on as filtering in VariableFilter.filter_queryset where only variable
+    that can be seen by user will be returned
+    """
+
+    def get_application(self, request, view):
+        if request.method == 'GET':
+            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            if allowed_applications:
+                return Application.objects.get(name=allowed_applications[0])
+            else:
+                return ''
+        else:
+            return super().get_application(request, view)
+
 
 class VariableList(ApplicationSpecificViewSet):
     
     serializer_class = VariableSerializer
     filter_backends = [VariableFilter]
-    permission_classes = [ApplicationSpecificPermissionsVariables]
+    permission_classes = [VariablesPermissions]
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):

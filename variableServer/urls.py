@@ -9,7 +9,7 @@ from variableServer.views.api_view import VariableList
 
 urlpatterns = [
     re_path(r'^api/variable/(?P<pk>[0-9]+)/$', VariableList.as_view({'patch': 'patch', 'delete': 'delete'}), name='variableApiPut'),
-    re_path(r'^api/variable', VariableList.as_view({'get': 'get', 'post': 'post', 'patch': 'patch'}), name='variableApi'),
+    re_path(r'^api/variable', VariableList.as_view({'get': 'get', 'post': 'post'}), name='variableApi'),
     re_path(r'^api', api_view.Ping.as_view(), name='variablePing'),
     
     re_path(r'copyVariables', var_action_view.copy_variables, name='copy_variables'),

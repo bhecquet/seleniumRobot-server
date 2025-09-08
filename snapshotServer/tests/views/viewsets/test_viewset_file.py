@@ -1,7 +1,9 @@
 import os
+import shutil
 import zipfile
 from pathlib import Path
 
+from snapshotServer.utils.utils import getTestDirectory
 from variableServer.models import Application
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -17,6 +19,7 @@ from io import BytesIO
 class TestViewsetFile(TestApi):
     fixtures = ['snapshotServer.yaml']
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
+    data_dir = getTestDirectory()
 
     def setUp(self):
 
@@ -185,12 +188,24 @@ class TestViewsetFile(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_file')))
             self._create_file(403)
 
-    def _retrieve_file_content(self, file_id, expected_status, content_type, file_name):
+    def _retrieve_file_content(self, file_id, expected_status, content_type, file_name, attachment_name):
+        """
+
+        :param file_id: id on the file in database
+        :param expected_status:
+        :param content_type: expected content type to be returned
+        :param file_name: file to copy
+        :param attachment_name:
+        :return:
+        """
+
+        shutil.copyfile(Path(self.data_dir) / file_name, Path(self.media_dir) / file_name)
+
         response = self.client.get(f'/snapshot/api/file/{file_id}/download/')
         self.assertEqual(expected_status, response.status_code)
         if expected_status == 200:
             self.assertEqual(content_type, response.headers['Content-Type'])
-            self.assertEqual(f'attachment; filename="{file_name}"', response.headers['Content-Disposition'])
+            self.assertEqual(f'attachment; filename="{attachment_name}"', response.headers['Content-Disposition'])
             byte_content = b''.join(response.streaming_content)
 
             return byte_content
@@ -201,7 +216,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png')
+        byte_content = self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png', 'test_Image1.png')
 
         image = Image.open(BytesIO(byte_content))
         image.verify()
@@ -212,14 +227,14 @@ class TestViewsetFile(TestApi):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png')
+            self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png', 'test_Image1.png')
 
     def test_html_file_retrieve_content_with_model_permission(self):
         """
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(2, 200, 'text/html', 'documents/test.html')
+        byte_content = self._retrieve_file_content(2, 200, 'text/html', 'test.html', 'documents/test.html')
         text = byte_content.decode("utf-8")
         self.assertTrue('html' in text)
 
@@ -228,7 +243,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(3, 200, 'text/plain', 'test_file.txt')
+        byte_content = self._retrieve_file_content(3, 200, 'text/plain', 'test.txt', "test_file.txt")
         text = byte_content.decode("utf-8")
         self.assertTrue('foo' in text)
 
@@ -237,7 +252,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(4, 200, 'video/x-msvideo', 'documents/test.avi')
+        byte_content = self._retrieve_file_content(4, 200, 'video/x-msvideo', 'test.avi', 'documents/test.avi')
         text = byte_content.decode("utf-8")
         self.assertTrue('avi' in text)
 
@@ -246,7 +261,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(5, 200, 'video/mp4', 'test.mp4')
+        byte_content = self._retrieve_file_content(5, 200, 'video/mp4', 'test.mp4', 'test.mp4')
         text = byte_content.decode("utf-8")
         self.assertTrue('mp4' in text)
 
@@ -255,7 +270,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(6, 200, 'application/zip', 'test.zip')
+        byte_content = self._retrieve_file_content(6, 200, 'application/zip', 'test.zip', 'test.zip')
         text = byte_content.decode("utf-8")
         self.assertTrue('zip' in text)
 
@@ -264,7 +279,7 @@ class TestViewsetFile(TestApi):
         Test it's possible to get file content and headers / content are correct
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_file', content_type=self.content_type_file)))
-        byte_content = self._retrieve_file_content(7, 200, 'application/octet-stream', 'test.har')
+        byte_content = self._retrieve_file_content(7, 200, 'application/octet-stream', 'test.har', 'test.har')
         text = byte_content.decode("utf-8")
         self.assertTrue('har' in text)
 

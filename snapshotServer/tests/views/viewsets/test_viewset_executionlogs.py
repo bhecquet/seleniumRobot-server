@@ -144,13 +144,14 @@ class TestViewsetExecutionLogs(TestApi):
         """
         Check file is uploaded
         """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            with open('snapshotServer/tests/data/test.html', 'rb') as fp:
+                response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})
+                self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-        with open('snapshotServer/tests/data/test.html', 'rb') as fp:
-            response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})
-            self.assertEqual(response.status_code, 201, 'status code should be 201')
-
-            file = ExecutionLogs.objects.filter(testCase__id=1).last()
-            file_path = Path(file.file.path)
-            self.assertTrue(file_path.exists())
-            file.delete()
-            self.assertFalse(file_path.exists())
+                file = ExecutionLogs.objects.filter(testCase__id=1).last()
+                file_path = Path(file.file.path)
+                self.assertTrue(file_path.exists())
+                file.delete()
+                self.assertFalse(file_path.exists())
