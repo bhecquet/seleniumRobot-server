@@ -12,9 +12,9 @@ from django.test import Client
 from django.conf import settings
 
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
-    TestEnvironment, Version, TestCaseInSession, StepResult, Application
+    TestEnvironment, Version, TestCaseInSession, StepResult
 from snapshotServer.tests import SnapshotTestCase
-
+from variableServer.models import Application
 
 
 class TestViews(SnapshotTestCase):

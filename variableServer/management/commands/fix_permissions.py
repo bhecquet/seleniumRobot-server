@@ -47,10 +47,16 @@ class Command(BaseCommand):
         for app in Application.objects.all():
             content_type = ContentType.objects.get_for_model(Application, False)
             Permission.objects.get_or_create(
-                codename=Application.appPermissionCode + app.name,
+                codename=Application.app_variable_permission_code + app.name,
                 name='Can view application and related variables and versions for ' + app.name,
                 content_type=content_type,
                 )
+
+            Permission.objects.get_or_create(
+                codename=Application.app_result_permission_code + app.name,
+                name='Can view results for ' + app.name,
+                content_type=content_type,
+            )
             
         # add 'Variable Users' group
         variable_users_group, created = Group.objects.get_or_create(name='Variable Users')
@@ -68,7 +74,7 @@ class Command(BaseCommand):
         variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') | Q(codename='view_variable') , content_type=ct))
         
             
-        # add 'Variable Users' group
+        # add 'Snapshot Users' group
         snapshot_users_group, created = Group.objects.get_or_create(name='Snapshot Users')
         
         # Add permissions to 'Snapshot Users' group

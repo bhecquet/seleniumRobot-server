@@ -14,7 +14,8 @@ class TruncatingCharField(models.CharField):
 
 class Application(models.Model):
     
-    appPermissionCode = 'can_view_application_'
+    app_variable_permission_code = 'can_view_application_'
+    app_result_permission_code = 'can_view_results_application_'
 
     name = models.CharField(max_length=50)
     
@@ -36,15 +37,23 @@ class Application(models.Model):
     def save(self, *args, **kwargs):
         super(Application, self).save(*args, **kwargs)
         content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
+
+        # permissions for handling application variables / recording
         Permission.objects.get_or_create(
-            codename=Application.appPermissionCode + self.name,
-            name='Can view application and related items for ' + self.name,
+            codename=Application.app_variable_permission_code + self.name,
+            name='Can view application and related variables and versions for  ' + self.name,
             content_type=content_type,
             )
+
+        Permission.objects.get_or_create(
+            codename=Application.app_result_permission_code + self.name,
+            name='Can view results for ' + self.name,
+            content_type=content_type,
+        )
         
     def delete(self, *args, **kwargs):
         super(Application, self).delete(*args, **kwargs)
-        Permission.objects.get(codename=Application.appPermissionCode + self.name).delete()
+        Permission.objects.get(codename=Application.app_variable_permission_code + self.name).delete()
     
 class Version(models.Model):
     application = models.ForeignKey(Application, related_name='version', on_delete=models.CASCADE)

@@ -4,17 +4,14 @@ Created on 26 juil. 2017
 @author: worm
 '''
 
-from django.core.files.images import ImageFile
 from django.urls.base import reverse
 from django.test.client import Client
 from django.contrib.auth.models import User, Permission
 from django.db.models import Q
 
-from snapshotServer.controllers.diff_computer import DiffComputer
-from snapshotServer.models import Snapshot, ExcludeZone, Application
 from snapshotServer.tests.views.test_views import TestViews
 from snapshotServer.tests import authenticate_test_client_for_web_view_with_permissions
-
+from variableServer.models import Application
 
 
 class TestExcludeZoneListView(TestViews):
@@ -54,7 +51,7 @@ class TestExcludeZoneListView(TestViews):
         We cannot view result => error page displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
             # check we have no permission to view the report
@@ -69,7 +66,7 @@ class TestExcludeZoneListView(TestViews):
         We can view result
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
             # check we have no permission to view the report
@@ -83,7 +80,7 @@ class TestExcludeZoneListView(TestViews):
         We get 404 page
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 4, 'step_snapshot_id': 3}))
             
             # check we have no permission to view the report
@@ -94,7 +91,7 @@ class TestExcludeZoneListView(TestViews):
         Check we get exclude zone for reference picture AND for the picture itself
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
             # check we have no permission to view the report
@@ -114,7 +111,7 @@ class TestExcludeZoneListView(TestViews):
         Check we get exclude zone for reference picture AND for the picture itself
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 'None', 'step_snapshot_id': 2}))
             
             # check we have no permission to view the report

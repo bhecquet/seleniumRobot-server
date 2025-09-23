@@ -45,7 +45,7 @@ class TestPictureView(TestViews):
         We cannot view result => error page displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
             # check we have no permission to view the report
@@ -60,7 +60,7 @@ class TestPictureView(TestViews):
         We can view result
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
             # check we have no permission to view the report
@@ -74,7 +74,7 @@ class TestPictureView(TestViews):
         We get 404 page
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 147, 'test_step_id': 1}))
             
             # check we have no permission to view the report
@@ -87,7 +87,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             self.assertIsNotNone(response.context['captureList'][0]['reference'])
@@ -108,7 +108,7 @@ class TestPictureView(TestViews):
         With this Test Step, reference should be found (snapshot.id = 2)
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             self.assertIsNotNone(response.context['captureList'][0]['reference'])
@@ -129,7 +129,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 2}))
             self.assertEqual(len(response.context['captureList']), 0)
@@ -146,7 +146,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 1, 'test_step_id': 2}))
             self.assertEqual(response.status_code, 200)
@@ -159,7 +159,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
                 
@@ -207,7 +207,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
                 with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as img_file_mod: 
@@ -248,7 +248,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
                 
@@ -295,7 +295,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=True&snapshotId=3")
               
@@ -330,7 +330,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):  
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=False&snapshotId=3")
               
@@ -365,7 +365,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True): 
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
          
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 4, 'test_step_id': 1}) + "?makeRef=False&snapshotId=4")
               
@@ -380,7 +380,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
                 
@@ -414,7 +414,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
                 
@@ -456,7 +456,7 @@ class TestPictureView(TestViews):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
                 

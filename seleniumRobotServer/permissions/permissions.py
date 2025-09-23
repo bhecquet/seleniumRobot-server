@@ -2,8 +2,8 @@ from rest_framework.permissions import DjangoModelPermissions
 from django.conf import settings
 from commonsServer.models import Application
 
-APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX = 'variableServer.can_view_application_'
-APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX = 'snapshotServer.can_view_application_'
+APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX = 'variableServer.' + Application.app_variable_permission_code
+APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX = 'variableServer.' + Application.app_result_permission_code
 class BYPASS_APPLICATION_CHECK:
     name = '_BYPASS_APPLICATION_CHECK_'
 

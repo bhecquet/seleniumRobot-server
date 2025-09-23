@@ -5,9 +5,11 @@ import os
 from django.test.client import Client
 from django.urls.base import reverse
 from snapshotServer.models import StepResult, Snapshot, TestSession,\
-    TestCaseInSession, Error, Application
+    TestCaseInSession, Error
 from django.db.models import Q
 from django.contrib.auth.models import Permission
+
+from variableServer.models import Application
 
 
 class TestTestSessionSummaryView(SnapshotTestCase):
@@ -58,7 +60,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         We cannot view result => error page displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
             
             # check we have no permission to view the report
@@ -73,7 +75,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         We can view result
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
             
             # check we have no permission to view the report
@@ -88,7 +90,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         We get 404 error
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 123}))
             
             # check we have no permission to view the report
@@ -102,7 +104,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - no badge or related error is displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
             self.assertEqual(1, len(response.context['object_list']))
@@ -142,7 +144,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             # add an other result is Session 1
             tcis = TestCaseInSession.objects.get(pk=11)
@@ -185,7 +187,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         Check that the icon for snapshot comparison is present
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             step_snapshot = Snapshot.objects.get(pk=2)
             step_snapshot.stepResult = StepResult.objects.get(pk=2)
@@ -211,7 +213,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         Check that the icon for snapshot comparison is present and red
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             step_snapshot = Snapshot.objects.get(pk=2)
             step_snapshot.stepResult = StepResult.objects.get(pk=2)
@@ -248,7 +250,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
             self.assertEqual(1, len(response.context['object_list']))
@@ -282,7 +284,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         If multiple steps are KO, only the first one is returned
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             # add a seconde failed step
             step_result12 = StepResult.objects.get(id=12)
@@ -319,7 +321,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - no related error is displayed
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             error = Error(stepResult=StepResult.objects.get(id=13),
                           action="getErrorMessage<> >getText on HtmlElement error message",
@@ -369,7 +371,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - number of related error is displayed and canvas is accessible
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             # record error for test_case_in_session=11
             error = Error(stepResult=StepResult.objects.get(id=13),
@@ -429,7 +431,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - number of related error is displayed and canvas is accessible
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             # add an other result is Session 1
             tcis = TestCaseInSession.objects.get(pk=110)
@@ -491,7 +493,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - a badge is present for the failed test, badge is different for each test
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             # add an other result is Session 1
             tcis = TestCaseInSession.objects.get(pk=110)
@@ -542,7 +544,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - number of failed steps is ok
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 111}))
             self.assertEqual(1, len(response.context['object_list']))

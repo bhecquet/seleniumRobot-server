@@ -15,9 +15,10 @@ from django.contrib.auth.models import Permission
 
 from commonsServer.tests.test_api import TestApi
 from snapshotServer.models import TestSession, TestStep, Snapshot,\
-    TestCaseInSession, StepResult, Version, TestEnvironment, TestCase, Application
+    TestCaseInSession, StepResult, Version, TestEnvironment, TestCase
 from django.contrib.contenttypes.models import ContentType
 
+from variableServer.models import Application
 
 
 class TestRecomputeDiffView(TestApi):
@@ -111,7 +112,7 @@ class TestRecomputeDiffView(TestApi):
         We can post recompute
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[2]))
             self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
@@ -125,7 +126,7 @@ class TestRecomputeDiffView(TestApi):
         We get 404 error
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[222]))
             self.assertEqual(response.status_code, 403)
@@ -135,7 +136,7 @@ class TestRecomputeDiffView(TestApi):
         Send recompute request whereas no ref exists. Nothing should be done
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
               
             response = self.client.post(reverse('recompute', args=[1]))
             self.assertEqual(response.status_code, 304, "No ref for this snapshot, 304 should be returned")
@@ -145,7 +146,7 @@ class TestRecomputeDiffView(TestApi):
         Reference exists for the snapshot, do computing
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[2]))
             self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
