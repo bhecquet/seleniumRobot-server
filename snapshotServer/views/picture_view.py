@@ -4,17 +4,21 @@ Created on 26 juil. 2017
 @author: worm
 '''
 import pickle
+import base64
+import io
+import os
+
+from PIL import Image
 
 from django.views.generic.base import TemplateView
+from django.conf import settings
+from django.shortcuts import get_object_or_404
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot, TestCaseInSession, TestStep, ExcludeZone
-import base64
-import io
-from PIL import Image
+
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
-import os
-from django.conf import settings
+
 
 
 class PictureView(LoginRequiredMixinConditional, TemplateView):
@@ -23,40 +27,34 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
     """
     
     template_name = "snapshotServer/displayPanel.html"
+    
+    def get_target_application(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.version.application
 
     def get_context_data(self, **kwargs):
         """
         Look for the snapshot of our session
         @param sessionId
-        @param testCaseId    a TestCaseInSession object id
-        @param testStepId    a TestStep object id
+        @param test_case_in_session_id    a TestCaseInSession object id
+        @param test_step_id    a TestStep object id
         """
         
             
         context = super(PictureView, self).get_context_data(**kwargs)
         context['captureList'] = []
-        context['testCaseId'] = self.kwargs['testCaseInSessionId']
-        context['testStepId'] = self.kwargs['testStepId']
+        context['testCaseId'] = self.kwargs['test_case_in_session_id']
+        context['testStepId'] = self.kwargs['test_step_id']
         
-        step = TestStep.objects.get(pk=self.kwargs['testStepId'])
+        step = get_object_or_404(TestStep, pk=self.kwargs['test_step_id'])
+        test_case_in_session = get_object_or_404(TestCaseInSession, pk=self.kwargs['test_case_in_session_id'])
         
-
-        context['status'] = step.isOkWithSnapshots(self.kwargs['testCaseInSessionId'])
+        context['status'] = step.isOkWithSnapshots(self.kwargs['test_case_in_session_id'])
+        context['editable'] = True
+        context['editButtonText'] = 'Edit'
         
-        # check that the user has permissions to edit exclusion zones. If not buttons will be disabled
-        authenticated_to_edit = not self.security_api_enabled or (self.security_api_enabled and self.request.user.is_authenticated)
-        allowed_to_edit = not self.security_enabled or (self.security_enabled and self.request.user.has_perms(['snapshotServer.add_excludezone', 'snapshotServer.change_excludezone', 'snapshotServer.delete_excludezone']))
-        
-        context['editable'] = authenticated_to_edit and allowed_to_edit
-        if context['editable']:
-            context['editButtonText'] = 'Edit'
-        elif not authenticated_to_edit:
-            context['editButtonText'] = 'You must log in to edit.'
-        elif not allowed_to_edit:
-            context['editButtonText'] = "You don't have right to edit"
-        
-        step_snapshots = Snapshot.objects.filter(stepResult__testCase=self.kwargs['testCaseInSessionId'],
-                                               stepResult__step=self.kwargs['testStepId']).order_by('id')
+        step_snapshots = Snapshot.objects.filter(stepResult__testCase=test_case_in_session,
+                                               stepResult__step=step).order_by('id')
         
         for step_snapshot in step_snapshots:
             if step_snapshot:
@@ -83,12 +81,12 @@ class PictureView(LoginRequiredMixinConditional, TemplateView):
                         # search with the same test case name / same step name / same application version / same environment / same browser / same image name so that comparison
                         # is done on same basis
                         # TODO: reference could be searched in previous versions
-                        test_case = TestCaseInSession.objects.get(pk=self.kwargs['testCaseInSessionId'])
+                        test_case = TestCaseInSession.objects.get(pk=self.kwargs['test_case_in_session_id'])
                         ref_snapshots = Snapshot.objects.filter(stepResult__testCase__testCase__name=test_case.testCase.name,
                                                                stepResult__testCase__session__version=test_case.session.version,
                                                                stepResult__testCase__session__environment=test_case.session.environment,
                                                                stepResult__testCase__session__browser=test_case.session.browser,
-                                                               stepResult__step=self.kwargs['testStepId'],
+                                                               stepResult__step=self.kwargs['test_step_id'],
                                                                refSnapshot=None,
                                                                id__lt=step_snapshot.id,
                                                                name=step_snapshot.name)

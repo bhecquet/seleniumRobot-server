@@ -8,10 +8,10 @@ import time
 import logging
 
 from django.shortcuts import get_object_or_404
-from rest_framework import mixins, generics, permissions, filters
+from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
 
-from variableServer.models import Variable, TestEnvironment, Version, TestCase
+from variableServer.models import Variable, TestEnvironment, Version, TestCase, Application
 from variableServer.utils.utils import updateVariables
 from variableServer.views.serializers import VariableSerializer
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
@@ -21,12 +21,9 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.db import transaction
-from commonsServer.views.viewsets import ApplicationSpecificFilter, BaseViewSet,\
-    ApplicationSpecificViewSet
+from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
-    ApplicationPermissionChecker
-from django.conf import settings
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+    ApplicationPermissionChecker, ApplicationSpecificPermissionsVariables
 
 logger = logging.getLogger(__name__)
 
@@ -217,7 +214,8 @@ class VariableFilter(ApplicationSpecificFilter):
         else: 
             return queryset
 
-        if view.bypass_application_permissions():
+        # return the whole list when permission are not restricted to some applications
+        if view.get_permissions()[0]._bypass_application_permissions(request, view):
             return VariableQuerySet(variable_list)
         
         allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
@@ -281,13 +279,30 @@ class VariableFilter(ApplicationSpecificFilter):
  
         return updated_linked_application_variables
     
-       
+class VariablesPermissions(ApplicationSpecificPermissionsVariables):
+    """
+    We get variables by various parameters: "name", "environment", "application", ...
+    Search criteria cannot always help associating an application.
+    So, in case of GET request, let user go on as filtering in VariableFilter.filter_queryset where only variable
+    that can be seen by user will be returned
+    """
+
+    def get_application(self, request, view):
+        if request.method == 'GET':
+            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            if allowed_applications:
+                return Application.objects.get(name=allowed_applications[0])
+            else:
+                return ''
+        else:
+            return super().get_application(request, view)
+
 
 class VariableList(ApplicationSpecificViewSet):
     
     serializer_class = VariableSerializer
     filter_backends = [VariableFilter]
-    permission_classes = [ApplicationSpecificPermissions]
+    permission_classes = [VariablesPermissions]
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):

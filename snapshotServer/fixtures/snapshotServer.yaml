@@ -1,9 +1,9 @@
 -   model: snapshotServer.application
     pk: 1
-    fields: {name: infotel}
+    fields: {name: myapp}
 -   model: snapshotServer.application
     pk: 2
-    fields: {name: company}
+    fields: {name: myapp2}
 -   model: snapshotServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
@@ -55,6 +55,7 @@
 -   model: snapshotServer.testcaseinsession
     pk: 1
     fields:
+        name: 'foo'
         testCase: 1
         session: 1
         #testSteps: [1]     # kept to show that a step is linked
@@ -632,4 +633,52 @@
         version: 1
         environment: 2
         date: '2017-05-05T12:16:09.184106+01:00'
-        image: documents/test_Image1.png    
+        image: documents/test_Image1.png
+
+# files need to be copied at the beginning of the test to /media/documents so that they can be used
+-   model: snapshotServer.file
+    pk: 1
+    fields:
+        stepResult: 1
+        name: test_Image1.png
+        file: documents/test_Image1.png
+-   model: snapshotServer.file
+    pk: 2
+    fields:
+        stepResult: 1
+        file: documents/test.html
+-   model: snapshotServer.file
+    pk: 3
+    fields:
+        stepResult: 1
+        name: "test_file.txt"
+        file: documents/test.txt
+-   model: snapshotServer.file
+    pk: 4
+    fields:
+        stepResult: 1
+        file: documents/test.avi
+-   model: snapshotServer.file
+    pk: 5
+    fields:
+        stepResult: 1
+        name: "test.mp4"
+        file: documents/test.mp4
+-   model: snapshotServer.file
+    pk: 6
+    fields:
+        stepResult: 1
+        name: "test.zip"
+        file: documents/test.zip
+-   model: snapshotServer.file
+    pk: 7
+    fields:
+        stepResult: 1
+        name: "test.har"
+        file: documents/test.har
+-   model: snapshotServer.file
+    pk: 8
+    fields:
+        stepResult: 1
+        name: "test.html"
+        file: documents/test.html

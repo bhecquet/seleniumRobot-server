@@ -1,9 +1,8 @@
-from rest_framework.test import APITestCase
+from rest_framework.test import APITransactionTestCase
 from django.contrib.auth.models import User, Group
 
 
-class TestApi(APITestCase):
-    fixtures = ['varServer.yaml']
+class TestApi(APITransactionTestCase):
     
     def _create_and_authenticate_user_with_permissions(self, permissions):
         """

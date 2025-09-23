@@ -5,17 +5,16 @@ Created on 8 mai 2017
 '''
 
 import os
-
-from django.test import Client
-
-from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
-    TestEnvironment, Version, TestCaseInSession, StepResult
-from snapshotServer.tests import authenticate_test_client_for_web_view,\
-    SnapshotTestCase
 import datetime
 import pytz
 
+from django.test import Client
 from django.conf import settings
+
+from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
+    TestEnvironment, Version, TestCaseInSession, StepResult
+from snapshotServer.tests import SnapshotTestCase
+from variableServer.models import Application
 
 
 class TestViews(SnapshotTestCase):
@@ -26,7 +25,10 @@ class TestViews(SnapshotTestCase):
     
     def setUp(self):
         self.client = Client()
-        authenticate_test_client_for_web_view(self.client)
+        
+        # be sure permission for application is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
         
         # prepare data
         self.testCase = TestCase.objects.get(id=1)

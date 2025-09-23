@@ -66,6 +66,7 @@
                 ],
                 "videoTimeStamp": 6,
                 "name": "openPage with args: (https://jenkins/jenkins/, )",
+                "action": "openPage",
                 "files": [],
                 "position": 0,
                 "actions": [
@@ -130,6 +131,7 @@
                 ],
                 "videoTimeStamp": 1222,
                 "name": "loginInvalid with args: (foo, bar, )",
+                "action": "loginInvalid",
                 "files": [],
                 "position": 1,
                 "actions": [
@@ -225,6 +227,7 @@
                 ],
                 "videoTimeStamp": 4350,
                 "name": "getErrorMessage<> ",
+                "action": "getErrorMessage<> ",
                 "files": [],
                 "position": 2,
                 "actions": [

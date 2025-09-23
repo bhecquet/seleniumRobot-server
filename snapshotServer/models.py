@@ -253,6 +253,7 @@ class File(models.Model):
     It's related to a single step, which produced the file
     """
     file = models.FileField(upload_to='documents/%Y/%m/%d')
+    name = TruncatingCharField(max_length=150, default="", null=True)
     stepResult = models.ForeignKey('StepResult', related_name='files', on_delete=models.CASCADE)
     
 @receiver(pre_delete, sender=File)

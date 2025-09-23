@@ -4,10 +4,10 @@ Created on 26 juil. 2017
 @author: worm
 '''
 from django.views.generic.list import ListView
-from django.db.models import Q
 
-from snapshotServer.models import ExcludeZone
+from snapshotServer.models import ExcludeZone, Snapshot
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from django.shortcuts import get_object_or_404
 
 class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
     """
@@ -18,8 +18,13 @@ class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
     template_name = "snapshotServer/excludeList.html"
     queryset = ExcludeZone.objects.none()
     
+    def get_target_application(self):
+        snapshot = Snapshot.objects.get(id=self.kwargs['step_snapshot_id'])
+        return snapshot.stepResult.testCase.session.version.application
+    
     def get_queryset(self):
         
+        get_object_or_404(Snapshot, pk=self.kwargs['step_snapshot_id'])
         exclusion_list = []
         
         # get exclude zones from ref_snapshot

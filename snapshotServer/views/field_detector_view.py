@@ -8,7 +8,7 @@ from django.http.response import HttpResponse
 
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.generics import RetrieveAPIView, CreateAPIView
 
 from snapshotServer.controllers.FieldDetector import FieldDetector, \
     FieldDetectorThread
@@ -16,13 +16,26 @@ from snapshotServer.forms import ImageForFieldDetectionForm,\
     DataForFieldDetectionForm
 from snapshotServer.models import Snapshot, StepReference, \
     StepResult
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 
 
 logger = logging.getLogger(__name__)
 
-class FieldDetectorView(APIView):
+class FieldDetectorPermission(ApplicationSpecificPermissionsResultRecording):
+    
+    def get_object_application(self, obj):
+        return ''
+        
+    def get_application(self, request, view):
+        return ''
+
+class FieldDetectorView(RetrieveAPIView, CreateAPIView):
+    """
+    This view requires Snapshot model permissions
+    """
 
     queryset = Snapshot.objects.filter(pk=1) # for rights in tests
+    permission_classes = [FieldDetectorPermission]
     
     def get(self, request):
         """

@@ -9,8 +9,6 @@ from variableServer.admin_site.variable_admin import VariableAdmin
 from variableServer.tests.test_admin import MockRequest, request, TestAdmin,\
     MockRequestWithApplication
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
-import commonsServer
 
 class TestVersionAdmin(TestAdmin):
     

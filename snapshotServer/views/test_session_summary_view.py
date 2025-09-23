@@ -8,6 +8,7 @@ from django.views.generic.list import ListView
 from snapshotServer.models import TestSession, TestCaseInSession
 import json
 from django.utils import timezone
+from django.shortcuts import get_object_or_404
 
 class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
     """
@@ -22,7 +23,6 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
       
     def get_queryset(self):
         
-
         timezone.now()
         
         session_id = self.kwargs['sessionId']
@@ -60,6 +60,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         error = self.get_error_in_test(step_results)
         
         if error:
+            # relatedErrors contains the error itself its related, so remove our error
             return [e.stepResult.testCase for e in error.relatedErrors.exclude(id=error.id)]
         else:
             return []
@@ -75,24 +76,23 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         else:
             return None
         
+    def get_target_application(self):
+        test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
+        return test_session.version.application
             
     def get_context_data(self, **kwargs):
         
         context = super(TestSessionSummaryView, self).get_context_data(**kwargs)
         
         session_id = self.kwargs['sessionId']
-        context['testSession'] = TestSession.objects.get(id=session_id)
-        
+        context['testSession'] = get_object_or_404(TestSession, id=session_id)
         context['testInfoList'] = []
-        
         
         for test_case_in_session in context['testSession'].testcaseinsession_set.all():
             for test_info in test_case_in_session.testInfos.all():
                 if test_info.name not in context['testInfoList']:
                     context['testInfoList'].append(test_info.name)
-                
-            
 
-        
         return context
+
     

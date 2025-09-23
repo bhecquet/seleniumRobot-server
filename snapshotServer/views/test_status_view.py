@@ -7,16 +7,30 @@ import json
 import pickle
 
 from django.http.response import HttpResponse
-from django.views.generic.base import View
 
 from snapshotServer.models import TestCaseInSession, Snapshot
-from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from rest_framework.generics import RetrieveAPIView
 
 
-class TestStatusView(LoginRequiredMixinConditional, View):
+class TestStatusPermission(ApplicationSpecificPermissionsResultRecording):
+    
+    def get_object_application(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.version.application
+        else:
+            return ''
+        
+    def get_application(self, request, view):
+        if view.kwargs.get('testCaseId', ''): # GET
+            return self.get_object_application(TestCaseInSession.objects.get(pk=view.kwargs['testCaseId']))
+        return ''
+
+class TestStatusView(RetrieveAPIView):
     
     
     queryset = TestCaseInSession.objects.none()
+    permission_classes = [TestStatusPermission]
     
     """
     API to get the test session status according to comparison results
@@ -49,5 +63,5 @@ class TestStatusView(LoginRequiredMixinConditional, View):
             
         except:
             return HttpResponse(status=404, reason="Could not find one or more objects")
-        
+
         

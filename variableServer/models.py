@@ -65,7 +65,7 @@ class Variable(models.Model):
         return ",".join([t.name for t in self.test.all()])
     
     name = models.CharField(max_length=100)
-    value = models.CharField(max_length=300, blank=True)
+    value = models.CharField(max_length=3000, blank=True)
     application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
     environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
     version = models.ForeignKey(Version, null=True, on_delete=models.CASCADE)

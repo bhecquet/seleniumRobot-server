@@ -102,24 +102,6 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
         if self.cleaned_data['compare'] not in ['true', 'false']:
             self.cleaned_data['compare'] = 'true'
 
-class ImageForStepReferenceUploadForm(forms.Form):
-    """Image upload form."""
-    image = forms.FileField()
-    stepResult = forms.IntegerField()
-    
-    def clean(self):
-        super().clean()
-        try:
-            self.cleaned_data['stepResult']
-        except KeyError as e:
-            raise forms.ValidationError("stepResult must be specified")
-          
-        try:
-            StepResult.objects.get(id=self.cleaned_data['stepResult'])
-        except Exception as e:
-            raise forms.ValidationError("stepResult not found")
-
-
 class ImageForFieldDetectionForm(forms.Form):
     """
     Image upload form for field detection

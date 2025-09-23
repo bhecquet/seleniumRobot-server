@@ -28,7 +28,7 @@ class TestAdmin(TestCase):
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)
         
         # only test cases that are included in a step reference will be displayed
-        self.assertEqual(filtered_test_cases, [(1, 'test1 - infotel'), (5, 'test1app2 - company')])
+        self.assertEqual(filtered_test_cases, [(1, 'test1 - myapp'), (5, 'test1app2 - myapp2')])
         
     def test_test_case_filter_lookup_with_application(self):
         """
@@ -43,7 +43,7 @@ class TestAdmin(TestCase):
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)
         
         # only test cases where a step reference exist for the application app1 are returned
-        self.assertEqual(filtered_test_cases, [(1, 'test1 - infotel')])
+        self.assertEqual(filtered_test_cases, [(1, 'test1 - myapp')])
     
     def test_test_case_filter_queryset_without_value(self):
         """
