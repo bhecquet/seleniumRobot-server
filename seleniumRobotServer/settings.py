@@ -112,9 +112,7 @@ if os.path.isfile(OIDC_RP_IDP_KEYFILE):
         OIDC_RP_IDP_SIGN_KEY = keyfile.read()
 
 OIDC_OP_JWKS_ENDPOINT = "${openid.jwks}" # either set this or OIDC_RP_IDP_KEYFILE, not both
-LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/"
-LOGIN_REDIRECT_URL = "/snapshot/"
-LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/"
+
 
 # to use in conjunction with 'NameOIDCAB' backend. Set at least one group for each variable as this is the only way to have administrator (except local database)
 OIDC_IS_STAFF_GROUP_NAMES = ['${openid.groups.isstaff}']

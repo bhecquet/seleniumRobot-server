@@ -3,27 +3,19 @@ Created on 4 mai 2017
 
 @author: bhecquet
 '''
-import datetime
-import io
-import json
-import zipfile
 
-from django.utils import timezone
-
-from rest_framework import viewsets, renderers, serializers
-from rest_framework.decorators import action
 from rest_framework.generics import UpdateAPIView, CreateAPIView, \
     RetrieveAPIView, DestroyAPIView
 from rest_framework.response import Response
 from rest_framework.viewsets import ViewSet
 from rest_framework.views import APIView
 from rest_framework.permissions import AllowAny
+from django.views.generic import TemplateView
 
-from commonsServer.views.viewsets import BaseViewSet, perform_create
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording, \
-    ApplicationPermissionChecker
-from snapshotServer.models import TestStep, TestSession, ExcludeZone, TestCaseInSession, StepResult, \
-    File, ExecutionLogs, TestInfo, Error, Version, Application, Snapshot
+from commonsServer.views.viewsets import perform_create
+from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from snapshotServer.models import TestSession
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 class Ping(APIView):
@@ -35,6 +27,10 @@ class Ping(APIView):
 
     def get(self, request, *args, **kwargs):
         return Response("OK")
+
+class Home(LoginRequiredMixinConditional, TemplateView):
+    template_name = "snapshotServer/home.html"
+
 
 class ResultRecordingViewSet(ViewSet,
                              CreateAPIView, # POST

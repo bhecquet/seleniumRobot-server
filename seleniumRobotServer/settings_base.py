@@ -51,7 +51,7 @@ ROOT_URLCONF = 'seleniumRobotServer.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -225,3 +225,7 @@ DELETE_HTML_FOR_SUCCESS_AFTER_DAYS = 5      # number of days after which HTML of
 DELETE_HTML_FOR_FAILURE_AFTER_DAYS = 10     # number of days after which HTML of failed test will be replaced by empty code
 DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS = 15    # number of days after which HTML of successful test will be deleted
 CLEANING_CRON = "0 3 * * *"                 # clean every day at 3 a.m
+
+LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/home/"
+LOGIN_REDIRECT_URL = "/snapshot/home/"
+LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/home/"

@@ -36,6 +36,7 @@ router.register(r'logs', ExecutionLogsViewSet)
 urlpatterns = [
     re_path(r'^$',  viewsets.Ping.as_view(), name='snapshotPing'),
     re_path(r'^api/', include(router.urls), name='api'),
+    re_path(r'^home/', viewsets.Home.as_view(), name='home'),
 
     re_path(r'^upload/(?P<filename>[^/]+)$', SnapshotUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
