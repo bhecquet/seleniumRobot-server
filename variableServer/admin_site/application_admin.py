@@ -59,10 +59,10 @@ class ApplicationAdmin(admin.ModelAdmin):
         """
         Display error message when it's impossible to delete the application
         """
-        if not (obj and len(TestCase.objects.filter(application=obj)) and len(Variable.objects.filter(application=obj))):
+        if not (obj and (len(TestCase.objects.filter(application=obj)) or len(Variable.objects.filter(application=obj)))):
             return admin.ModelAdmin.get_fieldsets(self, request, obj=obj)
         
-        # if some variables are linked to this application
+        # if some variables / testcases are linked to this application
         else:
             return (
                  (None, {

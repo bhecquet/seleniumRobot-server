@@ -28,17 +28,32 @@ class TestApplicationAdmin(TestAdmin):
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ('name', 'linkedApplication'), 'description': '<div style="font-size: 16px;color: red;">All tests / variables must be deleted before this application can be deleted</div>'}))
     
-    def test_application_fieldset_without_variables(self):
+    def test_application_fieldset_without_variables_with_testcase(self):
         """
-        Check no error message is displayed when an application has no variable
+        Check error message is displayed when an application has no variable but test cases
         """
         app = Application.objects.get(pk=5)
+        self.assertEqual(len(app.testCase.all()), 1)
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
         fieldset = application_admin.get_fieldsets(request, app)
-        
+
+
+        self.assertEqual(len(fieldset), 1)
+        self.assertEqual(fieldset[0], (None, {'fields': ('name', 'linkedApplication'), 'description': '<div style="font-size: 16px;color: red;">All tests / variables must be deleted before this application can be deleted</div>'}))
+
+    def test_application_fieldset_without_variables_without_testcase(self):
+        """
+        Check no error message is displayed when an application has no variable but test cases
+        """
+        app = Application.objects.get(pk=6)
+        self.assertEqual(len(app.testCase.all()), 0)
+        application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
+        fieldset = application_admin.get_fieldsets(request, app)
+
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ['name', 'linkedApplication']}))
-    
+
+
     def test_application_has_no_associated_actions(self):
         """
         Check all actions are deactivated so that deleting an application must be done from detailed view
