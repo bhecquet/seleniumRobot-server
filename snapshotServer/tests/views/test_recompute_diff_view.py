@@ -14,6 +14,7 @@ from django.db.models import Q
 from django.contrib.auth.models import Permission
 
 from commonsServer.tests.test_api import TestApi
+from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import TestSession, TestStep, Snapshot,\
     TestCaseInSession, StepResult, Version, TestEnvironment, TestCase
 from django.contrib.contenttypes.models import ContentType
@@ -74,6 +75,8 @@ class TestRecomputeDiffView(TestApi):
         for f in os.listdir(self.media_dir):
             if f.startswith('img_'):
                 os.remove(self.media_dir + os.sep + f)
+
+        DiffComputer.stopThread()
 
     def test_recompute_diff_no_security_not_authenticated(self):
         """

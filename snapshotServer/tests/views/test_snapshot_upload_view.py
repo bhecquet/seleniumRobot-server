@@ -15,6 +15,7 @@ from django.db.models import Q
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 
+from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, Snapshot, TestCaseInSession, \
     StepResult
@@ -86,6 +87,8 @@ class TestFileUploadView(TestApi):
         for f in os.listdir(self.media_dir):
             if f.startswith('engie'):
                 os.remove(self.media_dir + os.sep + f)
+
+        DiffComputer.stopThread()
                 
     def test_post_snapshot_no_security_not_authenticated(self):
         """
