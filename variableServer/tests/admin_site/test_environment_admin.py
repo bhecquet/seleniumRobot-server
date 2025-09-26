@@ -22,8 +22,8 @@ class TestEnvironmentAdmin(TestAdmin):
         environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
         filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
         
-        # all environments of all apps are displayed if at least a variable is defined for this environment
-        self.assertEqual(filtered_environments,  [(1, 'DEV'), (2, 'ASS'), (3, 'DEV1'), ('_None_', 'None')])
+        # all environments are displayed
+        self.assertEqual(filtered_environments,  [(1, 'DEV'), (2, 'ASS'), (3, 'DEV1'), (4, 'DEV2'), ('_None_', 'None')])
         
     def test_environment_filter_lookup_with_application(self):
         """
@@ -32,7 +32,7 @@ class TestEnvironmentAdmin(TestAdmin):
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         request = MockRequest()
-        request.GET = {'application__id__exact': 1}
+        request.GET = {'application': 1}
         
         environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
         filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)

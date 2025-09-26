@@ -5,6 +5,7 @@ Created on 12 déc. 2024
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
+from variableServer.models import TestEnvironment
 
 class EnvironmentFilter(SimpleListFilter):
     """
@@ -14,19 +15,19 @@ class EnvironmentFilter(SimpleListFilter):
     parameter_name = 'environment'
 
     def lookups(self, request, model_admin):
-        if 'application__id__exact' in request.GET:
-            app_id = request.GET['application__id__exact']
+        if 'application' in request.GET:
+            app_id = request.GET['application']
             environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
         else:
-            environments = set([c.environment for c in model_admin.model.objects.all()])
+            environments = set(TestEnvironment.objects.all())
         return [(e.id, str(e)) for e in environments if e is not None] + [('_None_', 'None')]
 
     def queryset(self, request, queryset):
         if self.value():
             if self.value() == '_None_':
-                return queryset.filter(environment__id__exact=None)
+                return queryset.filter(environment__id=None)
             else:
-                return queryset.filter(environment__id__exact=self.value())
+                return queryset.filter(environment__id=self.value())
         else:
             return queryset
 

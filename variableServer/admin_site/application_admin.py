@@ -31,7 +31,7 @@ class ApplicationFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         
         if self.value():
-            queryset = queryset.filter(application__id__exact=self.value())
+            queryset = queryset.filter(application__id=self.value())
        
         return queryset
     

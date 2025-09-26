@@ -36,8 +36,8 @@ class TestCaseFilter(SimpleListFilter):
     parameter_name = 'test_case_id'
 
     def lookups(self, request, model_admin):
-        if 'version__application__id__exact' in request.GET:
-            app_id = request.GET['version__application__id__exact']
+        if 'version__application' in request.GET:
+            app_id = request.GET['version__application']
             test_cases = set([sr.testCase for sr in model_admin.model.objects.filter(version__application=app_id)])
         else:
             test_cases = set([sr.testCase for sr in model_admin.model.objects.all()])
@@ -45,7 +45,7 @@ class TestCaseFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(stepResult__testCase__testCase__id__exact=self.value())
+            return queryset.filter(stepResult__testCase__testCase__id=self.value())
             
         else:
             return StepReference.objects.none()

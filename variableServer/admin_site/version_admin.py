@@ -6,7 +6,7 @@ Created on 12 déc. 2024
 from django.template.context_processors import csrf
 from django.shortcuts import render
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from variableServer.models import Variable, Application
+from variableServer.models import Variable, Application, Version
 from django.conf import settings
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
@@ -22,19 +22,19 @@ class VersionFilter(SimpleListFilter):
     parameter_name = 'version'
 
     def lookups(self, request, model_admin):
-        if 'application__id__exact' in request.GET:
-            app_id = request.GET['application__id__exact']
+        if 'application' in request.GET:
+            app_id = request.GET['application']
             versions = set([c.version for c in model_admin.model.objects.all().filter(application=app_id)])
         else:
-            versions = set([c.version for c in model_admin.model.objects.all()])
+            versions = set(Version.objects.all())
         return [(v.id, str(v)) for v in versions if v is not None] + [('_None_', 'None')]
 
     def queryset(self, request, queryset):
         if self.value():
             if self.value() == '_None_':
-                queryset = queryset.filter(version__id__exact=None)
+                queryset = queryset.filter(version__id=None)
             else:
-                queryset = queryset.filter(version__id__exact=self.value())
+                queryset = queryset.filter(version__id=self.value())
 
         return queryset
         

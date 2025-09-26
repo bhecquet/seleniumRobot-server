@@ -31,7 +31,7 @@ class TestVersionAdmin(TestAdmin):
         
         # all versions of all apps are displayed if at least a variable is defined for this version
         # this explains why version 3 and 4 are not rendered
-        self.assertEqual(filtered_versions, [(1, 'app1-2.4'), (2, 'app1-2.5'), (5, 'app4-1.0'), (6, 'linkedApp4-1.0'), ('_None_', 'None')])
+        self.assertEqual(filtered_versions, [(1, 'app1-2.4'), (2, 'app1-2.5'), (3, 'app2-1.0'), (4, 'app3-1.0'), (5, 'app4-1.0'), (6, 'linkedApp4-1.0'), (7, 'app5NoVar-1.0'), ('_None_', 'None')])
         
     def test_version_filter_lookup_with_application(self):
         """
@@ -40,7 +40,7 @@ class TestVersionAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         request = MockRequest()
-        request.GET = {'application__id__exact': 1}
+        request.GET = {'application': 1}
         
         version_filter = VersionFilter(request, {}, Variable, variable_admin)
         filtered_versions = version_filter.lookups(request=request, model_admin=variable_admin)

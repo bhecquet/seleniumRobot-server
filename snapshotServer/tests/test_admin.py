@@ -37,7 +37,7 @@ class TestAdmin(TestCase):
         step_reference_admin = StepReferenceAdmin(model=StepReference, admin_site=AdminSite())
         
         request = MockRequest()
-        request.GET = {'version__application__id__exact': 1}
+        request.GET = {'version__application': 1}
         
         test_case_filter = TestCaseFilter(request, {}, StepReference, step_reference_admin)
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)
