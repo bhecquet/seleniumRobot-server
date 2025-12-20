@@ -11,8 +11,9 @@ from snapshotServer.exceptions.picture_comparator_error import PictureComparator
 import numpy
 from numpy import uint8
 from snapshotServer.tests import SnapshotTestCase
+from django.test import override_settings
 
-
+@override_settings(IMAGE_COMPARISON_THRESHOLD=0)
 class TestPictureComparator(SnapshotTestCase):
 
 
@@ -82,7 +83,7 @@ class TestPictureComparator(SnapshotTestCase):
            
           
     def test_real_diff(self):
-        comparator = PictureComparator();
+        comparator = PictureComparator()
         diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_diff.png')
         
         diff_pixels = self.convert_points_to_pixels(diff_pixels)
@@ -90,9 +91,45 @@ class TestPictureComparator(SnapshotTestCase):
         self.assertEqual(3, len(diff_pixels), "3 pixels should be found")
         self.assertEqual(Pixel(554, 256), diff_pixels[0], "detected position is wrong")
         self.assertTrue(diff_percentage > 0)
+
+    def test_real_diff_under_threshold(self):
+        """
+        Picture test_threshold1 has 3 red pixels which should be detected as difference and an almost white pixel that
+        should not be detected as under tolerance
+        """
+
+        with self.settings(IMAGE_COMPARISON_THRESHOLD=9):
+            comparator = PictureComparator()
+            diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_threshold_source.png', self.dataDir + 'test_threshold1.png')
+
+            diff_pixels = self.convert_points_to_pixels(diff_pixels)
+
+            self.assertEqual(3, len(diff_pixels), "3 pixels should be found")
+            self.assertEqual(Pixel(0, 0), diff_pixels[0], "detected position is wrong")
+            self.assertEqual(Pixel(117, 0), diff_pixels[1], "detected position is wrong")
+            self.assertEqual(Pixel(0, 64), diff_pixels[2], "detected position is wrong")
+            self.assertTrue(diff_percentage > 0)
+
+    def test_real_diff_above_threshold(self):
+        """
+        Picture test_threshold1 has 3 red pixels which should be detected as difference and an almost white pixel that
+        should not be detected as under tolerance
+        """
+        with self.settings(IMAGE_COMPARISON_THRESHOLD=8):
+            comparator = PictureComparator()
+            diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'test_threshold_source.png', self.dataDir + 'test_threshold1.png')
+
+            diff_pixels = self.convert_points_to_pixels(diff_pixels)
+
+            self.assertEqual(4, len(diff_pixels), "4 pixels should be found")
+            self.assertEqual(Pixel(0, 0), diff_pixels[0], "detected position is wrong")
+            self.assertEqual(Pixel(117, 0), diff_pixels[1], "detected position is wrong")
+            self.assertEqual(Pixel(0, 64), diff_pixels[2], "detected position is wrong")
+            self.assertEqual(Pixel(117, 64), diff_pixels[3], "detected position is wrong")
+            self.assertTrue(diff_percentage > 0)
          
     def test_real_too_many_diff(self):
-        comparator = PictureComparator();
+        comparator = PictureComparator()
         diff_pixels, diff_percentage, diff_image = comparator.get_changed_pixels(self.dataDir + 'Ibis_Mulhouse.png', self.dataDir + 'Ibis_Mulhouse_tooManyDiffs.png')
         
         diff_pixels = self.convert_points_to_pixels(diff_pixels)
