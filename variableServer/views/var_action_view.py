@@ -2,14 +2,18 @@
 '''
 
 '''
-from variableServer.models import Variable
-from django.http.response import HttpResponseRedirect
-from django.contrib import admin, messages
-from variableServer.models import Version, TestEnvironment, Application,\
-    TestCase
-from variableServer.admin_site.variable_admin import VariableAdmin
+import os
+
 from django.conf import settings
+from django.contrib import admin, messages
+from django.http.response import HttpResponseRedirect, HttpResponse, Http404
+
 from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
+from variableServer.admin_site.variable_admin import VariableAdmin
+from variableServer.models import Variable
+from variableServer.models import Version, TestEnvironment, Application, \
+    TestCase
+
 
 def copy_variables(request):
     """
@@ -149,3 +153,26 @@ def _has_application_permission(request, application, variable_ids, has_global_p
     
     return True, application
 
+def download_variable(request, var_id):
+
+    var = Variable.objects.get(id=var_id)
+    filename = var.uploadFile.name.split("/")[-1]
+    global_permission = request.user.has_perm('variableServer.view_variable')
+    has_permission, related_application = _has_application_permission(request, var.application, [var_id], global_permission)
+    if not has_permission:
+        return HttpResponse('Unauthorized', status=401)
+
+    if var.application:
+        file_path = os.path.join(settings.MEDIA_ROOT, var.application.name, filename)
+    else:
+        file_path = os.path.join(settings.MEDIA_ROOT, filename)
+    try:
+        if os.path.exists(file_path):
+            with open(file_path, 'rb') as fh:
+                response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel;application/json;text/csv")
+                response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                return response
+        else:
+            raise Http404
+    except:
+        raise Http404

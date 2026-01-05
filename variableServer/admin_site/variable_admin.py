@@ -3,17 +3,19 @@ Created on 12 déc. 2024
 
 '''
 from django import forms
-from variableServer.models import Variable, TestCase, Version
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin,\
-    is_user_authorized
 from django.contrib import admin, messages
+from django.contrib.admin.actions import delete_selected as django_delete_selected
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
-from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from variableServer.admin_site.version_admin import VersionFilter
-from variableServer.admin_site.environment_admin import EnvironmentFilter
-from django.contrib.admin.actions import delete_selected as django_delete_selected
+from magic import magic
+
 from variableServer.admin_site.application_admin import ApplicationFilter
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin, \
+    is_user_authorized
+from variableServer.admin_site.environment_admin import EnvironmentFilter
+from variableServer.admin_site.version_admin import VersionFilter
+from variableServer.models import Variable, TestCase, Version
 
 
 class VariableForm(forms.ModelForm):
@@ -66,7 +68,29 @@ class VariableForm(forms.ModelForm):
         if self.initial.get('protected', False) and not is_user_authorized(user):
             self.initial['value'] = "****"
             self.fields['protected'].widget = forms.HiddenInput()
-            
+
+    def clean(self):
+        cleaned_data = super().clean()
+        uploadFile = cleaned_data.get("uploadFile")
+        value = cleaned_data.get("value")
+
+        if uploadFile and value:
+            raise forms.ValidationError("A variable can't be both a value and a file. Choose only one.")
+
+        if uploadFile:
+            uploadFileType = magic.from_buffer(uploadFile.read(), mime=True)
+
+            if uploadFileType not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+                raise forms.ValidationError(uploadFileType + " is an unsupported file type. Please, select csv, xls or json file.")
+            if uploadFileType == "text/plain":
+                if 'uploadFile' in self.changed_data and uploadFile.content_type not in ["application/json", "text/csv"]:
+                    raise forms.ValidationError(uploadFileType + " in an unsupported file type. Please, select csv, xls or json file.")
+            if uploadFile.size > 1000000:
+                raise forms.ValidationError("File too large. 1Mo max")
+
+            uploadFile.seek(0)
+        return cleaned_data
+
 class VariableForm2(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(VariableForm2, self).__init__(*args, **kwargs)
@@ -96,8 +120,8 @@ class VariableForm2(forms.ModelForm):
 
     
 class VariableAdmin(BaseServerModelAdmin): 
-    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
-    list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display_protected = ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value']
     form = VariableForm

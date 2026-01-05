@@ -6,7 +6,6 @@ from variableServer.views import api_view
 from variableServer.views import var_action_view
 from variableServer.views.api_view import VariableList
 
-
 urlpatterns = [
     re_path(r'^api/variable/(?P<pk>[0-9]+)/$', VariableList.as_view({'patch': 'patch', 'delete': 'delete'}), name='variableApiPut'),
     re_path(r'^api/variable', VariableList.as_view({'get': 'get', 'post': 'post'}), name='variableApi'),
@@ -14,4 +13,6 @@ urlpatterns = [
     
     re_path(r'copyVariables', var_action_view.copy_variables, name='copy_variables'),
     re_path(r'changeVariables', var_action_view.change_variables, name='change_variables'),
+
+    re_path(r'^(?P<var_id>[0-9]*)/file', var_action_view.download_variable, name='download_variable'),
 ]

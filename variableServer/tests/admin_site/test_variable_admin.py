@@ -4,14 +4,15 @@ from django import forms
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
+from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls.base import reverse
 from django.utils import timezone
 
-from variableServer.models import Application, Version
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
+from variableServer.models import Application, Version
 from variableServer.models import Variable
-from variableServer.tests.test_admin import MockRequest, request, TestAdmin,\
+from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
 
@@ -105,7 +106,45 @@ class TestVariableAdmin(TestAdmin):
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=1).value, 'proxy.com')
-        
+
+    def test_variable_save_standard_with_file(self):
+        """
+        Check saving is done with a file
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        variable = Variable.objects.get(pk=666)
+
+        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+        self.assertEqual(Variable.objects.get(pk=666).value, '')
+        self.assertEqual(Variable.objects.get(pk=666).uploadFile, 'http://127.0.0.1:8000/media/test/poc_recorder.xlsx')
+
+    def test_variable_clean_no_concurrent_file_value(self):
+        """
+        Check that you can't save a variable with both a file and a value
+        """
+        form = VariableForm(instance=Variable.objects.get(pk=999))
+        form.cleaned_data = {"name": "both", "value": "filetxt", "uploadFile": "itssupposedtobeafilebutaslongasitsnotnullitsokforthetest"}
+        self.assertRaisesRegex(ValidationError, ".*A variable can't be both a value and a file. Choose only one..*", form.clean)
+
+    #Can't add a file to test extension rules
+    # def test_variable_clean_file_wrong_type(self):
+    #     """
+    #     Check that you can't save a variable with a file type other than csv, xls, json
+    #     """
+    #     form = VariableForm(instance=Variable.objects.get(pk=998))
+    #     form.cleaned_data = {'value': '', 'uploadFile': form.fields['uploadFile']}
+    #     self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
+    #
+    # def test_variable_clean_file_wrong_type_txt(self):
+    #     """
+    #     Check that you can't save a variable with a file type other than csv, xls, json
+    #     """
+    #     form = VariableForm(instance=Variable.objects.get(pk=997))
+    #     form.cleaned_data = form.fields
+    #     self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
+
+
     def test_variable_save_protected_variable_with_authorized_user(self):
         """
         Check value is modified when user has the right to do

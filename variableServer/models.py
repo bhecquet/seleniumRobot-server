@@ -1,6 +1,11 @@
+import os
+
+from django.conf import settings
 from django.db import models
-import commonsServer.models
 from django.utils import timezone
+
+import commonsServer.models
+
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
     class Meta:
@@ -43,11 +48,45 @@ class Variable(models.Model):
         else:
             return self.value
     valueProtected.short_description = 'Value'
-    
+
+    def uploadFileReforged(self):
+        if "/" in str(self.uploadFile):
+            return str(self.uploadFile).split("/")[-1]
+        else:
+            return str(self.uploadFile)
+    uploadFileReforged.short_description = "uploadFile"
+
     def save(self, *args, **kwargs):
+        if self.id:
+            var = Variable.objects.get(id=self.id)
+            if var.uploadFile != self.uploadFile:
+                try:
+                    filename = var.uploadFile.name.split("/")[-1]
+                    if var.application:
+                        file_path = os.path.join(settings.MEDIA_ROOT, var.application.name, filename)
+                    else:
+                        file_path = os.path.join(settings.MEDIA_ROOT, filename)
+                    os.remove(file_path)
+                except:
+                    #file already deleted or corrupted
+                    pass
         super(Variable, self).save(*args, **kwargs)
         self._correctReservableState()
-    
+
+    def delete(self, using=None, keep_parents=False):
+        if self.uploadFile:
+            try:
+                filename = self.uploadFile.name.split("/")[-1]
+                if self.application:
+                    file_path = os.path.join(settings.MEDIA_ROOT, self.application.name, filename)
+                else:
+                    file_path = os.path.join(settings.MEDIA_ROOT, filename)
+                os.remove(file_path)
+            except:
+                #file already deleted or corrupted ?
+                pass
+        super(Variable, self).delete(using, keep_parents)
+
     def _correctReservableState(self):
         """
         Make sure that all variable of the same scope have the same reservable state as the new/updated variable
@@ -63,9 +102,15 @@ class Variable(models.Model):
     
     def allTests(self):
         return ",".join([t.name for t in self.test.all()])
-    
+
+    def get_upload_path(instance, filename):
+        if not instance.application:
+            return filename
+        return os.path.join(instance.application.name,filename)
+
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=3000, blank=True)
+    uploadFile = models.FileField(blank=True, upload_to=get_upload_path)
     application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
     environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
     version = models.ForeignKey(Version, null=True, on_delete=models.CASCADE)
