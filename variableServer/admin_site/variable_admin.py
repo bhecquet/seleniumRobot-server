@@ -79,7 +79,7 @@ class VariableForm(forms.ModelForm):
 
         if uploadFile:
             uploadFileType = magic.from_buffer(uploadFile.read(), mime=True)
-
+            uploadFile.seek(0)
             if uploadFileType not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
                 raise forms.ValidationError(uploadFileType + " is an unsupported file type. Please, select csv, xls or json file.")
             if uploadFileType == "text/plain":
@@ -88,7 +88,6 @@ class VariableForm(forms.ModelForm):
             if uploadFile.size > 1000000:
                 raise forms.ValidationError("File too large. 1Mo max")
 
-            uploadFile.seek(0)
         return cleaned_data
 
 class VariableForm2(forms.ModelForm):

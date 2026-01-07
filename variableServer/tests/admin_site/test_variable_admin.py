@@ -1,4 +1,5 @@
 import datetime
+import os.path
 
 from django import forms
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
@@ -8,6 +9,7 @@ from django.core.exceptions import ValidationError
 from django.db.models import Q
 from django.urls.base import reverse
 from django.utils import timezone
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
 from variableServer.models import Application, Version
@@ -128,14 +130,17 @@ class TestVariableAdmin(TestAdmin):
         self.assertRaisesRegex(ValidationError, ".*A variable can't be both a value and a file. Choose only one..*", form.clean)
 
     #Can't add a file to test extension rules
-    # def test_variable_clean_file_wrong_type(self):
-    #     """
-    #     Check that you can't save a variable with a file type other than csv, xls, json
-    #     """
-    #     form = VariableForm(instance=Variable.objects.get(pk=998))
-    #     form.cleaned_data = {'value': '', 'uploadFile': form.fields['uploadFile']}
-    #     self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
-    #
+    def test_variable_clean_file_wrong_type(self):
+        """
+        Check that you can't save a variable with a file type other than csv, xls, json
+        """
+        file_path = 'variableServer/tests/data/engie.png'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'engie.png', 'application/png', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
+
     # def test_variable_clean_file_wrong_type_txt(self):
     #     """
     #     Check that you can't save a variable with a file type other than csv, xls, json
@@ -639,7 +644,7 @@ class TestVariableAdmin(TestAdmin):
 
     def test_variable_form_with_existing_variable_application_defined(self):
         """
-        Check that if application not defined for the variable, fields "version" and "test" are enabled
+        Check that if application defined for the variable, fields "version" and "test" are enabled
         """
         
         form = VariableForm(instance=Variable.objects.get(pk=3))
