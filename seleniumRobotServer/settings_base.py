@@ -229,3 +229,7 @@ CLEANING_CRON = "0 3 * * *"                 # clean every day at 3 a.m
 LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/home/"
 LOGIN_REDIRECT_URL = "/snapshot/home/"
 LOGIN_REDIRECT_URL_FAILURE = "/accounts/login/?next=/snapshot/home/"
+
+# During image comparison, images are read as grayscale
+# if the pixel intensity difference between the reference and the image to compare is under this threshold, ignore the difference
+IMAGE_COMPARISON_THRESHOLD = 10

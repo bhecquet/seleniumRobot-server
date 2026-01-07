@@ -8,12 +8,11 @@ import collections
 import logging
 import os
 import numpy
-
-
 import cv2 
 
 from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
 from numpy import uint8
+from django.conf import settings
 
 
 Rectangle = collections.namedtuple("Rectangle", ['x', 'y', 'width', 'height'])
@@ -73,9 +72,8 @@ class PictureComparator:
             raise PictureComparatorError("Image file %s does not exist" % image)
         
         # compute area where comparison will be done (<min_width>x<min_height>)
-
-        reference_img = cv2.imread(reference, 0)
-        image_img = cv2.imread(image, 0)
+        reference_img = cv2.imread(reference, cv2.IMREAD_GRAYSCALE)
+        image_img = cv2.imread(image, cv2.IMREAD_GRAYSCALE)
 
         reference_height = len(reference_img)
         reference_width = len(reference_img[0])
@@ -89,7 +87,6 @@ class PictureComparator:
             min_width = min(reference_width, image_width)
   
         diff = cv2.absdiff(reference_img[0:min_height, 0:min_width], image_img[0:min_height, 0:min_width])
- 
         pixels, diff_image = self._build_list_of_changed_pixels(diff, image_width, image_height, min_width, min_height, exclude_zones)
         
         return pixels, len(pixels) * 100.0 / (image_height * image_width), diff_image
@@ -110,11 +107,11 @@ class PictureComparator:
         # draw mask of differences
         mask = numpy.ones((image_height, image_width, 1), dtype=uint8)
         diff_image = numpy.zeros((image_height, image_width, 4), dtype=uint8)
-        cnd = diff[:,:] > 0 # says which pixels are non-zeros
+        cnd = diff[:,:] > settings.IMAGE_COMPARISON_THRESHOLD # says which pixels are non-zeros
         diff_image[cnd] = mask[cnd]
         diff_image *=  numpy.array([0, 0, 255, 255], dtype=uint8) # print red pixels
 
-        diff_pixels = numpy.transpose(diff.nonzero());
+        diff_pixels = numpy.argwhere(diff > settings.IMAGE_COMPARISON_THRESHOLD)
         
         return diff_pixels, diff_image
     
