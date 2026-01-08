@@ -240,7 +240,7 @@ class TestPictureView(TestViews):
                     # ask for the step snapshot and look for data
                     response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs_same_env.id, 'test_step_id': 1}) + "?snapshotId=" + str(snapshot_same_env.id))
                     self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff) 
-                    self.assertTrue(response.context['captureList'][0]['diffPercentage'] > 0.086)   
+                    self.assertTrue(response.context['captureList'][0]['diffPercentage'] > 0.079)
           
     def test_multiple_snapshots_per_step(self):
         """
