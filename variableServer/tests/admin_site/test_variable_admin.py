@@ -6,10 +6,11 @@ from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
+from django.test import override_settings
 from django.urls.base import reverse
 from django.utils import timezone
-from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
 from variableServer.models import Application, Version
@@ -18,6 +19,7 @@ from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
 
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
 class TestVariableAdmin(TestAdmin):
     
     def setUp(self)->None:
@@ -34,7 +36,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         super_user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
+        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
         
         
     def test_variable_get_list_display_with_unauthorized_user(self):
@@ -44,7 +46,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=user)), ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
+        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=user)), ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
         
     def test_variable_queryset_without_application_restriction(self):
         """
@@ -94,7 +96,7 @@ class TestVariableAdmin(TestAdmin):
             for var in query_set:
                 app_list.append(var.application)
             
-            self.assertEqual(len(list(set(app_list))), 6)
+            self.assertEqual(len(list(set(app_list))), 7)
         
     def test_variable_save_standard(self):
         """
@@ -119,7 +121,7 @@ class TestVariableAdmin(TestAdmin):
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=666).value, '')
-        self.assertEqual(Variable.objects.get(pk=666).uploadFile, 'http://127.0.0.1:8000/media/test/poc_recorder.xlsx')
+        self.assertEqual(Variable.objects.get(pk=666).uploadFile, 'http://127.0.0.1:8000/media/test/fauxfile.xlsx')
 
     def test_variable_clean_no_concurrent_file_value(self):
         """
@@ -129,7 +131,6 @@ class TestVariableAdmin(TestAdmin):
         form.cleaned_data = {"name": "both", "value": "filetxt", "uploadFile": "itssupposedtobeafilebutaslongasitsnotnullitsokforthetest"}
         self.assertRaisesRegex(ValidationError, ".*A variable can't be both a value and a file. Choose only one..*", form.clean)
 
-    #Can't add a file to test extension rules
     def test_variable_clean_file_wrong_type(self):
         """
         Check that you can't save a variable with a file type other than csv, xls, json
@@ -141,14 +142,27 @@ class TestVariableAdmin(TestAdmin):
             self.assertFalse(form.is_valid())
             self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
 
-    # def test_variable_clean_file_wrong_type_txt(self):
-    #     """
-    #     Check that you can't save a variable with a file type other than csv, xls, json
-    #     """
-    #     form = VariableForm(instance=Variable.objects.get(pk=997))
-    #     form.cleaned_data = form.fields
-    #     self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
+    def test_variable_clean_file_wrong_type_txt(self):
+        """
+        Check that you can't save a variable with a file type other than csv, xls, json
+        """
+        file_path = 'variableServer/tests/data/dummy.txt'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'dummy.txt', 'text/plain', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls or json file..*", form.clean)
 
+    def test_variable_clean_file_too_large(self):
+        """
+        Check that you can't save a variable with a file larger than 10Mo
+        """
+        file_path = 'variableServer/tests/data/toobig.csv'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'toobig.csv', 'text/csv', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*File too large. 10Mo max.*", form.clean)
 
     def test_variable_save_protected_variable_with_authorized_user(self):
         """
@@ -252,7 +266,7 @@ class TestVariableAdmin(TestAdmin):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
-            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be copied
+            self.assertTrue('<input type="hidden" name="ids" value=4,3 />' in content) # check both variables will be copied
      
     def test_variable_copy_to_with_application_restrictions_and_global_change_variable(self):
         """
@@ -585,7 +599,7 @@ class TestVariableAdmin(TestAdmin):
             
             content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
-            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be modified
+            self.assertTrue('<input type="hidden" name="ids" value=4,3 />' in content) # check both variables will be modified
      
     def test_variable_change_values_at_once_with_application_restrictions_and_global_change_variable(self):
         """
@@ -807,7 +821,6 @@ class TestVariableAdmin(TestAdmin):
         Check  user cannot view / change / delete / add variable with only application specific rights: can_view_application_app1
         when application restriction are NOT applied
         """
-
         testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
         self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))

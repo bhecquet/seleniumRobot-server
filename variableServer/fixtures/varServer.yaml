@@ -1,7 +1,4 @@
 - model: variableServer.application
-  pk: 777
-  fields: { name: test }
-- model: variableServer.application
   pk: 1
   fields: { name: app1 }
 - model: variableServer.application
@@ -25,6 +22,9 @@
 - model: variableServer.application
   pk: 6
   fields: { name: app6NoVarNoTest }
+- model: variableServer.application
+  pk: 777
+  fields: { name: appFileVar }
 - model: variableServer.version
   pk: 1
   fields: { application: 1, name: '2.4' }
@@ -478,7 +478,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/test/poc_recorder.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3
@@ -493,7 +493,7 @@
 - fields:
     name: user
     value: "file"
-    uploadFile: "http://127.0.0.1:8000/media/test/poc_recorder.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3

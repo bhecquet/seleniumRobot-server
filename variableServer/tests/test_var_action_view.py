@@ -3,6 +3,7 @@
 '''
 from django.contrib.auth.models import Permission
 from django.db.models import Q
+from django.test import override_settings
 from django.test.client import Client
 from django.urls.base import reverse
 
@@ -10,6 +11,7 @@ from variableServer.models import Variable, Application
 from variableServer.tests.test_admin import TestAdmin
 
 
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
 class TestVarActionView(TestAdmin):
 
     fixtures = ['varServer']
@@ -468,7 +470,7 @@ class TestVarActionView(TestAdmin):
         We can download var file
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_test')))
+            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
             self.assertEqual(200, testfile.status_code)
 
     def test_download_variable_file_ko_no_permissions(self):
@@ -490,14 +492,15 @@ class TestVarActionView(TestAdmin):
         """
         With permission on the application, user CAN download variable file
         """
-        testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_test')))
-        self.assertEqual(testfile.status_code, 200)
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
+            self.assertEqual(testfile.status_code, 200)
 
     def test_download_variable_file_ko_wrong_permission(self):
         """
         With permission on another application, user can NOT download variable file
         """
-        testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='view_variable')))
+        testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
         self.assertEqual(testfile.status_code, 401)
 
     def test_download_variable_file_ok_global_permission_and_application_restriction(self):

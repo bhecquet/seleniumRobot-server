@@ -1,15 +1,17 @@
 
-from django.urls.base import reverse
-from variableServer.utils.utils import  updateVariables
-from variableServer.models import Variable, Version,\
-    TestEnvironment, TestCase, Application
-import time
 import datetime
-from django.utils import timezone
-from django.db.models import Q
+import time
 
 from django.contrib.auth.models import Permission
+from django.db.models import Q
+from django.urls.base import reverse
+from django.utils import timezone
+
 from commonsServer.tests.test_api import TestApi
+from variableServer.models import Variable, Version, \
+    TestEnvironment, TestCase, Application
+from variableServer.utils.utils import updateVariables
+
 
 class TestApiView(TestApi):
     '''
@@ -664,8 +666,8 @@ class TestApiView(TestApi):
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
         
-        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        delta = (releaseDate - datetime.datetime.utcnow()).seconds
+        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
         self.assertTrue(895 < delta < 905)
                  
     def test_reserve_variable_no_api_security(self):
@@ -681,8 +683,8 @@ class TestApiView(TestApi):
             all_variables = self._convert_to_dict(response.data)
             self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
             
-            releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
-            delta = (releaseDate - datetime.datetime.utcnow()).seconds
+            releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
             self.assertTrue(895 < delta < 905)
    
     def test_reserve_variable_with_increased_duration(self):
@@ -697,8 +699,8 @@ class TestApiView(TestApi):
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
         
-        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%fZ")
-        delta = (releaseDate - datetime.datetime.utcnow()).seconds
+        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
         self.assertTrue(995 < delta < 1005)
              
     def test_reserve_variable_with_parameter(self):

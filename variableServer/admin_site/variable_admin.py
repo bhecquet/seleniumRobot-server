@@ -71,22 +71,22 @@ class VariableForm(forms.ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
-        uploadFile = cleaned_data.get("uploadFile")
+        upload_file = cleaned_data.get("uploadFile")
         value = cleaned_data.get("value")
 
-        if uploadFile and value:
+        if upload_file and value:
             raise forms.ValidationError("A variable can't be both a value and a file. Choose only one.")
 
-        if uploadFile:
-            uploadFileType = magic.from_buffer(uploadFile.read(), mime=True)
-            uploadFile.seek(0)
-            if uploadFileType not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
-                raise forms.ValidationError(uploadFileType + " is an unsupported file type. Please, select csv, xls or json file.")
-            if uploadFileType == "text/plain":
-                if 'uploadFile' in self.changed_data and uploadFile.content_type not in ["application/json", "text/csv"]:
-                    raise forms.ValidationError(uploadFileType + " in an unsupported file type. Please, select csv, xls or json file.")
-            if uploadFile.size > 1000000:
-                raise forms.ValidationError("File too large. 1Mo max")
+        if upload_file:
+            upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
+            upload_file.seek(0)
+            if upload_file_type not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+                raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
+            if upload_file_type == "text/plain":
+                if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
+                    raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
+            if upload_file.size > 10000000:
+                raise forms.ValidationError("File too large. 10Mo max")
 
         return cleaned_data
 
