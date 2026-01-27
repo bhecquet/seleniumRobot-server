@@ -500,8 +500,9 @@ class TestVarActionView(TestAdmin):
         """
         With permission on another application, user can NOT download variable file
         """
-        testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
-        self.assertEqual(testfile.status_code, 401)
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
+            self.assertEqual(testfile.status_code, 401)
 
     def test_download_variable_file_ok_global_permission_and_application_restriction(self):
         """

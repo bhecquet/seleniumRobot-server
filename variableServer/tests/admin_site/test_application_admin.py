@@ -1,3 +1,4 @@
+from operator import itemgetter
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
@@ -218,10 +219,10 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (41, 'linkedApp4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (777, 'testVarFile')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
         
     def test_application_filter_lookup_application_restriction(self): 
         """
@@ -250,8 +251,8 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (41, 'linkedApp4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (777, 'testVarFile')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
         
