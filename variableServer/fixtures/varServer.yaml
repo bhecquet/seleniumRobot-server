@@ -478,7 +478,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3
@@ -493,7 +493,7 @@
 - fields:
     name: user
     value: "file"
-    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3
@@ -508,7 +508,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.pdf"
+    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.pdf"
     application: 777
     version: null
     environment: 3
@@ -523,7 +523,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/test/fauxfile.txt"
+    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.txt"
     application: 777
     version: null
     environment: 3
