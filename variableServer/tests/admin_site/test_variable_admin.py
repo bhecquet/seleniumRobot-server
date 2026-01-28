@@ -121,7 +121,7 @@ class TestVariableAdmin(TestAdmin):
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=666).value, '')
-        self.assertEqual(Variable.objects.get(pk=666).uploadFile, 'http://127.0.0.1:8000/media/test/fauxfile.xlsx')
+        self.assertEqual(Variable.objects.get(pk=666).uploadFile, 'http://127.0.0.1:8000/media/varAppFile/fauxfile.xlsx')
 
     def test_variable_clean_no_concurrent_file_value(self):
         """
