@@ -234,7 +234,7 @@ class VariableAdmin(BaseServerModelAdmin):
         queryset = Variable.objects.filter(id__in=request.POST.getlist(ACTION_CHECKBOX_NAME))
         queryset = self._filter_variables(request, queryset, 'variableServer.change_variable', 'change')
         
-        selected = [str(var.id) for var in queryset]
+        selected = [str(i) for i in sorted(var.id for var in queryset)]
         args = {'ids': ','.join(selected), 
                 'form': VariableForm2(initial=self._get_default_values(selected)),
                 'queryString': request.META['QUERY_STRING']} # Allow to go back to filtered list

@@ -266,7 +266,7 @@ class TestVariableAdmin(TestAdmin):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
-            self.assertTrue('<input type="hidden" name="ids" value=4,3 />' in content) # check both variables will be copied
+            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be copied
      
     def test_variable_copy_to_with_application_restrictions_and_global_change_variable(self):
         """
@@ -599,7 +599,7 @@ class TestVariableAdmin(TestAdmin):
             
             content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
-            self.assertTrue('<input type="hidden" name="ids" value=4,3 />' in content) # check both variables will be modified
+            self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content) # check both variables will be modified
      
     def test_variable_change_values_at_once_with_application_restrictions_and_global_change_variable(self):
         """
