@@ -89,9 +89,10 @@ class ErrorCauseFinder:
     def is_error_message_displayed(self):
         """
         Check whether an error message is displayed in the page
-        :return: the error message or None if no error message has been detected
+        :return: the error messages or None if no error message has been detected
+                    whether there was error in analysis, or None if analysis was successful
         """
-        if self.open_web_ui_client:
+        if self.open_web_ui_client and len(self.open_web_ui_client.list_models()) > 0:
 
             last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name='Test end')
             if len(last_step) > 0:
@@ -103,12 +104,19 @@ class ErrorCauseFinder:
                     for snapshot in step_result_details['snapshots']:
                         if snapshot['idImage']:
                             image_file = File.objects.get(pk=snapshot['idImage'])
-                            error_displayed, error_message = self.is_error_message_displayed(image_file.file.path)
+                            error_displayed, error_messages, analysis_error = self.is_error_message_displayed(image_file.file.path)
+
+                            if error_displayed:
+                                return error_messages, None
+                            elif analysis_error:
+                                return [], analysis_error
+                            else:
+                                return [], None
+
                 except Exception as e:
-                    logger.warning("Error reading file for analysis: " + str(e))
+                    return [], f"Error reading file for analysis: {str(e)}"
 
-
-        return False
+        return [], None
 
     def is_error_message_displayed(self, image_path):
         error_messages = []
