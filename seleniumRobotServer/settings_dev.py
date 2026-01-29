@@ -100,6 +100,21 @@ FIELD_DETECTOR_ENABLED = 'True'
 DRAMATIQ_RESULT_BACKEND['BACKEND'] = "dramatiq.results.backends.stub.StubBackend"
 DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS'] = {}
 
+# Connection to Open-WebUI instance. set empty URL to disable
+OPEN_WEBUI_URL = 'http://localhost:8080'
+OPEN_WEBUI_TOKEN = 'abc'
+OPEN_WEBUI_MODEL = 'ministral-3:8b'
+OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE = '''In the provided image, do you see an error message ?
+- Start by extracting all texts and their color
+- Then, for each text, depending on its colour and meaning, determine if the text is an error message
+
+Reply only in JSON, with the following format:
+```
+{"explanation": "<what leads to your conclusion>", "error_messages": [<list of detected error messages or technical failures as STRING]}
+```
+‘error_messages’ key may have an empty value if no error message or technical failure has been detected
+Check that the JSON response is valid'''
+
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = False

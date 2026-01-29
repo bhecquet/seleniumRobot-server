@@ -93,6 +93,13 @@ FIELD_DETECTOR_ENABLED = '${field.detector.enabled}'
 DRAMATIQ_BROKER['OPTIONS']['url'] = '${redis.url}/0'
 DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = '${redis.url}'
 
+# Connection to Open-WebUI instance. set empty URL to disable
+OPEN_WEBUI_URL = '${openwebui.url}'
+OPEN_WEBUI_TOKEN = '{openwebui.token}'
+OPEN_WEBUI_MODEL = '{openwebui.model}'
+OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE = '''In the provided image, do you see an error message or message indicating a service failure ?
+Start by extracting all texts and their color, and then, for each text, depending on its colour and meaning, say if the text is an error message or indicates a service failure'''
+
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
 RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = True
