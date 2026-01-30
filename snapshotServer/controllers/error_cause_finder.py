@@ -1,16 +1,12 @@
-import base64
 import json
 import logging
 import os
-import time
 from collections import namedtuple
-
-import requests
-from openwebui_chat_client import OpenWebUIClient
 
 from django.conf import settings
 
-from snapshotServer.models import TestCaseInSession, StepResult, File
+from snapshotServer.controllers.llm_connector import LlmConnector
+from snapshotServer.models import TestCaseInSession, StepResult, File, StepReference, TestStep
 
 ErrorCause = namedtuple("ErrorCause", [
                                         'cause',        # the probable cause of the error (application, scripting, tool, environment
@@ -28,14 +24,7 @@ class ErrorCauseFinder:
     def __init__(self, test_case_in_session: TestCaseInSession):
 
         self.test_case_in_session = test_case_in_session
-        self.open_web_ui_client = None
-        if settings.OPEN_WEBUI_URL and settings.OPEN_WEBUI_TOKEN and settings.OPEN_WEBUI_MODEL:
-            self.open_web_ui_client = OpenWebUIClient(
-                base_url=settings.OPEN_WEBUI_URL,
-                token=settings.OPEN_WEBUI_TOKEN,
-                default_model_id=settings.OPEN_WEBUI_MODEL
-            )
-
+        self.llm_connector = LlmConnector()
 
     def detect_cause(self):
         """
@@ -44,8 +33,11 @@ class ErrorCauseFinder:
         if self.test_case_in_session.isOkWithResult():
             return None
 
-        if self.is_on_the_right_page():
+        same_page, analysis_error = self.is_on_the_right_page()
+        if same_page:
+            # TODO: do something with analysis errors
             if self.is_element_present_on_page():
+                # TODO: send the DOM and the image to the LLM
                 return ErrorCause("script", "bad_locator", None)
             js_errors = self.has_javascript_errors()
             if js_errors:
@@ -58,8 +50,9 @@ class ErrorCauseFinder:
                 return ErrorCause("script", "unknown", None)
 
         else:
-            error_message = self.is_error_message_displayed()
+            error_message, analysis_error = self.is_error_message_displayed()
             if error_message:
+                # TODO: do something with analysis errors
                 return ErrorCause("application_error", "error_message", error_message)
             elif self.is_on_the_previous_page():
                 if self.has_network_errors():
@@ -75,16 +68,87 @@ class ErrorCauseFinder:
     def is_on_the_right_page(self):
         """
         Check whether test was on the right page when error occurred
-        :return: true if test is on the right page
+        :return: [true/false, <analysis error if any>] if test is on the right page
         """
-        return True
+        failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).order_by('-pk')
+        if len(failed_step_result) > 0:
+            return self._is_step_on_same_page(failed_step_result[0], failed_step_result[0])
+
+        return True, "No image to compare"
+
 
     def is_on_the_previous_page(self):
         """
         If we are not on the right page, we may be on the previous page which means that a previous click did not produce the expected action
         :return:
         """
-        return False
+        failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).order_by('-pk')
+        previous_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, pk_lt=failed_step_result.id).order_by('-pk')
+        if len(failed_step_result) > 0 and len(previous_step_result) > 0:
+            return self._is_step_on_same_page(previous_step_result[0], failed_step_result[0])
+
+        return True, "No image to compare"
+
+    def _is_step_on_same_page(self, step_for_reference_result: StepResult, failed_step_result: StepResult):
+        """
+        returns the result of comparison between the image the failed step and a reference image that will be taken from a previous step
+        :param step_for_reference_result:
+        :param failed_step_result:
+        :return:
+        """
+        step_reference = StepReference.objects.filter(testCase=self.test_case_in_session.testCase,
+                                                      environment=self.test_case_in_session.session.environment,
+                                                      version=self.test_case_in_session.session.version,
+                                                      testStep=step_for_reference_result.step)
+
+        if len(step_reference) == 0 or not step_reference[0].image or os.path.isfile(step_reference[0].image.file.path):
+            return True, f"No reference image for step '{failed_step_result.step.name}' in test case '{self.test_case_in_session.testCase.name}'"
+
+        try:
+            # load details
+            step_result_details = json.loads(failed_step_result.stacktrace)
+            for snapshot in step_result_details['snapshots']:
+                if snapshot['idImage'] and snapshot['snapshotCheckType'] == 'NONE_REFERENCE':
+                    image_file = File.objects.get(pk=snapshot['idImage'])
+                    same_page, analysis_error = self._is_on_same_page(step_reference[0].image.file.path, image_file.file.path)
+
+                    return same_page, analysis_error
+
+
+        except Exception as e:
+            return True, f"Error reading file for analysis: {str(e)}"
+
+    def _is_on_same_page(self, reference_page, page_to_compare):
+        """
+        Returns true if 'reference_page' and 'page_to_compare' seem to be the same page
+        :param reference_page:  the reference page to compare to
+        :param page_to_compare: the page of the current test
+        """
+        same_page = True
+
+        if not os.path.isfile(reference_page):
+            return same_page, f"Reference file {reference_page} does not exist"
+        if not os.path.isfile(page_to_compare):
+            return same_page, f"Page to compare file {page_to_compare} does not exist"
+
+        result = self.llm_connector.chat(settings.OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON, [reference_page, page_to_compare], 50)
+
+        if 'choices' in result and len(result['choices']) > 0:
+            logger.info("LLM response in %.2f secs" % (result['usage']['total_duration'] / 1000000000.,))
+            response_str = result['choices'][0]['message']['content'].replace('```json', '').replace('```', '')
+            try:
+                response = json.loads(response_str.replace('\n', ''))
+            except Exception:
+                return same_page, "Invalid JSON returned by model"
+            try:
+                similarity = int(response["similarity"])
+                return similarity > 70, None
+            except Exception:
+                return same_page, "no 'similarity' key present in JSON or value is not a number"
+        else:
+            return same_page, "No response from Open WebUI"
+
+
 
     def is_error_message_displayed(self):
         """
@@ -92,45 +156,39 @@ class ErrorCauseFinder:
         :return: the error messages or None if no error message has been detected
                     whether there was error in analysis, or None if analysis was successful
         """
-        if self.open_web_ui_client and len(self.open_web_ui_client.list_models()) > 0:
 
-            last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name='Test end')
-            if len(last_step) > 0:
-                last_step = last_step[0]
+        last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name='Test end')
+        if len(last_step) > 0:
+            last_step = last_step[0]
 
-                try:
-                    # load details
-                    step_result_details = json.loads(last_step.stacktrace)
-                    for snapshot in step_result_details['snapshots']:
-                        if snapshot['idImage']:
-                            image_file = File.objects.get(pk=snapshot['idImage'])
-                            error_displayed, error_messages, analysis_error = self.is_error_message_displayed(image_file.file.path)
+            try:
+                # load details
+                step_result_details = json.loads(last_step.stacktrace)
+                for snapshot in step_result_details['snapshots']:
+                    if snapshot['idImage']:
+                        image_file = File.objects.get(pk=snapshot['idImage'])
+                        error_displayed, error_messages, analysis_error = self.is_error_message_displayed(image_file.file.path)
 
-                            if error_displayed:
-                                return error_messages, None
-                            elif analysis_error:
-                                return [], analysis_error
-                            else:
-                                return [], None
+                        if error_displayed:
+                            return error_messages, None
+                        elif analysis_error:
+                            return [], analysis_error
 
-                except Exception as e:
-                    return [], f"Error reading file for analysis: {str(e)}"
+            except Exception as e:
+                return [], f"Error reading file for analysis: {str(e)}"
 
         return [], None
 
     def is_error_message_displayed(self, image_path):
         error_messages = []
         error_displayed = False
-        chat_title = "Error Analysis"
 
         if not os.path.isfile(image_path):
             logger.error(f"File {image_path} does not exist")
             return error_displayed, error_messages, f"File {image_path} does not exist"
         else:
-            result = self._call_open_web_ui_with_file(settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE, image_path)
-            # result = self.open_web_ui_client.chat(question=settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE,
-            #                                           chat_title=chat_title,
-            #                                           image_paths=[image_path])
+            result = self.llm_connector.chat(settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE, [image_path])
+
             if 'choices' in result and len(result['choices']) > 0:
                 logger.info("LLM response in %.2f secs" % (result['usage']['total_duration'] / 1000000000.,))
                 response_str = result['choices'][0]['message']['content'].replace('```json', '').replace('```', '')
@@ -177,35 +235,3 @@ class ErrorCauseFinder:
         :return:
         """
         return []
-
-    def _call_open_web_ui_with_file(self, prompt, file_path):
-        headers = {
-            'Authorization': f'Bearer {settings.OPEN_WEBUI_TOKEN}',
-            'Content-Type': 'application/json'
-        }
-        data = {
-            "model": settings.OPEN_WEBUI_MODEL,
-            "stream": False,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": prompt
-                        }
-                    ]
-                }]
-            }
-
-        if file_path and os.path.isfile(file_path):
-            with open(file_path, 'rb') as file:
-                data['messages'][0]['content'].append(
-                {
-                    "type": "image_url",
-                    "image_url": {
-                        "url": "data:image/jpeg;base64," + base64.b64encode(file.read()).decode("utf-8")
-                    }
-                })
-        response = requests.post(settings.OPEN_WEBUI_URL + '/api/chat/completions', headers=headers, json=data)
-        return response.json()
