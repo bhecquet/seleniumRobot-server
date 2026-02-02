@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from collections import namedtuple
+from typing import Optional
 
 from django.conf import settings
 
@@ -14,6 +15,10 @@ ErrorCause = namedtuple("ErrorCause", [
                                        'information'    # additional information related to "why"
 ])
 
+AnalysisDetails = namedtuple('AnalysisDetails', [
+    'details',
+    'analysis_error'])
+
 logger = logging.getLogger(__name__)
 
 class ErrorCauseFinder:
@@ -21,7 +26,7 @@ class ErrorCauseFinder:
     Class that tries to find what went wrong during the test
     """
 
-    def __init__(self, test_case_in_session: TestCaseInSession):
+    def __init__(self, test_case_in_session: Optional[TestCaseInSession]):
 
         self.test_case_in_session = test_case_in_session
         self.llm_connector = LlmConnector()
@@ -50,10 +55,10 @@ class ErrorCauseFinder:
                 return ErrorCause("script", "unknown", None)
 
         else:
-            error_message, analysis_error = self.is_error_message_displayed()
-            if error_message:
+            error_messages, analysis_error = self.is_error_message_displayed()
+            if error_messages:
                 # TODO: do something with analysis errors
-                return ErrorCause("application_error", "error_message", error_message)
+                return ErrorCause("application_error", "error_message", error_messages)
             elif self.is_on_the_previous_page():
                 if self.has_network_errors():
                     return ErrorCause("application_error", "network_error", "Consult HAR file")
@@ -89,7 +94,7 @@ class ErrorCauseFinder:
 
         return True, "No image to compare"
 
-    def _is_step_on_same_page(self, step_for_reference_result: StepResult, failed_step_result: StepResult):
+    def is_step_on_same_page(self, step_for_reference_result: StepResult, failed_step_result: StepResult) -> AnalysisDetails:
         """
         returns the result of comparison between the image the failed step and a reference image that will be taken from a previous step
         :param step_for_reference_result:
@@ -102,7 +107,7 @@ class ErrorCauseFinder:
                                                       testStep=step_for_reference_result.step)
 
         if len(step_reference) == 0 or not step_reference[0].image or os.path.isfile(step_reference[0].image.file.path):
-            return True, f"No reference image for step '{failed_step_result.step.name}' in test case '{self.test_case_in_session.testCase.name}'"
+            return AnalysisDetails(True, f"No reference image for step '{failed_step_result.step.name}' in test case '{self.test_case_in_session.testCase.name}'")
 
         try:
             # load details
@@ -110,47 +115,36 @@ class ErrorCauseFinder:
             for snapshot in step_result_details['snapshots']:
                 if snapshot['idImage'] and snapshot['snapshotCheckType'] == 'NONE_REFERENCE':
                     image_file = File.objects.get(pk=snapshot['idImage'])
-                    same_page, analysis_error = self._is_on_same_page(step_reference[0].image.file.path, image_file.file.path)
-
-                    return same_page, analysis_error
+                    return self.is_on_same_page(step_reference[0].image.file.path, image_file.file.path)
 
 
         except Exception as e:
-            return True, f"Error reading file for analysis: {str(e)}"
+            return AnalysisDetails(True, f"Error reading file for analysis: {str(e)}")
 
-    def _is_on_same_page(self, reference_page, page_to_compare):
+    def is_on_same_page(self, reference_page: str, page_to_compare: str) -> AnalysisDetails:
         """
         Returns true if 'reference_page' and 'page_to_compare' seem to be the same page
-        :param reference_page:  the reference page to compare to
-        :param page_to_compare: the page of the current test
+        :param reference_page:  the image file showing the reference page to compare to
+        :param page_to_compare: the image file showing the page of the current test
         """
         same_page = True
 
         if not os.path.isfile(reference_page):
-            return same_page, f"Reference file {reference_page} does not exist"
+            return AnalysisDetails(same_page, f"Reference file {reference_page} does not exist")
         if not os.path.isfile(page_to_compare):
-            return same_page, f"Page to compare file {page_to_compare} does not exist"
+            return AnalysisDetails(same_page, f"Page to compare file {page_to_compare} does not exist")
 
-        result = self.llm_connector.chat(settings.OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON, [reference_page, page_to_compare], 50)
+        chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON, [reference_page, page_to_compare], 50)
 
-        if 'choices' in result and len(result['choices']) > 0:
-            logger.info("LLM response in %.2f secs" % (result['usage']['total_duration'] / 1000000000.,))
-            response_str = result['choices'][0]['message']['content'].replace('```json', '').replace('```', '')
-            try:
-                response = json.loads(response_str.replace('\n', ''))
-            except Exception:
-                return same_page, "Invalid JSON returned by model"
-            try:
-                similarity = int(response["similarity"])
-                return similarity > 70, None
-            except Exception:
-                return same_page, "no 'similarity' key present in JSON or value is not a number"
-        else:
-            return same_page, "No response from Open WebUI"
+        if chat_json_response.error:
+            return AnalysisDetails(same_page, chat_json_response.error)
+        try:
+            similarity = int(chat_json_response.response["similarity"])
+            return AnalysisDetails(similarity > 70, None)
+        except Exception:
+            return AnalysisDetails(same_page, "no 'similarity' key present in JSON or value is not a number")
 
-
-
-    def is_error_message_displayed(self):
+    def is_error_message_displayed(self) -> AnalysisDetails:
         """
         Check whether an error message is displayed in the page
         :return: the error messages or None if no error message has been detected
@@ -167,45 +161,37 @@ class ErrorCauseFinder:
                 for snapshot in step_result_details['snapshots']:
                     if snapshot['idImage']:
                         image_file = File.objects.get(pk=snapshot['idImage'])
-                        error_displayed, error_messages, analysis_error = self.is_error_message_displayed(image_file.file.path)
-
-                        if error_displayed:
-                            return error_messages, None
-                        elif analysis_error:
-                            return [], analysis_error
+                        return self.is_error_message_displayed(image_file.file.path)
 
             except Exception as e:
-                return [], f"Error reading file for analysis: {str(e)}"
+                return AnalysisDetails([], f"Error reading file for analysis: {str(e)}")
 
-        return [], None
+        return AnalysisDetails([], None)
 
-    def is_error_message_displayed(self, image_path):
+    def is_error_message_displayed(self, image_path: str) -> AnalysisDetails:
+        """
+
+        :param image_path:
+        :return:
+        """
         error_messages = []
-        error_displayed = False
 
         if not os.path.isfile(image_path):
             logger.error(f"File {image_path} does not exist")
-            return error_displayed, error_messages, f"File {image_path} does not exist"
+            return AnalysisDetails(error_messages, f"File {image_path} does not exist")
         else:
-            result = self.llm_connector.chat(settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE, [image_path])
+            chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE, [image_path])
 
-            if 'choices' in result and len(result['choices']) > 0:
-                logger.info("LLM response in %.2f secs" % (result['usage']['total_duration'] / 1000000000.,))
-                response_str = result['choices'][0]['message']['content'].replace('```json', '').replace('```', '')
-                try:
-                    response = json.loads(response_str.replace('\n', ''))
-                except:
-                    return error_displayed, error_messages, "Invalid JSON returned by model"
-                try:
-                    error_messages = response["error_messages"]
-                    return len(error_messages) > 0, error_messages, None
-                except:
-                    return error_displayed, error_messages, "no 'error_messages' key present in JSON"
-            else:
-                logger.error("No response from Open WebUI")
-                return error_displayed, error_messages, "No response from Open WebUI"
-
-
+            if chat_json_response.error:
+                return AnalysisDetails(error_messages, chat_json_response.error)
+            try:
+                if not isinstance(chat_json_response.response["error_messages"], list):
+                    error_messages = [str(chat_json_response.response["error_messages"])]
+                else:
+                    error_messages = chat_json_response.response["error_messages"]
+                return AnalysisDetails(error_messages, None)
+            except Exception:
+                return AnalysisDetails(error_messages, "no 'error_messages' key present in JSON")
 
     def is_element_present_on_page(self):
         """
