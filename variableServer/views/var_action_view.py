@@ -2,14 +2,17 @@
 '''
 
 '''
-from variableServer.models import Variable
-from django.http.response import HttpResponseRedirect
-from django.contrib import admin, messages
-from variableServer.models import Version, TestEnvironment, Application,\
-    TestCase
-from variableServer.admin_site.variable_admin import VariableAdmin
+
 from django.conf import settings
+from django.contrib import admin, messages
+from django.http.response import HttpResponseRedirect
+
 from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
+from variableServer.admin_site.variable_admin import VariableAdmin
+from variableServer.models import Variable
+from variableServer.models import Version, TestEnvironment, Application, \
+    TestCase
+
 
 def copy_variables(request):
     """
@@ -148,4 +151,3 @@ def _has_application_permission(request, application, variable_ids, has_global_p
         return has_global_permission, application
     
     return True, application
-

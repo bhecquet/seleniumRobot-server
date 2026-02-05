@@ -4,13 +4,13 @@ Created on 25 janv. 2017
 @author: worm
 '''
 
+from django.conf import settings
 from rest_framework import serializers
 
-from django.conf import settings
-
-from variableServer.models import Variable, TestCase
 from variableServer.admin_site.base_model_admin import is_user_authorized
-        
+from variableServer.models import Variable, TestCase
+
+
 class VariableSerializer(serializers.ModelSerializer):
     
     test = serializers.PrimaryKeyRelatedField(many=True, read_only=False, queryset=TestCase.objects.all())
@@ -21,7 +21,7 @@ class VariableSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Variable
-        fields = ('id', 'name', 'value', 'environment', 'version', 'test', 'releaseDate', 'internal', 'protected', 'description', 'application', 'reservable', 'timeToLive', 'creationDate')
+        fields = ('id', 'name', 'value', 'uploadFile', 'environment', 'version', 'test', 'releaseDate', 'internal', 'protected', 'description', 'application', 'reservable', 'timeToLive', 'creationDate')
 
     def create(self, validated_data):
         """

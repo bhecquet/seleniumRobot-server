@@ -17,3 +17,5 @@ dramatiq[redis, watch]==1.18.0
 unidecode==1.4.0
 django-apscheduler==0.6.2
 openwebui-chat-client==0.1.24
+python-magic==0.4.27
+python-magic-bin==0.4.14; platform_system == 'Windows'
