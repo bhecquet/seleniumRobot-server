@@ -4,26 +4,29 @@ Created on 15 sept. 2017
 @author: s047432
 '''
 import datetime
-import time
 import logging
+import os
+import random
+import time
+from builtins import ValueError
 
+from django.conf import settings
+from django.db import transaction
+from django.http.response import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from rest_framework import permissions
 from rest_framework.exceptions import ValidationError
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
+from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, \
+    ApplicationSpecificPermissionsVariables
+from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from variableServer.models import Variable, TestEnvironment, Version, TestCase, Application
 from variableServer.utils.utils import updateVariables
 from variableServer.views.serializers import VariableSerializer
-from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
-from django.utils import timezone
-from builtins import ValueError
-import random
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from django.db import transaction
-from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissions,\
-    ApplicationPermissionChecker, ApplicationSpecificPermissionsVariables
 
 logger = logging.getLogger(__name__)
 
@@ -355,4 +358,34 @@ class VariableList(ApplicationSpecificViewSet):
         
         return self.partial_update(request, *args, **kwargs)
     
-    
+class VariableDownload(ApplicationSpecificViewSet):
+
+    serializer_class = VariableSerializer
+    filter_backends = [VariableFilter]
+    permission_classes = [VariablesPermissions]
+    queryset = Variable.objects.none()
+
+    def get_queryset(self):
+        return Variable.objects.all()
+
+    def filter_queryset(self, request, queryset, view):
+        return queryset.filter(application=VariablesPermissions.get_application(self, request, view))
+
+    def get(self, request, var_id):
+        var = Variable.objects.get(id=var_id)
+        filename = var.uploadFile.name.split("/")[-1]
+
+        if var.application:
+            file_path = os.path.join(settings.MEDIA_ROOT, var.application.name, filename)
+        else:
+            file_path = os.path.join(settings.MEDIA_ROOT, filename)
+        try:
+            if os.path.exists(file_path):
+                with open(file_path, 'rb') as fh:
+                    response = HttpResponse(fh.read(), content_type="application/vnd.ms-excel;application/json;text/csv")
+                    response['Content-Disposition'] = 'inline; filename=' + os.path.basename(file_path)
+                    return response
+            else:
+                raise Http404
+        except:
+            raise Http404

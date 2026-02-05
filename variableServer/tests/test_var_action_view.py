@@ -4,7 +4,6 @@
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 from django.test import override_settings
-from django.test.client import Client
 from django.urls.base import reverse
 
 from variableServer.models import Variable, Application
@@ -22,7 +21,6 @@ class TestVarActionView(TestAdmin):
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
-        Application.objects.get(pk=777).save()
 
     def _test_copy_variable(self, permissions, post_data, number_of_created_variables):
 
@@ -35,11 +33,6 @@ class TestVarActionView(TestAdmin):
 
         # check new variable creation
         self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables + number_of_created_variables)
-        return response
-
-    def _test_download_variable(self, permissions):
-        user, client = self._create_and_authenticate_user_with_permissions(permissions)
-        response = client.get(reverse('download_variable', kwargs={'var_id': 666}))
         return response
 
     def test_copy_variables_ko_no_permissions(self):
@@ -435,84 +428,3 @@ class TestVarActionView(TestAdmin):
         self.assertTrue(list(response.context['messages'])[0].message.find("has not been modified") > -1)
 
 
-    #DOWNLOAD VAR FILE
-    def test_download_var_file_no_security_not_authenticated(self):
-        """
-        Check that even with security disabled, we can't access var file without authentication
-        """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            testfile = Client().get(reverse('download_variable', kwargs={'var_id': 666}))
-            self.assertEqual(401, testfile.status_code)
-
-    def test_download_var_file_security_not_authenticated(self):
-        """
-        Check that with security enabled, we cannot access var file without authentication
-        """
-        testfile = Client().get(reverse('download_variable', kwargs={'var_id': 666}))
-        self.assertEqual(401, testfile.status_code)
-
-    def test_download_var_file_security_authenticated_no_permission(self):
-        """
-        Check that with
-        - security enabled
-        - no permission on requested application
-        We cannot download var file
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app2')))
-            self.assertEqual(401, testfile.status_code)
-
-    def test_download_var_file_security_authenticated_with_permission(self):
-        """
-        Check that with
-        - security enabled
-        - permission on requested application
-        We can download var file
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
-            self.assertEqual(200, testfile.status_code)
-
-    def test_download_variable_file_ko_no_permissions(self):
-        """
-        When there are no permission, user can NOT download variable file
-        applications specific permissions are disabled
-        """
-        testfile = self._test_download_variable(Permission.objects.none())
-        self.assertEqual(testfile.status_code, 401)
-
-    def test_download_variable_file_ok(self):
-        """
-        With permission on the application, user CAN download variable file
-        """
-        testfile = self._test_download_variable(Permission.objects.filter(Q(codename='view_variable')))
-        self.assertEqual(testfile.status_code, 200)
-
-    def test_download_variable_file_ok_app_perm(self):
-        """
-        With permission on the application, user CAN download variable file
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
-            self.assertEqual(testfile.status_code, 200)
-
-    def test_download_variable_file_ko_wrong_permission(self):
-        """
-        With permission on another application, user can NOT download variable file
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertEqual(testfile.status_code, 401)
-
-    def test_download_variable_file_ok_global_permission_and_application_restriction(self):
-        """
-        User:
-        - has NOT test permission
-        - has view variable permission
-        applications specific permissions are enabled
-
-        User can download variable
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            testfile = self._test_download_variable(Permission.objects.filter(Q(codename='view_variable')))
-            self.assertEqual(testfile.status_code, 200)

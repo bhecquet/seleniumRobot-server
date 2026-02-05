@@ -478,7 +478,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3
@@ -493,7 +493,7 @@
 - fields:
     name: user
     value: "file"
-    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.xlsx"
+    uploadFile: "http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx"
     application: 777
     version: null
     environment: 3
@@ -508,7 +508,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.pdf"
+    uploadFile: "http://127.0.0.1:8000/media/appFileVar/fauxfile.pdf"
     application: 777
     version: null
     environment: 3
@@ -523,7 +523,7 @@
 - fields:
     name: user
     value: ""
-    uploadFile: "http://127.0.0.1:8000/media/varAppFile/fauxfile.txt"
+    uploadFile: "http://127.0.0.1:8000/media/appFileVar/fauxfile.txt"
     application: 777
     version: null
     environment: 3
@@ -535,3 +535,19 @@
     creationDate: "2018-07-10 13:01:56.784734+00:00"
   model: variableServer.variable
   pk: 997
+
+- fields:
+    name: todel
+    value: ""
+    uploadFile: "http://127.0.0.1:8000/media/appFileVar/tobedeleted.csv"
+    application: 777
+    version: 1
+    environment: 3
+    test: [ ]
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 996

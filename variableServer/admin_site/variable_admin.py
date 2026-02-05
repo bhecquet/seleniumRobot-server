@@ -85,7 +85,7 @@ class VariableForm(forms.ModelForm):
             if upload_file_type == "text/plain":
                 if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
                     raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
-            if upload_file.size > 10000000:
+            if upload_file.size > 10000000: #mettre un settings variabilisé
                 raise forms.ValidationError("File too large. 10Mo max")
 
         return cleaned_data
