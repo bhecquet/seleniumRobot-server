@@ -1,0 +1,331 @@
+# see testresult_commons.yaml for init values (env, application, test case)
+-   model: snapshotServer.testsession
+    pk: 1
+    fields:
+        sessionId: '1250'
+        version: 1
+        date: '2023-05-05T16:16:09.184106+01:00'
+        browser: BROWSER:FIREFOX
+        environment: 1
+        compareSnapshot: false
+        compareSnapshotBehaviour: DISPLAY_ONLY
+        name: jenkins
+        ttl: '0'  # set to 0 to avoid automatic deletion
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields:
+        testCase: 1
+        session: 1
+        testSteps: [1, 2, 3, 4]
+        status: SUCCESS
+        stacktrace: >-
+            {                
+                "stacktrace": "",
+                "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
+            }
+
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: 
+        name: "openPage with args: (https://myapp/jenkins/, )" 
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: 
+        name: "loginInvalid with args: (foo, bar, )"
+-   model: snapshotServer.teststep
+    pk: 3
+    fields: 
+        name: getErrorMessage
+-   model: snapshotServer.teststep
+    pk: 4
+    fields: 
+        name: Test end
+
+# reference for all steps
+-   model: snapshotServer.stepreference
+    pk: 1
+    fields:
+        testStep: 1
+        testCase: 1
+        version: 1
+        environment: 1
+        image: documents/test_Image1.png
+-   model: snapshotServer.stepreference
+    pk: 2
+    fields:
+        testStep: 2
+        testCase: 1
+        version: 1
+        environment: 1
+        image: documents/test_Image2.png
+-   model: snapshotServer.stepreference
+    pk: 3
+    fields:
+        testStep: 3
+        testCase: 1
+        version: 1
+        environment: 1
+        image: documents/test_Image3.png
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: 
+        step: 1
+        testCase: 1
+        result: true
+        duration: 700
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 14:53:58 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 713,
+                "snapshots": [
+                    {
+                        "idHtml": 87,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 88,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/login?from=%2Fjenkins%2F",
+                        "timestamp": 1698245639884
+                    }
+                ],
+                "videoTimeStamp": 5,
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "name": "Opening page LoginPage",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698245638815
+                    },
+                    {
+                        "name": "setWindowToRequestedSize on on page LoginPage ",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698245638816
+                    },
+                    {
+                        "name": "maximizeWindow on on page LoginPage ",
+                        "failed": false,
+                        "position": 2,
+                        "type": "action",
+                        "timestamp": 1698245638816
+                    },
+                    {
+                        "messageType": "LOG",
+                        "name": "Open web page in :8.905 seconds",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698245638814,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields: 
+        step: 2
+        testCase: 1
+        result: true
+        duration: 2000
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 14:53:59 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 2124,
+                "snapshots": [],
+                "videoTimeStamp": 1171,
+                "name": "loginInvalid with args: (foo, bar, )",
+                "files": [],
+                "position": 1,
+                "actions": [
+                    {
+                        "name": "sendKeys on TextFieldElement user, by={By.id: j_username} with args: (true, true, [foo,], )",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698245639981
+                    },
+                    {
+                        "name": "sendKeys on TextFieldElement password, by={By.name: j_password} with args: (true, true, [bar,], )",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698245640350
+                    },
+                    {
+                        "name": "robotConfig on on page LoginPage ",
+                        "failed": false,
+                        "position": 2,
+                        "type": "action",
+                        "timestamp": 1698245640693
+                    },
+                    {
+                        "name": "sub step inside actions ",
+                        "date": "Wed Oct 25 14:53:59 CEST 2023",
+                        "duration": 212,
+                        "snapshots": [],
+                        "videoTimeStamp": null,
+                        "files": [],
+                        "failed": false,
+                        "position": 3,
+                        "actions": [
+                            {
+                                "name": "click on ButtonElement check, by={By.name: check} ",
+                                "failed": false,
+                                "position": 1,
+                                "type": "action",
+                                "timestamp": 1698245641041
+                            },
+                            {
+                                "name": "click on ButtonElement validate, by={By.name: validate} ",
+                                "failed": false,
+                                "position": 2,
+                                "type": "action",
+                                "timestamp": 1698245641042
+                            }
+                         ],
+                        "type": "step",
+                        "timestamp": 1698245641040,
+                        "status": "SUCCESS",
+                        "harCaptures": []
+                    },
+                    {
+                        "name": "click on ButtonElement connect, by={By.name: Submit} ",
+                        "failed": false,
+                        "position": 4,
+                        "type": "action",
+                        "timestamp": 1698245641046
+                    },
+                    {
+                        "name": "createOrUpdateParam on on page LoginPage with args: (loginJenkins, Done, false, 3, false, )",
+                        "failed": false,
+                        "position": 5,
+                        "type": "action",
+                        "timestamp": 1698245642270
+                    },
+                    {
+                        "name": "key",
+                        "message": "my key",
+                        "value": "my value",
+                        "type": "value"
+                    }
+                ],
+                "timestamp": 1698245639981,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 3
+    fields: 
+        step: 3
+        testCase: 1
+        result: true
+        duration: 5000
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 14:54:02 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 5686,
+                "snapshots": [],
+                "videoTimeStamp": 3508,
+                "name": "getErrorMessage ",
+                "files": [],
+                "position": 2,
+                "actions": [
+                    {
+                        "name": "waitForPresent on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} with args: (15, )",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698245642320
+                    },
+                    {
+                        "name": "getText on HtmlElement error message, by={By.className: alert-danger or By.className: app-sign-in-register__error} ",
+                        "failed": false,
+                        "position": 1,
+                        "type": "action",
+                        "timestamp": 1698245642931
+                    }
+                ],
+                "timestamp": 1698245642318,
+                "status": "SUCCESS",
+                "harCaptures": []
+            }
+-   model: snapshotServer.stepresult
+    pk: 4
+    fields: 
+        step: 4
+        testCase: 1
+        result: true
+        duration: 200
+        stacktrace: >
+            {
+                "date": "Wed Oct 25 14:54:08 CEST 2023",
+                "failed": false,
+                "type": "step",
+                "duration": 246,
+                "snapshots": [
+                    {
+                        "idHtml": 89,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 90,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698245648391
+                    }
+                ],
+                "videoTimeStamp": 9200,
+                "name": "Test end",
+                "files": [
+                    {
+                        "name": "Video capture",
+                        "id": 91,
+                        "type": "file"
+                    }
+                ],
+                "position": 3,
+                "actions": [
+                    {
+                        "messageType": "LOG",
+                        "name": "Test is OK",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "INFO",
+                        "name": "Video file copied to D:\\\\jenkins\\\\test-output\\\\loginInvalid\\\\videoCapture.avi",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "LOG",
+                        "name": "quiting webdriver 15",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698245648010,
+                "status": "SUCCESS",
+                "harCaptures": [
+                    {
+                        "name": "main",
+                        "id": 92,
+                        "type": "networkCapture"
+                    }
+                ]
+            }

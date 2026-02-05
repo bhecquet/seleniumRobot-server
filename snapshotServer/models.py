@@ -146,7 +146,8 @@ class TestStep(models.Model):
     association is done through TestCaseInSession
     """
     __test__= False  # avoid detecting it as a test class
-    name = models.CharField(max_length=100) 
+    name = models.CharField(max_length=100)
+    LAST_STEP_NAME = 'Test end'
     
     def __str__(self):
         return self.name 
@@ -450,7 +451,7 @@ class ErrorCauseFromUser(models.Model):
     exception = models.CharField(max_length=100, default="")        # the exception raised by the test. Used for correlation
     errorMessage = models.CharField(max_length=1000, default=".*")  # the exception message associated to the exception. Used for correlation
     type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
-    
+
 class Error(models.Model):
     """
     Table that stores error that may have been raised during a test
@@ -458,9 +459,12 @@ class Error(models.Model):
     """
     stepResult = models.ForeignKey(StepResult, related_name='errors', on_delete=models.CASCADE)
     action = TruncatingCharField(max_length=250, default="", null=True)         # the step / action name for which the user defined the error
-    exception = TruncatingCharField(max_length=100, default="", null=True)         # the exception raised by the test. Used for correlation
-    errorMessage = TruncatingCharField(max_length=1000, default="", null=True)     # the exception message associated to the exception. Used for correlation
-    cause = TruncatingCharField(max_length=100, null=True)                         # the cause of error (if any detected): 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    exception = TruncatingCharField(max_length=100, default="", null=True)      # the exception raised by the test. Used for correlation
+    errorMessage = TruncatingCharField(max_length=1000, default="", null=True)  # the exception message associated to the exception. Used for correlation
+    cause = TruncatingCharField(max_length=100, null=True)                      # the cause of error (if any detected): 'application_error', 'environment', 'application_change', 'script'
+    causedBy = TruncatingCharField(max_length=100, null=True)                   # the origin of error: 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    causeDetails = models.TextField(blank=True, default="")                     # additional information about the detected cause
+    causeAnalysisErrors = models.TextField(blank=True, default="")              # a list of errors that may have raise during error cause analysis
     relatedErrors = models.ManyToManyField('self')                              # errors related to this one
     
     def __str__(self):

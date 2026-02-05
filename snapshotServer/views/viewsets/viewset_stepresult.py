@@ -6,7 +6,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from snapshotServer.models import StepResult, TestCaseInSession, Error
+from snapshotServer.controllers.error_cause_finder import ErrorCauseFinder
+from snapshotServer.models import StepResult, TestCaseInSession, Error, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
 
 logger = logging.getLogger(__name__)
@@ -41,10 +42,38 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
     def perform_create(self, serializer):
         super().perform_create(serializer)
         self.parse_stacktrace(serializer)
+        self.analyze_test_run(serializer)
+
 
     def perform_update(self, serializer):
         super().perform_update(serializer)
         self.parse_stacktrace(serializer)
+        self.analyze_test_run(serializer)
+
+    def analyze_test_run(self, serializer):
+        """
+        Analyze step run when we get the 'Test end' step and stacktrace is complete, if test case is KO
+        :param serializer:
+        :return:
+        """
+        if (serializer.instance.step.name == TestStep.LAST_STEP_NAME
+            and serializer.instance.stacktrace
+            and len(serializer.instance.stacktrace) > 100
+            and serializer.instance.testCase
+            and not serializer.instance.testCase.isOkWithResult()):
+            error_cause_finder = ErrorCauseFinder(serializer.instance.testCase)
+            error_cause = error_cause_finder.detect_cause()
+            if error_cause:
+                failed_step_result = StepResult.objects.filter(testCase=serializer.instance.testCase, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
+                errors = Error.objects.filter(stepResult = failed_step_result)
+                if len(errors):
+                    error = errors[0]
+                    error.cause = error_cause.cause
+                    error.causedBy = error_cause.why
+                    error.causeDetails = error_cause.information
+                    error.causeAnalysisErrors = '\n'.join(error_cause.analysis_errors)
+                    error.save()
+
 
     def parse_stacktrace(self, serializer):
         """
@@ -53,7 +82,7 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
         if not serializer.data['result']:
             try:
                 step_result_details = json.loads(serializer.validated_data['stacktrace'])
-                if step_result_details['name'] == 'Test end':
+                if step_result_details['name'] == TestStep.LAST_STEP_NAME:
                     return
 
                 failed_action, exception, exception_message = self.search_failed_action(step_result_details, step_result_details['action'])

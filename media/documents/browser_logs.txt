@@ -1,0 +1,5 @@
+[2023-10-25T18:06:06.869Z] [SEVERE] https://jenkins/ - Failed to load resource: the server responded with a status of 403 (Forbidden)
+[2023-10-25T18:06:07.870Z] [SEVERE] some error
+[2023-10-25T18:06:08.869Z] [WARNING] some warning
+[2023-10-25T18:06:09.869Z] [INFO] some INFO
+[2023-10-25T18:06:10.869Z] [SEVERE] some other error

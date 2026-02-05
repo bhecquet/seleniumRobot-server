@@ -3,9 +3,11 @@ Created on 3 déc. 2024
 
 @author: S047432
 '''
+from typing import List, Optional
+
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 from django.views.generic.list import ListView
-from snapshotServer.models import TestSession, TestCaseInSession
+from snapshotServer.models import TestSession, TestCaseInSession, StepResult, Error
 import json
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -56,7 +58,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
 
         return test_case_in_session_data
             
-    def get_related_errors_in_test(self, step_results):
+    def get_related_errors_in_test(self, step_results: list[StepResult]) -> list[TestCaseInSession]:
         error = self.get_error_in_test(step_results)
         
         if error:
@@ -65,7 +67,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         else:
             return []
         
-    def get_error_in_test(self, step_results):
+    def get_error_in_test(self, step_results: list[StepResult]) -> Optional[Error]:
         """
         Returns the error that caused the test (the first one)
         """
