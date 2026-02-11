@@ -551,3 +551,19 @@
     creationDate: "2018-07-10 13:01:56.784734+00:00"
   model: variableServer.variable
   pk: 996
+
+- fields:
+    name: nofile_tobefilled
+    value: ''
+    uploadFile: null
+    application: 777
+    version: 1
+    environment: 3
+    test: [ ]
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 888

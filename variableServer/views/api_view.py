@@ -357,12 +357,25 @@ class VariableList(ApplicationSpecificViewSet):
                 pass
         
         return self.partial_update(request, *args, **kwargs)
-    
+
+class VariableDownloadPermissions(ApplicationSpecificPermissionsVariables):
+
+    def get_application(self, request, view):
+        if request.method == 'GET':
+            variables = Variable.objects.filter(pk=view.kwargs['var_id'])
+            if variables:
+                return variables[0].application
+            else:
+                return ''
+        else:
+            return super().get_application(request, view)
+
+
 class VariableDownload(ApplicationSpecificViewSet):
 
     serializer_class = VariableSerializer
     filter_backends = [VariableFilter]
-    permission_classes = [VariablesPermissions]
+    permission_classes = [VariableDownloadPermissions]
     queryset = Variable.objects.none()
 
     def get_queryset(self):

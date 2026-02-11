@@ -3,6 +3,7 @@ Created on 12 déc. 2024
 
 '''
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
@@ -85,8 +86,8 @@ class VariableForm(forms.ModelForm):
             if upload_file_type == "text/plain":
                 if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
                     raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
-            if upload_file.size > 10000000: #mettre un settings variabilisé
-                raise forms.ValidationError("File too large. 10Mo max")
+            if upload_file.size > settings.VAR_UPLOAD_FILE_MAX_SIZE:
+                raise forms.ValidationError("File too large. "+str(int(settings.VAR_UPLOAD_FILE_MAX_SIZE/1000000))+"Mo max")
 
         return cleaned_data
 
