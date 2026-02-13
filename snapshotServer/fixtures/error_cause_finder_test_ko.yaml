@@ -20,7 +20,7 @@
         status: FAILURE
         stacktrace: >-
             {                
-                "stacktrace": "line1\nline2",
+                "stacktrace": "java.lang.AssertionError: expected [false] but <_> found [true]\nline2",
                 "logs": " INFO  2023-10-25 14:53:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Start method loginInvalid <;>\r\nINFO  2023-10-25 14:54:50,941 [TestNG-test=jenkins-1] SeleniumRobotTestListener: Finished method loginInvalid"
             }
 
@@ -341,3 +341,11 @@
                     }
                 ]
             }
+
+-   model: snapshotServer.error
+    pk: 13
+    fields:
+        stepResult: 13
+        action: getErrorMessage<>
+        exception: java.lang.AssertionError
+        errorMessage: "java.lang.AssertionError: expected [false] but <_> found [true]"

@@ -42,10 +42,12 @@ class LlmConnector:
 
         if 'choices' in result and len(result['choices']) > 0:
             logger.info("LLM response in %.2f secs" % (result['usage']['total_duration'] / 1000000000.,))
+            logger.debug(result)
             response_str = result['choices'][0]['message']['content'].replace('```json', '').replace('```', '')
             try:
                 return ChatJsonResponse(json.loads(response_str.replace('\n', '')), None)
             except Exception:
+                logger.error("Model returned invalid JSON:" + response_str)
                 return ChatJsonResponse(None, "Invalid JSON returned by model")
 
         else:

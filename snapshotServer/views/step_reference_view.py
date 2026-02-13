@@ -9,7 +9,6 @@ from django.utils import timezone
 
 from rest_framework.parsers import MultiPartParser
 
-from snapshotServer.controllers.FieldDetector import FieldDetectorThread
 from snapshotServer.models import StepResult, StepReference
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
 from rest_framework.generics import get_object_or_404, RetrieveAPIView, CreateAPIView
@@ -61,10 +60,6 @@ class StepReferenceSerializer(serializers.ModelSerializer):
                     step_reference.image.delete(save=False)
                 step_reference.image = image
                 step_reference.save()
-            
-            # detect fields on reference image
-            # then, if an error occurs in test, it won't be necessary to compute both reference image and step image
-            FieldDetectorThread(step_reference).start()        
             
             return step_reference
         

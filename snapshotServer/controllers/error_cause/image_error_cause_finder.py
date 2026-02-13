@@ -1,93 +1,17 @@
 import json
-import logging
 import os
-from collections import namedtuple
-from datetime import datetime
-from typing import Optional
 
+from snapshotServer.controllers.error_cause import AnalysisDetails
+from snapshotServer.controllers.llm_connector import LlmConnector
+from snapshotServer.models import TestStep, File, StepResult, StepReference
 from django.conf import settings
 
-from snapshotServer.controllers.llm_connector import LlmConnector
-from snapshotServer.models import TestCaseInSession, StepResult, File, StepReference, TestStep
 
-ErrorCause = namedtuple("ErrorCause", [
-                                        'cause',        # the probable cause of the error (application, scripting, tool, environment
-                                       'why',           # what guided us to the probable cause (error message, JS errors, missing field, ...)
-                                       'information',    # additional information related to "why"
-                                        'analysis_errors' # list of error messages during analysis
-])
+class ImageErrorCauseFinder:
 
-AnalysisDetails = namedtuple('AnalysisDetails', [
-    'details',
-    'analysis_error'])
-
-logger = logging.getLogger(__name__)
-
-class ErrorCauseFinder:
-    """
-    Class that tries to find what went wrong during the test
-    """
-
-    def __init__(self, test_case_in_session: Optional[TestCaseInSession]):
-
+    def __init__(self, test_case_in_session):
         self.test_case_in_session = test_case_in_session
         self.llm_connector = LlmConnector()
-
-    def detect_cause(self) -> Optional[ErrorCause]:
-        """
-        Look for various causes
-        """
-        if self.test_case_in_session.isOkWithResult():
-            return None
-
-        analysis_errors = []
-
-        on_right_page_analysis_details = self.is_on_the_right_page()
-        if on_right_page_analysis_details.analysis_error:
-            analysis_errors.append("On same page: " + on_right_page_analysis_details.analysis_error)
-
-        # in case analysis cannot be done, we assume we are on the right page
-        if on_right_page_analysis_details.details:
-
-            if self.is_element_present_on_page():
-                # TODO: send the DOM and the image to the LLM
-                return ErrorCause("script", "bad_locator", None, analysis_errors)
-            else:
-                return self.detect_other_causes(analysis_errors)
-
-        else:
-            # check for error messages
-            error_messages_analysis_details = self.is_error_message_displayed_in_last_step()
-            if error_messages_analysis_details.analysis_error:
-                analysis_errors.append("Error message: " + error_messages_analysis_details.analysis_error)
-
-            if error_messages_analysis_details.details:
-                return ErrorCause("application_error", "error_message", error_messages_analysis_details.details, analysis_errors)
-
-            # check if we are on previous page
-            on_previous_page_analysis_details = self.is_on_the_previous_page()
-            if on_previous_page_analysis_details.analysis_error:
-                analysis_errors.append("On previous page: " + on_previous_page_analysis_details.analysis_error)
-
-            elif on_previous_page_analysis_details.details:
-                return self.detect_other_causes(analysis_errors)
-            else:
-                return ErrorCause("application_change", "right_page", None, analysis_errors)
-
-    def detect_other_causes(self, analysis_errors: list) -> ErrorCause:
-        js_errors_analysis_details = self.has_javascript_errors()
-        if js_errors_analysis_details.analysis_error:
-            analysis_errors.append("JS error: " + js_errors_analysis_details.analysis_error)
-
-
-        if js_errors_analysis_details.details:
-            return ErrorCause("application_error", "javascript_error", js_errors_analysis_details.details, analysis_errors)
-        elif self.has_network_errors():
-            return ErrorCause("application_error", "network_error", "Consult HAR file", analysis_errors)
-        elif self.has_network_slowness():
-            return ErrorCause("environment", "network_slowness", "Consult HAR file", analysis_errors)
-        else:
-            return ErrorCause("script", "unknown", None, analysis_errors)
 
     def is_on_the_right_page(self) -> AnalysisDetails:
         """
@@ -228,77 +152,10 @@ class ErrorCauseFinder:
             except Exception:
                 return AnalysisDetails(error_messages, "no 'error_messages' key present in JSON")
 
-    def is_element_present_on_page(self):
+    def is_element_present_on_page(self) -> AnalysisDetails:
         """
         If test fails because an element has not been found, then we want to know if the element is present or not
         It may still be present, but with a different locator
         :return:
         """
-        return False
-
-    def has_network_errors(self):
-        """
-        Check in HAR file of the current test if some error occurred in the current page or the previous one
-        :return:
-        """
-        return False
-
-    def has_network_slowness(self):
-        """
-        Check in HAR file of the current test if some slowness occurred in the current page or the previous one
-        :return:
-        """
-        return False
-
-    def has_javascript_errors(self) -> AnalysisDetails:
-        """
-        Returns the list of javascript errors or empty list if none are seen
-        Browser logs are recorded to 'Test end' step
-        """
-        last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name=TestStep.LAST_STEP_NAME)
-        failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
-
-        if len(last_step) > 0 and len(failed_step_result) > 0:
-            last_step = last_step[0]
-            failed_step_result = failed_step_result[0]
-
-            try:
-                # load details
-                last_step_result_details = json.loads(last_step.stacktrace)
-                failed_step_result_details = json.loads(failed_step_result.stacktrace)
-                for file_info in last_step_result_details['files']:
-                    if file_info["name"] == "Browser log file":
-                        log_file = File.objects.get(pk=file_info['id'])
-                        return self._analyze_javascript_logs(log_file.file.path, failed_step_result_details['timestamp'])
-
-                return AnalysisDetails([], "No browser logs to analyze")
-            except Exception as e:
-                return AnalysisDetails([], f"Error reading step details for analysis: {str(e)}")
-
-        return AnalysisDetails([], f"No '{TestStep.LAST_STEP_NAME}' step where logs can be found")
-
-    def _analyze_javascript_logs(self, log_file_path: str, failed_step_result_timestamp: int) -> AnalysisDetails:
-        """
-        Analyze log file, looking for logs that happen after the start of the failed step
-        Filtering is done only on "SEVERE" messages
-        :param log_file_path:                   path to browser log file
-        :param failed_step_result_timestamp:    timestamp in milliseconds
-        :return:
-        """
-        if 'chrome' in self.test_case_in_session.session.browser.lower() or 'edge' in self.test_case_in_session.session.browser.lower():
-            logs = []
-            try:
-                with open(log_file_path, 'r') as log_file:
-                    for line in log_file:
-                        log_timestamp = datetime.strptime(line.split("]")[0][1:], "%Y-%m-%dT%H:%M:%S.%f%z").timestamp() * 1000 # in milliseconds
-                        if log_timestamp > failed_step_result_timestamp and "severe" in line.lower():
-                            logs.append(line.strip())
-
-                    return AnalysisDetails(logs, None)
-
-            except Exception as e:
-                return AnalysisDetails([], "Error reading log file: " + str(e))
-
-
-        else:
-            return AnalysisDetails([], "Only chrome / Edge logs can be analyzed")
+        return AnalysisDetails(True, None)
