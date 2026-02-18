@@ -35,30 +35,30 @@ For now, build is done through the python script `build.py`. Ite generates a zip
   `python manage.py ldap_promote <user>` instead
 - configure Apache server (example on Windows without HTTPS)
 
-	LoadFile "<path_to_python_dll>"
-	LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp38-win32.pyd"
-	WSGIPythonHome "<python_dir>"
-	WSGIApplicationGroup %{GLOBAL}
-	
-	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
-	WSGIPythonPath <path_to_selenium_server>
-	
-	<Directory "<path_to_selenium_server>/seleniumRobotServer">
-		<Files wsgi.py>
-			Require all granted 	
-		</Files>
-	</Directory>
-	
-	Alias /media/ <path_to_selenium_server_data>/media/
-	Alias /static/ <path_to_selenium_server>/static/
-	
-	<Directory "<path_to_selenium_server>/static">
-		Require all granted
-	</Directory>
-	
-	<Directory "<path_to_selenium_server_data>/media">
-		Require all granted
-	</Directory>
+  LoadFile "<path_to_python_dll>"
+  LoadModule wsgi_module "<python_dir>/lib/site-packages/mod_wsgi/server/mod_wsgi.cp38-win32.pyd"
+  WSGIPythonHome "<python_dir>"
+  WSGIApplicationGroup %{GLOBAL}
+
+  WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
+  WSGIPythonPath <path_to_selenium_server>
+
+  <Directory "<path_to_selenium_server>/seleniumRobotServer">
+  <Files wsgi.py>
+  Require all granted 	
+  </Files>
+  </Directory>
+
+  Alias /media/ <path_to_selenium_server_data>/media/
+  Alias /static/ <path_to_selenium_server>/static/
+
+  <Directory "<path_to_selenium_server>/static">
+  Require all granted
+  </Directory>
+
+  <Directory "<path_to_selenium_server_data>/media">
+  Require all granted
+  </Directory>
 
 - If HTTPS is necessary, assuming a virtualenv is created inside <path_to_selenium_server>
 
@@ -132,29 +132,29 @@ loading hangs).
   `python manage.py ldap_promote <user>` instead
 - configure Apache server with
 
-	LoadFile "/opt/rh/rh-python38/root/lib64/libpython3.so.rh-python38"
-	LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python38-wsgi.so"
-	WSGIPythonHome "<path_to_selenium_server>/venv"
-	
-	WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
-	WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.4/site-packages/:<path_to_selenium_server>
-	
-	<Directory "<path_to_selenium_server>/seleniumRobotServer">
-	<Files wsgi.py>
-	Require all granted
-	</Files>
-	</Directory>
-	
-	Alias /media/ <path_to_selenium_server>/media/
-	Alias /static/ <path_to_selenium_server>/static/
-	
-	<Directory "<path_to_selenium_server>/static">
-	Require all granted
-	</Directory>
-	
-	<Directory "<path_to_selenium_server>/media">
-	Require all granted
-	</Directory>
+  LoadFile "/opt/rh/rh-python38/root/lib64/libpython3.so.rh-python38"
+  LoadModule wsgi_module "/opt/rh/httpd24/root/usr/lib64/httpd/modules/mod_rh-python38-wsgi.so"
+  WSGIPythonHome "<path_to_selenium_server>/venv"
+
+  WSGIScriptAlias / <path_to_selenium_server>/seleniumRobotServer/wsgi.py
+  WSGIPythonPath <path_to_selenium_server>/venv/lib/python3.4/site-packages/:<path_to_selenium_server>
+
+  <Directory "<path_to_selenium_server>/seleniumRobotServer">
+  <Files wsgi.py>
+  Require all granted
+  </Files>
+  </Directory>
+
+  Alias /media/ <path_to_selenium_server>/media/
+  Alias /static/ <path_to_selenium_server>/static/
+
+  <Directory "<path_to_selenium_server>/static">
+  Require all granted
+  </Directory>
+
+  <Directory "<path_to_selenium_server>/media">
+  Require all granted
+  </Directory>
 
 ## Session / data cleaning ##
 
@@ -501,6 +501,7 @@ Ids can be found through user interface.
 
 - `name`: name of the variable
 - `value`: value assigned to variable
+- `uploadFile`: (optional) should be null, this API is not meant to create variable with File.
 - `reservable`: (optional) if true, variable will be reserved by server when getting the list. This means that during 15
   minutes, it won't be usable for other test if not released
 - `timeToLive`: (optional) if value is greater than 0, variable will be destroyed after N days
