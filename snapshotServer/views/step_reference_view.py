@@ -52,7 +52,7 @@ class StepReferenceSerializer(serializers.ModelSerializer):
                 
             # do not update reference if it has been upated in the last 48h
             # this prevent from computing on every test run
-            elif (timezone.now() - step_reference.date).seconds < StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS:
+            elif (timezone.now() - step_reference.date).total_seconds() < StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS:
                 return step_reference
             else:
                 

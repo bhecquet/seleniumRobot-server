@@ -3,7 +3,7 @@ import os
 
 from snapshotServer.controllers.error_cause import AnalysisDetails
 from snapshotServer.controllers.llm_connector import LlmConnector
-from snapshotServer.models import TestStep, File, StepResult, StepReference
+from snapshotServer.models import TestStep, File, StepResult, StepReference, Error
 from django.conf import settings
 
 
@@ -12,6 +12,8 @@ class ImageErrorCauseFinder:
     def __init__(self, test_case_in_session):
         self.test_case_in_session = test_case_in_session
         self.llm_connector = LlmConnector()
+        self.failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
+        self.last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name=TestStep.LAST_STEP_NAME)
 
     def is_on_the_right_page(self) -> AnalysisDetails:
         """
@@ -19,9 +21,9 @@ class ImageErrorCauseFinder:
         If no failed step can be found, skip
         :return: [true/false, <analysis error if any>] if test is on the right page
         """
-        failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
-        if len(failed_step_result) > 0:
-            return self.is_step_on_same_page(failed_step_result[0], failed_step_result[0])
+
+        if len(self.failed_step_result) > 0:
+            return self.is_step_on_same_page(self.failed_step_result[0], self.failed_step_result[0])
 
         return AnalysisDetails(True, "No image to compare")
 
@@ -31,12 +33,11 @@ class ImageErrorCauseFinder:
         If we are not on the right page, we may be on the previous page which means that a previous click did not produce the expected action
         :return:
         """
-        failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
-        if len(failed_step_result) > 0:
+        if len(self.failed_step_result) > 0:
 
-            previous_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, pk__lt=failed_step_result[0].id).order_by('-pk')
+            previous_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, pk__lt=self.failed_step_result[0].id).order_by('-pk')
             if len(previous_step_result) > 0:
-                return self.is_step_on_same_page(previous_step_result[0], failed_step_result[0])
+                return self.is_step_on_same_page(previous_step_result[0], self.failed_step_result[0])
             else:
                 return AnalysisDetails(True, "No image to compare from previous step")
 
@@ -100,9 +101,8 @@ class ImageErrorCauseFinder:
                     whether there was error in analysis, or None if analysis was successful
         """
 
-        last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name=TestStep.LAST_STEP_NAME)
-        if len(last_step) > 0:
-            last_step = last_step[0]
+        if len(self.last_step) > 0:
+            last_step = self.last_step[0]
 
             try:
                 # load details
@@ -114,12 +114,14 @@ class ImageErrorCauseFinder:
                     return AnalysisDetails(error_messages, "No snapshot to analyze")
 
                 for snapshot in step_result_details['snapshots']:
-                    if snapshot['idImage']:
+                    if snapshot.get('idImage', 0):
                         image_file = File.objects.get(pk=snapshot['idImage'])
                         analysis_details = self.is_error_message_displayed(image_file.file.path)
                         error_messages += analysis_details.details
                         if analysis_details.analysis_error:
                             analysis_errors.append(analysis_details.analysis_error)
+                    else:
+                        analysis_errors.append("No image provided")
 
                 return AnalysisDetails(error_messages, '\n'.join(analysis_errors) if analysis_errors else None)
 
@@ -152,10 +154,75 @@ class ImageErrorCauseFinder:
             except Exception:
                 return AnalysisDetails(error_messages, "no 'error_messages' key present in JSON")
 
-    def is_element_present_on_page(self) -> AnalysisDetails:
+    def is_element_present_on_last_step(self) -> AnalysisDetails:
         """
         If test fails because an element has not been found, then we want to know if the element is present or not
         It may still be present, but with a different locator
         :return:
         """
-        return AnalysisDetails(True, None)
+        element_present = False
+
+        if len(self.last_step) > 0:
+            last_step = self.last_step[0]
+
+            errors = Error.objects.filter(stepResult__in=StepResult.objects.filter(testCase=self.test_case_in_session))
+
+            try:
+                # load details
+                step_result_details = json.loads(last_step.stacktrace)
+                analysis_errors = []
+
+                if not step_result_details['snapshots']:
+                    return AnalysisDetails(element_present, "No snapshot to analyze")
+
+                for snapshot in step_result_details['snapshots']:
+                    if snapshot.get('idImage', 0):
+                        image_file = File.objects.get(pk=snapshot['idImage'])
+                        for error in errors:
+                            if not error.element:
+                                analysis_errors.append("No element provided")
+                                continue
+                            elif 'NoSuchElementException' not in error.exception:
+                                analysis_errors.append(f"{error.exception} is not NoSuchElementException")
+                                continue
+
+                            analysis_details = self.is_element_present(image_file.file.path, error.element)
+                            element_present = element_present or analysis_details.details
+                            if analysis_details.analysis_error:
+                                analysis_errors.append(analysis_details.analysis_error)
+                    else:
+                        analysis_errors.append("No image provided")
+
+                return AnalysisDetails(element_present, '\n'.join(analysis_errors) if analysis_errors else None)
+
+            except Exception as e:
+                return AnalysisDetails(element_present, f"Error searching element for analysis: {str(e)}")
+
+        return AnalysisDetails(element_present, f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
+
+    def is_element_present(self, image_path: str, element_description: str) -> AnalysisDetails:
+        """
+
+        :param image_path:              image to analyse
+        :param element_description:     the description of the element to search
+        :return: AnalysisDetails where 'details' contains list of error messages
+        """
+        element_present = False
+
+        if not os.path.isfile(image_path):
+            return AnalysisDetails(element_present, f"File {image_path} does not exist")
+        elif not element_description:
+            return AnalysisDetails(element_present, "No description for element")
+        else:
+            chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_FIND_ELEMENT % element_description, [image_path])
+
+            if chat_json_response.error:
+                return AnalysisDetails(element_present, chat_json_response.error)
+            try:
+                if not isinstance(chat_json_response.response["present"], bool):
+                    element_present = bool(chat_json_response.response["present"])
+                else:
+                    element_present = chat_json_response.response["present"]
+                return AnalysisDetails(element_present, None)
+            except Exception:
+                return AnalysisDetails(element_present, "no 'present' key present in JSON")

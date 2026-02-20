@@ -127,6 +127,17 @@ Reply only in JSON, with the following format:
 ```
 Check that the JSON response is valid
 '''
+OPEN_WEBUI_PROMPT_FIND_ELEMENT = '''In the provided picture, tell me if the %s is present or not.
+For this:
+- analyze the picture, looking for text fields, buttons, tabs and texts
+- say if the requested field is present
+
+Reply only in JSON, with the following format:
+```
+{"explanation": "<what leads to your conclusion>", "present": <true/false>}
+```
+Check that the JSON response is valid
+'''
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)

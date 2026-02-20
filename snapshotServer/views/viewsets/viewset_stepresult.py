@@ -6,7 +6,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder, ErrorCauseFinderThread
 from snapshotServer.models import StepResult, TestCaseInSession, Error, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -66,36 +66,31 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
             and len(serializer.instance.stacktrace) > 100
             and serializer.instance.testCase
             and not serializer.instance.testCase.isOkWithResult()):
-            error_cause_finder = ErrorCauseFinder(serializer.instance.testCase)
-            error_cause = error_cause_finder.detect_cause()
-            if error_cause:
-                failed_step_result = StepResult.objects.filter(testCase=serializer.instance.testCase, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
-                if len(failed_step_result) > 0:
-                    errors = Error.objects.filter(stepResult = failed_step_result[0])
-                    if len(errors):
-                        error = errors[0]
-                        error.cause = error_cause.cause
-                        error.causedBy = error_cause.why
-                        error.causeDetails = error_cause.information if error_cause.information else ""
-                        error.causeAnalysisErrors = '\n'.join(error_cause.analysis_errors)
-                        error.save()
+            ErrorCauseFinderThread(serializer.instance.testCase).start()
 
 
     def parse_stacktrace(self, serializer):
         """
         parse the stacktrace, looking for action in error
         """
-        if not serializer.data['result']:
+        if (not serializer.data['result']
+            and serializer.instance.stacktrace
+            and len(serializer.instance.stacktrace) > 100):
             try:
+                failed_step_results = StepResult.objects.filter(testCase=serializer.instance.testCase, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
                 step_result_details = json.loads(serializer.validated_data['stacktrace'])
-                if step_result_details['name'] == TestStep.LAST_STEP_NAME:
+
+                # we won't analyze this step if it's the 'Test end' step
+                # EXCEPT when no previous step has failed (which means that error is in scenario)
+                if step_result_details['name'] == TestStep.LAST_STEP_NAME and len(failed_step_results) > 0:
                     return
 
-                failed_action, exception, exception_message = self.search_failed_action(step_result_details, step_result_details['action'])
+                failed_action, exception, exception_message, element = self.search_failed_action(step_result_details, step_result_details['action'])
 
                 failed_action = failed_action if failed_action else step_result_details['name']
                 exception = exception if exception else step_result_details['exception']
                 exception_message = exception_message if exception_message else step_result_details['exceptionMessage']
+                element = element if element else ''
 
                 # delete errors linked to this StepResult, in case a new stacktrace is submitted
                 Error.objects.filter(stepResult=serializer.instance).delete()
@@ -104,6 +99,7 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
                               action = failed_action,
                               exception = exception,
                               errorMessage = exception_message,
+                              element = element
                               )
                 error.save()
                 related_errors = self.search_related_errors(error)
@@ -136,14 +132,14 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
             for action in data['actions']:
 
                 if action.get('type') == 'step' and 'actions' in action:
-                    failed_action, exception, exception_message = self.search_failed_action(action, path + '>' + action['action'])
+                    failed_action, exception, exception_message, element = self.search_failed_action(action, path + '>' + action['action'])
                     if failed_action:
-                        return failed_action, exception, exception_message
+                        return failed_action, exception, exception_message, element
 
                 if action.get('failed', False):
                     if action.get('element', ''):
-                        return f"{path}>{action['action']} on {action['origin']}.{action['element']}", action.get('exception', None), action.get('exceptionMessage', None)
+                        return f"{path}>{action['action']} on {action['origin']}.{action['element']}", action.get('exception', None), action.get('exceptionMessage', None), action.get('elementDescription', '')
                     else:
-                        return f"{path}>{action['action']} in {action['origin']}", action.get('exception', None), action.get('exceptionMessage', None)
+                        return f"{path}>{action['action']} in {action['origin']}", action.get('exception', None), action.get('exceptionMessage', None), ''
 
-        return None, None, None
+        return None, None, None, None

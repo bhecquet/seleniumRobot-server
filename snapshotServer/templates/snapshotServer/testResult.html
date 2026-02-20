@@ -84,7 +84,8 @@
 
 		      		{% for stepResult, snapshotsCompared in object_list.items %}
 		      			<div class="box collapsed-box {% if stepResult.details.status == 'SUCCESS' %}success{% elif stepResult.details.status == 'FAILED' %}failed{% elif stepResult.details.status == 'WARNING' %}warning{% else %}skipped{% endif %}">
-						<div class="box-header with-border">
+						<!-- Step result {{stepResult.id}} -->
+							<div class="box-header with-border">
 							<button type="button" class="btn btn-box-tool" data-widget="collapse">
 								<i class="fa fa-plus"></i>
 							</button>

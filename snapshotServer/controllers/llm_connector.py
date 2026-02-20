@@ -64,7 +64,8 @@ class LlmConnector:
         :param resize_factor:   whether images should be resized before being submitted to LLM
         :return: a dict of the response. dict will always have an 'error' key
         """
-        if self.open_web_ui_client and len(self.open_web_ui_client.list_models()) > 0:
+        model_list = self.open_web_ui_client.list_models()
+        if self.open_web_ui_client and model_list:
 
             headers = {
                 'Authorization': f'Bearer {settings.OPEN_WEBUI_TOKEN}',

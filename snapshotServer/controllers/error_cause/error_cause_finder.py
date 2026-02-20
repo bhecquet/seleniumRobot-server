@@ -1,5 +1,5 @@
-import json
 import logging
+import threading
 from collections import namedtuple
 from typing import Optional
 
@@ -7,7 +7,6 @@ from .assertion_error_cause_finder import AssertionErrorCauseFinder
 from .image_error_cause_finder import ImageErrorCauseFinder
 from .js_error_cause_finder import JsErrorCauseFinder
 from snapshotServer.models import TestCaseInSession, StepResult, File, StepReference, TestStep, Error
-from . import AnalysisDetails
 from .network_error_cause_finder import NetworkErrorCauseFinder
 
 ErrorCause = namedtuple("ErrorCause", [
@@ -19,6 +18,39 @@ ErrorCause = namedtuple("ErrorCause", [
 
 
 logger = logging.getLogger(__name__)
+
+
+class ErrorCauseFinderThread(threading.Thread):
+
+    def __init__(self, test_case_in_session):
+        """
+        Init computer thread
+        :param test_case_in_session     the test case in session
+        """
+        super().__init__()
+        self.test_case_in_session = test_case_in_session
+        self.error_cause_finder = ErrorCauseFinder(self.test_case_in_session)
+        print(self.error_cause_finder)
+
+    def run(self):
+
+        errors = sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=self.test_case_in_session, result=False).order_by('-pk')], [])
+
+        try:
+            error_cause = self.error_cause_finder.detect_cause()
+            if error_cause:
+                for error in errors:
+                    error.cause = error_cause.cause
+                    error.causedBy = error_cause.why
+                    error.causeDetails = error_cause.information if error_cause.information else ""
+                    error.causeAnalysisErrors = '\n'.join(error_cause.analysis_errors)
+                    error.save()
+        except Exception as e:
+            for error in errors:
+                error.cause = "unknown"
+                error.causeAnalysisErrors = f"Error detecting cause: {str(e)}"
+                error.save()
+
 
 class ErrorCauseFinder:
     """
@@ -69,16 +101,16 @@ class ErrorCauseFinder:
 
         # in case analysis cannot be done, we assume we are on the right page
         if on_right_page_analysis_details.details:
-            element_present_analysis_details = self.image_error_cause_finder.is_element_present_on_page()
+            element_present_analysis_details = self.image_error_cause_finder.is_element_present_on_last_step()
 
             if element_present_analysis_details.analysis_error:
-                analysis_errors.append(element_present_analysis_details.analysis_error)
+                analysis_errors.append("Element presence: " + element_present_analysis_details.analysis_error)
 
             if element_present_analysis_details.details:
                 # TODO: send the DOM and the image to the LLM
-                return ErrorCause("script", "bad_locator", None, analysis_errors)
+                return ErrorCause("script", "bad_locator", "Element seems to be present, check the locator", analysis_errors)
             else:
-                return self.detect_other_causes(analysis_errors)
+                return self.detect_other_causes(analysis_errors, "On right page: ")
 
         else:
 
@@ -86,17 +118,15 @@ class ErrorCauseFinder:
             on_previous_page_analysis_details = self.image_error_cause_finder.is_on_the_previous_page()
             if on_previous_page_analysis_details.analysis_error:
                 analysis_errors.append("On previous page: " + on_previous_page_analysis_details.analysis_error)
-                return ErrorCause("unknown", "unknown", None, analysis_errors)
 
             # why are we on previous page
             elif on_previous_page_analysis_details.details:
-                return self.detect_other_causes(analysis_errors)
+                return self.detect_other_causes(analysis_errors, "On previous page: ")
 
             # we are on an unknown page
-            else:
-                return ErrorCause("application_change", "right_page", None, analysis_errors)
+            return ErrorCause("application_change", "unknown_page", "Page is unknown", analysis_errors)
 
-    def detect_other_causes(self, analysis_errors: list) -> ErrorCause:
+    def detect_other_causes(self, analysis_errors: list, prefix: str) -> ErrorCause:
 
         # JS error in console
         js_errors_analysis_details = self.js_error_cause_finder.has_javascript_errors()
@@ -110,13 +140,13 @@ class ErrorCauseFinder:
         if network_error_analysis_details.analysis_error:
             analysis_errors.append(network_error_analysis_details.analysis_error)
         elif network_error_analysis_details.details:
-            return ErrorCause("application_error", "network_error", "Consult HAR file", analysis_errors)
+            return ErrorCause("application_error", "network_error", prefix + "Consult HAR file", analysis_errors)
 
         network_latency_analysis_details = self.network_error_cause_finder.has_network_slowness()
         if network_latency_analysis_details.analysis_error:
             analysis_errors.append(network_latency_analysis_details.analysis_error)
         elif network_latency_analysis_details.details:
-            return ErrorCause("environment", "network_slowness", "Consult HAR file", analysis_errors)
+            return ErrorCause("environment", "network_slowness", prefix + "Consult HAR file", analysis_errors)
 
         return ErrorCause("script", "unknown", None, analysis_errors)
 

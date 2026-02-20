@@ -215,6 +215,9 @@
 -   model: snapshotServer.teststep
     pk: 4
     fields: {name: Logged out}
+-   model: snapshotServer.teststep
+    pk: 5
+    fields: {name: Test end}
 -   model: snapshotServer.testcase
     pk: 4
     fields:

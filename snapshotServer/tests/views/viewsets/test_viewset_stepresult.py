@@ -1,11 +1,15 @@
+import time
 from datetime import timedelta
+from unittest import mock
+from unittest.mock import patch
 
 from django.utils import timezone
 
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause, ErrorCauseFinder
 from variableServer.models import Application
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
-from snapshotServer.models import StepResult, Error, TestCaseInSession, TestCase, TestSession
+from snapshotServer.models import StepResult, Error, TestCaseInSession, TestCase, TestSession, TestStep
 from django.contrib.auth.models import Permission
 from commonsServer.tests.test_api import TestApi
 
@@ -111,7 +115,7 @@ class TestViewsetStepResult(TestApi):
             self._create_stepresult(403)
 
     def _update_stepresult(self, expected_status):
-        response = self.client.patch(f'/snapshot/api/stepresult/1/', data={'stacktrace': '{"logs": "updated"}'})
+        response = self.client.patch('/snapshot/api/stepresult/1/', data={'stacktrace': '{"logs": "updated"}'})
         self.assertEqual(expected_status, response.status_code)
         if expected_status == 200:
             self.assertEqual('{"logs": "updated"}', StepResult.objects.get(pk=1).stacktrace)
@@ -304,12 +308,13 @@ class TestViewsetStepResult(TestApi):
             self.assertIsNone(error.cause)
             self.assertEqual('class java.lang.AssertionError: expected [false] but <_> found [true]', error.errorMessage)
             self.assertEqual('class java.lang.AssertionError', error.exception)
+            self.assertEqual('', error.element)
             self.assertEqual(step_result_id, error.stepResult.id)
             self.assertEqual(0, len(error.relatedErrors.all()))
 
     def test_stepresult_parse_stacktrace_result_ko_parsed_2_times(self):
         """
-        If error is created on a first parse, updating stacktrace sould delete the previous errors as stacktrace has evolved
+        If error is created on a first parse, updating stacktrace should delete the previous errors as stacktrace has evolved
         """
         stacktrace = """
         {
@@ -358,7 +363,6 @@ class TestViewsetStepResult(TestApi):
             self.assertEqual(200, response.status_code)
             self.assertEqual(1, len(Error.objects.filter(stepResult=step_result_id)))
             self.assertNotEqual(error1.id, Error.objects.get(stepResult=step_result_id).id)
-
 
     def test_stepresult_parse_stacktrace_result_ko_related_error(self):
         """
@@ -623,6 +627,7 @@ class TestViewsetStepResult(TestApi):
             self.assertIsNone(error.cause)
             self.assertEqual('class java.lang.AssertionError: expected [false] but <_> found [true]', error.errorMessage)
             self.assertEqual('class java.lang.AssertionError', error.exception)
+            self.assertEqual('', error.element)
             self.assertEqual(step_result_id, error.stepResult.id)
             self.assertEqual(0, len(error.relatedErrors.all()))
 
@@ -660,6 +665,8 @@ class TestViewsetStepResult(TestApi):
                     "action": "click",
                     "origin": "LoginPage",
                     "element": "connect",
+                    "elementDescription": "button described by 'submit'",
+                    "elementType": "button",
                     "failed": true,
                     "position": 1,
                     "type": "action",
@@ -683,6 +690,7 @@ class TestViewsetStepResult(TestApi):
             self.assertIsNone(error.cause)
             self.assertEqual('class java.lang.AssertionError: expected [false] but <_> found [true]', error.errorMessage)
             self.assertEqual('class java.lang.AssertionError', error.exception)
+            self.assertEqual("button described by 'submit'", error.element)
             self.assertEqual(step_result_id, error.stepResult.id)
             self.assertEqual(0, len(error.relatedErrors.all()))
 
@@ -721,6 +729,8 @@ class TestViewsetStepResult(TestApi):
                     "action": "click",
                     "origin": "LoginPage",
                     "element": "connect",
+                    "elementDescription": "button described by 'submit'",
+                    "elementType": "button",
                     "failed": true,
                     "position": 1,
                     "type": "action",
@@ -746,6 +756,7 @@ class TestViewsetStepResult(TestApi):
             self.assertIsNone(error.cause)
             self.assertEqual('class org.openqa.selenium.WebDriverException: element not found', error.errorMessage)
             self.assertEqual('class org.openqa.selenium.WebDriverException', error.exception)
+            self.assertEqual("button described by 'submit'", error.element)
             self.assertEqual(step_result_id, error.stepResult.id)
             self.assertEqual(0, len(error.relatedErrors.all()))
 
@@ -782,6 +793,8 @@ class TestViewsetStepResult(TestApi):
                     "action": "click",
                     "origin": "LoginPage",
                     "element": "connect",
+                    "elementDescription": "button described by 'submit'",
+                    "elementType": "button",
                     "failed": true,
                     "position": 1,
                     "type": "action",
@@ -811,12 +824,13 @@ class TestViewsetStepResult(TestApi):
             self.assertIsNone(error.cause)
             self.assertEqual('class org.openqa.selenium.WebDriverException: element not found', error.errorMessage)
             self.assertEqual('class org.openqa.selenium.WebDriverException', error.exception)
+            self.assertEqual("button described by 'submit'", error.element)
             self.assertEqual(step_result_id, error.stepResult.id)
             self.assertEqual(0, len(error.relatedErrors.all()))
 
     def test_stepresult_parse_stacktrace_result_ko_test_end(self):
         """
-        Test end error should not be parsed even if it's KO
+        Test end error should not be parsed if an other step is already KO
         """
         stacktrace = """
         {
@@ -853,11 +867,75 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
-            self.assertEqual(201, response.status_code)
-            self.assertEqual(0, len(Error.objects.all()))
+        failed_step_result = StepResult.objects.get(pk=1)
+        failed_step_result.result = False
+        failed_step_result.save()
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
+                self.assertEqual(201, response.status_code)
+                self.assertEqual(0, len(Error.objects.all()))
+
+
+    def test_stepresult_parse_stacktrace_result_ko_test_end_without_other_failed_step(self):
+        """
+        Test end error should be parsed if no other step is already KO
+        """
+        stacktrace = """
+        {
+            "date": "Wed Oct 25 14:53:58 CEST 2023",
+            "failed": true,
+            "exception": "class java.lang.AssertionError",
+            "exceptionMessage": "class java.lang.AssertionError: expected [false] but <_> found [true]",
+            "type": "step",
+            "duration": 713,
+            "snapshots": [],
+            "videoTimeStamp": 5,
+            "name": "Test end",
+            "action": "Test end",
+            "files": [],
+            "position": 0,
+            "actions": [
+                {
+                    "name": "Opening page LoginPage",
+                    "failed": false,
+                    "position": 0,
+                    "type": "action",
+                    "timestamp": 1698245638815
+                },
+                {
+                    "name": "setWindowToRequestedSize on on page LoginPage ",
+                    "failed": false,
+                    "position": 1,
+                    "type": "action",
+                    "timestamp": 1698245638816
+                }
+            ],
+            "timestamp": 1698245638814,
+            "status": "FAILED",
+            "harCaptures": []
+        }"""
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
+                self.assertEqual(201, response.status_code)
+                time.sleep(1)
+                errors = Error.objects.all()
+                self.assertEqual(1, len(errors))
+                self.assertEqual('class java.lang.AssertionError: expected [false] but <_> found [true]', errors[0].errorMessage)
+                self.assertEqual("script", errors[0].cause) # check error cause is linked to "Test end" step error
 
     def test_step_result_parse_stacktrace_multiple_actions_in_error(self):
         """
@@ -951,5 +1029,229 @@ class TestViewsetStepResult(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': step_multiple_actions_ko_details})
             self.assertEqual(1, len(Error.objects.filter(exception="org.openqa.selenium.NoSuchElementException")))
+
+    failed_test_end_stacktrace = """
+        {
+            "date": "Wed Oct 25 14:53:58 CEST 2023",
+            "failed": true,
+            "type": "step",
+            "duration": 713,
+            "snapshots": [],
+            "videoTimeStamp": 5,
+            "name": "Test end",
+            "action": "openPage",
+            "files": [],
+            "position": 0,
+            "actions": [],
+            "timestamp": 1698245638814,
+            "status": "FAILED",
+            "harCaptures": []
+        }"""
+
+    def test_stepresult_analyze_test_run_result_ko(self):
+        """
+        When error in step, error cause detection is performed
+        """
+
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+                response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 5, 'result': False, 'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(201, response.status_code)
+                self.assertEqual(0, len(Error.objects.all()))
+                time.sleep(1)
+                error_cause_finder_instance.detect_cause.assert_called()
+
+    def test_stepresult_analyze_test_run_result_ko_on_update(self):
+        """
+        When error in step, error cause detection is performed
+        Do it on stepresult update
+        """
+
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5), result=False, stacktrace="")
+                test_end_step_result.save()
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                self.assertEqual(0, len(Error.objects.all()))
+                time.sleep(1)
+                error_cause_finder_instance.detect_cause.assert_called()
+
+    def test_stepresult_analyze_test_run_result_ko_on_update_with_error(self):
+        """
+        If error occurs during detection, this has no impact on server reply
+        """
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [Exception("some detection error")]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+
+                error = Error(stepResult=failed_step_result, action="step1>action1", exception="WebDriverException", errorMessage="Error searching element")
+                error.save()
+
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5), result=False, stacktrace="")
+                test_end_step_result.save()
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                time.sleep(1)
+                updated_error = Error.objects.get(pk=error.id)
+                self.assertEqual("unknown", updated_error.cause)
+                self.assertEqual("Error detecting cause: some detection error", updated_error.causeAnalysisErrors)
+
+    def test_stepresult_analyze_test_run_result_ko_on_update_with_multiple_errors(self):
+        """
+        If scenario has multiple steps in error (mostly when assertions fail), then all errors will get the same cause
+        """
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+                failed_step_result2 = StepResult.objects.get(pk=6)
+                failed_step_result2.result = False
+                failed_step_result2.save()
+
+                error = Error(stepResult=failed_step_result, action="step1>action1", exception="WebDriverException", errorMessage="Error searching element")
+                error.save()
+                error2 = Error(stepResult=failed_step_result2, action="step2>action1", exception="AssertionError", errorMessage="Assertion failed")
+                error2.save()
+
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5), result=False, stacktrace="")
+                test_end_step_result.save()
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                time.sleep(1)
+                updated_error = Error.objects.get(pk=error.id)
+                self.assertEqual("script", updated_error.cause)
+                self.assertEqual("unknown", updated_error.causedBy)
+                updated_error2 = Error.objects.get(pk=error2.id)
+                self.assertEqual("script", updated_error2.cause)
+                self.assertEqual("unknown", updated_error2.causedBy)
+                error_cause_finder_instance.detect_cause.assert_called_once()
+
+    def test_stepresult_analyze_test_run_result_ko_on_update_with_existing_error(self):
+        """
+        When error in step, error cause detection is performed
+        Do it on stepresult update
+        Check that detected cause is added to existing error of the failed step
+        """
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, ["info1", "info2"])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+
+                error = Error(stepResult=failed_step_result, action="step1>action1", exception="WebDriverException", errorMessage="Error searching element")
+                error.save()
+
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5), result=False, stacktrace="")
+                test_end_step_result.save()
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                time.sleep(1)
+                error_cause_finder_instance.detect_cause.assert_called()
+
+                # check error has been updated
+                updated_error = Error.objects.get(pk=error.id)
+                self.assertEqual("script", updated_error.cause)
+                self.assertEqual("unknown", updated_error.causedBy)
+                self.assertEqual("", updated_error.causeDetails)
+                self.assertEqual("info1\ninfo2", updated_error.causeAnalysisErrors)
+
+    def test_stepresult_analyze_test_run_result_ko_no_stacktrace(self):
+        """
+        If no stacktrace is given, it means we did not receive the step details, and then, analysis should not be performed
+        """
+        stacktrace = """
+        {
+        }"""
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+                response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 5, 'result': False, 'stacktrace': stacktrace})
+                self.assertEqual(201, response.status_code)
+                self.assertEqual(0, len(Error.objects.all()))
+                time.sleep(1)
+                error_cause_finder_instance.detect_cause.assert_not_called()
+
+    def test_stepresult_analyze_test_run_result_ok(self):
+        """
+        When test is OK, error cause detection is not called
+        """
+        stacktrace = """
+        {
+            "date": "Wed Oct 25 14:53:58 CEST 2023",
+            "failed": false,
+            "type": "step",
+            "duration": 713,
+            "snapshots": [],
+            "videoTimeStamp": 5,
+            "name": "Test end",
+            "action": "openPage",
+            "files": [],
+            "position": 0,
+            "actions": [],
+            "timestamp": 1698245638814,
+            "status": "SUCCESS",
+            "harCaptures": []
+        }"""
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 5, 'result': True, 'stacktrace': stacktrace})
+                self.assertEqual(201, response.status_code)
+                time.sleep(1)
+                error_cause_finder_instance.detect_cause.assert_not_called()
 
 
