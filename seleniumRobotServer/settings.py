@@ -29,7 +29,7 @@ TIME_ZONE = '${timezone}'
 # allow files up to 10 MB to be uploaded
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
 # allow files as variable value up to 10 MB to be uploaded
-VAR_UPLOAD_FILE_MAX_SIZE = 10000000
+VAR_UPLOAD_FILE_MAX_SIZE = int('${django.variable.file.maxsize}')
 
 AUTHENTICATION_BACKENDS = (
     "${auth.backends}",
