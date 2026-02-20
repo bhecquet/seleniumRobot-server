@@ -3,17 +3,20 @@ Created on 12 déc. 2024
 
 '''
 from django import forms
-from variableServer.models import Variable, TestCase, Version
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin,\
-    is_user_authorized
+from django.conf import settings
 from django.contrib import admin, messages
+from django.contrib.admin.actions import delete_selected as django_delete_selected
+from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
-from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from variableServer.admin_site.version_admin import VersionFilter
-from variableServer.admin_site.environment_admin import EnvironmentFilter
-from django.contrib.admin.actions import delete_selected as django_delete_selected
+from magic import magic
+
 from variableServer.admin_site.application_admin import ApplicationFilter
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin, \
+    is_user_authorized
+from variableServer.admin_site.environment_admin import EnvironmentFilter
+from variableServer.admin_site.version_admin import VersionFilter
+from variableServer.models import Variable, TestCase, Version
 
 
 class VariableForm(forms.ModelForm):
@@ -66,7 +69,28 @@ class VariableForm(forms.ModelForm):
         if self.initial.get('protected', False) and not is_user_authorized(user):
             self.initial['value'] = "****"
             self.fields['protected'].widget = forms.HiddenInput()
-            
+
+    def clean(self):
+        cleaned_data = super().clean()
+        upload_file = cleaned_data.get("uploadFile")
+        value = cleaned_data.get("value")
+
+        if upload_file and value:
+            raise forms.ValidationError("A variable can't be both a value and a file. Choose only one.")
+
+        if upload_file:
+            upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
+            upload_file.seek(0)
+            if upload_file_type not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+                raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
+            if upload_file_type == "text/plain":
+                if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
+                    raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
+            if upload_file.size > settings.VAR_UPLOAD_FILE_MAX_SIZE:
+                raise forms.ValidationError("File too large. "+str(int(settings.VAR_UPLOAD_FILE_MAX_SIZE/1000000))+"Mo max")
+
+        return cleaned_data
+
 class VariableForm2(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(VariableForm2, self).__init__(*args, **kwargs)
@@ -96,8 +120,8 @@ class VariableForm2(forms.ModelForm):
 
     
 class VariableAdmin(BaseServerModelAdmin): 
-    list_display = ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
-    list_display_protected = ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display_protected = ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
@@ -211,7 +235,7 @@ class VariableAdmin(BaseServerModelAdmin):
         queryset = Variable.objects.filter(id__in=request.POST.getlist(ACTION_CHECKBOX_NAME))
         queryset = self._filter_variables(request, queryset, 'variableServer.change_variable', 'change')
         
-        selected = [str(var.id) for var in queryset]
+        selected = [str(i) for i in sorted(var.id for var in queryset)]
         args = {'ids': ','.join(selected), 
                 'form': VariableForm2(initial=self._get_default_values(selected)),
                 'queryString': request.META['QUERY_STRING']} # Allow to go back to filtered list

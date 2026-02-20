@@ -1,20 +1,26 @@
 import datetime
+import os.path
 
 from django import forms
+from django.conf import settings
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
+from django.core.exceptions import ValidationError
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
+from django.test import override_settings
 from django.urls.base import reverse
 from django.utils import timezone
 
-from variableServer.models import Application, Version
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
+from variableServer.models import Application, Version
 from variableServer.models import Variable
-from variableServer.tests.test_admin import MockRequest, request, TestAdmin,\
+from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
 
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
 class TestVariableAdmin(TestAdmin):
     
     def setUp(self)->None:
@@ -22,6 +28,7 @@ class TestVariableAdmin(TestAdmin):
         
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
+        Application.objects.get(pk=777).save()
         
 
     def test_variable_get_list_display_with_authorized_user(self):
@@ -31,7 +38,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         super_user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
+        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
         
         
     def test_variable_get_list_display_with_unauthorized_user(self):
@@ -41,7 +48,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=user)), ('nameWithApp', 'valueProtected', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
+        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=user)), ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
         
     def test_variable_queryset_without_application_restriction(self):
         """
@@ -91,7 +98,7 @@ class TestVariableAdmin(TestAdmin):
             for var in query_set:
                 app_list.append(var.application)
             
-            self.assertEqual(len(list(set(app_list))), 6)
+            self.assertEqual(len(list(set(app_list))), 7)
         
     def test_variable_save_standard(self):
         """
@@ -105,7 +112,147 @@ class TestVariableAdmin(TestAdmin):
         user = User.objects.create_user(username='user', email='user@email.org', password='pass')
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=1).value, 'proxy.com')
-        
+
+    def test_variable_save_standard_with_csv_file(self):
+        """
+        Check saving is done with a file
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        variable = Variable.objects.get(pk=888)
+        file_path = 'variableServer/tests/data/filetoadd.csv'
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.csv")
+        if os.path.exists(result_file_path):
+            os.remove(result_file_path)
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.csv', 'text/csv', os.path.getsize(file_path), None)
+            variable.uploadFile = in_memory_uploaded_file
+            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+        self.assertEqual(Variable.objects.get(pk=888).value, '')
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.csv')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.csv")))
+
+    def test_variable_save_standard_with_json_file(self):
+        """
+        Check saving is done with a file
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        variable = Variable.objects.get(pk=888)
+        file_path = 'variableServer/tests/data/filetoadd.json'
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.json")
+        if os.path.exists(result_file_path):
+            os.remove(result_file_path)
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.json', 'application/json', os.path.getsize(file_path), None)
+            variable.uploadFile = in_memory_uploaded_file
+            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+        self.assertEqual(Variable.objects.get(pk=888).value, '')
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.json')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.json")))
+
+    def test_variable_save_standard_with_xls_file(self):
+        """
+        Check saving is done with a file
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        variable = Variable.objects.get(pk=888)
+        file_path = 'variableServer/tests/data/filetoadd.xls'
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xls")
+        if os.path.exists(result_file_path):
+            os.remove(result_file_path)
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.xls', 'application/vnd.ms-excel', os.path.getsize(file_path), None)
+            variable.uploadFile = in_memory_uploaded_file
+            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+        self.assertEqual(Variable.objects.get(pk=888).value, '')
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.xls')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xls")))
+
+    def test_variable_save_standard_with_xlsx_file(self):
+        """
+        Check saving is done with a file
+        """
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        variable = Variable.objects.get(pk=888)
+        file_path = 'variableServer/tests/data/filetoadd.xlsx'
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xlsx")
+        if os.path.exists(result_file_path):
+            os.remove(result_file_path)
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', os.path.getsize(file_path), None)
+            variable.uploadFile = in_memory_uploaded_file
+            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+        self.assertEqual(Variable.objects.get(pk=888).value, '')
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.xlsx')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xlsx")))
+
+    def test_variable_clean_no_concurrent_file_value(self):
+        """
+        Check that you can't save a variable with both a file and a value
+        """
+        form = VariableForm(instance=Variable.objects.get(pk=999))
+        form.cleaned_data = {"name": "both", "value": "filetxt", "uploadFile": "itssupposedtobeafilebutaslongasitsnotnullitsokforthetest"}
+        self.assertRaisesRegex(ValidationError, ".*A variable can't be both a value and a file. Choose only one..*", form.clean)
+
+    def test_variable_clean_file_wrong_type(self):
+        """
+        Check that you can't save a variable with a file type other than csv, xls, json
+        """
+        file_path = 'variableServer/tests/data/engie.png'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'engie.png', 'image/png', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls, xlsx or json file..*", form.clean)
+
+    def test_variable_clean_file_wrong_type_txt(self):
+        """
+        Check that you can't save a variable with a file type other than csv, xls, json
+        """
+        file_path = 'variableServer/tests/data/dummy.txt'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'dummy.txt', 'text/plain', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls, xlsx or json file..*", form.clean)
+
+    def test_variable_clean_file_too_large(self):
+        """
+        Check that you can't save a variable with a file larger than 10Mo
+        """
+        file_path = 'variableServer/tests/data/toobig.csv'
+        with open(file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'toobig.csv', 'text/csv', os.path.getsize(file_path), None)
+            form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
+            self.assertFalse(form.is_valid())
+            self.assertRaisesRegex(ValidationError, ".*File too large. 10Mo max.*", form.clean)
+
+    def test_variable_as_file_change_file(self):
+        """
+        Check that when you modify a variable's file-value, the old file is deleted from the media folder
+        """
+        del_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "tobedeleted.csv")
+        del_new_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "replacement.csv")
+        if os.path.exists(del_new_file_path):
+            os.remove(del_new_file_path)
+        with open(del_file_path, "w") as f:
+            f.write("some,data,for,the,test")
+
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+        new_file_path = 'variableServer/tests/data/replacement.csv'
+        with open(new_file_path, 'rb') as f:
+            in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'replacement.csv', 'text/csv', os.path.getsize(new_file_path), None)
+            variable = Variable.objects.get(pk=996)
+            variable.uploadFile = in_memory_uploaded_file
+
+            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
+
+        self.assertFalse(os.path.exists(del_file_path))
+
     def test_variable_save_protected_variable_with_authorized_user(self):
         """
         Check value is modified when user has the right to do
@@ -600,7 +747,7 @@ class TestVariableAdmin(TestAdmin):
 
     def test_variable_form_with_existing_variable_application_defined(self):
         """
-        Check that if application not defined for the variable, fields "version" and "test" are enabled
+        Check that if application defined for the variable, fields "version" and "test" are enabled
         """
         
         form = VariableForm(instance=Variable.objects.get(pk=3))
@@ -763,7 +910,6 @@ class TestVariableAdmin(TestAdmin):
         Check  user cannot view / change / delete / add variable with only application specific rights: can_view_application_app1
         when application restriction are NOT applied
         """
-
         testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
         self.assertFalse(testcase_admin.has_view_permission(request=MockRequest(user=user)))

@@ -1,18 +1,20 @@
+from operator import itemgetter
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
 from django.db.models import Q
+from django.test import override_settings
 
 import commonsServer
-from variableServer.models import Application, Version
-
-from variableServer.admin_site.application_admin import ApplicationAdmin,\
+from variableServer.admin_site.application_admin import ApplicationAdmin, \
     ApplicationFilter
+from variableServer.admin_site.version_admin import VersionAdmin
+from variableServer.models import Application, Version
 from variableServer.models import Variable
 from variableServer.tests.test_admin import request, MockRequest, TestAdmin
-from variableServer.admin_site.version_admin import VersionAdmin
 
 
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
 class TestApplicationAdmin(TestAdmin):
     
     fixtures = ['varServer']
@@ -236,10 +238,10 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
         
     def test_application_filter_lookup_application_restriction(self): 
         """
@@ -268,8 +270,8 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
         

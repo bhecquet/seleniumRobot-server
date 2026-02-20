@@ -1,17 +1,19 @@
 
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Permission
-from django.contrib.contenttypes.models import ContentType
 from django.db.models import Q
+from django.test import override_settings
 
 import commonsServer
-from variableServer.models import Application
-from variableServer.admin_site.test_case_admin import TestCaseAdmin
-from variableServer.tests.test_admin import request, MockRequest, TestAdmin,\
-    MockRequestWithApplication
-from variableServer.models import TestCase
 import variableServer
+from variableServer.admin_site.test_case_admin import TestCaseAdmin
+from variableServer.models import Application
+from variableServer.models import TestCase
+from variableServer.tests.test_admin import request, MockRequest, TestAdmin, \
+    MockRequestWithApplication
 
+
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
 class TestTestCaseAdmin(TestAdmin):
     
     def test_testcase_queryset_without_application_restriction(self):

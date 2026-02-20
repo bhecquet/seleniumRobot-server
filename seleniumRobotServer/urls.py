@@ -1,7 +1,6 @@
 
 from django.conf import settings
 from django.conf.urls import include
-from django.conf.urls.static import static
 from django.contrib import admin
 from django.contrib.auth import views
 from django.urls.conf import path, re_path
@@ -9,7 +8,6 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
 from commonsServer.views.api import CustomAuthToken
-
 
 # in case openid is configured for login, change login page
 views.LoginView.site_header = 'Selenium Server administration'
@@ -33,4 +31,4 @@ urlpatterns = [
     path('accounts/login/', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(views.LoginView.as_view()))), name='login'),
     
     # add media directory
-] +   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] #+   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -1,5 +1,6 @@
-from rest_framework.permissions import DjangoModelPermissions
 from django.conf import settings
+from rest_framework.permissions import DjangoModelPermissions
+
 from commonsServer.models import Application
 
 APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX = 'variableServer.' + Application.app_variable_permission_code
@@ -44,7 +45,7 @@ class ApplicationSpecificPermissions(GenericPermissions):
         """
         Method to override to get Application object from child view
         It's possible to return BYPASS_APPLICATION_CHECK key so that, during "has_permission" phase, we can delegate to 'has_object_permission'
-        ex: PATCH / PUT request may do 'has_permission' prior to 'has_object_permission', in this case, controlling the application to times is unecessary
+        ex: PATCH / PUT request may do 'has_permission' prior to 'has_object_permission', in this case, controlling the application two times is unecessary
         """
         try:
             if request.POST.get('application', ''):
