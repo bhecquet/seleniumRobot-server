@@ -88,10 +88,6 @@ else:
             'rest_framework.permissions.AllowAny'
         ]
     }
-    
-FIELD_DETECTOR_ENABLED = '${field.detector.enabled}'
-DRAMATIQ_BROKER['OPTIONS']['url'] = '${redis.url}/0'
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = '${redis.url}'
 
 # Connection to Open-WebUI instance. set empty URL to disable
 OPEN_WEBUI_URL = '${openwebui.url}'

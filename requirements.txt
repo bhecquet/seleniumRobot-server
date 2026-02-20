@@ -12,8 +12,6 @@ pkg/python_ldap-3.4.0-cp39-cp39-win_amd64.whl; platform_system == 'Windows'
 django_auth_ldap==2.4.0
 mozilla-django-oidc==1.2.4
 health-check==3.4.1
-django-dramatiq==0.11.2
-dramatiq[redis, watch]==1.18.0
 unidecode==1.4.0
 django-apscheduler==0.6.2
 openwebui-chat-client==0.1.24

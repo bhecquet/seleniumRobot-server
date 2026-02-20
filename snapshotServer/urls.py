@@ -8,7 +8,6 @@ from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
 from snapshotServer.views.test_result_view import TestResultView
-from snapshotServer.views.field_detector_view import FieldDetectorView
 
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
@@ -41,9 +40,6 @@ urlpatterns = [
     re_path(r'^upload/(?P<filename>[^/]+)$', SnapshotUploadView.as_view(), name='upload'),
     re_path(r'^api-auth/', include('rest_framework.urls', namespace='rest_framework')),
 
-    # image-field-detector
-    re_path(r'^detect/$', FieldDetectorView.as_view(), name="detect"),
-    
     path(r'stepReference/<int:step_result_id>/', StepReferenceView.as_view(), name='stepReference'),
     re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     

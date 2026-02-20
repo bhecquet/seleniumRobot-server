@@ -258,22 +258,6 @@ You can activate it by
 ## Database ##
 to use SQLite instead of Postgre: comment the right default database in `DATABASES`
 
-## Field detector ##
-
-Field detector feature is used to detect fields (text fields, buttons, ...) on pictures.
-Computing is done for each reference picture and when '/detect' endpoint is called
-
-To enable, you have to 
-- configure one or several compute nodes ([https://github.com/bhecquet/image-fields-detector] (https://github.com/bhecquet/image-fields-detector)
-- install a redis server
-- in settings.py, update configuration
-
-```
-DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://localhost:6379/0'
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://localhost:6379'
-```
-- enable field detector: `FIELD_DETECTOR_ENABLED = 'True'`
-
 ## Image Comparison ##
 
 Image comparison can be more or less strict about color changes
