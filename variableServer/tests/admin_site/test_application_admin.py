@@ -163,7 +163,26 @@ class TestApplicationAdmin(TestAdmin):
         
         # if permission is created, no error is raised
         Permission.objects.get(codename='can_view_application_toto1')
-        
+
+
+    def test_save_application_with_linked_app(self):
+        """
+        Check it's possible to create an application with linked one
+        """
+        application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
+        super_user = User.objects.create_superuser(username='super', email='super@email.org',
+                                                   password='pass')
+
+        application_object = Application(name="toto1")
+        application_admin.save_model(obj=application_object, request=MockRequest(user=super_user),
+                                     form=None, change=None)
+        application_object.linkedApplication.add(Application.objects.get(pk=1))
+
+        self.assertEqual(1, len(application_object.linkedApplication.all()))
+
+        # if permission is created, no error is raised
+        Permission.objects.get(codename='can_view_application_toto1')
+
     def test_rename_application(self):
         """
         Simulate the case where application has already been created and we rename an other application to this name

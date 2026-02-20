@@ -290,7 +290,11 @@ DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://localhost:6379/0'
 DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://localhost:6379'
 ```
 
-- enable field detector: `FIELD_DETECTOR_ENABLED = 'True'`
+## Image Comparison ##
+
+Image comparison can be more or less strict about color changes
+
+User parameter `IMAGE_COMPARISON_THRESHOLD` (defaults to 10). It's the difference between the color of the actual pixel and the color of the same reference pixel
 
 # Usage #
 
@@ -531,6 +535,7 @@ directly. Concrete case:
 When test creates variables, it may be useful to destroy these variables after some time to avoid a database growth.
 You can set a time to live to a variable using the `destroyAfterDays` parameterng  
 
+##
 	
 
 

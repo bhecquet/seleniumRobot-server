@@ -1187,6 +1187,10 @@ class TestApiView(TestApi):
         self.assertTrue('varApp4Env' in all_variables)
         self.assertTrue('linkedApp4.varApp4Linked' in all_variables) # variable without environment
         self.assertTrue('linkedApp4.varApp4EnvLinked' in all_variables) # variable with environment
+        self.assertEqual(17, all_variables['linkedApp4.varApp4EnvLinked']['id']) # check id is provided
+        self.assertEqual('linkedApp4.varApp4EnvLinked', all_variables['linkedApp4.varApp4EnvLinked']['name']) # check name is provided
+        self.assertEqual(41, all_variables['linkedApp4.varApp4EnvLinked']['application']) # check application is provided
+        self.assertEqual(1, all_variables['linkedApp4.varApp4EnvLinked']['environment']) # check environment is provided
         self.assertFalse('linkedApp4.varApp4EnvLinked2' in all_variables) # variable with specific version will not be returned
         self.assertFalse('linkedApp4.varApp4EnvLinkedReservable' in all_variables) # variable is reservable, it should not be retrieved
         

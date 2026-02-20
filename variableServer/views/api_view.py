@@ -221,9 +221,9 @@ class VariableFilter(ApplicationSpecificFilter):
         if view.get_permissions()[0]._bypass_application_permissions(request, view):
             return VariableQuerySet(variable_list)
         
-        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
+        allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request)
         
-        filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_aplications]
+        filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_applications]
         return VariableQuerySet(filtered_variables)
     
     def _unique_variable(self, variable_query_set):
@@ -278,7 +278,7 @@ class VariableFilter(ApplicationSpecificFilter):
  
         updated_linked_application_variables = []
         for var in linked_application_variables:
-            updated_linked_application_variables.append(Variable(name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
+            updated_linked_application_variables.append(Variable(id=var.id, name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
  
         return updated_linked_application_variables
     

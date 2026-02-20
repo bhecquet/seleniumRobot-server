@@ -41,7 +41,7 @@ class Application(models.Model):
         # permissions for handling application variables / recording
         Permission.objects.get_or_create(
             codename=Application.app_variable_permission_code + self.name,
-            name='Can view application and related variables and versions for  ' + self.name,
+            name='Can view application and related variables and versions for ' + self.name,
             content_type=content_type,
             )
 
