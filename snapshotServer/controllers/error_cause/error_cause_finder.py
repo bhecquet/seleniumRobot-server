@@ -36,6 +36,10 @@ class ErrorCauseFinderThread(threading.Thread):
 
         errors = sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=self.test_case_in_session, result=False).order_by('-pk')], [])
 
+        for error in errors:
+            error.cause = "analyzing ..."
+            error.save()
+
         try:
             error_cause = self.error_cause_finder.detect_cause()
             if error_cause:
@@ -48,6 +52,7 @@ class ErrorCauseFinderThread(threading.Thread):
         except Exception as e:
             for error in errors:
                 error.cause = "unknown"
+                error.causedBy = "analysis_error"
                 error.causeAnalysisErrors = f"Error detecting cause: {str(e)}"
                 error.save()
 
