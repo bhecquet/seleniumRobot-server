@@ -9,7 +9,6 @@ from django.contrib.admin.actions import delete_selected as django_delete_select
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
-from magic import magic
 
 from variableServer.admin_site.application_admin import ApplicationFilter
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin, \
@@ -18,6 +17,7 @@ from variableServer.admin_site.environment_admin import EnvironmentFilter
 from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
+import magic
 
 class VariableForm(forms.ModelForm):
     
