@@ -10,11 +10,10 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 # Login/ mdp: admin / adminServer
-import os
 import ldap
 from django_auth_ldap.config import LDAPSearch
-from seleniumRobotServer.settings_base import *
 
+from seleniumRobotServer.settings_base import *
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/1.10/howto/deployment/checklist/
@@ -27,6 +26,8 @@ DEBUG = True
 
 # allow files up to 10 MB to be uploaded
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
+# allow files as variable value up to 10 MB to be uploaded
+VAR_UPLOAD_FILE_MAX_SIZE = 10000000
 
 TEST_RUNNER = 'xmlrunner.extra.djangotestrunner.XMLTestRunner'
 TEST_OUTPUT_FILE_NAME = 'unittest.xml'

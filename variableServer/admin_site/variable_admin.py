@@ -3,12 +3,12 @@ Created on 12 déc. 2024
 
 '''
 from django import forms
+from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
-from magic import magic
 
 from variableServer.admin_site.application_admin import ApplicationFilter
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin, \
@@ -17,6 +17,7 @@ from variableServer.admin_site.environment_admin import EnvironmentFilter
 from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
+import magic
 
 class VariableForm(forms.ModelForm):
     
@@ -81,12 +82,12 @@ class VariableForm(forms.ModelForm):
             upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
             upload_file.seek(0)
             if upload_file_type not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
-                raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
+                raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
             if upload_file_type == "text/plain":
                 if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
-                    raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls or json file.")
-            if upload_file.size > 10000000: #mettre un settings variabilisé
-                raise forms.ValidationError("File too large. 10Mo max")
+                    raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
+            if upload_file.size > settings.VAR_UPLOAD_FILE_MAX_SIZE:
+                raise forms.ValidationError("File too large. "+str(int(settings.VAR_UPLOAD_FILE_MAX_SIZE/1000000))+"Mo max")
 
         return cleaned_data
 

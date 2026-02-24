@@ -42,7 +42,7 @@ class TestApiView(TestApi):
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
         Application.objects.get(pk=777).save()
-        
+
     def test_ping(self):
         """
         Check 'ping' api can be called without security token
@@ -1369,6 +1369,19 @@ class TestApiView(TestApi):
         response = self.client.delete(reverse('variableApiPut', args=[var0.id]))
         self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
 
+    def test_delete_variable_as_file_delete_file(self):
+        """
+        Check that when you delete a variable with file as value, the file itself is deleted from the media folder
+        """
+        file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "tobedeleted.csv")
+        with open(file_path, "w") as f:
+            f.write("some,data,for,the,test")
+        var = Variable.objects.get(pk=996)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_variable')))
+        response = client.delete(reverse('variableApiPut', args=[var.id]))
+        self.assertEqual(response.status_code, 204)
+        self.assertFalse(os.path.exists(file_path))
+
         #DOWNLOAD VAR FILE
 
     def _test_download_variable(self, permissions):
@@ -1400,7 +1413,7 @@ class TestApiView(TestApi):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app2')))
-            self.assertEqual(401, testfile.status_code)
+            self.assertEqual(403, testfile.status_code)
 
     def test_download_var_file_security_authenticated_with_permission(self):
         """
@@ -1442,7 +1455,7 @@ class TestApiView(TestApi):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertEqual(testfile.status_code, 401)
+            self.assertEqual(testfile.status_code, 403)
 
     def test_download_variable_file_ok_global_permission_and_application_restriction(self):
         """

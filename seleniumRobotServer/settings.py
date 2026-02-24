@@ -13,14 +13,10 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
     by their values
 """
 
-
-
-import os
-from django_auth_ldap.config import LDAPSearch, LDAPGroupQuery,\
-    ActiveDirectoryGroupType
-    
-from seleniumRobotServer.settings_base import *
 import ldap
+from django_auth_ldap.config import LDAPSearch, ActiveDirectoryGroupType
+
+from seleniumRobotServer.settings_base import *
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '${django.secret.key}'
@@ -32,7 +28,8 @@ TIME_ZONE = '${timezone}'
 
 # allow files up to 10 MB to be uploaded
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
-
+# allow files as variable value up to 10 MB to be uploaded
+VAR_UPLOAD_FILE_MAX_SIZE = int('${django.variable.file.maxsize}')
 
 AUTHENTICATION_BACKENDS = (
     "${auth.backends}",
