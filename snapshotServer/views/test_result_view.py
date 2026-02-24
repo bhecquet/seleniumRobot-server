@@ -3,7 +3,6 @@ Created on 4 sept. 2017
 
 @author: worm
 '''
-from logging import INFO
 
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
@@ -47,6 +46,7 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         context = super(TestResultView, self).get_context_data(**kwargs)
         current_test = get_object_or_404(TestCaseInSession, pk=self.kwargs['test_case_in_session_id'])
         context['currentTest'] = current_test
+        context['session'] = current_test.session
         context['testCaseId'] = self.kwargs['test_case_in_session_id']
         context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
         context['status'] = current_test.status
@@ -87,10 +87,9 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
 
         errors = Error.objects.filter(stepResult__in=StepResult.objects.filter(testCase=current_test))
         for i, error in enumerate(errors):
-            context['infos']['error' + str(i)] = {"type":"string","info": error.errorMessage}
-            context['infos']['cause' + str(i)] = {"type":"string","info": error.cause}
-            context['infos']['causedBy' + str(i)] = {"type":"string","info": error.causedBy}
-            context['infos']['cause details' + str(i)] = {"type":"string","info": error.causeDetails}
+            context['infos']['error_' + str(i)] = {"type":"string","info": error.errorMessage}
+            context['infos']['cause_' + str(i)] = {"type":"string","info": error.cause}
+            context['infos']['caused details_' + str(i)] = {"type":"string","info": error.friendly_message}
 
 
         return context

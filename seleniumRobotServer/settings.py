@@ -90,6 +90,7 @@ else:
     }
 
 # Connection to Open-WebUI instance. set empty URL to disable
+OPEN_WEBUI_WORKERS = int('${openwebui.workers}')
 OPEN_WEBUI_URL = '${openwebui.url}'
 OPEN_WEBUI_TOKEN = '{openwebui.token}'
 OPEN_WEBUI_MODEL = '{openwebui.model}'

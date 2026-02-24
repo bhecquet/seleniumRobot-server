@@ -81,26 +81,9 @@ else:
         ]
     }
 
-DRAMATIQ_BROKER = {
-    "BROKER": "dramatiq.brokers.stub.StubBroker",
-    "OPTIONS": {},
-    "MIDDLEWARE": [
-        "dramatiq.middleware.AgeLimit",
-        "dramatiq.middleware.TimeLimit",
-        "dramatiq.middleware.Callbacks",
-        "dramatiq.middleware.Pipelines",
-        "dramatiq.middleware.Retries",
-        "django_dramatiq.middleware.DbConnectionsMiddleware",
-        #"django_dramatiq.middleware.AdminMiddleware",
-    ]
-}
-#DRAMATIQ_RESULT_BACKEND = None
-#DRAMATIQ_BROKER['OPTIONS'] = 'redis://redis_server.fr:6379/0'
-FIELD_DETECTOR_ENABLED = 'True'
-DRAMATIQ_RESULT_BACKEND['BACKEND'] = "dramatiq.results.backends.stub.StubBackend"
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS'] = {}
 
 # Connection to Open-WebUI instance. set empty URL to disable
+OPEN_WEBUI_WORKERS = 1
 OPEN_WEBUI_URL = 'http://localhost:8080'
 OPEN_WEBUI_TOKEN = 'abc'
 OPEN_WEBUI_MODEL = 'ministral-3:8b'

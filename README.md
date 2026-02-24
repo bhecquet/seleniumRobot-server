@@ -12,7 +12,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 
 ## Windows ##
 	
-- Install python 3 >= 3.8)
+- Install python 3 >= 3.11)
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
@@ -22,8 +22,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - deploy files: unzip seleniumRobotServer.zip
 - create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
 - go into virtual environment: `cd <path_to_selenium_server>/venv && Scripts\activate.bat`
-- install `python-ldap` from wheel found at [https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap): `pip instal python_ldap-3.xxx.whl`
-- install python requirements: `pip install -r requirements.txt` 
+- install python requirements: `pip install -r requirements_postgre.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead
@@ -109,14 +108,14 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 **Warning** In the above apache configuration, `<path_to_selenium_server_data>` may or may not be identical to `<path_to_selenium_server>` but MUST be the same as `${data.dir}` setting in settings.py file
     
 ## Linux (RHE) ##
-- Install python 3 >= 3.8
+- Install python 3 >= 3.11
 - apache install (Linux): `yum install mod_wsgi httpd24-httpd`
 - Install Postgre database (if not using a centralized database or SQLite)
 - Install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`,  `openldap-devel`,  so that dependencies can be compiled
 - deploy files: unzip seleniumRobotServer.zip
 - create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
 - go into virtual environment: `cd <path_to_selenium_server>/venv && source bin/activate`
-- install python requirements: `pip install -r requirements.txt` 
+- install python requirements: `pip install -r requirements_postgre.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use `python manage.py ldap_promote <user>` instead

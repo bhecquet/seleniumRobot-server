@@ -123,7 +123,7 @@ class ImageErrorCauseFinder:
                     else:
                         analysis_errors.append("No image provided")
 
-                return AnalysisDetails(error_messages, '\n'.join(analysis_errors) if analysis_errors else None)
+                return AnalysisDetails('\n'.join(error_messages), '\n'.join(analysis_errors) if analysis_errors else None)
 
             except Exception as e:
                 return AnalysisDetails([], f"Error reading file for analysis: {str(e)}")

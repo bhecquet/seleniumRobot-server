@@ -27,6 +27,13 @@ body{
 	line-height: 50px;
 }
 
+.back-link {
+	min-height: 50px;
+	text-align: center;
+	font-size: 15px;
+	line-height: 50px;
+}
+
 #snapshot-iframe {
 	width: 100%;
 	height: inherit;

@@ -6,7 +6,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder, ErrorCauseFinderThread
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder, ErrorCauseFinderThread, \
+    ErrorCauseFinderExecutor
 from snapshotServer.models import StepResult, TestCaseInSession, Error, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -66,7 +67,7 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
             and len(serializer.instance.stacktrace) > 100
             and serializer.instance.testCase
             and not serializer.instance.testCase.isOkWithResult()):
-            ErrorCauseFinderThread(serializer.instance.testCase).start()
+            ErrorCauseFinderExecutor.submit(serializer.instance.testCase)
 
 
     def parse_stacktrace(self, serializer):

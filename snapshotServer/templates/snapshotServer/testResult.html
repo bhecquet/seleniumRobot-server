@@ -11,19 +11,20 @@
 {% endblock %}
 
 {% block body %}
-<div class="row">
-	<div class="col-sm-2 " style="background-color:#006266;height: 40px;"></div>
-	<div class="col-sm-8 " style="background-color:#006266;color: white; height: 40px; ">Back</div>
-	<div  class="col-sm-2 " style="margin-left: -15px;height: 40px;background-color:#006266;" >&nbsp;  </div>
-</div>
 
-<div class="row">
-	<div class="wrapper col-sm-12">
-        <header class="main-header {% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
+<header class="{% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
+	<div class="row">
+
+		<div class="col back-link">
+			<a href="/snapshot/testResults/summary/{{ session.id }}"> << Summary</a>
+		</div>
+		<div class="col main-header">
             <a href="https://github.com/bhecquet/seleniumRobot">SeleniumRobot</a><br/>
-        </header>
-    </div>
-</div>
+		</div>
+		<div class="col"></div>
+
+	</div>
+</header>
 
 <div id="testResultDetails">
 	<!-- Modal for displaying pictures -->

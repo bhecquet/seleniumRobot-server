@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models import Q
 
+from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.picture_comparator import Rectangle
 import pickle
 import commonsServer.models
@@ -470,4 +471,39 @@ class Error(models.Model):
     
     def __str__(self):
         return f'Error {self.errorMessage} in {self.action}'
+
+
+    def friendly_message(self):
+        if self.cause == Cause.APPLICATION:
+            if self.causedBy == Reason.STEP_ASSERTION_ERROR:
+                return "Assertion on step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            elif self.causedBy == Reason.SCENARIO_ASSERTION_ERROR:
+                return "Assertion in script: %s" % self.causeDetails
+            elif self.causedBy == Reason.ERROR_MESSAGE:
+                return "Application displays error message: '%s'" % self.causeDetails
+            elif self.causedBy == Reason.UNKNOWN_PAGE:
+                return "Page where we land is unknown (not expected nor the previous page), check if application has changed"
+            elif self.causedBy == Reason.JAVASCRIPT_ERROR:
+                return "Javascript error occurred, it may have cause the application to break, check detailed results"
+            elif self.causedBy == Reason.NETWORK_ERROR:
+                return "Network error during failed step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            else:
+                return "Application error with '%s' and '%s'" % (self.causedBy, self.causeDetails)
+        elif self.cause == Cause.ENVIRONMENT:
+            if self.causedBy == Reason.NETWORK_SLOWNESS:
+                return "Network slowness during failed step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            else:
+                return "Environment error with '%s' and '%s'" % (self.causedBy, self.causeDetails)
+        elif self.cause == Cause.SCRIPT:
+            if self.causedBy == Reason.BAD_LOCATOR:
+                return "Element not found, but element seems to be present on page, check the locator"
+            elif self.causedBy == Reason.UNKNOWN:
+                return "No clear cause has been found, check script"
+            else:
+                return "Script error with '%s'" % self.causedBy
+        else:
+            return "%s - %s" % (self.cause, self.causedBy)
+
+
+
     

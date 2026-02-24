@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import timedelta
 from unittest import mock
@@ -1095,6 +1096,43 @@ class TestViewsetStepResult(TestApi):
                 self.assertEqual(0, len(Error.objects.all()))
                 time.sleep(1)
                 error_cause_finder_instance.detect_cause.assert_called()
+
+
+
+    def test_stepresult_analyze_test_run_result_ko_on_update_with_threads(self):
+        """
+        Check threading is used when submitting multiple requests
+        """
+
+        def delay_execution():
+            time.sleep(2)
+            print("computing ...")
+            return ErrorCause("script", "unknown", None, [])
+
+        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            error_cause_finder_instance = mock.MagicMock()
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+            error_cause_finder_instance.detect_cause.side_effect = delay_execution
+
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True, OPEN_WEBUI_WORKERS=1):
+                self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
+
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5), result=False, stacktrace="")
+                test_end_step_result.save()
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/' , data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                time.sleep(1)
+
+                # check tasks has been processed
+                self.assertEqual(1, error_cause_finder_instance.detect_cause.call_count)
+                time.sleep(4)
+                self.assertEqual(2, error_cause_finder_instance.detect_cause.call_count)
 
     def test_stepresult_analyze_test_run_result_ko_on_update_with_error(self):
         """

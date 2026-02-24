@@ -4,11 +4,11 @@ django-filter==2.4.0
 djangorestframework==3.12.4
 numpy==1.24.4
 opencv-python==4.11.0.86
-Pillow==8.3.2
+Pillow==9.5.0
 pytz==2025.1
 unittest-xml-reporting==3.0.2
 coverage==5.1
-pkg/python_ldap-3.4.0-cp39-cp39-win_amd64.whl; platform_system == 'Windows'
+pkg/python_ldap-3.4.5-cp311-cp311-win_amd64.whl; platform_system == 'Windows'
 django_auth_ldap==2.4.0
 mozilla-django-oidc==1.2.4
 health-check==3.4.1
