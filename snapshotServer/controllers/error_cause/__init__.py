@@ -6,8 +6,6 @@ AnalysisDetails = namedtuple('AnalysisDetails', [
     'details',
     'analysis_error'])
 
-
-
 class Cause(StrEnum):
     SCRIPT = auto()
     APPLICATION = auto()
@@ -28,6 +26,7 @@ class Reason(StrEnum):
 
     # script
     BAD_LOCATOR = auto()
+    SCENARIO_ERROR = auto()
 
     UNKNOWN = auto()
 

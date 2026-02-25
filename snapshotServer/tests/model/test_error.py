@@ -59,7 +59,7 @@ class TestError(SnapshotTestCase):
         self._test_friendly_message(Cause.APPLICATION,
                                     Reason.UNKNOWN,
                                     'some details on error',
-                                    "Application error with 'unknown_error' and 'some details on error'")
+                                    "Application error with 'unknown' and 'some details on error'")
 
     def test_friendly_message_element_not_found(self):
         self._test_friendly_message(Cause.SCRIPT,
@@ -90,12 +90,12 @@ class TestError(SnapshotTestCase):
         self._test_friendly_message(Cause.ENVIRONMENT,
                                     Reason.UNKNOWN,
                                     'some details on error',
-                                    "Environment error with 'other_error' and 'some details on error'")
+                                    "Environment error with 'unknown' and 'some details on error'")
 
 
     def test_friendly_message_unknown(self):
         self._test_friendly_message(Cause.UNKNOWN,
                                     Reason.UNKNOWN,
                                     'some details on error',
-                                    "other - other_cause")
+                                    "unknown - unknown")
 
