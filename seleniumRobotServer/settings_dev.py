@@ -9,6 +9,11 @@ https://docs.djangoproject.com/en/1.10/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
+
+#
+# FILE USED BY UNIT TESTS
+#
+
 # Login/ mdp: admin / adminServer
 import ldap
 from django_auth_ldap.config import LDAPSearch

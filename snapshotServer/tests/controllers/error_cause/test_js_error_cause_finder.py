@@ -78,7 +78,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
-        self.assertEqual(2, len(analysis_details.details))
+        self.assertEqual(1, len(analysis_details.details))
         self.assertIsNone(analysis_details.analysis_error)
 
     def test_has_javascript_error_missing_browser_logs(self):

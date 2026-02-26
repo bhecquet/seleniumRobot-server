@@ -6,8 +6,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
-from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder, ErrorCauseFinderThread, \
-    ErrorCauseFinderExecutor
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinderExecutor
 from snapshotServer.models import StepResult, TestCaseInSession, Error, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
 

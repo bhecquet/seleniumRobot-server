@@ -97,7 +97,7 @@ class ImageErrorCauseFinder:
     def is_error_message_displayed_in_last_step(self) -> AnalysisDetails:
         """
         Check whether an error message is displayed in the page
-        :return: the error messages or empty list if no error message has been detected
+        :return: the error messages or empty string if no error message has been detected
                     whether there was error in analysis, or None if analysis was successful
         """
 
@@ -111,7 +111,7 @@ class ImageErrorCauseFinder:
                 analysis_errors = []
 
                 if not step_result_details['snapshots']:
-                    return AnalysisDetails(error_messages, "No snapshot to analyze")
+                    return AnalysisDetails("", "No snapshot to analyze")
 
                 for snapshot in step_result_details['snapshots']:
                     if snapshot.get('idImage', 0):
@@ -126,9 +126,9 @@ class ImageErrorCauseFinder:
                 return AnalysisDetails('\n'.join(error_messages), '\n'.join(analysis_errors) if analysis_errors else None)
 
             except Exception as e:
-                return AnalysisDetails([], f"Error reading file for analysis: {str(e)}")
+                return AnalysisDetails("", f"Error reading file for analysis: {str(e)}")
 
-        return AnalysisDetails([], f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
+        return AnalysisDetails("", f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
 
     def is_error_message_displayed(self, image_path: str) -> AnalysisDetails:
         """

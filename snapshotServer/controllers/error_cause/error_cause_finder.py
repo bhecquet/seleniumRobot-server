@@ -1,5 +1,4 @@
 import logging
-import threading
 from django.conf import settings
 from django.db import close_old_connections
 from concurrent.futures.thread import ThreadPoolExecutor
@@ -46,42 +45,6 @@ class ErrorCauseFinderExecutor:
 
         try:
             error_cause = error_cause_finder.detect_cause()
-            if error_cause:
-                for error in errors:
-                    error.cause = error_cause.cause
-                    error.causedBy = error_cause.why
-                    error.causeDetails = error_cause.information if error_cause.information else ""
-                    error.causeAnalysisErrors = '\n'.join(error_cause.analysis_errors)
-                    error.save()
-        except Exception as e:
-            for error in errors:
-                error.cause = "unknown"
-                error.causedBy = "analysis_error"
-                error.causeAnalysisErrors = f"Error detecting cause: {str(e)}"
-                error.save()
-
-
-class ErrorCauseFinderThread(threading.Thread):
-
-    def __init__(self, test_case_in_session):
-        """
-        Init computer thread
-        :param test_case_in_session     the test case in session
-        """
-        super().__init__()
-        self.test_case_in_session = test_case_in_session
-        self.error_cause_finder = ErrorCauseFinder(self.test_case_in_session)
-
-    def run(self):
-
-        errors = sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=self.test_case_in_session, result=False).order_by('-pk')], [])
-
-        for error in errors:
-            error.cause = "analyzing ..."
-            error.save()
-
-        try:
-            error_cause = self.error_cause_finder.detect_cause()
             if error_cause:
                 for error in errors:
                     error.cause = error_cause.cause

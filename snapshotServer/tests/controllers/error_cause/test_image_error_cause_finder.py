@@ -1,8 +1,11 @@
 import json
+import logging
 import os
 from typing import Optional
 from unittest.mock import patch
 from django.test import TestCase, override_settings
+from django.conf import settings
+from openwebui_chat_client import OpenWebUIClient
 
 from snapshotServer.controllers.error_cause.image_error_cause_finder import ImageErrorCauseFinder
 from snapshotServer.controllers.llm_connector import ChatJsonResponse
@@ -64,46 +67,59 @@ class TestImageErrorCauseFinder(TestCase):
       }
     }'''
     fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
-    
+
+
+
     def test_analyze_image_with_error_message(self):
         """
         Test to be executed with a real OpenWebUI instance
         """
-        error_cause_finder = ImageErrorCauseFinder(None)
-        error_displayed, error_messages, analysis_error = error_cause_finder.is_error_message_displayed('snapshotServer/tests/data/image_with_error_message_small1.png')
-        self.assertTrue(error_displayed)
-        self.assertEqual('Nom d’utilisateur ou mot de passe incorrect', error_messages[0])
-        self.assertIsNone(analysis_error)
+        if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
+            error_cause_finder = ImageErrorCauseFinder(None)
+            analysis_details = error_cause_finder.is_error_message_displayed('snapshotServer/tests/data/image_with_error_message_small1.png')
+            self.assertEqual('Nom d’utilisateur ou mot de passe incorrect', analysis_details.details[0])
+            self.assertIsNone(analysis_details.analysis_error)
+        else:
+            logging.warn("No real instance available")
     
     
     def test_compare_image_with_an_other_similar_image(self):
         """
         Test to be executed with a real OpenWebUI instance
         """
-        error_cause_finder = ImageErrorCauseFinder(None)
-        same_page, analysis_error = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/image_without_error_message.png')
-        self.assertTrue(same_page)
-        self.assertIsNone(analysis_error)
+        if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
+            error_cause_finder = ImageErrorCauseFinder(None)
+            analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/image_without_error_message.png')
+            self.assertTrue(analysis_details.details)
+            self.assertIsNone(analysis_details.analysis_error)
+        else:
+            logging.warn("No real instance available")
     
     def test_compare_image_with_an_other_different_image(self):
         """
         Test to be executed with a real OpenWebUI instance
         """
-        error_cause_finder = ImageErrorCauseFinder(None)
-        element_present, analysis_error = error_cause_finder.is_element_present('snapshotServer/tests/data/order_page.jpg', "radio button with label 'destinataire'")
-        self.assertTrue(element_present)
-        self.assertIsNone(analysis_error)
+        if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
+            error_cause_finder = ImageErrorCauseFinder(None)
+            analysis_details = error_cause_finder.is_element_present('snapshotServer/tests/data/order_page.jpg', "radio button with label 'destinataire'")
+            self.assertTrue(analysis_details.details)
+            self.assertIsNone(analysis_details.analysis_error)
+        else:
+            logging.warn("No real instance available")
 
     def test_check_element_present_on_page(self):
         """
         Test to be executed with a real OpenWebUI instance
         """
-        error_cause_finder = ImageErrorCauseFinder(None)
-        same_page, analysis_error = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/Ibis_Mulhouse.png')
-        self.assertFalse(same_page)
-        self.assertIsNone(analysis_error)
+        if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
+            error_cause_finder = ImageErrorCauseFinder(None)
+            analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/Ibis_Mulhouse.png')
+            self.assertFalse(analysis_details.details)
+            self.assertIsNone(analysis_details.analysis_error)
+        else:
+            logging.warn("No real instance available")
     
-    def _analyze_image(self, reply: object, expected_error_message: str, expected_analysis_error: Optional[str], open_webui_called: bool):
+    def _analyze_image(self, reply: object, expected_error_message: list, expected_analysis_error: Optional[str], open_webui_called: bool):
         with patch('requests.post') as mock_request:
             mock_request.side_effect = reply
             error_cause_finder = ImageErrorCauseFinder(None)
@@ -125,7 +141,7 @@ class TestImageErrorCauseFinder(TestCase):
         Test standard case where error message is discovered
         """
         self._analyze_image([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                            "Bad user name",
+                            ["Bad user name"],
                             None,
                             True)
     
@@ -135,7 +151,7 @@ class TestImageErrorCauseFinder(TestCase):
         Test when HTTP error is returned
         """
         self._analyze_image([Response(500, "KO")],
-                            "",
+                            [],
                             "No response from Open WebUI:Error chating with Open WebUI: KO",
                             True)
     
@@ -147,7 +163,7 @@ class TestImageErrorCauseFinder(TestCase):
         :return:
         """
         self._analyze_image([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n\\n  ]\\n}\\n```")],
-                            "",
+                            [],
                             None,
                             True)
     
@@ -161,7 +177,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(None)
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_error_message_displayed('snapshotServer/tests/data/invalid_file.png')
-            self.assertEqual("", analysis_details.details)
+            self.assertEqual([], analysis_details.details)
             self.assertEqual("File snapshotServer/tests/data/invalid_file.png does not exist", analysis_details.analysis_error)
     
             mock_request.assert_not_called()
@@ -173,7 +189,7 @@ class TestImageErrorCauseFinder(TestCase):
         Invalid JSON returned by LLM
         """
         self._analyze_image([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": \\n}\\n```")],
-                            "",
+                            [],
                             "Invalid JSON returned by model",
                             True)
     
@@ -183,7 +199,7 @@ class TestImageErrorCauseFinder(TestCase):
         'error_messages field is not present is reply'
         """
         self._analyze_image([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_message\\\": [\\n\\n  ]\\n}\\n```")],
-                            "",
+                            [],
                             "no 'error_messages' key present in JSON",
                             True)
     
@@ -193,7 +209,7 @@ class TestImageErrorCauseFinder(TestCase):
         'error_messages' field returns a string, not a list
         """
         self._analyze_image([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": \\\"an error message\\\"\\n}\\n```")],
-                            "an error message",
+                            ["an error message"],
                             None,
                             True)
     
@@ -203,11 +219,11 @@ class TestImageErrorCauseFinder(TestCase):
         Check that if error occurs during LLM query, this error is returned in analysis_error
         """
         self._analyze_image([Exception('OpenWebUI error')],
-                            "",
+                            [],
                             "No response from Open WebUI:Error chating with Open WebUI: OpenWebUI error",
                             True)
     
-    def _is_error_message_displayed(self, reply: object, expected_error_messages: list, expected_analysis_error: Optional[str]):
+    def _is_error_message_displayed(self, reply: object, expected_error_messages: str, expected_analysis_error: Optional[str]):
         with patch('requests.post') as mock_request:
             mock_request.side_effect = reply
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
@@ -219,7 +235,7 @@ class TestImageErrorCauseFinder(TestCase):
     @override_settings(OPEN_WEBUI_URL='')
     def test_is_error_message_displayed_mocked(self):
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         ["Bad user name"],
+                                         "Bad user name",
                                          None
                                          )
     
@@ -231,7 +247,7 @@ class TestImageErrorCauseFinder(TestCase):
         test_end_step_result.testCase = TestCaseInSession.objects.get(pk=1)
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         [],
+                                         "",
                                          "No 'Test end' step to analyze"
                                          )
     
@@ -246,7 +262,7 @@ class TestImageErrorCauseFinder(TestCase):
         test_end_step_result.stacktrace = ""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         [],
+                                         "",
                                          "Error reading file for analysis: Expecting value: line 1 column 1 (char 0)"
                                          )
     
@@ -286,7 +302,7 @@ class TestImageErrorCauseFinder(TestCase):
                 }"""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         [],
+                                         "",
                                          "Error reading file for analysis: 'snapshots'"
                                          )
     
@@ -328,7 +344,7 @@ class TestImageErrorCauseFinder(TestCase):
                 }"""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         [],
+                                         "",
                                          "No snapshot to analyze"
                                          )
     
