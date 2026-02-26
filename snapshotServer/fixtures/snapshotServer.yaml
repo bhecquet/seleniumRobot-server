@@ -288,6 +288,7 @@
         duration: 10
         stacktrace: >
             {
+                "action": "Login",
                 "date": "Wed Oct 25 14:53:58 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -364,6 +365,7 @@
         duration: 11
         stacktrace: >
              {
+                "action": "Login",
                 "date": "Wed Oct 25 14:53:58 CEST 2023",
                 "failed": false,
                 "type": "step",

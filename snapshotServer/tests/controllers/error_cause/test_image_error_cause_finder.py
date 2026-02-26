@@ -72,7 +72,7 @@ class TestImageErrorCauseFinder(TestCase):
         error_cause_finder = ImageErrorCauseFinder(None)
         error_displayed, error_messages, analysis_error = error_cause_finder.is_error_message_displayed('snapshotServer/tests/data/image_with_error_message_small1.png')
         self.assertTrue(error_displayed)
-        self.assertEquals('Nom d’utilisateur ou mot de passe incorrect', error_messages[0])
+        self.assertEqual('Nom d’utilisateur ou mot de passe incorrect', error_messages[0])
         self.assertIsNone(analysis_error)
     
     
@@ -203,7 +203,7 @@ class TestImageErrorCauseFinder(TestCase):
         Check that if error occurs during LLM query, this error is returned in analysis_error
         """
         self._analyze_image([Exception('OpenWebUI error')],
-                            [],
+                            "",
                             "No response from Open WebUI:Error chating with Open WebUI: OpenWebUI error",
                             True)
     
@@ -219,7 +219,7 @@ class TestImageErrorCauseFinder(TestCase):
     @override_settings(OPEN_WEBUI_URL='')
     def test_is_error_message_displayed_mocked(self):
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         "Bad user name",
+                                         ["Bad user name"],
                                          None
                                          )
     
@@ -231,7 +231,7 @@ class TestImageErrorCauseFinder(TestCase):
         test_end_step_result.testCase = TestCaseInSession.objects.get(pk=1)
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         "",
+                                         [],
                                          "No 'Test end' step to analyze"
                                          )
     
@@ -246,7 +246,7 @@ class TestImageErrorCauseFinder(TestCase):
         test_end_step_result.stacktrace = ""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         "",
+                                         [],
                                          "Error reading file for analysis: Expecting value: line 1 column 1 (char 0)"
                                          )
     
@@ -286,7 +286,7 @@ class TestImageErrorCauseFinder(TestCase):
                 }"""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         "",
+                                         [],
                                          "Error reading file for analysis: 'snapshots'"
                                          )
     
@@ -328,7 +328,7 @@ class TestImageErrorCauseFinder(TestCase):
                 }"""
         test_end_step_result.save()
         self._is_error_message_displayed([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")],
-                                         "",
+                                         [],
                                          "No snapshot to analyze"
                                          )
     

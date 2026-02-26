@@ -1,8 +1,8 @@
-
-import json
+import time
 from unittest.mock import patch
 
-from django.conf import settings
+from django.contrib.auth.models import Permission
+from django.db.models import Q
 from django.test import TestCase, override_settings
 
 from snapshotServer.controllers.error_cause import AnalysisDetails, Cause, Reason
@@ -12,7 +12,12 @@ from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause
 from snapshotServer.controllers.error_cause.image_error_cause_finder import ImageErrorCauseFinder
 from snapshotServer.controllers.error_cause.js_error_cause_finder import JsErrorCauseFinder
 from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder
-from snapshotServer.models import TestCaseInSession
+from snapshotServer.models import TestCaseInSession, Error, StepResult
+from snapshotServer.tests.controllers.error_cause.test_image_error_cause_finder import Response, MockedOpenWebUiClient, \
+    TestImageErrorCauseFinder
+
+from commonsServer.tests.test_api import TestApi
+from variableServer.models import Application
 
 
 class FakeExceptionErrorCauseFinder(ExceptionErrorCauseFinder):
@@ -40,12 +45,12 @@ class FakeNetworkErrorCauseFinder(NetworkErrorCauseFinder):
     def has_network_slowness(self) -> AnalysisDetails:
         return AnalysisDetails([], None)
 
-
-class TestErrorCauseFinder(TestCase):
+class TestErrorCauseFinder(TestApi):
 
     fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
 
     def setUp(self):
+        Application.objects.get(pk=1).save()
         self.error_cause_finder = ErrorCauseFinder(TestCaseInSession.objects.get(pk=11), FakeJsErrorCauseFinder(), FakeImageErrorCauseFinder(), FakeExceptionErrorCauseFinder(), FakeNetworkErrorCauseFinder())
 
     @override_settings(OPEN_WEBUI_URL='')
@@ -274,3 +279,266 @@ class TestErrorCauseFinder(TestCase):
             self.assertEqual(Reason.UNKNOWN, error_cause.why)
             self.assertIsNone(error_cause.information)
             self.assertEqual(["some error", "some error2"], error_cause.analysis_errors)
+
+
+    @override_settings(OPEN_WEBUI_URL='', RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True)
+    def test_stepresult_analyze_test_run_result_ko_on_update_full_process(self):
+        """
+        When error in step, error cause detection is performed
+        This test will go deep, using LLM mock
+        """
+
+        failed_test_end_stacktrace = """
+    {
+                "exception": "class java.lang.AssertionError",
+                "date": "Wed Oct 25 18:06:14 CEST 2023",
+                "failed": true,
+                "type": "step",
+                "duration": 277,
+                "snapshots": [
+                    {
+                        "idHtml": 110,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 111,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174417
+                    }
+                ],
+                "videoTimeStamp": 10519,
+                "name": "Test end",
+                "files": [
+                    {
+                        "name": "Video capture",
+                        "id": 112,
+                        "type": "file"
+                    },
+                    {
+                        "name": "Browser log file",
+                        "id": 113,
+                        "type": "file"
+                    }
+                ],
+                "position": 3,
+                "actions": [
+                    {
+                        "messageType": "LOG",
+                        "name": "Test is KO with error: class java.lang.AssertionError: expected [false] but <> found [true]",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "WARNING",
+                        "name": "[NOT RETRYING] max retry count (0) reached",
+                        "type": "message"
+                    }
+                ],
+                "exceptionMessage": "class java.lang.AssertionError: expected [false] but <_> found [true]",
+                "timestamp": 1698257174038,
+                "status": "FAILED",
+                "harCaptures": [
+                    {
+                        "name": "main",
+                        "id": 113,
+                        "type": "networkCapture"
+                    }
+                ]
+            }
+    """
+
+
+        test_case_in_session = TestCaseInSession.objects.get(pk=11)
+        image_error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
+        image_error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
+
+        error_cause_finder_instance = ErrorCauseFinder(test_case_in_session=test_case_in_session, image_error_cause_finder=image_error_cause_finder)
+
+        with patch('requests.post') as mock_request, patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+            mock_request.side_effect = [Response(200, TestImageErrorCauseFinder.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")]
+
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            response = self.client.patch('/snapshot/api/stepresult/14/' , data={'stacktrace': failed_test_end_stacktrace})
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(1, len(Error.objects.all()))
+            time.sleep(1)
+            error = Error.objects.all()[0]
+            self.assertEqual("application", error.cause)
+            self.assertEqual('step_assertion_error', error.causedBy)
+            self.assertEqual('java.lang.AssertionError: expected [false] but <_> found [true]', error.causeDetails)
+
+
+    @override_settings(OPEN_WEBUI_URL='', RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True)
+    def test_stepresult_analyze_test_run_result_ko_on_update_full_process2(self):
+        """
+        When error in step, error cause detection is performed
+        This test will go deep, using LLM mock
+        """
+
+        failed_step_stacktrace = """{
+                "exception": "org.openqa.selenium.NoSuchElementException",
+                "date": "Wed Oct 25 18:06:07 CEST 2023",
+                "failed": true,
+                "type": "step",
+                "duration": 5539,
+                "snapshots": [
+                    {
+                        "idHtml": 106,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 107,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174035
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Step beginning state",
+                        "idImage": 108,
+                        "failed": false,
+                        "position": 1,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE_REFERENCE",
+                        "timestamp": 1698257175623
+                    },
+                    {
+                        "idHtml": null,
+                        "displayInReport": true,
+                        "name": "Valid-reference",
+                        "idImage": 109,
+                        "failed": false,
+                        "position": 2,
+                        "type": "snapshot",
+                        "snapshotCheckType": "NONE",
+                        "timestamp": 1698257180743
+                    }
+                ],
+                "videoTimeStamp": 4350,
+                "name": "getErrorMessage<> ",
+                "action": "getErrorMessage<>",
+                "files": [],
+                "position": 2,
+                "actions": [
+                    {
+                        "exception": "org.openqa.selenium.NoSuchElementException",
+                        "durationToExclude": 0,
+                        "origin": "pic.jenkins.tests.selenium.webpage.LoginPage",
+                        "failed": true,
+                        "type": "action",
+                        "name": "sendKeys on TextFieldElement user, by={By.id: j_username} with args: (true, true, [foo,], )",
+                        "action": "sendKeys",
+                        "position": 0,
+                        "elementDescription": "text field described by 'user'",
+                        "elementType": "text field",
+                        "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement user, by={By.id: j_username}] from page 'pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+                        "timestamp": 1771506843252,
+                        "element": "user"
+                    },
+                    {
+                        "messageType": "WARNING",
+                        "name": "Warning: Searched element [TextFieldElement user, by={By.id: j_username}] from page 'pic.jenkins.tests.selenium.webpage.LoginPage' could not be found\\nFor documentation on this error, please visit: https://www.selenium.dev/documentation/webdriver/troubleshooting/errors#nosuchelementexception\\nBuild info: version: '4.38.0', revision: '6b412e825c*'\\nSystem info: os.name: 'Windows 11', os.arch: 'amd64', os.version: '10.0', java.version: '21.0.4'\\nDriver info: driver.version: unknown\\nat covea.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid_aroundBody6(LoginPage.java:42)\\nat covea.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid_aroundBody8(LoginPage.java:40)\\nat covea.pic.jenkins.tests.selenium.webpage.LoginPage._loginInvalid(LoginPage.java:40)",
+                        "type": "message"
+                    }
+                ],
+                "timestamp": 1698257167869,
+                "status": "FAILED",
+                "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement user, by={By.id: j_username}] from page 'pic.jenkins.tests.selenium.webpage.LoginPage' could not be found",
+                "harCaptures": []
+            }
+        """
+
+        failed_test_end_stacktrace = """
+    {
+                "exception": "class org.openqa.selenium.NoSuchElementException",
+                "date": "Wed Oct 25 18:06:14 CEST 2023",
+                "failed": true,
+                "type": "step",
+                "duration": 277,
+                "snapshots": [
+                    {
+                        "idHtml": 110,
+                        "displayInReport": true,
+                        "name": "drv:main",
+                        "idImage": 111,
+                        "failed": false,
+                        "position": 0,
+                        "type": "snapshot",
+                        "title": "Current Window: S'identifier [Jenkins]",
+                        "snapshotCheckType": "NONE",
+                        "url": "https://jenkins/jenkins/loginError",
+                        "timestamp": 1698257174417
+                    }
+                ],
+                "videoTimeStamp": 10519,
+                "name": "Test end",
+                "action": "Test end",
+                "files": [
+                    {
+                        "name": "Video capture",
+                        "id": 112,
+                        "type": "file"
+                    },
+                    {
+                        "name": "Browser log file",
+                        "id": 113,
+                        "type": "file"
+                    }
+                ],
+                "position": 3,
+                "actions": [
+                    {
+                        "messageType": "LOG",
+                        "name": "Test is KO with error: class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement Text, by={By.id: text___}] from page 'com.seleniumtests.it.driver.support.pages.DriverTestPage' could not be found",
+                        "type": "message"
+                    },
+                    {
+                        "messageType": "WARNING",
+                        "name": "[NOT RETRYING] max retry count (0) reached",
+                        "type": "message"
+                    }
+                ],
+                "exceptionMessage": "class org.openqa.selenium.NoSuchElementException: Searched element [TextFieldElement Text, by={By.id: text___}] from page 'com.seleniumtests.it.driver.support.pages.DriverTestPage' could not be found",
+                "timestamp": 1698257174038,
+                "status": "FAILED",
+                "harCaptures": [
+                    {
+                        "name": "main",
+                        "id": 113,
+                        "type": "networkCapture"
+                    }
+                ]
+            }
+    """
+
+        test_case_in_session = TestCaseInSession.objects.get(pk=11)
+        image_error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
+        image_error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
+
+        error_cause_finder_instance = ErrorCauseFinder(test_case_in_session=test_case_in_session, image_error_cause_finder=image_error_cause_finder)
+
+        with (patch('snapshotServer.controllers.llm_connector.requests.post') as mock_request,
+              patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder', autospec=True) as mock_error_cause_finder):
+            mock_request.side_effect = [Response(200, TestImageErrorCauseFinder.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")]
+
+            mock_error_cause_finder.return_value = error_cause_finder_instance
+
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+            self.client.patch('/snapshot/api/stepresult/13/' , data={'stacktrace': failed_step_stacktrace})
+            response = self.client.patch('/snapshot/api/stepresult/14/' , data={'stacktrace': failed_test_end_stacktrace})
+            self.assertEqual(200, response.status_code)
+            self.assertEqual(1, len(Error.objects.all()))
+            time.sleep(1)
+            error = Error.objects.all()[0]
+            self.assertEqual("application", error.cause)
+            self.assertEqual('error_message', error.causedBy)
+            self.assertEqual('Bad user name', error.causeDetails)

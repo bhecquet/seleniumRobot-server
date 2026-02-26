@@ -28,7 +28,7 @@ router.register(r'testinfo', TestInfoSessionViewSet)
 router.register(r'teststep', TestStepViewSet)
 router.register(r'stepresult', StepResultViewSet)
 router.register(r'exclude', ExcludeZoneViewSet)
-# curl -X POST http://localhost:8000/snapshot/api/file/ -F "file=@D:\Dev\seleniumRobot\seleniumRobot-jenkins\covea.pic.jenkins.tests.selenium\jenkins\test-output\loginInvalid\screenshots\login_screen-b7c449.png " -F "stepResult=486"
+# curl -X POST http://localhost:8000/snapshot/api/file/ -F "file=@D:\Dev\seleniumRobot\seleniumRobot-jenkins\jenkins.tests.selenium\jenkins\test-output\loginInvalid\screenshots\login_screen-b7c449.png " -F "stepResult=486"
 router.register(r'file', FileViewSet)
 router.register(r'logs', ExecutionLogsViewSet)
 

@@ -1,4 +1,3 @@
-import logging
 import time
 from datetime import timedelta
 from unittest import mock
@@ -6,7 +5,8 @@ from unittest.mock import patch
 
 from django.utils import timezone
 
-from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause, ErrorCauseFinder
+from snapshotServer.controllers.error_cause import Cause, Reason
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause
 from variableServer.models import Application
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -133,7 +133,7 @@ class TestViewsetStepResult(TestApi):
         Test it's possible to update session with model permissions
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_stepresult', content_type=self.content_type_stepresult)))
-        response = self.client.patch(f'/snapshot/api/stepresult/12345/', data={'name': 'bla2'})
+        response = self.client.patch('/snapshot/api/stepresult/12345/', data={'name': 'bla2'})
         self.assertEqual(404, response.status_code)
 
     def test_stepresult_update_with_application_restriction_and_app1_permission(self):
@@ -875,7 +875,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, "", [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -926,7 +926,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1058,7 +1058,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1081,7 +1081,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1107,7 +1107,7 @@ class TestViewsetStepResult(TestApi):
         def delay_execution():
             time.sleep(2)
             print("computing ...")
-            return ErrorCause("script", "unknown", None, [])
+            return ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])
 
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
@@ -1170,7 +1170,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1209,7 +1209,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, ["info1", "info2"])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, ["info1", "info2"])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1245,7 +1245,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1283,7 +1283,7 @@ class TestViewsetStepResult(TestApi):
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
             error_cause_finder_instance = mock.MagicMock()
             mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause("script", "unknown", None, [])]
+            error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
             with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
@@ -1291,5 +1291,3 @@ class TestViewsetStepResult(TestApi):
                 self.assertEqual(201, response.status_code)
                 time.sleep(1)
                 error_cause_finder_instance.detect_cause.assert_not_called()
-
-
