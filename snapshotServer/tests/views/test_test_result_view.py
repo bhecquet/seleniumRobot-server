@@ -131,16 +131,16 @@ class TestTestResultView(SnapshotTestCase):
             '<tr><th>Last State</th><td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a>'
             '<a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a>' in html)
             ## steps / sub-steps
-            self.assertTrue("""<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">openPage with args: (https://jenkins/jenkins/, )  - 0.7 secs</span><span><i class="fas fa-file-video"></i>0.005 s</span>""" in html) 
+            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 1 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">openPage with args: (https://jenkins/jenkins/, )  - 0.7 secs</span><span><i class="fas fa-file-video"></i>0.005 s</span>""" in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.815</span>Opening page LoginPage""" in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.816</span>setWindowToRequestedSize on on page LoginPage""" in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.816</span>maximizeWindow on on page LoginPage""" in html)
-            self.assertTrue("""<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">loginInvalid with args: (foo, bar, )  - 2.0 secs</span><span><i class="fas fa-file-video"></i>1.171 s</span>""" in html) 
+            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 2 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">loginInvalid with args: (foo, bar, )  - 2.0 secs</span><span><i class="fas fa-file-video"></i>1.171 s</span>""" in html)
             ### sub-step inside step
             self.assertTrue("""<ul><li><div class="message-conf"><span class="stepTimestamp mr-1">14:54:01.41</span>click on ButtonElement check, by={By.name: check}""" in html)
-            self.assertTrue('<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
+            self.assertTrue('<div class="box collapsed-box success"><!-- Step result 3 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
                             '<i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage   - 5.0 secs</span><span><i class="fas fa-file-video"></i>3.508 s</span>' in html) 
-            self.assertTrue("""<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>9.2 s</span>""" in html) 
+            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 4 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>9.2 s</span>""" in html)
             ## pictures on steps
             self.assertTrue('''<a href="#" onclick="$('#imagepreview').attr('src', $('#88').attr('src'));$('#imagemodal').modal('show');"><img id="88" src="/snapshot/api/file/88/download/" style="width: 300px"></a></div></div><div class="text-center">drv:main:Current Window: S&#x27;identifier [Jenkins]</div>'''
                             '<div class="text-center font-weight-lighter"><a href="https://jenkins/login?from=%2Fjenkins%2F" target=url>URL</a>' in html) 
@@ -175,9 +175,9 @@ class TestTestResultView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
     
             # a step in error has the right class
-            self.assertTrue('<div class="box collapsed-box failed"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
+            self.assertTrue('<div class="box collapsed-box failed"><!-- Step result 13 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
                             '<i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage&lt;&gt;   - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>' in html)
-            self.assertTrue('<div class="box collapsed-box failed"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
+            self.assertTrue('<div class="box collapsed-box failed"><!-- Step result 14 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
                             '<i class="fa fa-plus"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>10.519 s</span>' in html)
              
             # error message
@@ -357,7 +357,7 @@ class TestTestResultView(SnapshotTestCase):
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             html = self.remove_spaces(response.rendered_content)
     
-            self.assertTrue("""<div class="box collapsed-box warning"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
+            self.assertTrue("""<div class="box collapsed-box warning"><!-- Step result 15 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
     
     def test_report_with_description(self):
         """

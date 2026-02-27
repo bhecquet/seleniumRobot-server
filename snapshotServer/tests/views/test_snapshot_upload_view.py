@@ -142,13 +142,13 @@ class TestFileUploadView(TestApi):
         Check that with 
         - security enabled
         - permission on requested application
-        We get 404 error
+        We get 403 error
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-                response = self.client.post(reverse('upload', args=['img']), data={'stepResult': 159, 'image': fp, 'name': 'img', 'compare': 'true'})
+                response = self.client.post(reverse('upload', args=['img']), data={'stepResult': 15900, 'image': fp, 'name': 'img', 'compare': 'true'})
                 self.assertEqual(response.status_code, 403, 'status code should be 201: ' + str(response.content))
     
     def test_post_snapshot_no_ref(self):

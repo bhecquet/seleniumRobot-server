@@ -2,6 +2,8 @@
 from django.test import TestCase, override_settings
 from django.conf import settings
 
+from django.core.files import File as DjangoFile
+
 from snapshotServer.controllers.error_cause.js_error_cause_finder import JsErrorCauseFinder
 from snapshotServer.models import TestCaseInSession, StepResult, File, TestSession
 
@@ -9,6 +11,11 @@ from snapshotServer.models import TestCaseInSession, StepResult, File, TestSessi
 class TestJsErrorCauseFinder(TestCase):
 
     fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
+
+    def setUp(self):
+        with open(settings.MEDIA_ROOT + "/documents/browser_logs.txt", "w") as logs:
+            logs.write('\n'.join(["[2023-10-25T18:06:07.869Z] [SEVERE] https://jenkins/ - Failed to load resource: the server responded with a status of 403 (Forbidden)",
+                                  "[2023-10-25T18:06:07.969Z] [SEVERE] https://jenkins/ - Failed to load resource: the server responded with a status of 403 (Forbidden)"]))
 
     def test_analyze_javascript_logs_for_chrome(self):
 
@@ -82,9 +89,15 @@ class TestJsErrorCauseFinder(TestCase):
         self.assertIsNone(analysis_details.analysis_error)
 
     def test_has_javascript_error_missing_browser_logs(self):
-        log_file = File.objects.get(pk=113)
-        log_file.file = None
-        log_file.save()
+        with open(settings.MEDIA_ROOT + "/documents/browser_logs2.txt", "w") as logs:
+            logs.write('\n'.join(["[2023-10-25T18:06:06.869Z] [SEVERE] https://jenkins/ - Failed to load resource: the server responded with a status of 403 (Forbidden)"]))
+        with open(settings.MEDIA_ROOT + "/documents/browser_logs2.txt", "r") as logs:
+            log_file = File.objects.get(pk=113)
+            log_file.file = DjangoFile(logs, name="browser_logs2.txt")
+            log_file.save()
+
+            log_file.file = None
+            log_file.save()
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()

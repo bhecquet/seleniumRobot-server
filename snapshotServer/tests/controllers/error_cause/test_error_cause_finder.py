@@ -357,7 +357,7 @@ class TestErrorCauseFinder(TestApi):
 
         error_cause_finder_instance = ErrorCauseFinder(test_case_in_session=test_case_in_session, image_error_cause_finder=image_error_cause_finder)
 
-        with patch('requests.post') as mock_request, patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__', autospec=True) as mock_error_cause_finder:
+        with patch('requests.post') as mock_request, patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder', autospec=True) as mock_error_cause_finder:
             mock_request.side_effect = [Response(200, TestImageErrorCauseFinder.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"error_messages\\\": [\\n    \\\"Bad user name\\\"\\n  ]\\n}\\n```")]
 
             mock_error_cause_finder.return_value = error_cause_finder_instance
