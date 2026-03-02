@@ -5,13 +5,15 @@ from django.contrib.auth.models import Permission
 from django.db.models import Q
 from django.test import TestCase, override_settings
 
-from snapshotServer.controllers.error_cause import AnalysisDetails, Cause, Reason
+from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.error_cause.exception_error_cause_finder import ExceptionErrorCauseFinder, \
     ExceptionAnalysisDetails
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinder
-from snapshotServer.controllers.error_cause.image_error_cause_finder import ImageErrorCauseFinder
-from snapshotServer.controllers.error_cause.js_error_cause_finder import JsErrorCauseFinder
-from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder
+from snapshotServer.controllers.error_cause.image_error_cause_finder import ImageErrorCauseFinder, \
+    SamePageAnalysisDetails, ErrorMessageAnalysisDetails, ElementPresentAnalysisDetails
+from snapshotServer.controllers.error_cause.js_error_cause_finder import JsErrorCauseFinder, JavascriptAnalysisDetails
+from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder, \
+    NetworkAnalysisDetails
 from snapshotServer.models import TestCaseInSession, Error, StepResult
 from snapshotServer.tests.controllers.error_cause.test_image_error_cause_finder import Response, MockedOpenWebUiClient, \
     TestImageErrorCauseFinder
@@ -26,24 +28,24 @@ class FakeExceptionErrorCauseFinder(ExceptionErrorCauseFinder):
         return ExceptionAnalysisDetails(True, 'step', 'search_element', '', None)
 class FakeImageErrorCauseFinder(ImageErrorCauseFinder):
     def __init__(self): pass
-    def is_on_the_right_page(self) -> AnalysisDetails:
-        return AnalysisDetails(True, None)
-    def is_on_the_previous_page(self) -> AnalysisDetails:
-        return AnalysisDetails(True, None)
-    def is_error_message_displayed_in_last_step(self) -> AnalysisDetails:
-        return AnalysisDetails([], None)
-    def is_element_present_on_last_step(self) -> AnalysisDetails:
-        return AnalysisDetails(False, None)
+    def is_on_the_right_page(self) -> SamePageAnalysisDetails:
+        return SamePageAnalysisDetails(True, None)
+    def is_on_the_previous_page(self) -> SamePageAnalysisDetails:
+        return SamePageAnalysisDetails(True, None)
+    def is_error_message_displayed_in_last_step(self) -> ErrorMessageAnalysisDetails:
+        return ErrorMessageAnalysisDetails("", None)
+    def is_element_present_on_last_step(self) -> ElementPresentAnalysisDetails:
+        return ElementPresentAnalysisDetails(False, None)
 class FakeJsErrorCauseFinder(JsErrorCauseFinder):
     def __init__(self): pass
-    def has_javascript_errors(self) -> AnalysisDetails:
-        return AnalysisDetails([], None)
+    def has_javascript_errors(self) -> JavascriptAnalysisDetails:
+        return JavascriptAnalysisDetails([], None)
 class FakeNetworkErrorCauseFinder(NetworkErrorCauseFinder):
     def __init__(self): pass
-    def has_network_errors(self) -> AnalysisDetails:
-        return AnalysisDetails([], None)
-    def has_network_slowness(self) -> AnalysisDetails:
-        return AnalysisDetails([], None)
+    def has_network_errors(self) -> NetworkAnalysisDetails:
+        return NetworkAnalysisDetails([], None)
+    def has_network_slowness(self) -> NetworkAnalysisDetails:
+        return NetworkAnalysisDetails([], None)
 
 class TestErrorCauseFinder(TestApi):
 
@@ -151,81 +153,81 @@ class TestErrorCauseFinder(TestApi):
             self.assertEqual(expected_analysis_error, error_cause.analysis_errors)
 
     def test_detect_cause_on_right_page(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, None)],
+                                           [SamePageAnalysisDetails(True, None)],
+                                           [ElementPresentAnalysisDetails(True, None)],
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.SCRIPT, Reason.BAD_LOCATOR, "Element seems to be present, check the locator", [])
 
     def test_detect_cause_on_right_page_error_element_present(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails(False, "No element provided")],
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, None)],
+                                           [SamePageAnalysisDetails(True, None)],
+                                           [ElementPresentAnalysisDetails(False, "No element provided")],
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.UNKNOWN, Reason.UNKNOWN, None, ['Element presence: No element provided'])
 
     def test_detect_cause_on_right_page_with_analysis_error(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, "some error")],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, "some error")],
+                                           [SamePageAnalysisDetails(True, None)],
+                                           [ElementPresentAnalysisDetails(True, None)],
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.SCRIPT, Reason.BAD_LOCATOR, 'Element seems to be present, check the locator', ["On same page: some error"])
 
     def test_detect_cause_on_previous_page(self):
-        self._test_detect_cause_with_image([AnalysisDetails(False, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails(True, None)], # useless
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(False, None)],
+                                           [SamePageAnalysisDetails(True, None)],
+                                           [ElementPresentAnalysisDetails(True, None)], # useless
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.UNKNOWN, Reason.UNKNOWN, None, [])
 
     def test_detect_cause_on_previous_page_with_analysis_error(self):
-        self._test_detect_cause_with_image([AnalysisDetails(False, None)],
-                                           [AnalysisDetails(True, "some error")],
-                                           [AnalysisDetails(True, None)], # useless
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(False, None)],
+                                           [SamePageAnalysisDetails(True, "some error")],
+                                           [ElementPresentAnalysisDetails(True, None)], # useless
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.APPLICATION, Reason.UNKNOWN_PAGE, 'Page is unknown', ["On previous page: some error"])
 
     def test_detect_cause_on_other_page(self):
-        self._test_detect_cause_with_image([AnalysisDetails(False, None)],
-                                           [AnalysisDetails(False, None)],
-                                           [AnalysisDetails(True, None)], # useless
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(False, None)],
+                                           [SamePageAnalysisDetails(False, None)],
+                                           [ElementPresentAnalysisDetails(True, None)], # useless
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.APPLICATION, Reason.UNKNOWN_PAGE, "Page is unknown", [])
 
     def test_detect_cause_element_not_on_page(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, None)],
-                                           [AnalysisDetails(False, None)],
-                                           [AnalysisDetails(False, None)],
-                                           [AnalysisDetails([], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, None)],
+                                           [SamePageAnalysisDetails(False, None)],
+                                           [ElementPresentAnalysisDetails(False, None)],
+                                           [ErrorMessageAnalysisDetails([], None)],
                                            Cause.UNKNOWN, Reason.UNKNOWN, None, [])
 
     def test_detect_cause_error_message(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, None)],
-                                           [AnalysisDetails(False, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails(["an error message"], None)],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, None)],
+                                           [SamePageAnalysisDetails(False, None)],
+                                           [ElementPresentAnalysisDetails(True, None)],
+                                           [ErrorMessageAnalysisDetails(["an error message"], None)],
                                            Cause.APPLICATION, Reason.ERROR_MESSAGE, ["an error message"], [])
 
     def test_detect_cause_error_message_with_analysis_error(self):
-        self._test_detect_cause_with_image([AnalysisDetails(True, None)],
-                                           [AnalysisDetails(False, None)],
-                                           [AnalysisDetails(True, None)],
-                                           [AnalysisDetails([], "some error")],
+        self._test_detect_cause_with_image([SamePageAnalysisDetails(True, None)],
+                                           [SamePageAnalysisDetails(False, None)],
+                                           [ElementPresentAnalysisDetails(True, None)],
+                                           [ErrorMessageAnalysisDetails([], "some error")],
                                            Cause.SCRIPT, Reason.BAD_LOCATOR, 'Element seems to be present, check the locator', ["Error message: some error"])
 
     def test_detect_cause_js_error(self):
         with patch('snapshotServer.controllers.error_cause.js_error_cause_finder.JsErrorCauseFinder') as mock_js_error_cause_finder:
-            mock_js_error_cause_finder.has_javascript_errors.side_effect = [AnalysisDetails(['log1', 'log2'], None)]
+            mock_js_error_cause_finder.has_javascript_errors.side_effect = [JavascriptAnalysisDetails(['log1', 'log2'], None)]
             self.error_cause_finder.js_error_cause_finder = mock_js_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
             self.assertEqual(Cause.APPLICATION, error_cause.cause)
             self.assertEqual(Reason.JAVASCRIPT_ERROR, error_cause.why)
-            self.assertEqual(['log1', 'log2'], error_cause.information)
+            self.assertEqual('log1\nlog2', error_cause.information)
             self.assertEqual([], error_cause.analysis_errors)
 
     def test_detect_cause_js_error_with_analysis_error(self):
         with patch('snapshotServer.controllers.error_cause.js_error_cause_finder.JsErrorCauseFinder') as mock_js_error_cause_finder:
-            mock_js_error_cause_finder.has_javascript_errors.side_effect = [AnalysisDetails([], 'some error for js')]
+            mock_js_error_cause_finder.has_javascript_errors.side_effect = [JavascriptAnalysisDetails([], 'some error for js')]
             self.error_cause_finder.js_error_cause_finder = mock_js_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
             self.assertEqual(Cause.UNKNOWN, error_cause.cause)
@@ -235,7 +237,7 @@ class TestErrorCauseFinder(TestApi):
 
     def test_detect_cause_network_error(self):
         with patch('snapshotServer.controllers.error_cause.network_error_cause_finder.NetworkErrorCauseFinder') as mock_network_error_cause_finder:
-            mock_network_error_cause_finder.has_network_errors.side_effect = [AnalysisDetails(['error1', 'error2'], None)]
+            mock_network_error_cause_finder.has_network_errors.side_effect = [NetworkAnalysisDetails(['error1', 'error2'], None)]
             self.error_cause_finder.network_error_cause_finder = mock_network_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
             self.assertEqual(Cause.APPLICATION, error_cause.cause)
@@ -246,10 +248,10 @@ class TestErrorCauseFinder(TestApi):
     def test_detect_cause_network_error_previous_page(self):
         with patch('snapshotServer.controllers.error_cause.network_error_cause_finder.NetworkErrorCauseFinder') as mock_network_error_cause_finder, \
             patch('snapshotServer.controllers.error_cause.image_error_cause_finder.ImageErrorCauseFinder') as mock_image_error_cause_finder:
-            mock_network_error_cause_finder.has_network_errors.side_effect = [AnalysisDetails(['error1', 'error2'], None)]
-            mock_image_error_cause_finder.is_on_the_previous_page.side_effect = [AnalysisDetails(True, None)]
-            mock_image_error_cause_finder.is_on_the_right_page.side_effect = [AnalysisDetails(False, None)]
-            mock_image_error_cause_finder.is_error_message_displayed_in_last_step.side_effect = [AnalysisDetails([], None)]
+            mock_network_error_cause_finder.has_network_errors.side_effect = [NetworkAnalysisDetails(['error1', 'error2'], None)]
+            mock_image_error_cause_finder.is_on_the_previous_page.side_effect = [SamePageAnalysisDetails(True, None)]
+            mock_image_error_cause_finder.is_on_the_right_page.side_effect = [SamePageAnalysisDetails(False, None)]
+            mock_image_error_cause_finder.is_error_message_displayed_in_last_step.side_effect = [ErrorMessageAnalysisDetails("", None)]
             self.error_cause_finder.network_error_cause_finder = mock_network_error_cause_finder
             self.error_cause_finder.image_error_cause_finder = mock_image_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
@@ -260,8 +262,8 @@ class TestErrorCauseFinder(TestApi):
 
     def test_detect_cause_network_slowness(self):
         with patch('snapshotServer.controllers.error_cause.network_error_cause_finder.NetworkErrorCauseFinder') as mock_network_error_cause_finder:
-            mock_network_error_cause_finder.has_network_errors.side_effect = [AnalysisDetails([], None)]
-            mock_network_error_cause_finder.has_network_slowness.side_effect = [AnalysisDetails(['slow1', 'slow2'], None)]
+            mock_network_error_cause_finder.has_network_errors.side_effect = [NetworkAnalysisDetails([], None)]
+            mock_network_error_cause_finder.has_network_slowness.side_effect = [NetworkAnalysisDetails(['slow1', 'slow2'], None)]
             self.error_cause_finder.network_error_cause_finder = mock_network_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
             self.assertEqual(Cause.ENVIRONMENT, error_cause.cause)
@@ -271,8 +273,8 @@ class TestErrorCauseFinder(TestApi):
 
     def test_detect_cause_network_error_with_analysis_error(self):
         with patch('snapshotServer.controllers.error_cause.network_error_cause_finder.NetworkErrorCauseFinder') as mock_network_error_cause_finder:
-            mock_network_error_cause_finder.has_network_errors.side_effect = [AnalysisDetails([], "some error")]
-            mock_network_error_cause_finder.has_network_slowness.side_effect = [AnalysisDetails([], "some error2")]
+            mock_network_error_cause_finder.has_network_errors.side_effect = [NetworkAnalysisDetails([], "some error")]
+            mock_network_error_cause_finder.has_network_slowness.side_effect = [NetworkAnalysisDetails([], "some error2")]
             self.error_cause_finder.network_error_cause_finder = mock_network_error_cause_finder
             error_cause = self.error_cause_finder.detect_cause()
             self.assertEqual(Cause.UNKNOWN, error_cause.cause)

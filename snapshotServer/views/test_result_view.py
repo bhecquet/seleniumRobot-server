@@ -87,8 +87,6 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
 
         errors = Error.objects.filter(stepResult__in=StepResult.objects.filter(testCase=current_test))
         for i, error in enumerate(errors):
-            context['infos']['error_' + str(i)] = {"type":"string","info": error.errorMessage}
-            context['infos']['cause_' + str(i)] = {"type":"string","info": error.cause}
             context['infos']['caused details_' + str(i)] = {"type":"string","info": error.friendly_message}
 
 

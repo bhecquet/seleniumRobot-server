@@ -1,9 +1,14 @@
 import json
 from datetime import datetime
+from typing import Optional
 
-from snapshotServer.controllers.error_cause import AnalysisDetails
 from snapshotServer.models import StepResult, TestStep, File
 
+class JavascriptAnalysisDetails:
+
+    def __init__(self, errors: list, analysis_error: Optional[str]):
+        self.errors = errors
+        self.analysis_error = analysis_error
 
 class JsErrorCauseFinder:
 
@@ -11,7 +16,7 @@ class JsErrorCauseFinder:
 
         self.test_case_in_session = test_case_in_session
 
-    def has_javascript_errors(self) -> AnalysisDetails:
+    def has_javascript_errors(self) -> JavascriptAnalysisDetails:
         """
         Returns the list of javascript errors or empty list if none are seen
         Browser logs are recorded to 'Test end' step
@@ -33,13 +38,13 @@ class JsErrorCauseFinder:
                         log_file = File.objects.get(pk=file_info['id'])
                         return self._analyze_javascript_logs(log_file.file.path, failed_step_result_details['timestamp'])
 
-                return AnalysisDetails([], "No browser logs to analyze")
+                return JavascriptAnalysisDetails([], "No browser logs to analyze")
             except Exception as e:
-                return AnalysisDetails([], f"Error reading step details for analysis: {str(e)}")
+                return JavascriptAnalysisDetails([], f"Error reading step details for analysis: {str(e)}")
 
-        return AnalysisDetails([], f"No '{TestStep.LAST_STEP_NAME}' step where logs can be found")
+        return JavascriptAnalysisDetails([], f"No '{TestStep.LAST_STEP_NAME}' step where logs can be found")
 
-    def _analyze_javascript_logs(self, log_file_path: str, failed_step_result_timestamp: int) -> AnalysisDetails:
+    def _analyze_javascript_logs(self, log_file_path: str, failed_step_result_timestamp: int) -> JavascriptAnalysisDetails:
         """
         Analyze log file, looking for logs that happen after the start of the failed step
         Filtering is done only on "SEVERE" messages
@@ -56,11 +61,11 @@ class JsErrorCauseFinder:
                         if log_timestamp > failed_step_result_timestamp and "severe" in line.lower():
                             logs.append(line.strip())
 
-                    return AnalysisDetails(logs, None)
+                    return JavascriptAnalysisDetails(logs, None)
 
             except Exception as e:
-                return AnalysisDetails([], "Error reading log file: " + str(e))
+                return JavascriptAnalysisDetails([], "Error reading log file: " + str(e))
 
 
         else:
-            return AnalysisDetails([], "Only chrome / Edge logs can be analyzed")
+            return JavascriptAnalysisDetails([], "Only chrome / Edge logs can be analyzed")

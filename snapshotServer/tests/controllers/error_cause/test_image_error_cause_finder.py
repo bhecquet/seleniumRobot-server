@@ -90,7 +90,7 @@ class TestImageErrorCauseFinder(TestCase):
         if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
             error_cause_finder = ImageErrorCauseFinder(None)
             analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/image_without_error_message.png')
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertIsNone(analysis_details.analysis_error)
         else:
             logging.warn("No real instance available")
@@ -102,7 +102,7 @@ class TestImageErrorCauseFinder(TestCase):
         if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
             error_cause_finder = ImageErrorCauseFinder(None)
             analysis_details = error_cause_finder.is_element_present('snapshotServer/tests/data/order_page.jpg', "radio button with label 'destinataire'")
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.element_present)
             self.assertIsNone(analysis_details.analysis_error)
         else:
             logging.warn("No real instance available")
@@ -114,7 +114,7 @@ class TestImageErrorCauseFinder(TestCase):
         if settings.OPEN_WEBUI_URL != 'http://localhost:8080':
             error_cause_finder = ImageErrorCauseFinder(None)
             analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message1.png', 'snapshotServer/tests/data/Ibis_Mulhouse.png')
-            self.assertFalse(analysis_details.details)
+            self.assertFalse(analysis_details.same_page)
             self.assertIsNone(analysis_details.analysis_error)
         else:
             logging.warn("No real instance available")
@@ -229,7 +229,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_error_message_displayed_in_last_step()
-            self.assertEqual(expected_error_messages, analysis_details.details)
+            self.assertEqual(expected_error_messages, analysis_details.error_messages)
             self.assertEqual(expected_analysis_error, analysis_details.analysis_error)
     
     @override_settings(OPEN_WEBUI_URL='')
@@ -451,7 +451,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_error_message_displayed_in_last_step()
-            self.assertEqual("Bad user name\nTechnical error", analysis_details.details)
+            self.assertEqual("Bad user name\nTechnical error", analysis_details.error_messages)
             self.assertIsNone(analysis_details.analysis_error)
 
     @override_settings(OPEN_WEBUI_URL='')
@@ -468,7 +468,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_error_message_displayed_in_last_step()
-            self.assertEqual("", analysis_details.details)
+            self.assertEqual("", analysis_details.error_messages)
             self.assertEqual("No image provided", analysis_details.analysis_error)
 
 
@@ -487,7 +487,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_error_message_displayed_in_last_step()
-            self.assertEqual("Bad user name", analysis_details.details)
+            self.assertEqual("Bad user name", analysis_details.error_messages)
             self.assertEqual("No response from Open WebUI:Error chating with Open WebUI: KO", analysis_details.analysis_error)
     
     
@@ -497,7 +497,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(None)
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message_small1.png', 'snapshotServer/tests/data/image_with_error_message_small1.png')
-            self.assertEqual(expected_is_on_same_page, analysis_details.details)
+            self.assertEqual(expected_is_on_same_page, analysis_details.same_page)
             self.assertEqual(expected_analysis_error, analysis_details.analysis_error)
     
     @override_settings(OPEN_WEBUI_URL='')
@@ -564,7 +564,7 @@ class TestImageErrorCauseFinder(TestCase):
         error_cause_finder = ImageErrorCauseFinder(None)
         error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
         analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_not_present.png', 'snapshotServer/tests/data/image_with_error_message_small1.png')
-        self.assertEqual(True, analysis_details.details)
+        self.assertEqual(True, analysis_details.same_page)
         self.assertEqual("Reference file snapshotServer/tests/data/image_not_present.png does not exist", analysis_details.analysis_error)
     
     @override_settings(OPEN_WEBUI_URL='')
@@ -575,7 +575,7 @@ class TestImageErrorCauseFinder(TestCase):
         error_cause_finder = ImageErrorCauseFinder(None)
         error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
         analysis_details = error_cause_finder.is_on_same_page('snapshotServer/tests/data/image_with_error_message_small1.png', 'snapshotServer/tests/data/image_not_present.png')
-        self.assertEqual(True, analysis_details.details)
+        self.assertEqual(True, analysis_details.same_page)
         self.assertEqual("Page to compare file snapshotServer/tests/data/image_not_present.png does not exist", analysis_details.analysis_error)
     
     def _is_step_on_same_page(self, reply: object, expected_details: bool, expected_analysis_error: Optional[str]):
@@ -586,7 +586,7 @@ class TestImageErrorCauseFinder(TestCase):
             analysis_details = error_cause_finder.is_step_on_same_page(
                 StepResult.objects.get(pk=3), # StepResult when test was OK
                 StepResult.objects.get(pk=13)) # StepResult for the currently failed step
-            self.assertEqual(expected_details, analysis_details.details)
+            self.assertEqual(expected_details, analysis_details.same_page)
             self.assertEqual(expected_analysis_error, analysis_details.analysis_error)
     
     @override_settings(OPEN_WEBUI_URL='')
@@ -690,7 +690,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_on_the_right_page()
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertIsNone(analysis_details.analysis_error)
             used_files = mock_llm_connector.chat_and_expect_json_response.call_args[0][1]
             self.assertEqual('test_Image3.png', os.path.basename(used_files[0])) # reference for step 3
@@ -710,7 +710,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_on_the_right_page()
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertEqual("No image to compare", analysis_details.analysis_error)
     
     
@@ -727,7 +727,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_on_the_previous_page()
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertIsNone(analysis_details.analysis_error)
             used_files = mock_llm_connector.chat_and_expect_json_response.call_args[0][1]
             self.assertEqual('test_Image2.png', os.path.basename(used_files[0])) # reference for step 2
@@ -747,7 +747,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_on_the_previous_page()
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertEqual("No image to compare", analysis_details.analysis_error)
     
     @override_settings(OPEN_WEBUI_URL='')
@@ -766,7 +766,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_on_the_previous_page()
-            self.assertTrue(analysis_details.details)
+            self.assertTrue(analysis_details.same_page)
             self.assertEqual("No image to compare from previous step", analysis_details.analysis_error)
 
     def _is_element_present(self, reply: object, expected_element_present: bool, expected_analysis_error: Optional[str]):
@@ -775,7 +775,7 @@ class TestImageErrorCauseFinder(TestCase):
                 error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
                 error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
                 analysis_details = error_cause_finder.is_element_present_on_last_step()
-                self.assertEqual(expected_element_present, analysis_details.details)
+                self.assertEqual(expected_element_present, analysis_details.element_present)
                 self.assertEqual(expected_analysis_error, analysis_details.analysis_error)
 
     def _prepare_error(self, exception: str, element: str):
@@ -920,7 +920,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_element_present_on_last_step()
-            self.assertEqual(True, analysis_details.details)
+            self.assertEqual(True, analysis_details.element_present)
             self.assertIsNone(analysis_details.analysis_error)
 
     @override_settings(OPEN_WEBUI_URL='')
@@ -938,7 +938,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_element_present_on_last_step()
-            self.assertEqual(False, analysis_details.details)
+            self.assertEqual(False, analysis_details.element_present)
             self.assertEqual('No image provided', analysis_details.analysis_error)
 
     @override_settings(OPEN_WEBUI_URL='')
@@ -957,7 +957,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector.open_web_ui_client = MockedOpenWebUiClient()
             analysis_details = error_cause_finder.is_element_present_on_last_step()
-            self.assertEqual(True, analysis_details.details)
+            self.assertEqual(True, analysis_details.element_present)
             self.assertEqual('No response from Open WebUI:Error chating with Open WebUI: KO', analysis_details.analysis_error)
 
 
@@ -967,7 +967,7 @@ class TestImageErrorCauseFinder(TestCase):
            error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
            error_cause_finder.llm_connector = mock_llm_connector
            analysis_details = error_cause_finder.is_element_present('snapshotServer/tests/data/image_with_error_message_small1.png', 'button with text "next"')
-           self.assertEqual(expected_present, analysis_details.details)
+           self.assertEqual(expected_present, analysis_details.element_present)
            self.assertEqual(expected_error, analysis_details.analysis_error)
            used_files = mock_llm_connector.chat_and_expect_json_response.call_args[0][1]
            self.assertEqual('image_with_error_message_small1.png', os.path.basename(used_files[0])) # reference for step 3
@@ -985,7 +985,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_element_present('unknown_file.jpg', 'button with text "next"')
-            self.assertEqual(False, analysis_details.details)
+            self.assertEqual(False, analysis_details.element_present)
             self.assertEqual('File unknown_file.jpg does not exist', analysis_details.analysis_error)
             mock_llm_connector.assert_not_called()
 
@@ -996,7 +996,7 @@ class TestImageErrorCauseFinder(TestCase):
             error_cause_finder = ImageErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
             error_cause_finder.llm_connector = mock_llm_connector
             analysis_details = error_cause_finder.is_element_present('snapshotServer/tests/data/image_with_error_message_small1.png', '')
-            self.assertEqual(False, analysis_details.details)
+            self.assertEqual(False, analysis_details.element_present)
             self.assertEqual('No description for element', analysis_details.analysis_error)
             mock_llm_connector.assert_not_called()
 

@@ -31,9 +31,9 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder._analyze_javascript_logs(settings.MEDIA_ROOT + "/documents/browser_logs2.txt", 1698257167869)
-        self.assertEqual(2, len(analysis_details.details))
-        self.assertEqual("[2023-10-25T18:06:07.870Z] [SEVERE] some error", analysis_details.details[0])
-        self.assertEqual("[2023-10-25T18:06:10.869Z] [SEVERE] some other error", analysis_details.details[1])
+        self.assertEqual(2, len(analysis_details.errors))
+        self.assertEqual("[2023-10-25T18:06:07.870Z] [SEVERE] some error", analysis_details.errors[0])
+        self.assertEqual("[2023-10-25T18:06:10.869Z] [SEVERE] some other error", analysis_details.errors[1])
 
 
     def test_analyze_javascript_logs_missing_file(self):
@@ -44,7 +44,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder._analyze_javascript_logs(settings.MEDIA_ROOT + "/documents/browser__missing_logs.txt", 1698257167869)
-        self.assertEqual(0, len(analysis_details.details))
+        self.assertEqual(0, len(analysis_details.errors))
         self.assertTrue(analysis_details.analysis_error.startswith("Error reading log file: "))
 
     def test_analyze_javascript_logs_for_edge(self):
@@ -61,9 +61,9 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder._analyze_javascript_logs(settings.MEDIA_ROOT + "/documents/browser_logs2.txt", 1698257167869)
-        self.assertEqual(2, len(analysis_details.details))
-        self.assertEqual("[2023-10-25T18:06:07.870Z] [SEVERE] some error", analysis_details.details[0])
-        self.assertEqual("[2023-10-25T18:06:10.869Z] [SEVERE] some other error", analysis_details.details[1])
+        self.assertEqual(2, len(analysis_details.errors))
+        self.assertEqual("[2023-10-25T18:06:07.870Z] [SEVERE] some error", analysis_details.errors[0])
+        self.assertEqual("[2023-10-25T18:06:10.869Z] [SEVERE] some other error", analysis_details.errors[1])
 
     def test_analyze_javascript_logs_for_firefox(self):
 
@@ -75,7 +75,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder._analyze_javascript_logs(settings.MEDIA_ROOT + "/documents/browser_logs2.txt", 1698257167869)
-        self.assertEqual(0, len(analysis_details.details))
+        self.assertEqual(0, len(analysis_details.errors))
         self.assertEqual("Only chrome / Edge logs can be analyzed", analysis_details.analysis_error)
 
     def test_has_javascript_error(self):
@@ -85,7 +85,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
-        self.assertEqual(1, len(analysis_details.details))
+        self.assertEqual(1, len(analysis_details.errors))
         self.assertIsNone(analysis_details.analysis_error)
 
     def test_has_javascript_error_missing_browser_logs(self):
@@ -101,7 +101,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
-        self.assertEqual(0, len(analysis_details.details))
+        self.assertEqual(0, len(analysis_details.errors))
         self.assertEquals("Error reading step details for analysis: The 'file' attribute has no file associated with it.", analysis_details.analysis_error)
 
     def test_has_javascript_error_no_browser_log_file(self):
@@ -133,7 +133,7 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
-        self.assertEqual(0, len(analysis_details.details))
+        self.assertEqual(0, len(analysis_details.errors))
         self.assertEqual("No browser logs to analyze", analysis_details.analysis_error)
 
     def test_has_javascript_error_no_failed_step(self):
@@ -143,5 +143,5 @@ class TestJsErrorCauseFinder(TestCase):
 
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
-        self.assertEqual(0, len(analysis_details.details))
+        self.assertEqual(0, len(analysis_details.errors))
         self.assertEqual("No 'Test end' step where logs can be found", analysis_details.analysis_error)

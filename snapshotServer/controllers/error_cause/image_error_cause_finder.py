@@ -1,11 +1,34 @@
 import json
 import os
+from typing import Optional
 
-from snapshotServer.controllers.error_cause import AnalysisDetails
 from snapshotServer.controllers.llm_connector import LlmConnector
 from snapshotServer.models import TestStep, File, StepResult, StepReference, Error
 from django.conf import settings
+from snapshotServer.controllers.error_cause import AnalysisDetails
 
+class ErrorMessageAnalysisDetails:
+
+    def __init__(self, error_messages: str, analysis_error: Optional[str]):
+        """
+
+        :param error_messages: all error messages separated by '\n'
+        :param analysis_error:
+        """
+        self.error_messages = error_messages
+        self.analysis_error = analysis_error
+
+class SamePageAnalysisDetails:
+
+    def __init__(self, same_page: bool, analysis_error: Optional[str]):
+        self.same_page = same_page
+        self.analysis_error = analysis_error
+
+class ElementPresentAnalysisDetails:
+
+    def __init__(self, element_present: bool, analysis_error: Optional[str]):
+        self.element_present = element_present
+        self.analysis_error = analysis_error
 
 class ImageErrorCauseFinder:
 
@@ -15,7 +38,7 @@ class ImageErrorCauseFinder:
         self.failed_step_result = StepResult.objects.filter(testCase=self.test_case_in_session, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
         self.last_step = StepResult.objects.filter(testCase=self.test_case_in_session, step__name=TestStep.LAST_STEP_NAME)
 
-    def is_on_the_right_page(self) -> AnalysisDetails:
+    def is_on_the_right_page(self) -> SamePageAnalysisDetails:
         """
         Check whether test was on the right page when error occurred
         If no failed step can be found, skip
@@ -25,10 +48,10 @@ class ImageErrorCauseFinder:
         if len(self.failed_step_result) > 0:
             return self.is_step_on_same_page(self.failed_step_result[0], self.failed_step_result[0])
 
-        return AnalysisDetails(True, "No image to compare")
+        return SamePageAnalysisDetails(True, "No image to compare")
 
 
-    def is_on_the_previous_page(self) -> AnalysisDetails:
+    def is_on_the_previous_page(self) -> SamePageAnalysisDetails:
         """
         If we are not on the right page, we may be on the previous page which means that a previous click did not produce the expected action
         :return:
@@ -39,11 +62,11 @@ class ImageErrorCauseFinder:
             if len(previous_step_result) > 0:
                 return self.is_step_on_same_page(previous_step_result[0], self.failed_step_result[0])
             else:
-                return AnalysisDetails(True, "No image to compare from previous step")
+                return SamePageAnalysisDetails(True, "No image to compare from previous step")
 
-        return AnalysisDetails(True, "No image to compare")
+        return SamePageAnalysisDetails(True, "No image to compare")
 
-    def is_step_on_same_page(self, step_for_reference_result: StepResult, failed_step_result: StepResult) -> AnalysisDetails:
+    def is_step_on_same_page(self, step_for_reference_result: StepResult, failed_step_result: StepResult) -> SamePageAnalysisDetails:
         """
         returns the result of comparison between the image the failed step and a reference image that will be taken from a previous step
         :param step_for_reference_result:
@@ -56,7 +79,7 @@ class ImageErrorCauseFinder:
                                                       testStep=step_for_reference_result.step)
 
         if len(step_reference) == 0 or not step_reference[0].image or not os.path.isfile(step_reference[0].image.path):
-            return AnalysisDetails(True, f"No reference image for step '{failed_step_result.step.name}' in test case '{self.test_case_in_session.testCase.name}'")
+            return SamePageAnalysisDetails(True, f"No reference image for step '{failed_step_result.step.name}' in test case '{self.test_case_in_session.testCase.name}'")
 
         try:
             # load details
@@ -66,12 +89,12 @@ class ImageErrorCauseFinder:
                     image_file = File.objects.get(pk=snapshot['idImage'])
                     return self.is_on_same_page(step_reference[0].image.path, image_file.file.path)
 
-            return AnalysisDetails(True, f"No image available for the failed step: {failed_step_result.step.name}")
+            return SamePageAnalysisDetails(True, f"No image available for the failed step: {failed_step_result.step.name}")
 
         except Exception as e:
-            return AnalysisDetails(True, f"Error reading file for analysis: {str(e)}")
+            return SamePageAnalysisDetails(True, f"Error reading file for analysis: {str(e)}")
 
-    def is_on_same_page(self, reference_page: str, page_to_compare: str) -> AnalysisDetails:
+    def is_on_same_page(self, reference_page: str, page_to_compare: str) -> SamePageAnalysisDetails:
         """
         Returns true if 'reference_page' and 'page_to_compare' seem to be the same page
         :param reference_page:  the image file showing the reference page to compare to
@@ -80,21 +103,21 @@ class ImageErrorCauseFinder:
         same_page = True
 
         if not os.path.isfile(reference_page):
-            return AnalysisDetails(same_page, f"Reference file {reference_page} does not exist")
+            return SamePageAnalysisDetails(same_page, f"Reference file {reference_page} does not exist")
         if not os.path.isfile(page_to_compare):
-            return AnalysisDetails(same_page, f"Page to compare file {page_to_compare} does not exist")
+            return SamePageAnalysisDetails(same_page, f"Page to compare file {page_to_compare} does not exist")
 
         chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON, [reference_page, page_to_compare], 50)
 
         if chat_json_response.error:
-            return AnalysisDetails(same_page, chat_json_response.error)
+            return SamePageAnalysisDetails(same_page, chat_json_response.error)
         try:
             similarity = int(chat_json_response.response["similarity"])
-            return AnalysisDetails(similarity > 70, None)
+            return SamePageAnalysisDetails(similarity > 70, None)
         except Exception:
-            return AnalysisDetails(same_page, "no 'similarity' key present in JSON or value is not a number")
+            return SamePageAnalysisDetails(same_page, "no 'similarity' key present in JSON or value is not a number")
 
-    def is_error_message_displayed_in_last_step(self) -> AnalysisDetails:
+    def is_error_message_displayed_in_last_step(self) -> ErrorMessageAnalysisDetails:
         """
         Check whether an error message is displayed in the page
         :return: the error messages or empty string if no error message has been detected
@@ -111,7 +134,7 @@ class ImageErrorCauseFinder:
                 analysis_errors = []
 
                 if not step_result_details['snapshots']:
-                    return AnalysisDetails("", "No snapshot to analyze")
+                    return ErrorMessageAnalysisDetails("", "No snapshot to analyze")
 
                 for snapshot in step_result_details['snapshots']:
                     if snapshot.get('idImage', 0):
@@ -123,12 +146,12 @@ class ImageErrorCauseFinder:
                     else:
                         analysis_errors.append("No image provided")
 
-                return AnalysisDetails('\n'.join(error_messages), '\n'.join(analysis_errors) if analysis_errors else None)
+                return ErrorMessageAnalysisDetails('\n'.join(error_messages), '\n'.join(analysis_errors) if analysis_errors else None)
 
             except Exception as e:
-                return AnalysisDetails("", f"Error reading file for analysis: {str(e)}")
+                return ErrorMessageAnalysisDetails("", f"Error reading file for analysis: {str(e)}")
 
-        return AnalysisDetails("", f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
+        return ErrorMessageAnalysisDetails("", f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
 
     def is_error_message_displayed(self, image_path: str) -> AnalysisDetails:
         """
@@ -154,7 +177,7 @@ class ImageErrorCauseFinder:
             except Exception:
                 return AnalysisDetails(error_messages, "no 'error_messages' key present in JSON")
 
-    def is_element_present_on_last_step(self) -> AnalysisDetails:
+    def is_element_present_on_last_step(self) -> ElementPresentAnalysisDetails:
         """
         If test fails because an element has not been found, then we want to know if the element is present or not
         It may still be present, but with a different locator
@@ -173,7 +196,7 @@ class ImageErrorCauseFinder:
                 analysis_errors = []
 
                 if not step_result_details['snapshots']:
-                    return AnalysisDetails(element_present, "No snapshot to analyze")
+                    return ElementPresentAnalysisDetails(element_present, "No snapshot to analyze")
 
                 for snapshot in step_result_details['snapshots']:
                     if snapshot.get('idImage', 0):
@@ -187,20 +210,20 @@ class ImageErrorCauseFinder:
                                 continue
 
                             analysis_details = self.is_element_present(image_file.file.path, error.element)
-                            element_present = element_present or analysis_details.details
+                            element_present = element_present or analysis_details.element_present
                             if analysis_details.analysis_error:
                                 analysis_errors.append(analysis_details.analysis_error)
                     else:
                         analysis_errors.append("No image provided")
 
-                return AnalysisDetails(element_present, '\n'.join(analysis_errors) if analysis_errors else None)
+                return ElementPresentAnalysisDetails(element_present, '\n'.join(analysis_errors) if analysis_errors else None)
 
             except Exception as e:
-                return AnalysisDetails(element_present, f"Error searching element for analysis: {str(e)}")
+                return ElementPresentAnalysisDetails(element_present, f"Error searching element for analysis: {str(e)}")
 
-        return AnalysisDetails(element_present, f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
+        return ElementPresentAnalysisDetails(element_present, f"No '{TestStep.LAST_STEP_NAME}' step to analyze")
 
-    def is_element_present(self, image_path: str, element_description: str) -> AnalysisDetails:
+    def is_element_present(self, image_path: str, element_description: str) -> ElementPresentAnalysisDetails:
         """
 
         :param image_path:              image to analyse
@@ -210,19 +233,19 @@ class ImageErrorCauseFinder:
         element_present = False
 
         if not os.path.isfile(image_path):
-            return AnalysisDetails(element_present, f"File {image_path} does not exist")
+            return ElementPresentAnalysisDetails(element_present, f"File {image_path} does not exist")
         elif not element_description:
-            return AnalysisDetails(element_present, "No description for element")
+            return ElementPresentAnalysisDetails(element_present, "No description for element")
         else:
             chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_FIND_ELEMENT % element_description, [image_path])
 
             if chat_json_response.error:
-                return AnalysisDetails(element_present, chat_json_response.error)
+                return ElementPresentAnalysisDetails(element_present, chat_json_response.error)
             try:
                 if not isinstance(chat_json_response.response["present"], bool):
                     element_present = bool(chat_json_response.response["present"])
                 else:
                     element_present = chat_json_response.response["present"]
-                return AnalysisDetails(element_present, None)
+                return ElementPresentAnalysisDetails(element_present, None)
             except Exception:
-                return AnalysisDetails(element_present, "no 'present' key present in JSON")
+                return ElementPresentAnalysisDetails(element_present, "no 'present' key present in JSON")

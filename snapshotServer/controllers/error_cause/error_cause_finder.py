@@ -105,21 +105,21 @@ class ErrorCauseFinder:
         if error_messages_analysis_details.analysis_error:
             analysis_errors.append("Error message: " + error_messages_analysis_details.analysis_error)
 
-        if error_messages_analysis_details.details:
-            return ErrorCause(Cause.APPLICATION, Reason.ERROR_MESSAGE, error_messages_analysis_details.details, analysis_errors)
+        if error_messages_analysis_details.error_messages:
+            return ErrorCause(Cause.APPLICATION, Reason.ERROR_MESSAGE, error_messages_analysis_details.error_messages, analysis_errors)
 
         on_right_page_analysis_details = self.image_error_cause_finder.is_on_the_right_page()
         if on_right_page_analysis_details.analysis_error:
             analysis_errors.append("On same page: " + on_right_page_analysis_details.analysis_error)
 
         # in case analysis cannot be done, we assume we are on the right page
-        if on_right_page_analysis_details.details:
+        if on_right_page_analysis_details.same_page:
             element_present_analysis_details = self.image_error_cause_finder.is_element_present_on_last_step()
 
             if element_present_analysis_details.analysis_error:
                 analysis_errors.append("Element presence: " + element_present_analysis_details.analysis_error)
 
-            if element_present_analysis_details.details:
+            if element_present_analysis_details.element_present:
                 return ErrorCause(Cause.SCRIPT, Reason.BAD_LOCATOR, "Element seems to be present, check the locator", analysis_errors)
             else:
                 return self.detect_other_causes(analysis_errors, "On right page: ")
@@ -132,7 +132,7 @@ class ErrorCauseFinder:
                 analysis_errors.append("On previous page: " + on_previous_page_analysis_details.analysis_error)
 
             # why are we on previous page
-            elif on_previous_page_analysis_details.details:
+            elif on_previous_page_analysis_details.same_page:
                 return self.detect_other_causes(analysis_errors, "On previous page: ")
 
             # we are on an unknown page
@@ -144,20 +144,20 @@ class ErrorCauseFinder:
         js_errors_analysis_details = self.js_error_cause_finder.has_javascript_errors()
         if js_errors_analysis_details.analysis_error:
             analysis_errors.append("JS error: " + js_errors_analysis_details.analysis_error)
-        if js_errors_analysis_details.details:
-            return ErrorCause(Cause.APPLICATION, Reason.JAVASCRIPT_ERROR, js_errors_analysis_details.details, analysis_errors)
+        if js_errors_analysis_details.errors:
+            return ErrorCause(Cause.APPLICATION, Reason.JAVASCRIPT_ERROR, '\n'.join(js_errors_analysis_details.errors), analysis_errors)
 
         # Network error in HAR
         network_error_analysis_details = self.network_error_cause_finder.has_network_errors()
         if network_error_analysis_details.analysis_error:
             analysis_errors.append(network_error_analysis_details.analysis_error)
-        elif network_error_analysis_details.details:
+        elif network_error_analysis_details.errors:
             return ErrorCause(Cause.APPLICATION, Reason.NETWORK_ERROR, prefix + "Consult HAR file", analysis_errors)
 
         network_latency_analysis_details = self.network_error_cause_finder.has_network_slowness()
         if network_latency_analysis_details.analysis_error:
             analysis_errors.append(network_latency_analysis_details.analysis_error)
-        elif network_latency_analysis_details.details:
+        elif network_latency_analysis_details.errors:
             return ErrorCause(Cause.ENVIRONMENT, Reason.NETWORK_SLOWNESS, prefix + "Consult HAR file", analysis_errors)
 
         return ErrorCause(Cause.UNKNOWN, Reason.UNKNOWN, None, analysis_errors)

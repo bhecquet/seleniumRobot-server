@@ -67,6 +67,11 @@ class TestError(SnapshotTestCase):
                                     'some details on error',
                                     "Element not found, but element seems to be present on page, check the locator")
 
+    def test_friendly_message_scenario_error(self):
+        self._test_friendly_message(Cause.SCRIPT,
+                                    Reason.SCENARIO_ERROR,
+                                    'something went wrong',
+                                    "Scenario error: something went wrong")
     def test_friendly_message_unknown_cause(self):
         self._test_friendly_message(Cause.SCRIPT,
                                     Reason.UNKNOWN,

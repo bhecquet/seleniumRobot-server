@@ -6,8 +6,8 @@ Created on 26 juil. 2017
 import os
 import json
 
-from snapshotServer.models import StepResult, Snapshot, TestSession,\
-    TestCaseInSession
+from snapshotServer.models import StepResult, Snapshot, TestSession, \
+    TestCaseInSession, Error
 from snapshotServer.tests import SnapshotTestCase, authenticate_test_client_for_web_view_with_permissions
 
 from django.conf import settings
@@ -358,7 +358,30 @@ class TestTestResultView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
     
             self.assertTrue("""<div class="box collapsed-box warning"><!-- Step result 15 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
-    
+
+
+    def test_report_with_error_cause(self):
+        """
+        Check error cause is displayed with friendly message
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+
+            error = Error(stepResult=StepResult.objects.get(pk=13),
+                            action="getErrorMessage<>",
+                            element="element",
+                            exception="java.lang.AssertionError",
+                            errorMessage="class java.lang.AssertionError: expected [false] but <> found [true]",
+                            cause="application",
+                            causedBy="step_assertion_error",
+                            causeDetails="error")
+            error.save()
+
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+            html = self.remove_spaces(response.rendered_content)
+            self.assertTrue("""<th>caused details_0</th><td>Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</td>""" in html)
+
+
     def test_report_with_description(self):
         """
         Check test description is displayed, and special characters are escaped

@@ -463,7 +463,7 @@ class Error(models.Model):
     element = TruncatingCharField(max_length=150, default="", null=True)        # description of the element on which error occured, if any
     exception = TruncatingCharField(max_length=100, default="", null=True)      # the exception raised by the test. Used for correlation
     errorMessage = TruncatingCharField(max_length=1000, default="", null=True)  # the exception message associated to the exception. Used for correlation
-    cause = TruncatingCharField(max_length=100, null=True)                      # the cause of error (if any detected): 'application_error', 'environment', 'application_change', 'script'
+    cause = TruncatingCharField(max_length=100, null=True)                      # the cause of error (if any detected): 'application', 'environment', 'application', 'script'
     causedBy = TruncatingCharField(max_length=100, null=True)                   # the origin of error: 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
     causeDetails = models.TextField(blank=True, default="")                     # additional information about the detected cause
     causeAnalysisErrors = models.TextField(blank=True, default="")              # a list of errors that may have raise during error cause analysis
@@ -497,6 +497,8 @@ class Error(models.Model):
         elif self.cause == Cause.SCRIPT:
             if self.causedBy == Reason.BAD_LOCATOR:
                 return "Element not found, but element seems to be present on page, check the locator"
+            elif self.causedBy == Reason.SCENARIO_ERROR:
+                return "Scenario error: %s" % self.causeDetails
             elif self.causedBy == Reason.UNKNOWN:
                 return "No clear cause has been found, check script"
             else:
