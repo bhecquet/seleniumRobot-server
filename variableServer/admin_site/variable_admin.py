@@ -81,7 +81,7 @@ class VariableForm(forms.ModelForm):
         if upload_file:
             upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
             upload_file.seek(0)
-            if upload_file_type not in ["text/plain","application/vnd.ms-excel","application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"]:
+            if upload_file_type not in ["text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"]:
                 raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
             if upload_file_type == "text/plain":
                 if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:

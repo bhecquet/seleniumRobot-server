@@ -68,8 +68,9 @@ class TestAdmin(TestCase):
         
         request = MockRequest()
         
-        test_case_filter = TestCaseFilter(request, {'test_case_id': 5}, StepReference, step_reference_admin)
+        test_case_filter = TestCaseFilter(request, {'test_case_id': [5]}, StepReference, step_reference_admin)
         queryset = test_case_filter.queryset(request=request, queryset=StepReference.objects.all())
         
         # check only variables without version are displayed
-        self.assertEqual(len(queryset), len(StepReference.objects.filter(stepResult__testCase__testCase__id=5)))
+        self.assertEqual(1, len(queryset))
+        self.assertEqual(len(queryset), len(StepReference.objects.filter(testCase__id=5)))

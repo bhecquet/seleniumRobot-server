@@ -59,12 +59,18 @@ class SnapshotUploadView(CreateAPIView, UpdateAPIView):
     def put(self, request, filename, format=None):
         
         form = ImageForComparisonUploadFormNoStorage(request.POST, request.FILES)
+
+        try:
+            if form.is_valid():
+                return self.compare_or_store_snapshot(form, form.cleaned_data['stepResult'])
         
-        if form.is_valid():
-            return self.compare_or_store_snapshot(form, form.cleaned_data['stepResult'])
-        
-        else:
-            return Response(status=500, data=str(form.errors))
+            else:
+                return Response(status=500, data=str(form.errors))
+        finally:
+            test_session = form.cleaned_data['testSession']
+            test_session.delete()
+            test_case = form.cleaned_data['testCase']
+            test_case.delete()
     
 
     def compare_or_store_snapshot(self, form, step_result):
@@ -117,25 +123,19 @@ class SnapshotUploadView(CreateAPIView, UpdateAPIView):
                 
             # we want the comparison result now, to tell if the test should fail or not
             else:
+                step_snapshot.save()
                 try:
-                    
-                    # as we don't save step_snapshot (it's temp computation), we still save the image data temporary at the location it's expected
-                    with open(step_snapshot.image.path, 'wb') as img:
-                        img.write(image.read())
-                        img.flush()
-                        
-                        DiffComputer.get_instance().compute_now(most_recent_reference_snapshot, step_snapshot, save_snapshot=False, additional_exclude_zones=exclude_zones)
-                finally:
-                    try:
-                        os.remove(step_snapshot.image.path)
-                    except Exception as e:
-                        pass
-                
-                if step_snapshot.pixelsDiff is not None:
-                    with io.BytesIO(step_snapshot.pixelsDiff) as input:
 
-                        # diff is represented by a red pixel
-                        diff_pixels_percentage = 100 * (sum(list(Image.open(input).getdata(3))) / 255) / (step_snapshot.image.width * step_snapshot.image.height)
+                    DiffComputer.get_instance().compute_now(most_recent_reference_snapshot, step_snapshot, save_snapshot=False, additional_exclude_zones=exclude_zones)
+
+                    if step_snapshot.pixelsDiff is not None:
+                        with io.BytesIO(step_snapshot.pixelsDiff) as input:
+
+                            # diff is represented by a red pixel
+                            diff_pixels_percentage = 100 * (sum(list(Image.open(input).getdata(3))) / 255) / (step_snapshot.image.width * step_snapshot.image.height)
+                finally:
+                    # we do not want object storage
+                    step_snapshot.delete()
 
         else:
             # snapshot is marked as computed as this is a reference snapshot

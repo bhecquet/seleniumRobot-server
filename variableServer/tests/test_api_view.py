@@ -1,6 +1,7 @@
 
 import datetime
 import time
+import os
 
 from django.contrib.auth.models import Permission
 from django.db.models import Q
@@ -8,6 +9,7 @@ from django.test import override_settings
 from django.test.client import Client
 from django.urls.base import reverse
 from django.utils import timezone
+from django.conf import settings
 
 from commonsServer.tests.test_api import TestApi
 from variableServer.models import Variable, Version, \
@@ -671,8 +673,8 @@ class TestApiView(TestApi):
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
         
-        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
-        delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
+        release_date = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        delta = (release_date - datetime.datetime.now(datetime.timezone.utc)).seconds
         self.assertTrue(895 < delta < 905)
                  
     def test_reserve_variable_no_api_security(self):
@@ -688,8 +690,8 @@ class TestApiView(TestApi):
             all_variables = self._convert_to_dict(response.data)
             self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
             
-            releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
-            delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
+            release_date = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+            delta = (release_date - datetime.datetime.now(datetime.timezone.utc)).seconds
             self.assertTrue(895 < delta < 905)
    
     def test_reserve_variable_with_increased_duration(self):
@@ -704,8 +706,8 @@ class TestApiView(TestApi):
         all_variables = self._convert_to_dict(response.data)
         self.assertIsNotNone(all_variables['login']['releaseDate'], 'releaseDate should not be null as variable is reserved')
         
-        releaseDate = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
-        delta = (releaseDate - datetime.datetime.now(timezone.utc)).seconds
+        release_date = datetime.datetime.strptime(all_variables['login']['releaseDate'], "%Y-%m-%dT%H:%M:%S.%f%z")
+        delta = (release_date - datetime.datetime.now(datetime.timezone.utc)).seconds
         self.assertTrue(995 < delta < 1005)
              
     def test_reserve_variable_with_parameter(self):

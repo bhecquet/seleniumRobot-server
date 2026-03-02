@@ -62,7 +62,7 @@ class TestEnvironmentAdmin(TestAdmin):
         
         request = MockRequest()
         
-        environment_filter = EnvironmentFilter(request, {'environment': '_None_'}, Variable, environment_admin)
+        environment_filter = EnvironmentFilter(request, {'environment': ['_None_']}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
         
         # check only variables without version are displayed
@@ -76,7 +76,7 @@ class TestEnvironmentAdmin(TestAdmin):
         
         request = MockRequest()
         
-        environment_filter = EnvironmentFilter(request, {'environment': 1}, Variable, environment_admin)
+        environment_filter = EnvironmentFilter(request, {'environment': [1]}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
         
         # check only variables without version are displayed
@@ -90,7 +90,7 @@ class TestEnvironmentAdmin(TestAdmin):
         
         request = MockRequest()
         
-        environment_filter = EnvironmentFilter(request, {'environment': 10265}, Variable, environment_admin)
+        environment_filter = EnvironmentFilter(request, {'environment': [10265]}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
         
         # check only variables without version are displayed

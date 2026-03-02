@@ -74,20 +74,28 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
         environment = TestEnvironment.objects.get(id=self.cleaned_data['environmentId'])
         test_case = TestCase(name=self.cleaned_data['testCaseName'], 
                             application=version.application)
+        test_case.save() # should be deleted later / save it due to django 5 change
         test_session = TestSession(sessionId='123',
                                   version=version,
                                   browser=self.cleaned_data['browser'],
                                   environment=environment,
                                   compareSnapshot=True,
+                                  date=datetime.datetime.now(),
                                   ttl=datetime.timedelta(days=0))
+        test_session.save() # should be deleted later / save it due to django 5 change
         
         step = TestStep.objects.get(name=self.cleaned_data['stepName'])
         test_case_in_session = TestCaseInSession(testCase=test_case, 
                                               session=test_session
                                               )
-        self.cleaned_data['stepResult'] = StepResult(step=step, 
+        test_case_in_session.save() # should be deleted later / save it due to django 5 change
+        step_result = StepResult(step=step,
                                  testCase=test_case_in_session,
                                  result=True)
+        step_result.save() # should be deleted later / save it due to django 5 change
+        self.cleaned_data['stepResult'] = step_result
+        self.cleaned_data['testSession'] = test_session
+        self.cleaned_data['testCase'] = test_case
         self.cleaned_data['storeSnapshot'] = False
         
         if self.cleaned_data['excludeZones'] == None:

@@ -132,7 +132,7 @@ class TestImageErrorCauseFinder(TestCase):
                 args = mock_request.call_args
                 self.assertEqual(('/api/chat/completions',), args[0])
                 self.assertEqual({'Authorization': 'Bearer abc', 'Content-Type': 'application/json'}, args[1]['headers'])
-                self.assertTrue(args[1]['json']['messages'][0]['content'][1]['image_url']['url'].startswith("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAABJMAAAJ+CAYAAAAHeUHiAAEAAElEQVR4nOz9S7IkSZItiB0W9/hlZlVXPXqvCdQLwQCLwBIwA2GMlWE3WAaIMGh0Voa7MgbC5yN6b2QVGrNw4UyPa6amKsLCwiJm5ygza/2f/x//zy")) # check right file is used
+                self.assertTrue(args[1]['json']['messages'][0]['content'][1]['image_url']['url'].startswith("data:image/jpeg;base64,iVBORw0KGgoAAAANSUhEUgAABJMAAAJ+CAYAAAAHeUHiAAEAAElEQVR4nOz9S5JkS7Ithnl4RGaeT92Luk/eg1AwEDY4CA6BPQrbHBlnw2FQhA0AVedkeEDMdP3Utuep+4AWMlSrToaH+9627aNm4bps6bKX")) # check right file is used
     
     
     @override_settings(OPEN_WEBUI_URL='')
