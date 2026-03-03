@@ -1,5 +1,6 @@
 
 from django.conf import settings
+from django.conf.urls.static import static
 from django.conf.urls import include
 from django.contrib import admin
 from django.contrib.auth import views
@@ -30,5 +31,5 @@ urlpatterns = [
     
     path('accounts/login/', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(views.LoginView.as_view()))), name='login'),
     
-    # add media directory
-] #+   static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+    # add media/documents/ directory only in DEBUG, else, this is served via Apache
+] +   static(settings.MEDIA_URL + 'documents/', document_root=settings.MEDIA_ROOT + '/documents/')

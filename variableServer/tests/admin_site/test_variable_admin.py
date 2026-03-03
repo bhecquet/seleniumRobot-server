@@ -129,8 +129,8 @@ class TestVariableAdmin(TestAdmin):
             user = User.objects.create_user(username='user', email='user@email.org', password='pass')
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
-        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.csv')
-        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.csv")))
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.csv')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "filetoadd.csv")))
 
     def test_variable_save_standard_with_json_file(self):
         """
@@ -148,8 +148,8 @@ class TestVariableAdmin(TestAdmin):
             user = User.objects.create_user(username='user', email='user@email.org', password='pass')
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
-        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.json')
-        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.json")))
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.json')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "filetoadd.json")))
 
     def test_variable_save_standard_with_xls_file(self):
         """
@@ -167,8 +167,8 @@ class TestVariableAdmin(TestAdmin):
             user = User.objects.create_user(username='user', email='user@email.org', password='pass')
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
-        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.xls')
-        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xls")))
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.xls')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "filetoadd.xls")))
 
     def test_variable_save_standard_with_xlsx_file(self):
         """
@@ -186,8 +186,8 @@ class TestVariableAdmin(TestAdmin):
             user = User.objects.create_user(username='user', email='user@email.org', password='pass')
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
-        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'appFileVar/filetoadd.xlsx')
-        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xlsx")))
+        self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.xlsx')
+        self.assertTrue(os.path.exists(os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "filetoadd.xlsx")))
 
     def test_variable_clean_no_concurrent_file_value(self):
         """
@@ -234,8 +234,8 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that when you modify a variable's file-value, the old file is deleted from the media folder
         """
-        del_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "tobedeleted.csv")
-        del_new_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "replacement.csv")
+        del_file_path = os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "tobedeleted.csv")
+        del_new_file_path = os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "replacement.csv")
         if os.path.exists(del_new_file_path):
             os.remove(del_new_file_path)
         with open(del_file_path, "w") as f:

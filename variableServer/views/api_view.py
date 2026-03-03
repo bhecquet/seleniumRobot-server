@@ -381,17 +381,10 @@ class VariableDownload(ApplicationSpecificViewSet):
     def get_queryset(self):
         return Variable.objects.all()
 
-    def filter_queryset(self, request, queryset, view):
-        return queryset.filter(application=VariablesPermissions.get_application(self, request, view))
-
     def get(self, request, var_id):
         var = Variable.objects.get(id=var_id)
-        filename = var.uploadFile.name.split("/")[-1]
+        file_path = var.get_file_path()
 
-        if var.application:
-            file_path = os.path.join(settings.MEDIA_ROOT, var.application.name, filename)
-        else:
-            file_path = os.path.join(settings.MEDIA_ROOT, filename)
         try:
             if os.path.exists(file_path):
                 with open(file_path, 'rb') as fh:

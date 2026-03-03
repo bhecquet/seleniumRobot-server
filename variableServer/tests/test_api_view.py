@@ -1375,7 +1375,7 @@ class TestApiView(TestApi):
         """
         Check that when you delete a variable with file as value, the file itself is deleted from the media folder
         """
-        file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "tobedeleted.csv")
+        file_path = os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "tobedeleted.csv")
         with open(file_path, "w") as f:
             f.write("some,data,for,the,test")
         var = Variable.objects.get(pk=996)
