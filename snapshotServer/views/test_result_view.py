@@ -3,9 +3,10 @@ Created on 4 sept. 2017
 
 @author: worm
 '''
+
 from django.views.generic.list import ListView
 from django.shortcuts import get_object_or_404
-from snapshotServer.models import TestCaseInSession, StepResult, Snapshot
+from snapshotServer.models import TestCaseInSession, StepResult, Snapshot, Error, TestInfo
 import json
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
@@ -45,6 +46,7 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         context = super(TestResultView, self).get_context_data(**kwargs)
         current_test = get_object_or_404(TestCaseInSession, pk=self.kwargs['test_case_in_session_id'])
         context['currentTest'] = current_test
+        context['session'] = current_test.session
         context['testCaseId'] = self.kwargs['test_case_in_session_id']
         context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
         context['status'] = current_test.status
@@ -82,7 +84,11 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 context['infos'][test_info.name] = json.loads(test_info.info)
             except:
                 pass
-                
+
+        errors = Error.objects.filter(stepResult__in=StepResult.objects.filter(testCase=current_test))
+        for i, error in enumerate(errors):
+            context['infos']['caused details_' + str(i)] = {"type":"string","info": error.friendly_message}
+
 
         return context
     

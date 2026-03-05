@@ -57,6 +57,7 @@
         duration: 700
         stacktrace: >
             {
+                "action": "openPage",
                 "date": "Wed Oct 25 18:06:03 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -121,6 +122,7 @@
         duration: 2000
         stacktrace: >
             {
+                "action": "loginInvalid",
                 "date": "Wed Oct 25 18:06:04 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -194,6 +196,7 @@
         duration: 5000
         stacktrace: >
             {
+                "action": "getErrorMessage<>",
                 "date": "Wed Oct 25 18:06:07 CEST 2023",
                 "failed": true,
                 "type": "step",
@@ -273,6 +276,7 @@
         duration: 200
         stacktrace: >
             {
+                "action": "Test end",
                 "exception": "class java.lang.AssertionError",
                 "date": "Wed Oct 25 18:06:14 CEST 2023",
                 "failed": true,
@@ -353,6 +357,7 @@
         duration: 5000
         stacktrace: >
             {
+                "action": "getErrorMessage warn",
                 "date": "Wed Oct 25 18:06:07 CEST 2023",
                 "failed": false,
                 "type": "step",

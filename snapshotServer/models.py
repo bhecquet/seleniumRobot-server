@@ -2,6 +2,7 @@
 from django.db import models
 from django.db.models import Q
 
+from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.picture_comparator import Rectangle
 import pickle
 import commonsServer.models
@@ -146,7 +147,8 @@ class TestStep(models.Model):
     association is done through TestCaseInSession
     """
     __test__= False  # avoid detecting it as a test class
-    name = models.CharField(max_length=100) 
+    name = models.CharField(max_length=100)
+    LAST_STEP_NAME = 'Test end'
     
     def __str__(self):
         return self.name 
@@ -450,7 +452,7 @@ class ErrorCauseFromUser(models.Model):
     exception = models.CharField(max_length=100, default="")        # the exception raised by the test. Used for correlation
     errorMessage = models.CharField(max_length=1000, default=".*")  # the exception message associated to the exception. Used for correlation
     type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
-    
+
 class Error(models.Model):
     """
     Table that stores error that may have been raised during a test
@@ -458,11 +460,52 @@ class Error(models.Model):
     """
     stepResult = models.ForeignKey(StepResult, related_name='errors', on_delete=models.CASCADE)
     action = TruncatingCharField(max_length=250, default="", null=True)         # the step / action name for which the user defined the error
-    exception = TruncatingCharField(max_length=100, default="", null=True)         # the exception raised by the test. Used for correlation
-    errorMessage = TruncatingCharField(max_length=1000, default="", null=True)     # the exception message associated to the exception. Used for correlation
-    cause = TruncatingCharField(max_length=100, null=True)                         # the cause of error (if any detected): 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    element = TruncatingCharField(max_length=150, default="", null=True)        # description of the element on which error occured, if any
+    exception = TruncatingCharField(max_length=100, default="", null=True)      # the exception raised by the test. Used for correlation
+    errorMessage = TruncatingCharField(max_length=1000, default="", null=True)  # the exception message associated to the exception. Used for correlation
+    cause = TruncatingCharField(max_length=100, null=True)                      # the cause of error (if any detected): 'application', 'environment', 'application', 'script'
+    causedBy = TruncatingCharField(max_length=100, null=True)                   # the origin of error: 'Error message displayed', 'Field in error', 'The application has been modified', 'Error in selenium operation', 'unknown page'
+    causeDetails = models.TextField(blank=True, default="")                     # additional information about the detected cause
+    causeAnalysisErrors = models.TextField(blank=True, default="")              # a list of errors that may have raise during error cause analysis
     relatedErrors = models.ManyToManyField('self')                              # errors related to this one
     
     def __str__(self):
         return f'Error {self.errorMessage} in {self.action}'
+
+
+    def friendly_message(self):
+        if self.cause == Cause.APPLICATION:
+            if self.causedBy == Reason.STEP_ASSERTION_ERROR:
+                return "Assertion on step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            elif self.causedBy == Reason.SCENARIO_ASSERTION_ERROR:
+                return "Assertion in script: %s" % self.causeDetails
+            elif self.causedBy == Reason.ERROR_MESSAGE:
+                return "Application displays error message: '%s'" % self.causeDetails
+            elif self.causedBy == Reason.UNKNOWN_PAGE:
+                return "Page where we land is unknown (not expected nor the previous page), check if application has changed"
+            elif self.causedBy == Reason.JAVASCRIPT_ERROR:
+                return "Javascript error occurred, it may have cause the application to break, check detailed results"
+            elif self.causedBy == Reason.NETWORK_ERROR:
+                return "Network error during failed step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            else:
+                return "Application error with '%s' and '%s'" % (self.causedBy, self.causeDetails)
+        elif self.cause == Cause.ENVIRONMENT:
+            if self.causedBy == Reason.NETWORK_SLOWNESS:
+                return "Network slowness during failed step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
+            else:
+                return "Environment error with '%s' and '%s'" % (self.causedBy, self.causeDetails)
+        elif self.cause == Cause.SCRIPT:
+            if self.causedBy == Reason.BAD_LOCATOR:
+                return "Element not found, but element seems to be present on page, check the locator"
+            elif self.causedBy == Reason.SCENARIO_ERROR:
+                return "Scenario error: %s" % self.causeDetails
+            elif self.causedBy == Reason.UNKNOWN:
+                return "No clear cause has been found, check script"
+            else:
+                return "Script error with '%s'" % self.causedBy
+        else:
+            return "%s - %s" % (self.cause, self.causedBy)
+
+
+
     

@@ -73,7 +73,7 @@ class TestVersionAdmin(TestAdmin):
         
         request = MockRequest()
         
-        version_filter = VersionFilter(request, {'version': '_None_'}, Variable, variable_admin)
+        version_filter = VersionFilter(request, {'version': ['_None_']}, Variable, variable_admin)
         queryset = version_filter.queryset(request=request, queryset=Variable.objects.all())
         
         # check only variables without version are displayed
@@ -88,7 +88,7 @@ class TestVersionAdmin(TestAdmin):
         
         request = MockRequest()
         
-        version_filter = VersionFilter(request, {'version': 2}, Variable, variable_admin)
+        version_filter = VersionFilter(request, {'version': [2]}, Variable, variable_admin)
         queryset = version_filter.queryset(request=request, queryset=Variable.objects.all())
         
         # check only variables without version are displayed

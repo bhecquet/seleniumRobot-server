@@ -14,8 +14,6 @@ from django.conf import settings
 from django.urls.base import reverse
 from django.db.models import Q
 from django.test.utils import override_settings
-from dramatiq.broker import get_broker
-from dramatiq.worker import Worker
 
 from pathlib import Path
 
@@ -38,22 +36,7 @@ class TestStepReferenceView(TestApi):
     
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     reference_dir = os.path.join(media_dir, 'references', 'myapp', 'test upload')
-    
-    def _pre_setup(self):
-        super()._pre_setup()
 
-        self.broker = get_broker()
-        self.broker.flush_all()
-
-        self.worker = Worker(self.broker, worker_timeout=100)
-        self.worker.start()
-
-    def _post_teardown(self):
-        self.worker.stop()
-
-        super()._post_teardown()
-
-    
     def setUp(self):
         authenticate_test_client_for_api(self.client)
         
@@ -241,15 +224,9 @@ class TestStepReferenceView(TestApi):
             with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
                 self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
-                time.sleep(1) # wait field computing
                 
                 uploaded_reference = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
                 self.assertIsNotNone(uploaded_reference, "the uploaded snapshot should be recorded")
-                
-                # check computing has been done
-                self.assertIsNotNone(uploaded_reference.field_detection_data)
-                self.assertIsNotNone(uploaded_reference.field_detection_date)
-                self.assertEqual(uploaded_reference.field_detection_version, 'afcc45')
                 
                 self.assertTrue(os.path.isfile(os.path.join(self.reference_dir, 'replyDetection.json.png')))
 
@@ -264,7 +241,6 @@ class TestStepReferenceView(TestApi):
             with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
                 self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
-                time.sleep(1) # wait field computing
                 
                 uploaded_reference_1 = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
                 uploaded_file1 = Path(uploaded_reference_1.image.path)
@@ -281,14 +257,9 @@ class TestStepReferenceView(TestApi):
                 self.assertIsNotNone(uploaded_reference_2, "the uploaded snapshot should be recorded")
                 self.assertEqual(uploaded_reference_2, uploaded_reference_1)
                 uploaded_file2 = Path(uploaded_reference_2.image.path)
-    
-                # old detected files are removed, only files from the second detection are kept
+
                 self.assertFalse(uploaded_file1.exists())
-                self.assertFalse(Path(settings.MEDIA_ROOT, 'detect', uploaded_file1.name).exists())
-                self.assertFalse(Path(settings.MEDIA_ROOT, 'detect', uploaded_file1.with_suffix('.json').name).exists())
                 self.assertTrue(uploaded_file2.exists())
-                self.assertTrue(Path(settings.MEDIA_ROOT, 'detect', uploaded_file2.name).exists())
-                self.assertTrue(Path(settings.MEDIA_ROOT, 'detect', uploaded_file2.with_suffix('.json').name).exists())
     
     def test_post_snapshot_no_ref_result_ko(self):
         """
@@ -301,8 +272,7 @@ class TestStepReferenceView(TestApi):
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
                 response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr_ko.id, 'image': fp})
                 self.assertEqual(response.status_code, 200, 'status code should be 201: ' + str(response.content))
-                time.sleep(0.5) # wait field computing
-                
+
                 uploaded_reference = StepReference.objects.filter(testCase=self.tcs1.testCase, testStep__id=1, version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1)).last()
                 self.assertIsNone(uploaded_reference, "the uploaded snapshot should not be recorded")
     

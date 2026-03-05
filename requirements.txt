@@ -1,20 +1,18 @@
-PyYAML==6.0.2
-Django==3.2.25
-django-filter==2.4.0
-djangorestframework==3.12.4
-numpy==1.24.4
-opencv-python==4.11.0.86
-Pillow==8.3.2
-pytz==2025.1
-unittest-xml-reporting==3.0.2
-coverage==5.1
-pkg/python_ldap-3.4.0-cp39-cp39-win_amd64.whl; platform_system == 'Windows'
-django_auth_ldap==2.4.0
-mozilla-django-oidc==1.2.4
+PyYAML==6.0.3
+Django==5.2.11
+django-filter==25.2
+djangorestframework==3.16.1
+numpy==2.4.2
+opencv-python==4.13.0.92
+Pillow==12.1.1
+pytz==2025.2
+unittest-xml-reporting==4.0.0
+coverage==7.13.4
+pkg/python_ldap-3.4.5-cp311-cp311-win_amd64.whl; platform_system == 'Windows'
+django_auth_ldap==5.3.0
+mozilla-django-oidc==5.0.2
 health-check==3.4.1
-django-dramatiq==0.11.2
-dramatiq[redis, watch]==1.18.0
 unidecode==1.4.0
 django-apscheduler==0.6.2
-python-magic==0.4.27
-python-magic-bin==0.4.14; platform_system == 'Windows'
+openwebui-chat-client==0.1.24
+python-magic-standalone==0.4.28

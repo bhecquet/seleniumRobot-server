@@ -56,35 +56,34 @@ class Variable(models.Model):
             return str(self.uploadFile)
     uploadFileReforged.short_description = "uploadFile"
 
+    def get_file_path(self):
+        filename = self.uploadFile.name.split("/")[-1]
+        if self.application:
+            return os.path.join(settings.MEDIA_ROOT, 'variables', self.application.name, filename)
+        else:
+            return os.path.join(settings.MEDIA_ROOT, 'variables', filename)
+
+    def _delete_variable_file(self, variable):
+        try:
+            file_path = variable.get_file_path()
+            os.remove(file_path)
+        except:
+            #file already deleted or corrupted
+            pass
+
     def save(self, *args, **kwargs):
         if self.id:
             var = Variable.objects.get(id=self.id)
             if var.uploadFile != self.uploadFile:
-                try:
-                    filename = var.uploadFile.name.split("/")[-1]
-                    if var.application:
-                        file_path = os.path.join(settings.MEDIA_ROOT, var.application.name, filename)
-                    else:
-                        file_path = os.path.join(settings.MEDIA_ROOT, filename)
-                    os.remove(file_path)
-                except:
-                    #file already deleted or corrupted
-                    pass
+                self._delete_variable_file(var)
+
         super(Variable, self).save(*args, **kwargs)
         self._correctReservableState()
 
     def delete(self, using=None, keep_parents=False):
         if self.uploadFile:
-            try:
-                filename = self.uploadFile.name.split("/")[-1]
-                if self.application:
-                    file_path = os.path.join(settings.MEDIA_ROOT, self.application.name, filename)
-                else:
-                    file_path = os.path.join(settings.MEDIA_ROOT, filename)
-                os.remove(file_path)
-            except:
-                #file already deleted or corrupted ?
-                pass
+            self._delete_variable_file(self)
+
         super(Variable, self).delete(using, keep_parents)
 
     def _correctReservableState(self):
@@ -106,7 +105,7 @@ class Variable(models.Model):
     def get_upload_path(instance, filename):
         if not instance.application:
             return filename
-        return os.path.join(instance.application.name,filename)
+        return os.path.join('variables', instance.application.name, filename)
 
     name = models.CharField(max_length=100)
     value = models.CharField(max_length=3000, blank=True)
