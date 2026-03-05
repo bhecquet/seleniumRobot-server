@@ -14,8 +14,8 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 # Installation #
 
 ## Windows ##
-
-- Install python 3 >= 3.8)
+	
+- Install python 3 >= 3.11)
 - apache install
     - apache from apachelounge, same bitness as python
     - C++ redistributable microsoft, same version as the one used for apache compilation
@@ -25,10 +25,7 @@ For now, build is done through the python script `build.py`. Ite generates a zip
 - deploy files: unzip seleniumRobotServer.zip
 - create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
 - go into virtual environment: `cd <path_to_selenium_server>/venv && Scripts\activate.bat`
-- install `python-ldap` from wheel found
-  at [https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap](https://www.lfd.uci.edu/~gohlke/pythonlibs/#python-ldap):
-  `pip instal python_ldap-3.xxx.whl`
-- install python requirements: `pip install -r requirements.txt`
+- install python requirements: `pip install -r requirements_postgre.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use
@@ -90,14 +87,14 @@ For now, build is done through the python script `build.py`. Ite generates a zip
   		</Files>
   	</Directory>
   	
-  	Alias /media/ <path_to_selenium_server_data>/media/
+  	Alias /media/ <path_to_selenium_server_data>/media/documents/
   	Alias /static/ <path_to_selenium_server>/static/
   	
   	<Directory "<path_to_selenium_server>/static">
   		Require all granted
   	</Directory>
   	
-  	<Directory "<path_to_selenium_server_data>/media">
+  	<Directory "<path_to_selenium_server_data>/media/documents">
   		Require all granted
   	</Directory>
 
@@ -116,8 +113,7 @@ loading hangs).
 `<path_to_selenium_server>` but MUST be the same as `${data.dir}` setting in settings.py file
 
 ## Linux (RHE) ##
-
-- Install python 3 >= 3.8
+- Install python 3 >= 3.11
 - apache install (Linux): `yum install mod_wsgi httpd24-httpd`
 - Install Postgre database (if not using a centralized database or SQLite)
 - Install `freetype-devel`, `libpng-devel`, `gcc-c++`, `python3-devel`, `libjpeg-turbo-devel`,  `openldap-devel`, so
@@ -125,7 +121,7 @@ loading hangs).
 - deploy files: unzip seleniumRobotServer.zip
 - create virtual environment for execution: `python3 -m venv <path_to_selenium_server>/venv`
 - go into virtual environment: `cd <path_to_selenium_server>/venv && source bin/activate`
-- install python requirements: `pip install -r requirements.txt`
+- install python requirements: `pip install -r requirements_postgre.txt` 
 - database migration: `python manage.py migrate`
 - database fix: `python manage.py fix_permissions`
 - create super user on first deploy **ONLY**: `python manage.py createsuperuser`. If using AD/LDAP, use
@@ -273,28 +269,21 @@ You can activate it by
 
 to use SQLite instead of Postgre: comment the right default database in `DATABASES`
 
-## Field detector ##
-
-Field detector feature is used to detect fields (text fields, buttons, ...) on pictures.
-Computing is done for each reference picture and when '/detect' endpoint is called
-
-To enable, you have to
-
-- configure one or several compute
-  nodes ([https://github.com/bhecquet/image-fields-detector] (https://github.com/bhecquet/image-fields-detector)
-- install a redis server
-- in settings.py, update configuration
-
-```
-DRAMATIQ_BROKER['OPTIONS']['url'] = 'redis://localhost:6379/0'
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = 'redis://localhost:6379'
-```
-
 ## Image Comparison ##
 
 Image comparison can be more or less strict about color changes
 
 User parameter `IMAGE_COMPARISON_THRESHOLD` (defaults to 10). It's the difference between the color of the actual pixel and the color of the same reference pixel
+
+## Finding error cause ##
+
+It's possible to connect selenium-server to open-webui that will be an interface with LLM, like Ollama or ChatGPT
+Configuration of open-webui is beyond this documentation, but relevant variables are
+
+OPEN_WEBUI_WORKERS = 2 # number of ollama instance for example, for parallelism
+OPEN_WEBUI_URL = 'https://openwebui-instance.com'  # URL to open-webui
+OPEN_WEBUI_TOKEN = 'my-token'
+OPEN_WEBUI_MODEL = 'ministral-3:8b' # may be an other vision capable model, but prompt may be updated accordingly
 
 # Usage #
 

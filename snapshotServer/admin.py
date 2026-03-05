@@ -45,7 +45,7 @@ class TestCaseFilter(SimpleListFilter):
 
     def queryset(self, request, queryset):
         if self.value():
-            return queryset.filter(stepResult__testCase__testCase__id=self.value())
+            return queryset.filter(testCase__id=self.value())
             
         else:
             return StepReference.objects.none()

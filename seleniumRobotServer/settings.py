@@ -29,7 +29,7 @@ TIME_ZONE = '${timezone}'
 # allow files up to 10 MB to be uploaded
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10000000
 # allow files as variable value up to 10 MB to be uploaded
-VAR_UPLOAD_FILE_MAX_SIZE = int('${django.variable.file.maxsize}')
+VAR_UPLOAD_FILE_MAX_SIZE = int('${variable.file.maxsize}')
 
 AUTHENTICATION_BACKENDS = (
     "${auth.backends}",
@@ -85,10 +85,53 @@ else:
             'rest_framework.permissions.AllowAny'
         ]
     }
-    
-FIELD_DETECTOR_ENABLED = '${field.detector.enabled}'
-DRAMATIQ_BROKER['OPTIONS']['url'] = '${redis.url}/0'
-DRAMATIQ_RESULT_BACKEND['BACKEND_OPTIONS']['url'] = '${redis.url}'
+
+# Connection to Open-WebUI instance. set empty URL to disable
+OPEN_WEBUI_WORKERS = int('${openwebui.workers}')
+OPEN_WEBUI_URL = '${openwebui.url}'
+OPEN_WEBUI_TOKEN = '{openwebui.token}'
+OPEN_WEBUI_MODEL = '{openwebui.model}'
+OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE = '''In the provided image, do you see an error message ?
+- Start by extracting all texts and their color
+- Then, for each text, depending on its colour and meaning, determine if the text is an error message
+
+Reply only in JSON, with the following format:
+```
+{"explanation": "<what leads to your conclusion>", "error_messages": [<list of detected error messages or technical failures as STRING]}
+```
+‘error_messages’ key may have an empty value if no error message or technical failure has been detected
+Check that the JSON response is valid'''
+OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON = '''You are a tester that wants to check a test result.
+These 2 pictures represent web pages.
+Your goal is to say if the 2 pictures are from the same web page (even if some textual information differ).
+You will base your response on:
+- page layout / content layout
+- general design
+- position of graphical elements like buttons, text fields, tabs
+- color scheme of graphical elements
+
+Your response should NOT be based on:
+- text data that may vary from user or customer
+
+You will consider that the 2 pictures represent the same web page with a percentage of confidence (100% same page, 0% not the same page) if layout, general design, position and color of graphical elements look similar.
+
+Reply only in JSON, with the following format:
+```
+{"explanation": "<what leads to your conclusion>", "similarity": <percentage of confidence as INTEGER>}
+```
+Check that the JSON response is valid
+'''
+OPEN_WEBUI_PROMPT_FIND_ELEMENT = '''In the provided picture, tell me if the %s is present or not.
+For this:
+- analyze the picture, looking for text fields, buttons, tabs and texts
+- say if the requested field is present
+
+Reply only in JSON, with the following format:
+```
+{"explanation": "<what leads to your conclusion>", "present": <true/false>}
+```
+Check that the JSON response is valid
+'''
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)

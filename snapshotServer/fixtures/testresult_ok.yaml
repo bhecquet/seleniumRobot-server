@@ -69,6 +69,7 @@
         duration: 700
         stacktrace: >
             {
+                "action": "openPage",
                 "date": "Wed Oct 25 14:53:58 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -133,6 +134,7 @@
         duration: 2000
         stacktrace: >
             {
+                "action": "loginInvalid",
                 "date": "Wed Oct 25 14:53:59 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -228,6 +230,7 @@
         duration: 5000
         stacktrace: >
             {
+                "action": "getErrorMessage",
                 "date": "Wed Oct 25 14:54:02 CEST 2023",
                 "failed": false,
                 "type": "step",
@@ -266,6 +269,7 @@
         duration: 200
         stacktrace: >
             {
+                "action": "Test end",
                 "date": "Wed Oct 25 14:54:08 CEST 2023",
                 "failed": false,
                 "type": "step",

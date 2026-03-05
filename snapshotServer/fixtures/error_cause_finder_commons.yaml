@@ -1,0 +1,19 @@
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '1.0'}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.testcase
+    pk: 1
+    fields:
+      name: loginInvalid
+      application: 1
+-   model: snapshotServer.testcase
+    pk: 2
+    fields:
+      name: loginInvalid
+      application: 1
