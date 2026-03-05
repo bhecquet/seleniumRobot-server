@@ -87,14 +87,14 @@ For now, build is done through the python script `build.py`. Ite generates a zip
   		</Files>
   	</Directory>
   	
-  	Alias /media/ <path_to_selenium_server_data>/media/
+  	Alias /media/ <path_to_selenium_server_data>/media/documents/
   	Alias /static/ <path_to_selenium_server>/static/
   	
   	<Directory "<path_to_selenium_server>/static">
   		Require all granted
   	</Directory>
   	
-  	<Directory "<path_to_selenium_server_data>/media">
+  	<Directory "<path_to_selenium_server_data>/media/documents">
   		Require all granted
   	</Directory>
 
@@ -274,6 +274,16 @@ to use SQLite instead of Postgre: comment the right default database in `DATABAS
 Image comparison can be more or less strict about color changes
 
 User parameter `IMAGE_COMPARISON_THRESHOLD` (defaults to 10). It's the difference between the color of the actual pixel and the color of the same reference pixel
+
+## Finding error cause ##
+
+It's possible to connect selenium-server to open-webui that will be an interface with LLM, like Ollama or ChatGPT
+Configuration of open-webui is beyond this documentation, but relevant variables are
+
+OPEN_WEBUI_WORKERS = 2 # number of ollama instance for example, for parallelism
+OPEN_WEBUI_URL = 'https://openwebui-instance.com'  # URL to open-webui
+OPEN_WEBUI_TOKEN = 'my-token'
+OPEN_WEBUI_MODEL = 'ministral-3:8b' # may be an other vision capable model, but prompt may be updated accordingly
 
 # Usage #
 
