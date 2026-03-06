@@ -1,4 +1,4 @@
-from distutils.version import LooseVersion
+from looseversion import LooseVersion
 
 from django.contrib.contenttypes.models import ContentType
 from django.db import models

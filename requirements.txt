@@ -18,4 +18,5 @@ openwebui-chat-client==0.1.24
 python-magic-standalone==0.4.28
 cryptography==46.0.5
 pysqlite3-binary==0.5.4.post2; platform_system == 'Linux'
+looseversion==1.3.0
 
