@@ -13,6 +13,12 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 #
 # FILE USED BY UNIT TESTS
 #
+try: # for linux, so that we get updated sqlite3 version on old systems
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except:
+    pass
 
 # Login/ mdp: admin / adminServer
 import ldap
