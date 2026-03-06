@@ -22,6 +22,29 @@ class TestAdmin(TestCase):
             row = cursor.fetchone()
             self.assertTrue(row[0].startswith('aes_str::::'))
 
+    def test_save_not_protected_to_protected_variable(self):
+        """
+        Check protected variable is encrypted on further save
+        """
+        var = Variable(name="key", value="myValue", protected=False)
+        var.save()
+        self.assertEqual(var.value, 'myValue')
+        self.assertTrue(isinstance(var.value, str))
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT value from variableServer_variable WHERE name = 'key'")
+            row = cursor.fetchone()
+            self.assertEqual(row[0], 'myValue')
+
+        var.protected = True
+        var.save()
+        self.assertEqual(var.value, 'myValue')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT value from variableServer_variable WHERE name = 'key'")
+            row = cursor.fetchone()
+            self.assertTrue(row[0].startswith('aes_str::::'))
+
     def test_save_protected_variable_empty_value(self):
         """
         Check protected empty variable is not encrypted in database
@@ -62,7 +85,7 @@ class TestAdmin(TestCase):
     def test_get_file_path_with_application(self):
         app = Application(name="app")
         var = Variable(name="key", value="myValue", protected=False, application=app)
-        self.assertTrue(var.get_file_path().replace('\\', '/').contains('/media/variables/app'))
+        self.assertTrue(var.get_file_path().replace('\\', '/').endswith('/media/variables/app/'))
 
     def test_get_file_path_no_application(self):
         var = Variable(name="key", value="myValue", protected=False)
