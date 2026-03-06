@@ -120,7 +120,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         variable = Variable.objects.get(pk=888)
         file_path = 'variableServer/tests/data/filetoadd.csv'
-        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.csv")
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "variables", "appFileVar", "filetoadd.csv")
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
         with open(file_path, 'rb') as f:
@@ -139,7 +139,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         variable = Variable.objects.get(pk=888)
         file_path = 'variableServer/tests/data/filetoadd.json'
-        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.json")
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "variables", "appFileVar", "filetoadd.json")
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
         with open(file_path, 'rb') as f:
@@ -158,7 +158,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         variable = Variable.objects.get(pk=888)
         file_path = 'variableServer/tests/data/filetoadd.xls'
-        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xls")
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "variables", "appFileVar", "filetoadd.xls")
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
         with open(file_path, 'rb') as f:
@@ -177,7 +177,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         variable = Variable.objects.get(pk=888)
         file_path = 'variableServer/tests/data/filetoadd.xlsx'
-        result_file_path = os.path.join(settings.MEDIA_ROOT, "appFileVar", "filetoadd.xlsx")
+        result_file_path = os.path.join(settings.MEDIA_ROOT, "variables", "appFileVar", "filetoadd.xlsx")
         if os.path.exists(result_file_path):
             os.remove(result_file_path)
         with open(file_path, 'rb') as f:
