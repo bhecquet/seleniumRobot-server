@@ -1,7 +1,7 @@
 import os
 import shutil
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
-from seleniumRobotServer.settings import STATIC_ROOT
+from seleniumRobotServer.settings_base import STATIC_ROOT
 
 root = os.path.abspath(os.path.dirname(__file__))
 distDir = root + os.sep + 'dist'
