@@ -1,10 +1,13 @@
 import os
 
+from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.db.models.signals import pre_save
 
 import commonsServer.models
+from commonsServer.utils.encryption import encrypt_data, decrypt_data
 
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
@@ -22,6 +25,56 @@ class Version(commonsServer.models.Version):
 class TestCase(commonsServer.models.TestCase):
     class Meta:
         proxy = True
+
+class Value(str):
+    pass
+
+class EncryptedField(models.CharField):
+    """
+    encrypted CharField in database
+    Compatible with unencrypted data, encrypted strings will be carried
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.prefix = "aes_str::::"
+        super().__init__(*args, **kwargs)
+
+    def from_db_value(self, value, expression, connection):
+        """
+        After decrypting data library
+        """
+        if value is None:
+            return value
+        if value.startswith(self.prefix):
+            value = value[len(self.prefix):]
+            return decrypt_data(value)
+        else:
+            return value
+
+    def to_python(self, value):
+        """
+        Form clean and de-serialization call (when), decrypting data
+        """
+        if value is None:
+            return value
+        elif value.startswith(self.prefix):
+            value = value[len(self.prefix):]
+            return decrypt_data(value)
+        else:
+            return value
+
+    def get_prep_value(self, value):
+        """
+        Before the encrypted data storage
+        """
+        if value and isinstance(value, Value):
+            value = encrypt_data(value)
+            value = self.prefix + value
+        elif isinstance(value, str):
+            return value
+        elif value is not None and value != '':
+            raise TypeError(str(value) + "is not a valid value for EncryptedField")
+        return value
 
 class Variable(models.Model):
     
@@ -77,7 +130,8 @@ class Variable(models.Model):
             if var.uploadFile != self.uploadFile:
                 self._delete_variable_file(var)
 
-        super(Variable, self).save(*args, **kwargs)
+
+        super().save(*args, **kwargs)
         self._correctReservableState()
 
     def delete(self, using=None, keep_parents=False):
@@ -108,7 +162,7 @@ class Variable(models.Model):
         return os.path.join('variables', instance.application.name, filename)
 
     name = models.CharField(max_length=100)
-    value = models.CharField(max_length=3000, blank=True)
+    value = EncryptedField(max_length=3000, blank=True)
     uploadFile = models.FileField(blank=True, upload_to=get_upload_path)
     application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
     environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
@@ -122,4 +176,13 @@ class Variable(models.Model):
     creationDate = models.DateTimeField(default=timezone.now)
     timeToLive = models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever")
     # When adding a field, don't forget to add it in serializers.py
-    
+
+
+@receiver(pre_save, sender=Variable)
+def update_variable_value(sender, instance, **kwargs):
+    """
+    When a StepReference is deleted, remove the associated picture
+    """
+
+    if not isinstance(instance, Value) and instance.protected and instance.value is not None:
+        instance.value = Value(instance.value)
