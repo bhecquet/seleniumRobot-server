@@ -100,7 +100,7 @@ class TestPictureView(TestViews):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context['editable'])
             self.assertTrue(response.context['enable'])
-            self.assertEquals(response.context['testStepName'], "Step 1")
+            self.assertEqual(response.context['testStepName'], "Step 1")
 
     def test_pictures_exist_no_header(self):
         """
@@ -121,7 +121,7 @@ class TestPictureView(TestViews):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context['editable'])
             self.assertTrue(response.context['enable'])
-            self.assertEquals(response.context['testStepName'], "Snapshot comparison")
+            self.assertEqual(response.context['testStepName'], "Snapshot comparison")
 
     def test_no_pictures_exist_no_header(self):
         """
@@ -138,7 +138,7 @@ class TestPictureView(TestViews):
             self.assertEqual(response.status_code, 200)
             self.assertTrue(response.context['editable'])
             self.assertFalse(response.context['enable'])
-            self.assertEquals(response.context['testStepName'], "Snapshot comparison")
+            self.assertEqual(response.context['testStepName'], "Snapshot comparison")
           
     def test_snapshot_dont_exist(self):
         """

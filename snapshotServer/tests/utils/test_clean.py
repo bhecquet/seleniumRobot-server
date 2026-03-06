@@ -46,9 +46,9 @@ class TestClean(django.test.TestCase):
         # check original file has been deleted and replaced in reference
         self.assertFalse(Path(self.media_dir, 'videoCapture.avi').exists())
         self.assertTrue(Path(self.media_dir, 'replaced_video.txt').exists())
-        self.assertEquals(File.objects.get(pk=3).file.name, 'documents/replaced_video.txt')
+        self.assertEqual(File.objects.get(pk=3).file.name, 'documents/replaced_video.txt')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 30)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 30)
     
     def test_do_not_replace_video_for_failed_test(self):
         """
@@ -69,9 +69,9 @@ class TestClean(django.test.TestCase):
         # check original file has not been deleted
         self.assertTrue(Path(self.media_dir, 'videoCapture.avi').exists())
         self.assertFalse(Path(self.media_dir, 'replaced_video.txt').exists())
-        self.assertEquals(File.objects.get(pk=3).file.name, 'documents/videoCapture.avi')
+        self.assertEqual(File.objects.get(pk=3).file.name, 'documents/videoCapture.avi')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
     def test_do_not_replace_video(self):
         """
@@ -88,9 +88,9 @@ class TestClean(django.test.TestCase):
         # check original file has not been deleted
         self.assertTrue(Path(self.media_dir, 'videoCapture.avi').exists())
         self.assertFalse(Path(self.media_dir, 'replaced_video.txt').exists())
-        self.assertEquals(File.objects.get(pk=3).file.name, 'documents/videoCapture.avi')
+        self.assertEqual(File.objects.get(pk=3).file.name, 'documents/videoCapture.avi')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
 
     
@@ -113,9 +113,9 @@ class TestClean(django.test.TestCase):
         # check original file has been deleted and replaced in reference
         self.assertFalse(Path(self.media_dir, 'test.html').exists())
         self.assertTrue(Path(self.media_dir, 'replaced.txt').exists())
-        self.assertEquals(File.objects.get(pk=2).file.name, 'documents/replaced.txt')
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/replaced.txt')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 10)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 10)
     
     def test_replace_html_for_failed_test(self):
         """
@@ -136,9 +136,9 @@ class TestClean(django.test.TestCase):
         # check original file has been deleted and replaced in reference
         self.assertFalse(Path(self.media_dir, 'test.html.zip').exists())
         self.assertTrue(Path(self.media_dir, 'replaced.txt').exists())
-        self.assertEquals(File.objects.get(pk=2).file.name, 'documents/replaced.txt')
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/replaced.txt')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 10)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 10)
         
     def test_do_not_replace_html(self):
         """
@@ -153,9 +153,9 @@ class TestClean(django.test.TestCase):
         clean.replace_html()
         
         self.assertTrue(Path(self.media_dir, 'test.html.zip').exists())
-        self.assertEquals(File.objects.get(pk=2).file.name, 'documents/test.html.zip')
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/test.html.zip')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
     def test_do_not_replace_non_html(self):
         """
@@ -173,9 +173,9 @@ class TestClean(django.test.TestCase):
         shutil.copy(file_path, self.media_dir)
         clean.replace_html()
         
-        self.assertEquals(File.objects.get(pk=2).file.name, 'documents/engie.png')
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/engie.png')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 10)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 10)
             
     def test_do_not_replace_html_for_failed_test(self):
         """
@@ -194,9 +194,9 @@ class TestClean(django.test.TestCase):
         clean.replace_html()
         
         self.assertTrue(Path(self.media_dir, 'test.html.zip').exists())
-        self.assertEquals(File.objects.get(pk=2).file.name, 'documents/test.html.zip')
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/test.html.zip')
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
     def test_compress_image(self):
         """
@@ -213,7 +213,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'engie.png').stat().st_size
         self.assertTrue(final_size < initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 20)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
     
     def test_compress_image_for_failed_test(self):
         """
@@ -234,7 +234,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'engie.png').stat().st_size
         self.assertTrue(final_size < initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 20)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
         
     def test_do_not_compress_image(self):
         """
@@ -251,7 +251,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'engie.png').stat().st_size
         self.assertTrue(final_size == initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
     def test_do_not_compress_non_image(self):
         """
@@ -272,7 +272,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'test.html').stat().st_size
         self.assertTrue(final_size == initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 20)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
             
     def test_do_not_compress_image_for_failed_test(self):
         """
@@ -293,7 +293,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'engie.png').stat().st_size
         self.assertTrue(final_size == initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 0)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
             
     def test_do_not_compress_image_already_optimized(self):
@@ -315,7 +315,7 @@ class TestClean(django.test.TestCase):
         final_size = Path(self.media_dir, 'engie.png').stat().st_size
         self.assertTrue(final_size == initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
-        self.assertEquals(TestCaseInSession.objects.get(pk=1).optimized, 20)
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
         
     def test_clean_old_references(self):
         """

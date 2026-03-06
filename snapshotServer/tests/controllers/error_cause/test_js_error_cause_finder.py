@@ -102,7 +102,7 @@ class TestJsErrorCauseFinder(TestCase):
         error_cause_finder = JsErrorCauseFinder(TestCaseInSession.objects.get(pk=11))
         analysis_details = error_cause_finder.has_javascript_errors()
         self.assertEqual(0, len(analysis_details.errors))
-        self.assertEquals("Error reading step details for analysis: The 'file' attribute has no file associated with it.", analysis_details.analysis_error)
+        self.assertEqual("Error reading step details for analysis: The 'file' attribute has no file associated with it.", analysis_details.analysis_error)
 
     def test_has_javascript_error_no_browser_log_file(self):
         last_step_result = StepResult.objects.get(pk=14)

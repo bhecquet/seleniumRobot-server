@@ -138,7 +138,7 @@ class TestViewsetTestCaseInSession(TestApi):
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4, 'testSteps': [2, 3, 4]})
             self.assertEqual(response.status_code, 201)
             self.assertTrue('id' in response.data)
-            self.assertEquals(response.data['testSteps'], [2, 3, 4]) # steps has been added
+            self.assertEqual(response.data['testSteps'], [2, 3, 4]) # steps has been added
             self.assertNotEqual(response.data['id'], 1)
 
     def test_no_creation_when_exist_with_many_to_many_fields(self):
@@ -161,7 +161,7 @@ class TestViewsetTestCaseInSession(TestApi):
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 2, 'testSteps': []})
             self.assertEqual(response.status_code, 201)
             self.assertTrue('id' in response.data)
-            self.assertEquals(response.data['testSteps'], []) # steps has been removed
+            self.assertEqual(response.data['testSteps'], []) # steps has been removed
             self.assertEqual(response.data['id'], 8)
 
 

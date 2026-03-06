@@ -456,7 +456,7 @@ class TestVariableAdmin(TestAdmin):
         """
         content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
        
-        self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
         self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
     def test_variable_delete_selected_no_restriction_no_delete_permission(self):
@@ -465,7 +465,7 @@ class TestVariableAdmin(TestAdmin):
         """
         content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
        
-        self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
         self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
      
     def test_variable_delete_selected_with_restriction_and_no_delete_permission(self):
@@ -476,7 +476,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
        
-            self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
      
     def test_variable_delete_selected_with_restriction_and_delete_permission(self):
@@ -486,7 +486,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
        
-            self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
      
     def test_variable_delete_selected_with_application_restrictions_and_app1_permission(self):
@@ -496,7 +496,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 3)
        
-            self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content) # variable 'appName' is ready to be deleted
             
     def test_variable_delete_with_restriction_and_no_linked_application(self):
@@ -506,7 +506,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 9)
        
-            self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
             
      
@@ -517,7 +517,7 @@ class TestVariableAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 301)
 
-            self.assertTrue('<title>Delete multiple objects | Django site admin</title>' in content) # variable is ready to be deleted
+            self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
             self.assertTrue('<h2>Objects</h2><ul></ul>' in content) # no variable can be deleted
             
      

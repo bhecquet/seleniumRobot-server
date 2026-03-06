@@ -82,7 +82,7 @@ class TestApplicationViewSet(TestApi):
 
     def _get_environment(self, expected_status):
         response = self.client.get(reverse('environment'), data={'name': 'DEV'})
-        self.assertEquals(expected_status, response.status_code)
+        self.assertEqual(expected_status, response.status_code)
         if expected_status == 200:
             self.assertEqual(1, response.data['id'])
 
