@@ -23,7 +23,7 @@ class TestEnvironmentAdmin(TestAdmin):
         filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
         
         # all environments are displayed
-        self.assertEqual(filtered_environments,  [(1, 'DEV'), (2, 'ASS'), (3, 'DEV1'), (4, 'DEV2'), ('_None_', 'None')])
+        self.assertEqual(filtered_environments,  [(2, 'ASS'), (1, 'DEV'), (3, 'DEV1'), (4, 'DEV2'), ('_None_', 'None')])
         
     def test_environment_filter_lookup_with_application(self):
         """

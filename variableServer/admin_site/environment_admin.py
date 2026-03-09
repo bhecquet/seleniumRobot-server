@@ -2,6 +2,8 @@
 Created on 12 déc. 2024
 
 '''
+from operator import attrgetter
+
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
@@ -20,7 +22,8 @@ class EnvironmentFilter(SimpleListFilter):
             environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
         else:
             environments = set(TestEnvironment.objects.all())
-        return [(e.id, str(e)) for e in environments if e is not None] + [('_None_', 'None')]
+        environments = sorted([e for e in environments if e is not None], key=attrgetter('name'))
+        return [(e.id, str(e)) for e in environments] + [('_None_', 'None')]
 
     def queryset(self, request, queryset):
         if self.value():

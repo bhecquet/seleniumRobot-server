@@ -238,10 +238,10 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
+        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (777, 'appFileVar'), (41, 'linkedApp4')])
         
     def test_application_filter_lookup_application_restriction(self): 
         """
@@ -270,8 +270,8 @@ class TestApplicationAdmin(TestAdmin):
         request = MockRequest()
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
-        filtered_applications = sorted(application_filter.lookups(request=request, model_admin=version_admin), key=itemgetter(0))
+        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
         
         # applications should be present
-        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (41, 'linkedApp4'), (777, 'appFileVar')])
+        self.assertEqual(filtered_applications,  [(1, 'app1'), (2, 'app2'), (3, 'app3'), (4, 'app4'), (5, 'app5NoVar'), (6, 'app6NoVarNoTest'), (777, 'appFileVar'), (41, 'linkedApp4')])
         

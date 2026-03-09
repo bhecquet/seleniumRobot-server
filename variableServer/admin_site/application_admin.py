@@ -16,13 +16,13 @@ class ApplicationFilter(admin.SimpleListFilter):
     parameter_name = 'application'
 
     def lookups(self, request, model_admin):
-        queryset = Application.objects.all()
+        queryset = Application.objects.all().order_by('name')
         
         if bypass_application_permissions(request, 'variableServer.view_application'):
             return [(app.id, str(app)) for app in queryset]
         
         # remove applications that user has not permissions on
-        for application in Application.objects.all():
+        for application in queryset:
             if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name):
                 queryset = queryset.exclude(name=application.name)
 
