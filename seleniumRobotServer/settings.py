@@ -75,7 +75,7 @@ if (SECURITY_API_ENABLED):
             'seleniumRobotServer.permissions.permissions.GenericPermissions'
         ],
         'DEFAULT_AUTHENTICATION_CLASSES': [
-            'rest_framework.authentication.TokenAuthentication',   # for API calls
+            'hashed_auth.authentication.TokenAuthentication',   # for API calls
             'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
         ]
     }

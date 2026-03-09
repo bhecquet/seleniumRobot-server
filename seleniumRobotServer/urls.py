@@ -8,7 +8,7 @@ from django.urls.conf import path, re_path
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.decorators.csrf import ensure_csrf_cookie, csrf_exempt
 
-from commonsServer.views.api import CustomAuthToken
+from hashed_auth.views import ObtainAuthToken
 
 # in case openid is configured for login, change login page
 views.LoginView.site_header = 'Selenium Server administration'
@@ -20,7 +20,7 @@ else:
 
 urlpatterns = [
     
-    re_path(r'^api-token-auth/', CustomAuthToken.obtain_auth_token),
+    re_path(r'^api-token-auth/', ObtainAuthToken.as_view()),
     path('admin/login/', views.LoginView.as_view()),
     path('admin/', admin.site.urls),
     re_path(r'^snapshot/', include('snapshotServer.urls')),
