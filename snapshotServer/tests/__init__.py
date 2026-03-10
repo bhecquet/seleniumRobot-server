@@ -1,9 +1,10 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.authtoken.models import Token
 from django.db.models import Q
 import snapshotServer
 import django.test
+
+from hashed_auth.models import Token
 from snapshotServer.controllers.diff_computer import DiffComputer
 import logging
 import re
@@ -45,7 +46,7 @@ def authenticate_test_client_for_api(client):
     user, group = _create_allowed_user_and_group()
     
     token = Token.objects.get_or_create(user=user)[0]
-    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.raw_key)
 
 def authenticate_test_client_for_web_view(client):
     """

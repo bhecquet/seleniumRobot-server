@@ -1,9 +1,9 @@
 from django.contrib.auth.models import User, Group, Permission
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.authtoken.models import Token
 from django.db.models import Q
-import snapshotServer
 import variableServer
+from hashed_auth.models import Token
+
 
 def authenticate_test_client(client):
     """
@@ -23,7 +23,7 @@ def authenticate_test_client(client):
     group.user_set.add(user)
     
     token = Token.objects.get_or_create(user=user)[0]
-    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.raw_key)
     
 def authenticate_test_client_with_see_protected_vars(client):
     """
@@ -43,4 +43,4 @@ def authenticate_test_client_with_see_protected_vars(client):
     group.user_set.add(user)
     
     token = Token.objects.get_or_create(user=user)[0]
-    client.credentials(HTTP_AUTHORIZATION='Token ' + token.key)
+    client.credentials(HTTP_AUTHORIZATION='Token ' + token.raw_key)
