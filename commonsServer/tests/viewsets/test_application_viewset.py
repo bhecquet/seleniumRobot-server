@@ -5,8 +5,6 @@ from django.urls.base import reverse
 from variableServer.models import Application
 from django.contrib.contenttypes.models import ContentType
 import variableServer
-from commonsServer.views.viewsets import ApplicationViewSet, \
-    RetrieveByNameViewSet
 
 class TestApplicationViewSet(TestApi):
 
