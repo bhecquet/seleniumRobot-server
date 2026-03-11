@@ -196,6 +196,7 @@ class TestClean(django.test.TestCase):
 
         # check that a warning has been logged
         self.assertTrue(any('Cannot delete HAR' in msg for msg in log.output))
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 25)
     
     def test_replace_html(self):
         """
@@ -265,6 +266,7 @@ class TestClean(django.test.TestCase):
 
         # check that a warning has been logged
         self.assertTrue(any('Cannot delete html' in msg for msg in log.output))
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 10)
 
     def test_do_not_replace_html(self):
         """
@@ -385,6 +387,7 @@ class TestClean(django.test.TestCase):
 
         # check that a warning has been logged
         self.assertTrue(any('Cannot compress image' in msg for msg in log.output))
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
 
     def test_do_not_compress_image(self):
         """
