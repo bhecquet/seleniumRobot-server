@@ -9,6 +9,7 @@ from django.conf import settings
 import os
 import shutil
 from pathlib import Path
+from unittest.mock import patch
 from snapshotServer.utils import clean
 from snapshotServer.models import TestSession, TestCaseInSession, StepReference,\
     StepResult, File, Snapshot
@@ -174,7 +175,27 @@ class TestClean(django.test.TestCase):
 
         self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
 
+    def test_replace_har_error_on_delete(self):
+        """
+        When an error occurs while deleting a .har file, the exception is caught,
+        a warning is logged, and the file reference is NOT updated in the database
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=15, minutes=1)
+        session.save()
 
+        har_path = self.data_dir / 'test.har.zip'
+        shutil.copy(har_path, self.media_dir)
+
+        with patch('django.db.models.fields.files.FieldFile.delete', side_effect=OSError("Simulated deletion error")):
+            with self.assertLogs('snapshotServer.utils.clean', level='WARNING') as log:
+                clean.replace_har()
+
+        # check that the original file reference has NOT been updated in database
+        self.assertEqual(File.objects.get(pk=6).file.name, 'documents/test.har.zip')
+
+        # check that a warning has been logged
+        self.assertTrue(any('Cannot delete HAR' in msg for msg in log.output))
     
     def test_replace_html(self):
         """
@@ -221,7 +242,30 @@ class TestClean(django.test.TestCase):
         self.assertEqual(File.objects.get(pk=2).file.name, 'documents/replaced.txt')
         
         self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 10)
-        
+
+
+    def test_replace_html_error_on_delete(self):
+        """
+        When an error occurs while deleting a .html.zip file, the exception is caught,
+        a warning is logged, and the file reference is NOT updated in the database
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=5, minutes=1)
+        session.save()
+
+        image_path = self.data_dir / 'test.html.zip'
+        shutil.copy(image_path, self.media_dir)
+
+        with patch('django.db.models.fields.files.FieldFile.delete', side_effect=OSError("Simulated deletion error")):
+            with self.assertLogs('snapshotServer.utils.clean', level='WARNING') as log:
+                clean.replace_html()
+
+        # check that the original file reference has NOT been updated in database
+        self.assertEqual(File.objects.get(pk=2).file.name, 'documents/test.html.zip')
+
+        # check that a warning has been logged
+        self.assertTrue(any('Cannot delete html' in msg for msg in log.output))
+
     def test_do_not_replace_html(self):
         """
         HTML is not replaced if test session is younger than 5 days
@@ -317,7 +361,31 @@ class TestClean(django.test.TestCase):
         self.assertTrue(final_size < initial_size, f"initial size {initial_size} bytes - final size {final_size} bytes")
         
         self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 20)
-        
+
+    def test_compress_image_error(self):
+        """
+        When an error occurs while compressing an image file, the exception is caught,
+        a warning is logged, and the file on disk is NOT modified
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=5, minutes=1)
+        session.save()
+
+        image_path = self.data_dir / 'engie.png'
+        shutil.copy(image_path, self.media_dir)
+        initial_size = image_path.stat().st_size
+
+        with patch('PIL.Image.open', side_effect=OSError("Simulated compression error")):
+            with self.assertLogs('snapshotServer.utils.clean', level='WARNING') as log:
+                clean.compress_images()
+
+        # check that the file has NOT been modified on disk
+        final_size = Path(self.media_dir, 'engie.png').stat().st_size
+        self.assertEqual(final_size, initial_size)
+
+        # check that a warning has been logged
+        self.assertTrue(any('Cannot compress image' in msg for msg in log.output))
+
     def test_do_not_compress_image(self):
         """
         Image is not compressed if test session is younger than 5 days
@@ -569,4 +637,27 @@ class TestClean(django.test.TestCase):
         self.assertEqual(len(TestSession.objects.filter(pk=1)), 0)
         self.assertEqual(len(Snapshot.objects.filter(pk=snapshot.id)), 0)
 
-    
+    def test_replace_video_mp4_error_on_delete(self):
+        """
+        When an error occurs while deleting a .mp4 file, the exception is caught,
+        a warning is logged, and the file reference is NOT updated in the database
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=15, minutes=1)
+        session.save()
+
+        video_path = self.data_dir / 'test.mp4'
+        shutil.copy(video_path, self.media_dir)
+
+        with patch('django.db.models.fields.files.FieldFile.delete', side_effect=OSError("Simulated deletion error")):
+            with self.assertLogs('snapshotServer.utils.clean', level='WARNING') as log:
+                clean.replace_video()
+
+        # check that the original file reference has NOT been updated in database
+        self.assertEqual(File.objects.get(pk=4).file.name, 'documents/test.mp4')
+
+        # check that a warning has been logged
+        self.assertTrue(any('Cannot delete video' in msg for msg in log.output))
+
+
+
