@@ -94,11 +94,11 @@ class FileViewSet(ResultRecordingViewSet): # post
     def create(self, request, *args, **kwargs):
         """
         Creates a File object
-        if the file is an HTML file, compress it
+        if the file is an HTML/HAR file, compress it
         """
 
         try:
-            if request.FILES['file'].name.lower().endswith('.html'):
+            if request.FILES['file'].name.lower().endswith('.html') or request.FILES['file'].name.lower().endswith('.har'):
 
                 with io.BytesIO() as zip_buffer:
 
