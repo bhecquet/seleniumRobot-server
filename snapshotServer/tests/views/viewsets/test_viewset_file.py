@@ -87,6 +87,36 @@ class TestViewsetFile(TestApi):
                 with zip.open('test.html', 'r') as myfile:
                     self.assertTrue('<html>' in myfile.read().decode('utf-8'))
 
+    def test_upload_har_file(self):
+        """
+        Check file is uploaded and zipped at the same time
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/test.har', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = File.objects.filter(stepResult__id=1).last()
+            self.assertTrue(file.file.name.endswith(".zip"))
+            self.assertTrue(Path(file.file.path).exists())
+
+            with zipfile.ZipFile(file.file.path) as zip:
+                with zip.open('test.har', 'r') as myfile:
+                    self.assertTrue('har' in myfile.read().decode('utf-8'))
+
+    def test_upload_video_file(self):
+        """
+        Check file is uploaded and NOT zipped
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/test.mp4', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = File.objects.filter(stepResult__id=1).last()
+            self.assertTrue(file.file.name.endswith(".mp4"))
+            self.assertTrue(Path(file.file.path).exists())
+
     def test_upload_html_file_in_error(self):
         """
         Check file is uploaded and zipped at the same time
