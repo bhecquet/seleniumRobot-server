@@ -57,7 +57,7 @@
 						<div class="header-picture mx-auto">
 							{{ namedSnapshot.name }} 
 							{% if not namedSnapshot.stepSnapshot.computed %} 
-								<span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-toggle="tooltip" title="Computing ... Reload to update"></span>
+								<span class="spinner-border spinner-border-sm text-danger" role="status" aria-hidden="true" data-bs-toggle="tooltip" title="Computing ... Reload to update"></span>
 							{% elif namedSnapshot.stepSnapshot.computed and namedSnapshot.stepSnapshot.computingError %}
 								<span class="error-message">Error while computing: {{ namedSnapshot.stepSnapshot.computingError }}</span>
 							{% else %}
@@ -113,10 +113,8 @@
 													>Toggle differences</button>
 											<button type="button" 
 													class="btn btn-primary mt-3 mb-3" 
-													data-toggle="modal" 
-													data-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
-													data-toggle="tooltip" 
-													data-placement="top" 
+													data-bs-toggle="modal"
+													data-bs-target="#editionModal_{{testStepId}}_{{ snapshot_id }}"
 													title="{{ editButtonText }}"
 													{% if not editable %}disabled{% endif %}
 													>Edit</button>
@@ -135,7 +133,7 @@
 								</div>
 							
 								<div class="modal fade" id="editionModal_{{testStepId}}_{{ snapshot_id }}" tabindex="-1" role="dialog" aria-labelledby="editionModalLabel_{{testStepId}}_{{ snapshot_id }}" aria-hidden="true">
-									<div class="modal-dialog modal-xl" role="document">
+									<div class="modal-dialog modal-xl modal-dialog-centered" role="document">
 										<div class="modal-content">
 											<div class="modal-body">
 												<div class="snapshot">
@@ -162,7 +160,7 @@
 											<div class="modal-footer">
 												<button type="button" 
 														class="btn btn-secondary" 
-														data-dismiss="modal"
+														data-bs-dismiss="modal"
 														>Close</button>
 												<button type="button" 
 														class="btn btn-info" 
@@ -170,7 +168,7 @@
 														>Toggle differences</button>
 												<button type="submit" 
 														class="btn btn-primary" 
-														data-dismiss="modal" 
+														data-bs-dismiss="modal"
 														{% if not editable %}disabled{% endif %}
 														>Save</button>
 											</div>
