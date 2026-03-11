@@ -7,7 +7,7 @@ from django.core.management.base import BaseCommand
 from django_apscheduler.jobstores import DjangoJobStore
 from django_apscheduler.models import DjangoJobExecution
 from django_apscheduler import util
-from snapshotServer.utils.clean import clean_old_references, clean_old_sessions, replace_html, replace_video, compress_images
+from snapshotServer.utils.clean import clean_old_references, clean_old_sessions, replace_html, replace_video, compress_images, replace_har
 from apscheduler.schedulers.blocking import BlockingScheduler
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,7 @@ def daily_clean():
     clean_old_sessions()
     replace_html()
     compress_images()
+    replace_har()
     replace_video()
 
 # The `close_old_connections` decorator ensures that database connections, that have become

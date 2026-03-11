@@ -190,11 +190,12 @@ LOGGING = {
 }
 
 DELETE_STEP_REFERENCE_AFTER_DAYS = 30       # number of days after which old references will be deleted if they have not been updated. 30 days by default
-COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS = 5   # number of days after which images of successful test (except step references and snapshot for comparison) will be compressed at 85%
-COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS = 10  # number of days after which images of failed test (except step references and snapshot for comparison) will be compressed at 85%
-DELETE_HTML_FOR_SUCCESS_AFTER_DAYS = 5      # number of days after which HTML of successful test will be replaced by empty code
-DELETE_HTML_FOR_FAILURE_AFTER_DAYS = 10     # number of days after which HTML of failed test will be replaced by empty code
-DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS = 15    # number of days after which HTML of successful test will be deleted
+COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS = 5   # number of days after which images of successful tests (except step references and snapshot for comparison) will be compressed at 85%
+COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS = 10  # number of days after which images of failed tests (except step references and snapshot for comparison) will be compressed at 85%
+DELETE_HTML_FOR_SUCCESS_AFTER_DAYS = 5      # number of days after which HTML of successful tests will be replaced by empty code
+DELETE_HTML_FOR_FAILURE_AFTER_DAYS = 10     # number of days after which HTML of failed tests will be replaced by empty code
+DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS = 15    # number of days after which video of successful tests will be deleted
+DELETE_HAR_FOR_SUCCESS_AFTER_DAYS = 7      # number of days after which HAR of successful tests captures will be deleted
 CLEANING_CRON = "0 3 * * *"                 # clean every day at 3 a.m
 
 LOGOUT_REDIRECT_URL = "/accounts/login/?next=/snapshot/home/"

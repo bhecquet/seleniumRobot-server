@@ -29,9 +29,10 @@ class TestClean(django.test.TestCase):
         super().tearDown()
         Path(self.media_dir, 'replaced.txt').unlink(True)
         Path(self.media_dir, 'replaced_video.txt').unlink(True)
-        
+        Path(self.media_dir, 'replaced_har.txt').unlink(True)
+
     
-    def test_replace_video(self):
+    def test_replace_video_avi(self):
         """
         video is replaced if test session is older than 15 days and test case is OK
         """
@@ -48,6 +49,25 @@ class TestClean(django.test.TestCase):
         self.assertTrue(Path(self.media_dir, 'replaced_video.txt').exists())
         self.assertEqual(File.objects.get(pk=3).file.name, 'documents/replaced_video.txt')
         
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 30)
+
+    def test_replace_video_mp4(self):
+        """
+        video is replaced if test session is older than 15 days and test case is OK
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=15, minutes=1)
+        session.save()
+
+        video_path = self.data_dir / 'test.mp4'
+        shutil.copy(video_path, self.media_dir)
+        clean.replace_video()
+
+        # check original file has been deleted and replaced in reference
+        self.assertFalse(Path(self.media_dir, 'test.mp4').exists())
+        self.assertTrue(Path(self.media_dir, 'replaced_video.txt').exists())
+        self.assertEqual(File.objects.get(pk=4).file.name, 'documents/replaced_video.txt')
+
         self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 30)
     
     def test_do_not_replace_video_for_failed_test(self):
@@ -75,7 +95,7 @@ class TestClean(django.test.TestCase):
         
     def test_do_not_replace_video(self):
         """
-        HTML is not replaced if test session is younger than 15 days
+        video is not replaced if test session is younger than 15 days
         """
         session = TestSession.objects.get(pk=1)
         session.date = timezone.now() - timedelta(days=14, hours=23, minutes=59)
@@ -92,6 +112,68 @@ class TestClean(django.test.TestCase):
         
         self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
         
+
+    def test_replace_har(self):
+        """
+        HAR is replaced if test session is older than 7 days and test case is OK
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=15, minutes=1)
+        session.save()
+
+        video_path = self.data_dir / 'test.har.zip'
+        shutil.copy(video_path, self.media_dir)
+        clean.replace_har()
+
+        # check original file has been deleted and replaced in reference
+        self.assertFalse(Path(self.media_dir, 'test.har.zip').exists())
+        self.assertTrue(Path(self.media_dir, 'replaced_har.txt').exists())
+        self.assertEqual(File.objects.get(pk=6).file.name, 'documents/replaced_har.txt')
+
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 25)
+
+    def test_do_not_replace_har_for_failed_test(self):
+        """
+        HAR is not replaced if test case is failed
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=15, minutes=1)
+        session.save()
+
+        test_case_in_session = TestCaseInSession.objects.get(pk=1)
+        test_case_in_session.status = "FAILURE"
+        test_case_in_session.save()
+
+        har_path = self.data_dir / 'test.har'
+        shutil.copy(har_path, self.media_dir)
+        clean.replace_har()
+
+        # check original file has not been deleted
+        self.assertTrue(Path(self.media_dir, 'test.har').exists())
+        self.assertFalse(Path(self.media_dir, 'replaced_har.txt').exists())
+        self.assertEqual(File.objects.get(pk=5).file.name, 'documents/test.har')
+
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
+
+    def test_do_not_replace_har(self):
+        """
+        HAR is not replaced if test session is younger than 7 days
+        """
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=6, hours=23, minutes=59)
+        session.save()
+
+        har_path = self.data_dir / 'test.har.zip'
+        shutil.copy(har_path, self.media_dir)
+        clean.replace_har()
+
+        # check original file has not been deleted
+        self.assertTrue(Path(self.media_dir, 'test.har.zip').exists())
+        self.assertFalse(Path(self.media_dir, 'replaced_har.txt').exists())
+        self.assertEqual(File.objects.get(pk=6).file.name, 'documents/test.har.zip')
+
+        self.assertEqual(TestCaseInSession.objects.get(pk=1).optimized, 0)
+
 
     
     def test_replace_html(self):

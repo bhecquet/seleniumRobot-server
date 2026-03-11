@@ -110,7 +110,26 @@
     pk: 3
     fields: 
         stepResult: 1
+        name: videoCapture.avi
         file: documents/videoCapture.avi
+-   model: snapshotServer.file
+    pk: 4
+    fields:
+        stepResult: 1
+        name: test.mp4
+        file: documents/test.mp4
+-   model: snapshotServer.file
+    pk: 5
+    fields:
+        stepResult: 1
+        name: test.har
+        file: documents/test.har
+-   model: snapshotServer.file
+    pk: 6
+    fields:
+        stepResult: 1
+        name: test.har
+        file: documents/test.har.zip
         
 -   model: snapshotServer.stepreference
     pk: 1

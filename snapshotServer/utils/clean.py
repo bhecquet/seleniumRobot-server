@@ -12,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 HTML_OPTIMIZED = 10
 IMAGES_OPTIMIZED = 20
+HAR_OPTIMIZED = 25
 VIDEO_OPTIMIZED = 30
 
 def clean_old_references():
@@ -66,7 +67,7 @@ def _compress_image_files(test_case_in_session):
                     img = img.resize((int(img.width * 0.4), int(img.height * 0.4)), Image.LANCZOS)
                     img.save(file.file.path, quality=85, optimize=True)
             except Exception as e:
-                logger.warn(f"Cannot compress image {file.file.path}: {str(e)}")
+                logger.warning(f"Cannot compress image {file.file.path}: {str(e)}")
         
     test_case_in_session.optimized = IMAGES_OPTIMIZED
     test_case_in_session.save()
@@ -87,7 +88,7 @@ def replace_html():
         
 def _replace_html_files(test_case_in_session):
     for file in File.objects.filter(stepResult__testCase=test_case_in_session):
-        if file.file.name.lower().endswith('.zip') or file.file.name.lower().endswith('.html'):
+        if file.file.name.lower().endswith('.html.zip') or file.file.name.lower().endswith('.html'):
             try:
                 new_file_path = Path(file.file.path).parent / 'replaced.txt'
                 if not new_file_path.exists():
@@ -98,33 +99,58 @@ def _replace_html_files(test_case_in_session):
                 file.file = new_file_path.relative_to(settings.MEDIA_ROOT).as_posix()
                 file.save()
             except Exception as e:
-                logger.warn(f"Cannot delete html {file.file.path}: {str(e)}")
+                logger.warning(f"Cannot delete html {file.file.path}: {str(e)}")
         
     test_case_in_session.optimized = HTML_OPTIMIZED
     test_case_in_session.save()
     
         
-def replace_video():
+def replace_har():
     """
-    After some days, remove video files
+    After some days, remove HAR files
     """
-    logger.info("deleting old videos")
+    logger.info("deleting old HAR")
     
     # get test cases older than N days which are not optimized
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=VIDEO_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HAR_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_HAR_FOR_SUCCESS_AFTER_DAYS)):
         for file in File.objects.filter(stepResult__testCase=test_case_in_session):
-            if file.file.name.lower().endswith('.avi'):
+            if file.name.lower().endswith('.har'):
                 try:
-                    new_file_path = Path(file.file.path).parent / 'replaced_video.txt'
+                    new_file_path = Path(file.file.path).parent / 'replaced_har.txt'
                     if not new_file_path.exists():
                         with open(new_file_path, 'w') as new_html:
-                            new_html.write('Video file has been removed to free space')
+                            new_html.write('HAR file has been removed to free space')
     
                     file.file.delete()
                     file.file = new_file_path.relative_to(settings.MEDIA_ROOT).as_posix()
                     file.save()
                 except Exception as e:
-                    logger.warn(f"Cannot delete video {file.file.path}: {str(e)}")
+                    logger.warning(f"Cannot delete HAR {file.file.path}: {str(e)}")
             
+        test_case_in_session.optimized = HAR_OPTIMIZED
+        test_case_in_session.save()
+
+def replace_video():
+    """
+    After some days, remove video files
+    """
+    logger.info("deleting old videos")
+
+    # get test cases older than N days which are not optimized
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=VIDEO_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS)):
+        for file in File.objects.filter(stepResult__testCase=test_case_in_session):
+            if file.name.lower().endswith('.avi') or file.name.lower().endswith('.mp4'):
+                try:
+                    new_file_path = Path(file.file.path).parent / 'replaced_video.txt'
+                    if not new_file_path.exists():
+                        with open(new_file_path, 'w') as new_html:
+                            new_html.write('Video file has been removed to free space')
+
+                    file.file.delete()
+                    file.file = new_file_path.relative_to(settings.MEDIA_ROOT).as_posix()
+                    file.save()
+                except Exception as e:
+                    logger.warning(f"Cannot delete video {file.file.path}: {str(e)}")
+
         test_case_in_session.optimized = VIDEO_OPTIMIZED
         test_case_in_session.save()
