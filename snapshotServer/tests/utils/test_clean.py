@@ -431,7 +431,7 @@ class TestClean(django.test.TestCase):
           
     def test_do_not_clean_old_sessions_with_reference_snapshot(self):
         """
-        Check old sessions are NOT cleaned if they hold at least one reference snapshot
+        Check old sessions are NOT cleaned if they hold at least one reference snapshot which is itself used by an other snapshot
         """    
         # add file for image file
         image_path = self.data_dir / 'engie.png'
@@ -439,18 +439,52 @@ class TestClean(django.test.TestCase):
         
         session = TestSession.objects.get(pk=1)
         session.date = timezone.now() - timedelta(days=4, hours=23, minutes=59)
-        session.ttl = timedelta(days=0)
+        session.ttl = timedelta(days=1)
         session.save()
         
         with open(image_path, 'rb') as image:
             snapshot = Snapshot(stepResult=StepResult.objects.get(pk=1),
                                 image=django.core.files.File(image))
             snapshot.save()
+
+            snapshot_referencing = Snapshot(stepResult=StepResult.objects.get(pk=1),
+                                            refSnapshot=snapshot,
+                                            image=django.core.files.File(image))
+            snapshot_referencing.save()
+            snapshot_referencing2 = Snapshot(stepResult=StepResult.objects.get(pk=1),
+                                            refSnapshot=snapshot,
+                                            image=django.core.files.File(image))
+            snapshot_referencing2.save()
             
         clean.clean_old_sessions()
         
         # check session has not been deleted 
         self.assertEqual(len(TestSession.objects.filter(pk=1)), 1)
         self.assertEqual(len(Snapshot.objects.filter(pk=snapshot.id)), 1)
+
+    def test_do_clean_old_sessions_with_reference_snapshot_not_references_anymore(self):
+        """
+        Reference snapshots are identified by the fact their refSnapshot field set to None
+        Check that if snapshot is not referenced anymore by any other snapshot, it's not a reference snapshot so session can be deleted
+        """
+        # add file for image file
+        image_path = self.data_dir / 'engie.png'
+        shutil.copy(image_path, self.media_dir)
+
+        session = TestSession.objects.get(pk=1)
+        session.date = timezone.now() - timedelta(days=4, hours=23, minutes=59)
+        session.ttl = timedelta(days=1)
+        session.save()
+
+        with open(image_path, 'rb') as image:
+            snapshot = Snapshot(stepResult=StepResult.objects.get(pk=1),
+                                image=django.core.files.File(image))
+            snapshot.save()
+
+        clean.clean_old_sessions()
+
+        # check session has not been deleted
+        self.assertEqual(len(TestSession.objects.filter(pk=1)), 0)
+        self.assertEqual(len(Snapshot.objects.filter(pk=snapshot.id)), 0)
 
     

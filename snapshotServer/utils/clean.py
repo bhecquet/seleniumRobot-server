@@ -38,7 +38,7 @@ def clean_old_sessions():
     
     for session in TestSession.objects.filter(ttl__gt=timedelta(days=0), 
                                               date__lt=timezone.now() - F('ttl'))\
-                                        .exclude(id__in=[s.stepResult.testCase.session.id for s in Snapshot.objects.filter(refSnapshot=None).select_related('stepResult__testCase__session')]).distinct():
+                                        .exclude(id__in=[s.stepResult.testCase.session.id for s in Snapshot.objects.filter(refSnapshot=None, snapshot__isnull=False).select_related('stepResult__testCase__session')]).distinct():
         logger.info("deleting session {}-{} of the {}".format(session.id, str(session), session.date))
         session.delete()
         
