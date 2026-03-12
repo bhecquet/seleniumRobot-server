@@ -7,7 +7,6 @@ Created on 25 janv. 2017
 from django.conf import settings
 from rest_framework import serializers
 
-from variableServer.admin_site.base_model_admin import is_user_authorized
 from variableServer.models import Variable, TestCase
 
 
@@ -32,13 +31,3 @@ class VariableSerializer(serializers.ModelSerializer):
         instance = super(VariableSerializer, self).create(validated_data)
         instance._correctReservableState()
         return instance
-        
-    def to_representation(self, instance):
-        """
-        Mask value if user has not permission to see it
-        """
-        ret = super().to_representation(instance)
-        
-        if (self.security_api_enabled and not is_user_authorized(self.context['request'].user)):
-            ret['value'] = instance.valueProtected()
-        return ret

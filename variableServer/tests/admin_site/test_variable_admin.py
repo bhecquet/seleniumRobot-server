@@ -40,16 +40,7 @@ class TestVariableAdmin(TestAdmin):
         super_user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
         self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
         
-        
-    def test_variable_get_list_display_with_unauthorized_user(self):
-        """
-        Check protected variable values are not displayed with disallowed user
-        """
-        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=user)), ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
-        
+
     def test_variable_queryset_without_application_restriction(self):
         """
         Check that list of variables contains variables for all application when restriction is not set
@@ -268,22 +259,6 @@ class TestVariableAdmin(TestAdmin):
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=102).value, 'azerty')
         self.assertFalse(Variable.objects.get(pk=102).protected)
-        
-    def test_variable_save_protected_variable_with_unauthorized_user(self):
-        """
-        Check value of protected var is not modified when user has not the right to do
-        """
-        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        variable = Variable.objects.get(pk=102)
-        self.assertTrue(variable.protected) # check variable is protected
-        variable.value = 'azerty'
-        variable.protected = False
-   
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass') # user without permission
-        
-        variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
-        self.assertEqual(Variable.objects.get(pk=102).value, 'azertyuiop') # value not changed
-        self.assertTrue(Variable.objects.get(pk=102).protected) # value not changed
         
     def test_variable_copy_to_no_variables(self):
         """
@@ -760,21 +735,13 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(len(form.fields['version'].queryset), 2) # check only versions for app1 (the application related to variable is present
         self.assertTrue(1 in [v.id for v in form.fields['version'].queryset])
         self.assertTrue(2 in [v.id for v in form.fields['version'].queryset])
-        
-    def test_variable_form_with_protected_var_and_not_authorized(self):  
-        """
-        Check value is not display if user is not authorized or no user defined
-        """
-        form = VariableForm(instance=Variable.objects.get(pk=102))
-        self.assertEqual(type(form.fields['protected'].widget), type(forms.HiddenInput()))
-        self.assertEqual(form.initial['value'], '****')
-        
+
     def test_variable_form_with_protected_var_and_authorized(self):  
         """
         Check value is not display if user is not authorized or no user defined
         """
         
-        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='see_protected_var')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
         
         instance = Variable.objects.get(pk=102)
         instance.user = user

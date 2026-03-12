@@ -6,8 +6,7 @@ from django.db.models import Q
 from django.test.client import Client
 
 import variableServer
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin,\
-    is_user_authorized
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.models import Variable, Application
 from variableServer.tests.test_admin import MockRequestWithApplication,\
     MockRequest, TestAdmin, MockRequestEmptyApplication
@@ -918,49 +917,3 @@ class TestBaseModelAdmin(TestAdmin):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self.assertTrue(base_admin.has_delete_permission(request=MockRequest(user=user)))
-            
-    def test_is_user_authorized_standard_user(self):
-        """
-        Check that standard user will not have right to see protected variabls
-        """
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        self.assertFalse(is_user_authorized(user))
-       
-    def test_is_user_authorized_authenticated_user_no_permission(self):
-        """
-        Check that standard user will not have right to see protected variabls
-        """
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        client = Client()
-        client.login(username='user', password='pass')
-        
-        self.assertFalse(is_user_authorized(user))
-       
-    def test_is_user_authorized_authenticated_user_with_permission(self):
-        """
-        Check that standard user will not have right to see protected variable
-        """
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
-        client = Client()
-        client.login(username='user', password='pass')
-        
-        variable_users_group, created = Group.objects.get_or_create(name='Variable Users')
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') , content_type=ct))
-        variable_users_group.user_set.add(user)
-        
-        self.assertTrue(is_user_authorized(user))
-       
-    def test_is_user_authorized_none_user(self):
-        """
-        Check that standard user will not have right to see protected variabls
-        """
-        self.assertFalse(is_user_authorized(None))
-     
-    def test_is_user_authorized_super_user(self):
-        """
-        Check that super user will have right to see protected variabls
-        """
-        user = User.objects.create_superuser(username='user', email='user@email.org', password='pass')
-        self.assertTrue(is_user_authorized(user))
-     

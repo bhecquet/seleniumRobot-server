@@ -8,21 +8,6 @@ from variableServer.models import Application
 from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker,\
     APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
 
-
-def is_user_authorized(user):
-    """
-    Returns True if user can view protected variables
-    @param user: user for which rights are checked
-    """
-    if not user:
-        return False
-    if (user 
-        and user.is_authenticated 
-        and (user.is_superuser 
-             or user.has_perm('variableServer.see_protected_var'))):
-        return True
-    else:
-        return False
     
 def bypass_application_permissions(request, global_permission_code_name):
     """

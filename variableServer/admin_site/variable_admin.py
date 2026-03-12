@@ -11,8 +11,7 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 
 from variableServer.admin_site.application_admin import ApplicationFilter
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin, \
-    is_user_authorized
+from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.admin_site.environment_admin import EnvironmentFilter
 from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
@@ -62,13 +61,6 @@ class VariableForm(forms.ModelForm):
             
             self.fields['version'].help_text = "Select an application, click 'save and continue editing' to display the list of related versions"
             self.fields['version'].disabled = True
-        
-     
-        # display fields depending on connected user
-        # If a variable is protected, display value only if user has right to see it through 'see_protected_var' permission
-        if self.initial.get('protected', False) and not is_user_authorized(user):
-            self.initial['value'] = "****"
-            self.fields['protected'].widget = forms.HiddenInput()
 
     def clean(self):
         cleaned_data = super().clean()
@@ -121,44 +113,19 @@ class VariableForm2(forms.ModelForm):
     
 class VariableAdmin(BaseServerModelAdmin): 
     list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
-    list_display_protected = ('nameWithApp', 'valueProtected', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
     actions = ['delete_selected', 'copy_to', 'change_values_at_once', 'unreserve_variable']
     
     def get_list_display(self, request):
-        if is_user_authorized(request.user):
-            return self.list_display
-        else:
-            return self.list_display_protected
+        return self.list_display
         
     def get_queryset(self, request):
         """
         Filter the returned variables with the application user is allowed to see
         """
         return super().get_queryset(request, 'variableServer.view_variable')
-
-    def save_model(self, request, obj, form, change):
-        """
-        In case user is not allowed to see protected vars (and modifying them), this method will restore default values
-        """
-        
-        user = request.user
-        
-        # before saving, get the 'protected' flag from database
-        try:
-            db_obj = Variable.objects.get(id=obj.id)
-    
-            # In case user is not allowed to see value, he will not modify it
-            if db_obj.protected and not is_user_authorized(user):
-                obj.protected = db_obj.protected
-                obj.value = db_obj.value
-        except:
-            # In case of adding variable, it's not already present in database, so continue
-            pass
-        
-        admin.ModelAdmin.save_model(self, request, obj, form, change)
 
     def get_form(self, request, obj=None, **kwargs):
         """
