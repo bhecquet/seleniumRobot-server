@@ -1,3 +1,4 @@
+from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.tests import SnapshotTestCase,\
     authenticate_test_client_for_web_view_with_permissions
 from django.conf import settings
@@ -115,13 +116,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(1, response.context['testSession'].id)
             self.assertEqual(['Issue', 'Some information', 'Last State'], response.context['testInfoList'])
             self.assertEqual(1, test_case_in_session.id)
-            self.assertIsNone(test_case_info[0]) # no snapshot comparison done
-            self.assertEqual(4, test_case_info[1]) # number of steps
-            self.assertEqual(0, test_case_info[2]) # number of failed steps
-            self.assertEqual(7, test_case_info[3]) # test duration
-            self.assertEqual([], test_case_info[4]) # tests with the same error (none as test is OK
-            self.assertEqual({'id': -1, 'error_short': '', 'error': '', 'color': 'white'}, test_case_info[5]) # badge information => no content
-            self.assertEqual({'Issue': {'type': 'hyperlink', 'link': 'https://jiraserver/PROJECT/PRO-1', 'info': 'Issue'}, 'Some information': {'type': 'string', 'info': 'some text'}, 'Last State': {'type': 'multipleinfo', 'infos': [{'link': 'loginInvalid_3-1_Test_end--9a514b.png', 'id': 90, 'type': 'imagelink', 'info': 'Image'}, {'link': 'videoCapture.avi', 'id': 91, 'type': 'videolink', 'info': 'Video'}]}}, test_case_info[6]) # test duration
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(4, test_case_info['steps_number']) # number of steps
+            self.assertEqual(0, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(7, test_case_info['duration']) # test duration
+            self.assertEqual([], test_case_info['related_errors_number']) # tests with the same error (none as test is OK
+            self.assertEqual({'id': -1, 'error_short': '', 'error': '', 'color': 'white'}, test_case_info['error_badge']) # badge information => no content
+            self.assertEqual({'Issue': {'type': 'hyperlink', 'link': 'https://jiraserver/PROJECT/PRO-1', 'info': 'Issue'}, 'Some information': {'type': 'string', 'info': 'some text'}, 'Last State': {'type': 'multipleinfo', 'infos': [{'link': 'loginInvalid_3-1_Test_end--9a514b.png', 'id': 90, 'type': 'imagelink', 'info': 'Image'}, {'link': 'videoCapture.avi', 'id': 91, 'type': 'videolink', 'info': 'Video'}]}}, test_case_info['test_infos']) # test duration
             
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -230,10 +231,10 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             
             test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
             self.assertEqual(1, test_case_in_session.id)
-            self.assertFalse(test_case_info[0]) # snapshot comparison is KO
-            self.assertEqual(4, test_case_info[1]) # number of steps
-            self.assertEqual(0, test_case_info[2]) # number of failed steps
-            self.assertEqual(7, test_case_info[3]) # test duration
+            self.assertFalse(test_case_info['snapshot_comparison_result']) # snapshot comparison is KO
+            self.assertEqual(4, test_case_info['steps_number']) # number of steps
+            self.assertEqual(0, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(7, test_case_info['duration']) # test duration
     
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -261,13 +262,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(11, response.context['testSession'].id)
             self.assertEqual(['Last State'], response.context['testInfoList'])
             self.assertEqual(11, test_case_in_session.id)
-            self.assertIsNone(test_case_info[0]) # no snapshot comparison done
-            self.assertEqual(5, test_case_info[1]) # number of steps
-            self.assertEqual(3, test_case_info[2]) # number of failed steps
-            self.assertEqual(12, test_case_info[3]) # test duration
-            self.assertEqual([], test_case_info[4]) # tests with the same error (none as test has no error recorded)
-            self.assertEqual({'id': -1, 'error_short': '', 'error': '', 'color': 'white'}, test_case_info[5]) # badge information => no content
-            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info[6]) # test info
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(5, test_case_info['steps_number']) # number of steps
+            self.assertEqual(3, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(12, test_case_info['duration']) # test duration
+            self.assertEqual([], test_case_info['related_errors_number']) # tests with the same error (none as test has no error recorded)
+            self.assertEqual({'id': -1, 'error_short': '', 'error': '', 'color': 'white'}, test_case_info['error_badge']) # badge information => no content
+            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info['test_infos']) # test info
      
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -277,6 +278,9 @@ class TestTestSessionSummaryView(SnapshotTestCase):
              
             # error message displayed
             self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
+
+            # error cause analysis not present as no error is attached to step result
+            self.assertFalse("""<i class="fas fa-brain" aria-hidden="true"></i></a></td>""" in html)
         
 
     def test_summary_report_result_multiple_steps_ko(self):
@@ -310,8 +314,8 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             # check order of steps
             test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
     
-            self.assertEqual([], test_case_info[4]) # tests with the same error (none as test has no error recorded)
-            self.assertEqual({'id': 0, 'error_short': 'loginInvalid', 'error': 'Error WebDriverException in sendKeys in loginInvalid>sendKeys on Page.user', 'color': 'crimson'}, test_case_info[5]) # Only the first error is kept
+            self.assertEqual([], test_case_info['related_errors_number']) # tests with the same error (none as test has no error recorded)
+            self.assertEqual({'id': 0, 'error_short': 'loginInvalid', 'error': 'Error WebDriverException in sendKeys in loginInvalid>sendKeys on Page.user', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # Only the first error is kept
        
     def test_summary_report_result_ko_with_recorded_error_no_related(self):
         """
@@ -338,13 +342,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(11, response.context['testSession'].id)
             self.assertEqual(['Last State'], response.context['testInfoList'])
             self.assertEqual(11, test_case_in_session.id)
-            self.assertIsNone(test_case_info[0]) # no snapshot comparison done
-            self.assertEqual(5, test_case_info[1]) # number of steps
-            self.assertEqual(3, test_case_info[2]) # number of failed steps
-            self.assertEqual(12, test_case_info[3]) # test duration
-            self.assertEqual([], test_case_info[4]) # tests with the same error (none as no test has the same error)
-            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson'}, test_case_info[5]) # badge information => no content
-            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info[6]) # test info
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(5, test_case_info['steps_number']) # number of steps
+            self.assertEqual(3, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(12, test_case_info['duration']) # test duration
+            self.assertEqual([], test_case_info['related_errors_number']) # tests with the same error (none as no test has the same error)
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # badge information => no content
+            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info['test_infos']) # test info
      
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -360,7 +364,63 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         
             # no related error displayed
             self.assertTrue("""title="3 step(s) failed">*</a></sup></td><td name="relatedErrors-1"></td><td>12 sec.</td><""" in html)
-    
+
+            # error cause analysis not present as error cause is not defined
+            self.assertFalse("""<i class="fas fa-brain" aria-hidden="true"></i></a></td>""" in html)
+
+
+    def test_summary_report_result_ko_with_recorded_error_with_cause(self):
+        """
+        Same as test_summary_report_result_ko but we record an error for the failed step
+        Check
+        - a badge is present for the failed test
+        - no related error is displayed
+        - error cause analysis displayed
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+
+            error = Error(stepResult=StepResult.objects.get(id=13),
+                          action="getErrorMessage<> >getText on HtmlElement error message",
+                          exception="WebDriverException",
+                          errorMessage="WebDriverException in search",
+                          cause=Cause.SCRIPT,
+                          causedBy=Reason.BAD_LOCATOR
+                        )
+            error.save()
+
+            response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+            self.assertEqual(1, len(response.context['object_list']))
+
+            # check order of steps
+            test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
+
+            self.assertEqual(11, response.context['testSession'].id)
+            self.assertEqual(['Last State'], response.context['testInfoList'])
+            self.assertEqual(11, test_case_in_session.id)
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(5, test_case_info['steps_number']) # number of steps
+            self.assertEqual(3, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(12, test_case_info['duration']) # test duration
+            self.assertEqual([], test_case_info['related_errors_number']) # tests with the same error (none as no test has the same error)
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': 'Element not found, but element seems to be present on page, check the locator'}, test_case_info['error_badge']) # badge information => no content
+            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info['test_infos']) # test info
+
+            # check content
+            html = self.remove_spaces(response.rendered_content)
+
+            # test is KO
+            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
+
+            # error message displayed
+            self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
+
+            # badge present and displayed
+            self.assertTrue("""title="no description available">testJenkinsKo</a><span class="badge bg-primary" style="background-color: crimson !important" data-bs-toggle="tooltip" title="Error WebDriverException in search in getErrorMessage&lt;&gt; &gt;getText on HtmlElement error message">getErrorMessage&lt;</span></td><td name="stepsTotal-1">5""" in html)
+
+            # error cause analysis present
+            self.assertTrue("""<i class="fas fa-file-alt" aria-hidden="true"></i></a></td><td class="error-analysis"><a tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Error Analysis" data-bs-content="Element not found, but element seems to be present on page, check the locator"><i class="fas fa-brain" aria-hidden="true"></i></a></td>""" in html)
+
         
     def test_summary_report_result_ko_with_recorded_error_with_related(self):
         """
@@ -397,13 +457,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(110, response.context['testSession'].id)
             self.assertEqual(['Last State'], response.context['testInfoList'])
             self.assertEqual(110, test_case_in_session.id)
-            self.assertIsNone(test_case_info[0]) # no snapshot comparison done
-            self.assertEqual(4, test_case_info[1]) # number of steps
-            self.assertEqual(2, test_case_info[2]) # number of failed steps
-            self.assertEqual(7, test_case_info[3]) # test duration
-            self.assertEqual([TestCaseInSession.objects.get(id=11)], test_case_info[4]) # tests with the same error (the related error is returned)
-            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson'}, test_case_info[5]) # badge information => information about the error
-            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info[6]) # test info
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(4, test_case_info['steps_number']) # number of steps
+            self.assertEqual(2, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(7, test_case_info['duration']) # test duration
+            self.assertEqual([TestCaseInSession.objects.get(id=11)], test_case_info['related_errors_number']) # tests with the same error (the related error is returned)
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # badge information => information about the error
+            self.assertEqual({'Last State': {'type': 'multipleinfo', 'infos': [{'type': 'log', 'info': 'Browsermob proxy (captureNetwork option) is only compatible with DIRECT and <MANUAL>'}]}}, test_case_info['test_infos']) # test info
      
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -461,13 +521,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             object_list_iterator = iter(response.context['object_list'].items())
             test_case_in_session, test_case_info = next(object_list_iterator)
             self.assertEqual(11, response.context['testSession'].id)
-            self.assertEqual([TestCaseInSession.objects.get(id=110)], test_case_info[4]) # the other test is returned
-            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson'}, test_case_info[5]) # badge information => information about the error
+            self.assertEqual([TestCaseInSession.objects.get(id=110)], test_case_info['related_errors_number']) # the other test is returned
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # badge information => information about the error
             
             test_case_in_session, test_case_info = next(object_list_iterator)
             self.assertEqual(11, response.context['testSession'].id)
-            self.assertEqual([TestCaseInSession.objects.get(id=11)], test_case_info[4]) # the other test is returned
-            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson'}, test_case_info[5]) # badge information => information about the error
+            self.assertEqual([TestCaseInSession.objects.get(id=11)], test_case_info['related_errors_number']) # the other test is returned
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # badge information => information about the error
     
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -522,13 +582,13 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             object_list_iterator = iter(response.context['object_list'].items())
             test_case_in_session, test_case_info = next(object_list_iterator)
             self.assertEqual(11, response.context['testSession'].id)
-            self.assertEqual([], test_case_info[4]) # the other test is returned
-            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson'}, test_case_info[5]) # badge information => information about the error
+            self.assertEqual([], test_case_info['related_errors_number']) # the other test is returned
+            self.assertEqual({'id': 0, 'error_short': 'getErrorMessage<', 'error': 'Error WebDriverException in search in getErrorMessage<> >getText on HtmlElement error message', 'color': 'crimson', 'cause': ''}, test_case_info['error_badge']) # badge information => information about the error
             
             test_case_in_session, test_case_info = next(object_list_iterator)
             self.assertEqual(11, response.context['testSession'].id)
-            self.assertEqual([], test_case_info[4]) # the other test is returned
-            self.assertEqual({'id': 1, 'error_short': 'getErrorMessage', 'error': 'Error WebDriverException in search in getErrorMessage>getText on HtmlElement error message', 'color': 'coral'}, test_case_info[5]) # badge information => information about the error
+            self.assertEqual([], test_case_info['related_errors_number']) # the other test is returned
+            self.assertEqual({'id': 1, 'error_short': 'getErrorMessage', 'error': 'Error WebDriverException in search in getErrorMessage>getText on HtmlElement error message', 'color': 'coral', 'cause': ''}, test_case_info['error_badge']) # badge information => information about the error
     
             # check content
             html = self.remove_spaces(response.rendered_content)
@@ -555,11 +615,11 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(111, response.context['testSession'].id)
             self.assertEqual([], response.context['testInfoList'])
             self.assertEqual(111, test_case_in_session.id)
-            self.assertIsNone(test_case_info[0]) # no snapshot comparison done
-            self.assertEqual(0, test_case_info[1]) # number of steps
-            self.assertEqual(0, test_case_info[2]) # number of failed steps
-            self.assertEqual(0, test_case_info[3]) # test duration
-            self.assertEqual({}, test_case_info[6]) # test info
+            self.assertIsNone(test_case_info['snapshot_comparison_result']) # no snapshot comparison done
+            self.assertEqual(0, test_case_info['steps_number']) # number of steps
+            self.assertEqual(0, test_case_info['failed_steps_number']) # number of failed steps
+            self.assertEqual(0, test_case_info['duration']) # test duration
+            self.assertEqual({}, test_case_info['test_infos']) # test info
      
             # check content
             html = self.remove_spaces(response.rendered_content)

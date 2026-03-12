@@ -474,6 +474,8 @@ class Error(models.Model):
 
 
     def friendly_message(self):
+        if self.cause is None:
+            return ""
         if self.cause == Cause.ANALYZING or self.cause == Cause.ANALYSIS_REQUESTED:
             return self.cause
         elif self.cause == Cause.APPLICATION:

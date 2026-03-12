@@ -34,27 +34,32 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         
         for test_case_in_session in TestCaseInSession.objects.filter(session = session_id).order_by("date"):
             step_results = test_case_in_session.stepresult.all()
-            
+
             error = self.get_error_in_test(test_case_in_session.stepresult.all())
             error_str = None
             
             if error:
                 error_str = str(error)
                 if error_str not in badge_per_error.keys():
-                    badge_per_error[error_str] = {'id': badge_index, 'error_short': error.action.split('>')[0], 'error': error_str, 'color': self.colors[badge_index % len(self.colors)]}
+                    badge_per_error[error_str] = {'id': badge_index,
+                                                  'error_short': error.action.split('>')[0],
+                                                  'error': error_str,
+                                                  'color': self.colors[badge_index % len(self.colors)],
+                                                  'cause': error.friendly_message()}
                     badge_index += 1
 
             
             
-            test_case_in_session_data[test_case_in_session] = (
-                        test_case_in_session.isOkWithSnapshots(),                                   # no problem with snapshot comparison
-                        len(test_case_in_session.stepresult.all()),                                 # number of steps
-                        len([sr for sr in step_results if not sr.result]),                          # number of failed steps
-                        int(test_case_in_session.duration() / 1000),                                # duration
-                        self.get_related_errors_in_test(step_results),                              # number of tests with the same error
-                        badge_per_error[error_str],                                                 # info that will display on badge
-                        {info.name: json.loads(info.info) for info in test_case_in_session.testInfos.all()} # test infos
-                   )
+            test_case_in_session_data[test_case_in_session] = {
+                        'snapshot_comparison_result': test_case_in_session.isOkWithSnapshots(),                     # no problem with snapshot comparison
+                        'steps_number': len(test_case_in_session.stepresult.all()),                                 # number of steps
+                        'failed_steps_number': len([sr for sr in step_results if not sr.result]),                   # number of failed steps
+                        'duration': int(test_case_in_session.duration() / 1000),                                    # duration
+                        'related_errors_number': self.get_related_errors_in_test(step_results),                     # number of tests with the same error
+                        'error_badge': badge_per_error[error_str],                                                  # info that will display on badge
+                        'test_infos': {info.name: json.loads(info.info) for info in test_case_in_session.testInfos.all()} # test infos
+
+            }
 
         return test_case_in_session_data
             
@@ -69,7 +74,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         
     def get_error_in_test(self, step_results: list[StepResult]) -> Optional[Error]:
         """
-        Returns the error that caused the test (the first one)
+        Returns the error that caused the test to fail (the first one)
         """
         steps_in_error = [sr for sr in step_results if not sr.result][0:1]
         if steps_in_error:
