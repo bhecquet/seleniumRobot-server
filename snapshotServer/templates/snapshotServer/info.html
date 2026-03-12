@@ -33,6 +33,11 @@
                                     {% endif %}
                                 {% endfor %}
                             </td>
+                            {% elif info.type == 'errorcause' %}
+                            <td>
+                                <span style="width: 95%; display: inline-block" class="errorCause">{{ info.info }}</span>
+                                <span onclick="javascript:runErrorAnalysis({{ currentTest.id }})"><i class="fa-solid fa-arrows-rotate"></i></span>
+                            </td>
                             {% endif %}
                         {% else %}
                             <td></td>

@@ -7,6 +7,7 @@
  
     <script type="text/javascript" src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
 	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>	
+	<script type="text/javascript" src="{% static 'js/testResult.js' %}"></script>
 
 {% endblock %}
 
@@ -63,7 +64,7 @@
                         </tr>
                         {% endif %}
                         <tr>
-                        	<th>Application type</th>
+                        	<th style="width: 20%">Application type</th>
                         	<td>{{ applicationType }} </td>
                     	</tr>
                     	<tr>
@@ -218,6 +219,7 @@
     }
     
     document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
+
 
 
 	var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))

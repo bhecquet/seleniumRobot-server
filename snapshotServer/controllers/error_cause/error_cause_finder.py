@@ -27,9 +27,15 @@ class ErrorCauseFinderExecutor:
 
         return cls.executor
 
+    @staticmethod
+    def _get_errors(test_case_in_session):
+        return sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=test_case_in_session, result=False).order_by('-pk')], [])
+
     @classmethod
     def submit(cls, test_case_in_session: TestCaseInSession):
-
+        for error in ErrorCauseFinderExecutor._get_errors(test_case_in_session):
+            error.cause = Cause.ANALYSIS_REQUESTED
+            error.save()
         cls.get_instance().submit(ErrorCauseFinderExecutor.detect, test_case_in_session)
 
     @staticmethod
@@ -37,14 +43,16 @@ class ErrorCauseFinderExecutor:
 
         close_old_connections()
         error_cause_finder = ErrorCauseFinder(test_case_in_session)
-        errors = sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=test_case_in_session, result=False).order_by('-pk')], [])
+        errors = ErrorCauseFinderExecutor._get_errors(test_case_in_session)
 
         for error in errors:
-            error.cause = "analyzing ..."
+            error.cause = Cause.ANALYZING
             error.save()
 
         try:
+            logger.info(f"Analysis for test_case_in_session {test_case_in_session.id} started")
             error_cause = error_cause_finder.detect_cause()
+            logger.info(f"Analysis for test_case_in_session {test_case_in_session.id} finished")
             if error_cause:
                 for error in errors:
                     error.cause = error_cause.cause
@@ -53,6 +61,7 @@ class ErrorCauseFinderExecutor:
                     error.causeAnalysisErrors = '\n'.join(error_cause.analysis_errors)
                     error.save()
         except Exception as e:
+            logger.error(f"Analysis for test_case_in_session {test_case_in_session.id} failed: {str(e)}")
             for error in errors:
                 error.cause = "unknown"
                 error.causedBy = "analysis_error"

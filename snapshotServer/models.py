@@ -474,7 +474,9 @@ class Error(models.Model):
 
 
     def friendly_message(self):
-        if self.cause == Cause.APPLICATION:
+        if self.cause == Cause.ANALYZING or self.cause == Cause.ANALYSIS_REQUESTED:
+            return self.cause
+        elif self.cause == Cause.APPLICATION:
             if self.causedBy == Reason.STEP_ASSERTION_ERROR:
                 return "Assertion on step '%s': %s" % (self.stepResult.step.name, self.causeDetails)
             elif self.causedBy == Reason.SCENARIO_ASSERTION_ERROR:

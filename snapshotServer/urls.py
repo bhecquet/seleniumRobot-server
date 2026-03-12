@@ -12,6 +12,7 @@ from snapshotServer.views.test_result_view import TestResultView
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
 from snapshotServer.views.test_session_summary_view import TestSessionSummaryView
+from snapshotServer.views.error_analysis_view import ErrorAnalysisView
 from snapshotServer.views.viewsets.viewset_excludezone import ExcludeZoneViewSet
 from snapshotServer.views.viewsets.viewset_executionlogs import ExecutionLogsViewSet
 from snapshotServer.views.viewsets.viewset_file import FileViewSet
@@ -55,6 +56,9 @@ urlpatterns = [
     # get status of test session or test step
     re_path(r'^status/(?P<testCaseId>[0-9]+)/$', TestStatusView.as_view(), name="testStatusView"), 
     re_path(r'^status/(?P<testCaseId>[0-9]+)/(?P<testStepId>[0-9]+)/$', TestStatusView.as_view(), name="testStepStatusView"), 
+
+    # re-trigger error cause analysis for a test case
+    re_path(r'^errorAnalysis/(?P<test_case_in_session_id>[0-9]+)/$', ErrorAnalysisView.as_view(), name="errorAnalysisView"),
 
     
 ]

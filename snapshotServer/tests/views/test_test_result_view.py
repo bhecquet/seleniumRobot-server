@@ -124,7 +124,7 @@ class TestTestResultView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             ## details table
-            self.assertTrue("""<table class="table table-bordered table-sm"><tr><th>Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>None</td></tr>""" in html)
+            self.assertTrue("""<table class="table table-bordered table-sm"><tr><th style="width: 20%">Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>None</td></tr>""" in html)
             ## links to last state
             self.assertTrue('<th>Issue</th><td><a href="https://jiraserver/PROJECT/PRO-1">Issue</a></td></tr>'
             "<tr><th>Some information</th><td>some text</td></tr>"
@@ -145,7 +145,7 @@ class TestTestResultView(SnapshotTestCase):
             self.assertTrue('''<a href="#" onclick="$('#imagepreview').attr('src', $('#88').attr('src'));$('#imagemodal').modal('show');"><img id="88" src="/snapshot/api/file/88/download/" style="width: 300px"></a></div></div><div class="text-center">drv:main:Current Window: S&#x27;identifier [Jenkins]</div>'''
                             '<div class="text-center font-weight-lighter"><a href="https://jenkins/login?from=%2Fjenkins%2F" target=url>URL</a>' in html) 
             ## log value on step
-            self.assertTrue('<table class="table table-bordered table-sm"><tr><th width="15%">Key</th><th width="60%">Message</th><th width="25%">Value</th></tr>'
+            self.assertTrue('<table class="table table-bordered table-sm"><tr><th style="width:15%">Key</th><th style="width:60%">Message</th><th style="width:25%">Value</th></tr>'
                             '<tr><td><div class="message-conf"><span class="stepTimestamp mr-1"></span>key' in html)
             ## snapshot comparison is not displayed
             self.assertFalse('Snapshot comparison' in html)
@@ -341,7 +341,7 @@ class TestTestResultView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             # details table
-            self.assertTrue("""<table class="table table-bordered table-sm"><tr><th>Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>mynode.domain.com</td></tr>""" in html)
+            self.assertTrue("""<table class="table table-bordered table-sm"><tr><th style="width: 20%">Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>mynode.domain.com</td></tr>""" in html)
         
     def test_report_with_step_in_warning(self):
         """
@@ -379,7 +379,9 @@ class TestTestResultView(SnapshotTestCase):
 
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             html = self.remove_spaces(response.rendered_content)
-            self.assertTrue("""<th>caused details_0</th><td>Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</td>""" in html)
+            self.assertTrue('<th>caused details_0</th>'
+                            '<td><span style="width: 95%; display: inline-block" class="errorCause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
+                            '<span onclick="javascript:runErrorAnalysis(11)"><i class="fa-solid fa-arrows-rotate"></i></span></td>' in html)
 
 
     def test_report_with_description(self):

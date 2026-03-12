@@ -11,6 +11,8 @@ class Cause(StrEnum):
     APPLICATION = auto()
     ENVIRONMENT = auto()
     UNKNOWN = auto()
+    ANALYZING = "Analyzing ..."
+    ANALYSIS_REQUESTED = "Analysis requested"
 
 class Reason(StrEnum):
     # application
