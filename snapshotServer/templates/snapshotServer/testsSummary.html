@@ -31,18 +31,19 @@
                                 <table class="table">
                                     <thead>
                                         <tr>
-                                            <th class="alignleft"> Tests </th>
-                                            <th class="alignleft"> Methods </th>
+                                            <th class="alignleft" scope="col"> Tests </th>
+                                            <th class="alignleft" scope="col"> Methods </th>
                                             <!--
                                             <th> Passed Steps Count </th>
                                             <th> Failed Steps Count </th>
                                             -->
-                                            <th> Steps Count </th>
-                                            <th> Related Errors </th>
-                                            <th> Duration </th>
+                                            <th scope="col"> Steps Count </th>
+                                            <th scope="col"> Related Errors </th>
+                                            <th scope="col"> Duration </th>
                                             {% for infoName in testInfoList %}
-                                            <th> {{ infoName }} </th>
+                                            <th scope="col"> {{ infoName }} </th>
                                             {% endfor %}
+                                            <th scope="col"></th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -87,9 +88,9 @@
 	                                                        </div>
 	                                                        <div class="offcanvas-body">
 	                                                            <table class="table">
-	                                                                <th>Session</td>
-	                                                                <th>Test name</td>
-	                                                                <th>Test date</td>
+	                                                                <th scope="col">Session</th>
+	                                                                <th scope="col">Test name</th>
+	                                                                <th scope="col">Test date</th>
 	                                                            {% for relatedTestCaseInSessionError in testInfos.related_errors_number %}
 	                                                                <tr>
 	                                                                    <td>{{ relatedTestCaseInSessionError.session.date|localtime }}</td>

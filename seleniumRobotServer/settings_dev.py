@@ -55,6 +55,9 @@ DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.sqlite3',
          'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+         "OPTIONS": {
+             "init_command": "PRAGMA journal_mode=wal",
+         },
      }
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
