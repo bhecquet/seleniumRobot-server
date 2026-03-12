@@ -1,7 +1,7 @@
 {% load static %}
 
 <div class="box {% if status %}success{% else %}failed{% endif %} {% if captureList|length == 0 %}collapsed-box{% endif %}" 
-	style="display: {% if enable %}block{% else %}none{% endif %};>
+	style="display: {% if enable %}block{% else %}none{% endif %};">
 	<div class="box-header with-border">
 		<button type="button" class="btn btn-box-tool" data-widget="collapse">
 			{% if captureList|length == 0 %}
@@ -20,12 +20,11 @@
 			
 				
 					<!-- be sure we load & display exclusion zones only once image is loaded -->
-					<script>;
+					<script>
 						
 						{% if namedSnapshot.stepSnapshot %}
 							// update exclusion zone from database and draw them
 							function loadImages_{{ testStepId }}_{{ snapshot_id }}() {
-							
                                 {% if namedSnapshot.stepSnapshot.refSnapshot %}
 								    updatePanel('{% url "excludeListView" namedSnapshot.stepSnapshot.refSnapshot.id namedSnapshot.stepSnapshot.id %}', 'excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}');
                                 {% else %}
@@ -34,11 +33,13 @@
 
 								// delay display so that image is loaded and its height is > 0
 								setTimeout(function(){
+
 									drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
 															document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
 															'Static',
 															{{ testStepId }},
 															{{ snapshot_id }});
+
 									
 								}, 1000);
 							}
@@ -104,7 +105,7 @@
 										{% if namedSnapshot.stepSnapshot.refSnapshot %}
 											<button type="submit" 
 													class="btn btn-success mt-3 mb-3" 
-													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
 													{% if not editable %}disabled{% endif %}
 													>Make reference</button>
 											<button type="button" 
@@ -124,7 +125,7 @@
 													disabled>This step is a reference</button>
 											<button type="submit" 
 													class="btn btn-primary mt-3 mb-3" 
-													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}', 'display', 'makeRef=False&snapshotId={{ snapshot_id }}')"
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=False&snapshotId={{ snapshot_id }}')"
 													{% if not editable %}disabled{% endif %}
 													>Remove this reference</button>
 										{% endif %}
@@ -191,7 +192,7 @@
 							toggleElement('diff2_{{ testStepId }}_{{ snapshot_id }}');
 							
 						}, 500);
-						
+
 						$('#editionModal_{{ testStepId }}_{{ snapshot_id }}').on('shown.bs.modal', function (e) {
 						  
 							drawExistingExcludeZones(document.getElementById('canvas_{{ testStepId }}_{{ snapshot_id }}'), 
@@ -199,27 +200,30 @@
 													'',
 													{{ testStepId }},
 													{{ snapshot_id }});
-						  	
+
 							initDraw(document.getElementById('excludeZoneTable_{{ testStepId }}_{{ snapshot_id }}').getElementsByTagName('tbody')[0],
 										{{ testStepId }},
 										{{ snapshot_id }},
 										{{ namedSnapshot.stepSnapshot.refSnapshot.id }});
+
 						})
-						
-						// update exclusion zone and recompute diff when saving
-						$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
-						  	var $button = $(event.target); 
-						
-							$(this).closest('.modal').one('hidden.bs.modal', function() {
-							     // redraw rectangle on static canvas once they have been edited in modal
-							    drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'), 
-                                                    document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight, 
-                                                    'Static',
-                                                    {{ testStepId }},
-                                                    {{ snapshot_id }});
-							    updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
+
+						{% if namedSnapshot.stepSnapshot.refSnapshot %}
+							// update exclusion zone and recompute diff when saving
+							$('#editionModal_{{ testStepId }}_{{ snapshot_id }} .modal-footer button.btn-primary').on('click', function(event) {
+								var $button = $(event.target);
+
+								$(this).closest('.modal').one('hidden.bs.modal', function() {
+									 // redraw rectangle on static canvas once they have been edited in modal
+									drawExistingExcludeZones(document.getElementById('canvasStatic_{{ testStepId }}_{{ snapshot_id }}'),
+														document.getElementById("stepSnapshotStatic_{{ testStepId }}_{{ snapshot_id }}").clientHeight,
+														'Static',
+														{{ testStepId }},
+														{{ snapshot_id }});
+									updateExcludeZones({{ snapshot_id }}, {{ namedSnapshot.stepSnapshot.refSnapshot.id }}, {{ testCaseId }}, {{ testStepId }})
+								});
 							});
-						});
+						{% endif %}
 						
 					</script>
 				{% endwith %}
