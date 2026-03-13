@@ -362,6 +362,31 @@ class TestTestResultView(SnapshotTestCase):
 
     def test_report_with_error_cause(self):
         """
+        Check error cause is displayed with friendly message and analysis error
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+
+            error = Error(stepResult=StepResult.objects.get(pk=13),
+                            action="getErrorMessage<>",
+                            element="element",
+                            exception="java.lang.AssertionError",
+                            errorMessage="class java.lang.AssertionError: expected [false] but <> found [true]",
+                            cause="application",
+                            causedBy="step_assertion_error",
+                            causeDetails="error",
+                            causeAnalysisErrors="some error in analysis")
+            error.save()
+
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+            html = self.remove_spaces(response.rendered_content)
+            self.assertTrue('<th>caused details_0</th>'
+                            '<td><span style="width: 95%; display: inline-block" class="error-cause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
+                            '<span><a onclick="runErrorAnalysis(11)"><i class="fa-solid fa-arrows-rotate"></i>'
+                            '<a class="analysis-errors" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Analysis Errors" data-bs-content="some error in analysis"><i class="fas fa-file-alt" aria-hidden="true"></i></a></span></td>' in html)
+
+    def test_report_with_error_cause_no_analysis_error(self):
+        """
         Check error cause is displayed with friendly message
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
@@ -380,8 +405,9 @@ class TestTestResultView(SnapshotTestCase):
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             html = self.remove_spaces(response.rendered_content)
             self.assertTrue('<th>caused details_0</th>'
-                            '<td><span style="width: 95%; display: inline-block" class="errorCause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
-                            '<span onclick="javascript:runErrorAnalysis(11)"><i class="fa-solid fa-arrows-rotate"></i></span></td>' in html)
+                            '<td><span style="width: 95%; display: inline-block" class="error-cause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
+                            '<span><a onclick="runErrorAnalysis(11)"><i class="fa-solid fa-arrows-rotate"></i>'
+                            '<a class="analysis-errors" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Analysis Errors" data-bs-content="No error"><i class="fas fa-file-alt" aria-hidden="true"></i></a></span></td>' in html)
 
 
     def test_report_with_description(self):

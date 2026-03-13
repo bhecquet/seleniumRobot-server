@@ -1,7 +1,7 @@
 function runErrorAnalysis(currentTestId) {
 
-    document.querySelectorAll('.errorCause').forEach(function(element) {
-        element.innerText = 'Analysis requested'
+    document.querySelectorAll('.error-cause').forEach(function(element) {
+        element.innerText = 'Analysis requested, reload page to see update'
     });
 
     var csrftoken = getCookie('csrftoken');

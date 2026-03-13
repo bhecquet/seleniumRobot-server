@@ -35,8 +35,11 @@
                             </td>
                             {% elif info.type == 'errorcause' %}
                             <td>
-                                <span style="width: 95%; display: inline-block" class="errorCause">{{ info.info }}</span>
-                                <span onclick="javascript:runErrorAnalysis({{ currentTest.id }})"><i class="fa-solid fa-arrows-rotate"></i></span>
+                                <span style="width: 95%; display: inline-block" class="error-cause">{{ info.info }}</span>
+                                <span>
+                                    <a onclick="runErrorAnalysis({{ currentTest.id }})"><i class="fa-solid fa-arrows-rotate"></i>
+                                    <a class="analysis-errors" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Analysis Errors" data-bs-content="{{ info.errors }}"><i class="fas fa-file-alt" aria-hidden="true"></i></a>
+                                </span>
                             </td>
                             {% endif %}
                         {% else %}
