@@ -208,10 +208,10 @@ class VariableFilter(ApplicationSpecificFilter):
         
         if request.method == "GET":
             variable_list = self._filter_get_queryset(request, queryset, view)
-            permission = 'variableServer.view_%s' % queryset.model._meta.model_name
+
         elif request.method == "DELETE":
             variable_list = self._filter_delete_queryset(request, queryset, view)
-            permission = 'variableServer.delete_%s' % queryset.model._meta.model_name
+
         # for POST / PATCH / PUT requests, further filtering is done, so we need a queryset
         # moreover, no filtering needs to be done for these
         else: 

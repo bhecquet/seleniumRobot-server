@@ -2,7 +2,16 @@ import rest_framework.authentication
 from django.utils.translation import gettext_lazy as _
 from rest_framework import exceptions
 
-from django.contrib.auth.hashers import make_password, check_password
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+
+class MyPBKDF2PasswordHasher(PBKDF2PasswordHasher):
+    """
+    A subclass of PBKDF2PasswordHasher that uses 100 times more iterations.
+    """
+
+    iterations = int(PBKDF2PasswordHasher.iterations / 100)
 
 class TokenAuthentication(rest_framework.authentication.TokenAuthentication):
     """
@@ -31,6 +40,7 @@ class TokenAuthentication(rest_framework.authentication.TokenAuthentication):
     """
 
     def authenticate_credentials(self, key):
+
         model = self.get_model()
         token = None
 
@@ -50,3 +60,4 @@ class TokenAuthentication(rest_framework.authentication.TokenAuthentication):
 
     def verify(self, raw, token):
         return check_password(raw, token.key)
+

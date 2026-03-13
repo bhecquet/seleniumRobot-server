@@ -5,6 +5,7 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.contrib.auth.hashers import make_password
 
+from hashed_auth.authentication import MyPBKDF2PasswordHasher
 
 
 class Token(models.Model):
@@ -47,7 +48,7 @@ class Token(models.Model):
 
     def update_key(self):
         self.raw_key = self.generate_key()
-        self.key = make_password(self.raw_key)
+        self.key = make_password(self.raw_key, hasher=MyPBKDF2PasswordHasher())
 
     @classmethod
     def generate_key(cls):
