@@ -41,7 +41,7 @@ class TokenAuthentication(rest_framework.authentication.TokenAuthentication):
         model = self.get_model()
 
         try:
-            token = model.objects.get(key=crypt_token(key))
+            token = model.objects.select_related('user').get(key=crypt_token(key))
         except:
             raise exceptions.AuthenticationFailed(_('Invalid token.'))
 

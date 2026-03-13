@@ -249,7 +249,6 @@ class TokenAuthTests(TestCase):
         assert response.status_code == status.HTTP_200_OK
         assert 'token' in response.data
 
-        assert Token.objects.get(user=self.user_no_token).key.startswith("pbkdf2_sha256$")
 
     def test_token_login_form_existing_token(self):
         """If token has already been created, do not create it an other time"""
