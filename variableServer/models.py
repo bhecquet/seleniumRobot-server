@@ -4,7 +4,7 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
-from django.db.models.signals import pre_save
+from django.db.models.signals import pre_save, post_delete
 
 import commonsServer.models
 from commonsServer.utils.encryption import encrypt_data, decrypt_data
@@ -116,9 +116,9 @@ class Variable(models.Model):
         else:
             return os.path.join(settings.MEDIA_ROOT, 'variables', filename)
 
-    def _delete_variable_file(self, variable):
+    def delete_variable_file(self):
         try:
-            file_path = variable.get_file_path()
+            file_path = self.get_file_path()
             os.remove(file_path)
         except:
             #file already deleted or corrupted
@@ -128,17 +128,11 @@ class Variable(models.Model):
         if self.id:
             var = Variable.objects.get(id=self.id)
             if var.uploadFile != self.uploadFile:
-                self._delete_variable_file(var)
+                var.delete_variable_file()
 
 
         super().save(*args, **kwargs)
         self._correctReservableState()
-
-    def delete(self, using=None, keep_parents=False):
-        if self.uploadFile:
-            self._delete_variable_file(self)
-
-        super(Variable, self).delete(using, keep_parents)
 
     def _correctReservableState(self):
         """
@@ -186,3 +180,11 @@ def update_variable_value(sender, instance, **kwargs):
 
     if not isinstance(instance, Value) and instance.protected and instance.value is not None:
         instance.value = Value(instance.value)
+
+@receiver(post_delete, sender=Variable)
+def delete_variable_file(sender, instance, **kwargs):
+    """
+    When variable is deleted, remove the associated file if any
+    """
+    if instance.uploadFile:
+        instance.delete_variable_file()

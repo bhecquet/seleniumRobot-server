@@ -244,6 +244,38 @@ class TestVariableAdmin(TestAdmin):
 
         self.assertFalse(os.path.exists(del_file_path))
 
+    def test_variable_as_file_delete_file(self):
+        """
+        Check that when you delete a variable, file is also deleted
+        """
+        del_file_path = os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "tobedeleted.csv")
+        with open(del_file_path, "w") as f:
+            f.write("some,data,for,the,test")
+
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+
+        variable = Variable.objects.get(pk=996)
+        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        variable_admin.delete_model(obj=variable, request=MockRequest(user=user))
+
+        self.assertFalse(os.path.exists(del_file_path))
+
+    def test_variable_as_file_delete_multiple_files(self):
+        """
+        Check that when you delete multiple variables, file are also deleted
+        """
+        del_file_path = os.path.join(settings.MEDIA_ROOT, 'variables', "appFileVar", "tobedeleted.csv")
+        with open(del_file_path, "w") as f:
+            f.write("some,data,for,the,test")
+
+        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+
+        variables = Variable.objects.filter(pk=996)
+        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        variable_admin.delete_queryset(request=MockRequest(user=user), queryset=variables)
+
+        self.assertFalse(os.path.exists(del_file_path))
+
     def test_variable_save_protected_variable_with_authorized_user(self):
         """
         Check value is modified when user has the right to do
