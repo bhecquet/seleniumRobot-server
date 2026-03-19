@@ -90,8 +90,8 @@ else:
 # Connection to Open-WebUI instance. set empty URL to disable
 OPEN_WEBUI_WORKERS = int('${openwebui.workers}')
 OPEN_WEBUI_URL = '${openwebui.url}'
-OPEN_WEBUI_TOKEN = '{openwebui.token}'
-OPEN_WEBUI_MODEL = '{openwebui.model}'
+OPEN_WEBUI_TOKEN = '${openwebui.token}'
+OPEN_WEBUI_MODEL = '${openwebui.model}'
 OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE = '''In the provided image, do you see an error message ?
 - Start by extracting all texts and their color
 - Then, for each text, depending on its colour and meaning, determine if the text is an error message
