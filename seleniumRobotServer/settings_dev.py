@@ -66,6 +66,9 @@ DATABASES = {
 #         'PASSWORD': 'robotDb',
 #         'HOST': '',
 #         'PORT': '',
+#         'OPTIONS': {
+#             'prepare_threshold': 0,  # Deactivate to avoid deadlocks when reserving variables
+#         }
 #     }
 }
 

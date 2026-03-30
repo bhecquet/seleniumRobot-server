@@ -48,6 +48,9 @@ if ("${database.host}"):
             'PASSWORD': '${database.password}',
             'HOST': '${database.host}',
             'PORT': '${database.port}',
+            'OPTIONS': {
+                'prepare_threshold': 0,  # Deactivate to avoid deadlocks when reserving variables
+            }
         }
     }
 else:
