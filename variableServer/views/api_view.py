@@ -176,11 +176,11 @@ class VariableFilter(ApplicationSpecificFilter):
             variables = variables.filter(value=variable_value)
             
         variable_names = list(set([v.name for v in variables]))
-            
-        filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables])
-        
+
+        # see: https://github.com/bhecquet/seleniumRobot-server/issues/128
         with transaction.atomic():
-            
+
+            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables])
             unique_variable_list = self._unique_variable(filtered_variables)
             
             # check we still have all variables after filtering. Else test may fail
@@ -309,10 +309,11 @@ class VariableList(ApplicationSpecificViewSet):
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):
-        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
-            var.releaseDate = None
-            var.save()
-            logger.info("unreserve variable [%d] automatically %s=%s " % (var.id, var.name, var.value))
+        with transaction.atomic():
+            for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
+                var.releaseDate = None
+                var.save()
+                logger.info("unreserve variable [%d] automatically %s " % (var.id, var.name))
         
     def _delete_old_variables(self):
         """
