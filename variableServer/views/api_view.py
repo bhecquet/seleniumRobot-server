@@ -180,7 +180,7 @@ class VariableFilter(ApplicationSpecificFilter):
         # see: https://github.com/bhecquet/seleniumRobot-server/issues/128
         with transaction.atomic():
 
-            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables])
+            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables]).order_by('id')
             unique_variable_list = self._unique_variable(filtered_variables)
             
             # check we still have all variables after filtering. Else test may fail
@@ -190,9 +190,9 @@ class VariableFilter(ApplicationSpecificFilter):
             
             initial_list = []
             if reserve_reservable_variables:            
-                initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)]
+                initial_list = self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)
             else:
-                initial_list = [v for v in unique_variable_list]
+                initial_list = unique_variable_list
                 
         initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
         
@@ -246,7 +246,7 @@ class VariableFilter(ApplicationSpecificFilter):
             if variable.name not in existing_variable_names:
                 unique_variable_list.append(variable)
                 existing_variable_names.append(variable.name)
-        return variable_query_set.filter(pk__in=[v.pk for v in unique_variable_list])
+        return unique_variable_list
 
     def _reserve_reservable_variables(self, variable_list, application, version, environment, test, reservation_duration):
         """
@@ -309,11 +309,10 @@ class VariableList(ApplicationSpecificViewSet):
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):
-        with transaction.atomic():
-            for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
-                var.releaseDate = None
-                var.save()
-                logger.info("unreserve variable [%d] automatically %s " % (var.id, var.name))
+
+        updated = Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')).update(releaseDate=None)
+        if updated:
+            logger.info("unreserved %d variables automatically" % updated)
         
     def _delete_old_variables(self):
         """
