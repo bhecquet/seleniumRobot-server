@@ -42,7 +42,7 @@ AUTHENTICATION_BACKENDS = (
 if ("${database.host}"): 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': '${database.name}',
             'USER': '${database.user}',
             'PASSWORD': '${database.password}',
