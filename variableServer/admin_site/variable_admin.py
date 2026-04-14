@@ -10,6 +10,8 @@ from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
 
+from auditlog.mixins import AuditlogHistoryAdminMixin
+
 from variableServer.admin_site.application_admin import ApplicationFilter
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.admin_site.environment_admin import EnvironmentFilter
@@ -111,16 +113,14 @@ class VariableForm2(forms.ModelForm):
     
 
     
-class VariableAdmin(BaseServerModelAdmin): 
+class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
     list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value']
     form = VariableForm
     actions = ['delete_selected', 'copy_to', 'change_values_at_once', 'unreserve_variable']
-    
-    def get_list_display(self, request):
-        return self.list_display
-        
+    show_auditlog_history_link = True
+
     def get_queryset(self, request):
         """
         Filter the returned variables with the application user is allowed to see

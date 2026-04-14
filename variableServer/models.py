@@ -1,13 +1,17 @@
 import os
 
+from auditlog.signals import pre_log
 from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.db.models.signals import pre_save, post_delete
 
+from auditlog.registry import auditlog
+
 import commonsServer.models
 from commonsServer.utils.encryption import encrypt_data, decrypt_data
+
 
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
@@ -188,3 +192,8 @@ def delete_variable_file(sender, instance, **kwargs):
     """
     if instance.uploadFile:
         instance.delete_variable_file()
+
+def custom_mask(value: str) -> str:
+    return value[:2] + "****" + value[-1:]
+
+auditlog.register(Variable, mask_fields=['value'], mask_callable='variableServer.models.custom_mask')
