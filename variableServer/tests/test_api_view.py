@@ -1193,8 +1193,36 @@ class TestApiView(TestApi):
         self.assertEqual(1, all_variables['linkedApp4.varApp4EnvLinked']['environment']) # check environment is provided
         self.assertFalse('linkedApp4.varApp4EnvLinked2' in all_variables) # variable with specific version will not be returned
         self.assertFalse('linkedApp4.varApp4EnvLinkedReservable' in all_variables) # variable is reservable, it should not be retrieved
-        
-     
+
+    def test_get_variables_by_value_with_linked_application(self):
+        """
+        Check that if a linked application is defined, it's variables are get and filter on value is applied
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 5, 'environment': 1, 'test': 1, 'value': 'v2'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+
+        all_variables = self._convert_to_dict(response.data)
+
+        # check only variables with value 'v2' are returned
+        for variable in all_variables.values():
+            self.assertEqual('v2', variable['value'], "Variable %s has not value 'v2'" % variable['name'])
+
+    def test_get_variables_by_name_with_linked_application(self):
+        """
+        Check that if a linked application is defined, it's variables are get and filter on name is applied
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 5, 'environment': 1, 'test': 1, 'name': 'varApp4EnvLinked'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+
+        all_variables = self._convert_to_dict(response.data)
+
+        # check only variables with value 'v2' are returned
+        for variable in all_variables.values():
+            self.assertTrue('varApp4EnvLinked' in variable['name'], "Variable %s has not value 'varApp4EnvLinked'" % variable['name'])
+
+
     def test_get_all_variables_with_reverse_linked_application(self):
         """
         Check that application that the link between application is not in both directions

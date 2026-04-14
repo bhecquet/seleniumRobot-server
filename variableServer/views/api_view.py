@@ -193,8 +193,9 @@ class VariableFilter(ApplicationSpecificFilter):
                 initial_list = self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)
             else:
                 initial_list = unique_variable_list
-                
-        initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
+
+        # for now, we get variables from linked application, but if any is reservable, it won't be reserved
+        initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree, variable_name, variable_value)
         
         return initial_list
     
@@ -263,7 +264,7 @@ class VariableFilter(ApplicationSpecificFilter):
                 
         return variable_list
     
-    def _get_linked_application_variables(self, all_variables, application, environment_tree):
+    def _get_linked_application_variables(self, all_variables, application, environment_tree, variable_name, variable_value):
         """
         Get all variables of the applications linked to the requested application
         """
@@ -275,7 +276,15 @@ class VariableFilter(ApplicationSpecificFilter):
             
                 for env in environment_tree:
                     linked_application_variables = updateVariables(linked_application_variables, all_variables.filter(application=linked_application, version=None, environment=env, test=None, reservable=False))
- 
+
+        # in case name is provided, filter variables
+        if variable_name:
+            linked_application_variables = linked_application_variables.filter(name=variable_name)
+
+        # in case value is provided, filter variables
+        if variable_value:
+            linked_application_variables = linked_application_variables.filter(value=variable_value)
+
         updated_linked_application_variables = []
         for var in linked_application_variables:
             updated_linked_application_variables.append(Variable(id=var.id, name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
