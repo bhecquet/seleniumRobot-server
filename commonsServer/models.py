@@ -13,7 +13,12 @@ class TruncatingCharField(models.CharField):
         return value
 
 class Application(models.Model):
-    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_name')
+        ]
+
     app_variable_permission_code = 'can_view_application_'
     app_result_permission_code = 'can_view_results_application_'
 
@@ -56,6 +61,12 @@ class Application(models.Model):
         Permission.objects.get(codename=Application.app_variable_permission_code + self.name).delete()
     
 class Version(models.Model):
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'application'], name='unique_name_for_application')
+        ]
+
     application = models.ForeignKey(Application, related_name='version', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     
@@ -83,7 +94,12 @@ class TestEnvironment(models.Model):
     An environment can be linked to an other one
     For example, NonReg1 is a NonReg environment from which it will get all variables
     """
-    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_environment')
+        ]
+
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=20)
     
@@ -102,6 +118,12 @@ class TestEnvironment(models.Model):
     genericEnvironment.short_description = 'generic environnement'
 
 class TestCase(models.Model):
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'application'], name='unique_test_for_application')
+        ]
+
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=150)
     application = models.ForeignKey(Application, related_name='testCase', on_delete=models.CASCADE)

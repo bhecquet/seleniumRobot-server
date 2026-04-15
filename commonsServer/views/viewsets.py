@@ -3,7 +3,8 @@ Created on 4 mai 2017
 
 @author: bhecquet
 '''
-
+from django.db import transaction
+from django.db.utils import IntegrityError
 from rest_framework import viewsets, filters
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404, CreateAPIView,\
@@ -22,15 +23,32 @@ def perform_create(viewset_type, view, serializer):
     """
     Do not create an object if it already exists
     """
-    objects = view.serializer_class.Meta.model.objects.all()
-    for key, value in serializer.validated_data.items():
-        if type(value) == list:
-            objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
-            if len(value) > 0:
+
+    def find_existing(validated_data):
+        objects = view.serializer_class.Meta.model.objects.all()
+        for key, value in validated_data.items():
+            if type(value) == list:
+                objects = objects.annotate(Count(key)).filter(**{key + '__count': len(value)})
                 for v in value:
                     objects = objects.filter(**{key: v})
-        else:
-            objects = objects.filter(**{key: value})
+            else:
+                objects = objects.filter(**{key: value})
+        return objects
+
+    try:
+        with transaction.atomic():
+            objects = find_existing(serializer.validated_data)
+            if not objects:
+                super(viewset_type, view).perform_create(serializer)
+            else:
+                serializer.data.serializer._data.update({'id': objects[0].id})
+
+    except IntegrityError:
+        # Race condition : several requests came at the same time, get the created object
+        objects = find_existing(serializer.validated_data)
+        serializer.data.serializer._data.update({'id': objects[0].id})
+
+
 
     if not objects:
         super(viewset_type, view).perform_create(serializer)
