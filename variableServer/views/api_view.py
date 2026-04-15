@@ -170,17 +170,20 @@ class VariableFilter(ApplicationSpecificFilter):
         # in case name is provided, filter variables
         if variable_name:
             variables = variables.filter(name=variable_name)
-            
+
+        variable_list = list(variables)
+
         # in case value is provided, filter variables
         if variable_value:
-            variables = variables.filter(value=variable_value)
-            
-        variable_names = list(set([v.name for v in variables]))
+            variable_list = [v for v in variable_list if v.value == variable_value]
+
+        variable_names = list(set([v.name for v in variable_list]))
+
 
         # see: https://github.com/bhecquet/seleniumRobot-server/issues/128
         with transaction.atomic():
 
-            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables]).order_by('id')
+            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variable_list]).order_by('id')
             unique_variable_list = self._unique_variable(filtered_variables)
             
             # check we still have all variables after filtering. Else test may fail
@@ -281,12 +284,14 @@ class VariableFilter(ApplicationSpecificFilter):
         if variable_name:
             linked_application_variables = linked_application_variables.filter(name=variable_name)
 
+        linked_application_variable_list = list(linked_application_variables)
+
         # in case value is provided, filter variables
         if variable_value:
-            linked_application_variables = linked_application_variables.filter(value=variable_value)
+            linked_application_variable_list = [v for v in linked_application_variable_list if v.value == variable_value]
 
         updated_linked_application_variables = []
-        for var in linked_application_variables:
+        for var in linked_application_variable_list:
             updated_linked_application_variables.append(Variable(id=var.id, name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
  
         return updated_linked_application_variables

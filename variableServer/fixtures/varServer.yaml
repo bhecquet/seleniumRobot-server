@@ -473,6 +473,20 @@
     creationDate: "2018-07-10 13:01:56.784734+00:00"
   model: variableServer.variable
   pk: 19
+- fields: # protected variable
+    name: varApp4EnvLinked2
+    value: v3
+    application: 41
+    version: null
+    environment: 1
+    test: [ ]
+    internal: false
+    protected: true
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 20
 
 
 - fields:

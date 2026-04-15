@@ -162,6 +162,7 @@ class Variable(models.Model):
     name = models.CharField(max_length=100)
     value = EncryptedField(max_length=3000, blank=True)
     uploadFile = models.FileField(blank=True, upload_to=get_upload_path)
+    description = models.CharField(max_length=500, default="", null=True)
     application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
     environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
     version = models.ForeignKey(Version, null=True, on_delete=models.CASCADE)
@@ -170,7 +171,6 @@ class Variable(models.Model):
     reservable = models.BooleanField(default=False, help_text="tick it if this variable should be reserved when used to prevent other tests to use it at the same time. Default is false")
     internal = models.BooleanField(default=False, help_text="tick it if this variable has been created by a selenium test. Variable of such type should be prefixed with 'custom.test.variable'")
     protected = models.BooleanField(default=False)
-    description = models.CharField(max_length=500, default="", null=True)
     creationDate = models.DateTimeField(default=timezone.now)
     timeToLive = models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever")
     # When adding a field, don't forget to add it in serializers.py

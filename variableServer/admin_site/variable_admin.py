@@ -116,7 +116,7 @@ class VariableForm2(forms.ModelForm):
 class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
     list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
-    search_fields = ['name', 'value']
+    search_fields = ['name', 'value', 'description']
     form = VariableForm
     actions = ['delete_selected', 'copy_to', 'change_values_at_once', 'unreserve_variable']
     show_auditlog_history_link = True

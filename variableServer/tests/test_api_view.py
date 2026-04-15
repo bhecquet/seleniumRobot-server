@@ -241,6 +241,21 @@ class TestApiView(TestApi):
             self.assertEqual(variable['name'], 'logs')
         
         self.assertEqual(len(response.data), 1)
+
+    def test_get_all_variables_with_value_protected(self):
+        """
+        Check we filter variables by value and get only one variable, even if value is protected
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1, 'value': 'azertyuiop'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+
+        # check filtering is correct. We should not get any variable corresponding to an other environment, test or version
+        for variable in response.data:
+            self.assertEqual(variable['value'], 'azertyuiop')
+            self.assertEqual(variable['name'], 'proxyPassword2')
+
+        self.assertEqual(len(response.data), 1)
     
     def test_get_all_variables_with_name_and_value(self):
         """
@@ -1208,6 +1223,24 @@ class TestApiView(TestApi):
         for variable in all_variables.values():
             self.assertEqual('v2', variable['value'], "Variable %s has not value 'v2'" % variable['name'])
 
+        self.assertEqual(len(response.data), 2)
+
+    def test_get_protected_variables_by_value_with_linked_application(self):
+        """
+        Check that if a linked application is defined, it's variables are get and filter on value is applied
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
+        response = self.client.get(reverse('variableApi'), data={'version': 5, 'environment': 1, 'test': 1, 'value': 'v3'})
+        self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
+
+        all_variables = self._convert_to_dict(response.data)
+
+        # check only variables with value 'v2' are returned
+        for variable in all_variables.values():
+            self.assertEqual('v3', variable['value'], "Variable %s has not value 'v3'" % variable['name'])
+
+        self.assertEqual(len(response.data), 1)
+
     def test_get_variables_by_name_with_linked_application(self):
         """
         Check that if a linked application is defined, it's variables are get and filter on name is applied
@@ -1221,6 +1254,8 @@ class TestApiView(TestApi):
         # check only variables with value 'v2' are returned
         for variable in all_variables.values():
             self.assertTrue('varApp4EnvLinked' in variable['name'], "Variable %s has not value 'varApp4EnvLinked'" % variable['name'])
+
+        self.assertEqual(len(response.data), 1)
 
 
     def test_get_all_variables_with_reverse_linked_application(self):
