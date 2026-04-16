@@ -474,7 +474,7 @@
   model: variableServer.variable
   pk: 19
 - fields: # protected variable
-    name: varApp4EnvLinked2
+    name: varApp4EnvLinkedProtected
     value: v3
     application: 41
     version: null

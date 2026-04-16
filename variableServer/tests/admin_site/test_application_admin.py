@@ -186,7 +186,7 @@ class TestApplicationAdmin(TestAdmin):
     def test_rename_application(self):
         """
         Simulate the case where application has already been created and we rename an other application to this name
-        Permission should not be recreated
+        It should be refused
         """
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
         super_user = User.objects.create_superuser(username='super', email='super@email.org',
@@ -194,11 +194,10 @@ class TestApplicationAdmin(TestAdmin):
         
         application_admin.save_model(obj=Application(name="toto2"), request=MockRequest(user=super_user),
                                   form=None, change=None)
-        application_admin.save_model(obj=Application(name="toto2"), request=MockRequest(user=super_user),
-                                  form=None, change=None)
-        
-        # if permission is created, no error is raised
-        Permission.objects.get(codename='can_view_application_toto2')
+        with self.assertRaises(Exception):
+            application_admin.save_model(obj=Application(name="toto2"), request=MockRequest(user=super_user),
+                                         form=None, change=None)
+
         
     def test_delete_application(self):
         """

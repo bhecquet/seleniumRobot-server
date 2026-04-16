@@ -15,5 +15,5 @@
 -   model: snapshotServer.testcase
     pk: 2
     fields:
-      name: loginInvalid
+      name: loginValid
       application: 1

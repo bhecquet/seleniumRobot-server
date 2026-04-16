@@ -38,7 +38,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
         
         super_user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
-        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate'))
+        self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)), ['nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate', 'auditlog_link'])
         
 
     def test_variable_queryset_without_application_restriction(self):
