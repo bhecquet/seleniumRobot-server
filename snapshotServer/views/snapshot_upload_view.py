@@ -69,8 +69,6 @@ class SnapshotUploadView(CreateAPIView, UpdateAPIView):
         finally:
             if 'testSession' in form.cleaned_data:
                 form.cleaned_data['testSession'].delete()
-            if 'testCase' in form.cleaned_data:
-                form.cleaned_data['testCase'].delete()
     
 
     def compare_or_store_snapshot(self, form, step_result):

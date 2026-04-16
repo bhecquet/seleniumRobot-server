@@ -31,6 +31,7 @@
                                 <table class="table">
                                     <thead>
                                         <tr>
+                                            <th> </th>
                                             <th class="alignleft" scope="col"> Tests </th>
                                             <th class="alignleft" scope="col"> Methods </th>
                                             <!--
@@ -58,6 +59,7 @@
                                             
                                             
                                                 <tr class="{% if testCaseInSession.status == 'SUCCESS' %}testSuccess{% elif testCaseInSession.status == 'FAILURE' %}testFailed{% else %}testSkipped{% endif %}">
+                                                <td>{% if testCaseInSession.status == 'SUCCESS' %}✅{% elif testCaseInSession.status == 'FAILURE' %}❌{% else %}{% endif %}</td>
                                                 <td>{{ testSession.name }}</td>
                                                 <td class="alignleft">
                                                     {% if testInfos.snapshot_comparison_result == True %}

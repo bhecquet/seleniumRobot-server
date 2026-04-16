@@ -122,7 +122,7 @@ class TestTestResultView(SnapshotTestCase):
             
             # check content
             html = self.remove_spaces(response.rendered_content)
-            
+
             ## details table
             self.assertTrue("""<table class="table table-bordered table-sm"><tr><th style="width: 20%">Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>None</td></tr>""" in html)
             ## links to last state
@@ -131,16 +131,17 @@ class TestTestResultView(SnapshotTestCase):
             '<tr><th>Last State</th><td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a>'
             '<a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a>' in html)
             ## steps / sub-steps
-            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 1 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">openPage with args: (https://jenkins/jenkins/, )  - 0.7 secs</span><span><i class="fas fa-file-video"></i>0.005 s</span>""" in html)
+            self.assertTrue('<div class="box success"><!-- Step result 1 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-1" aria-expanded="false" aria-controls="box-body-1">'
+                            '<i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">openPage with args: (https://jenkins/jenkins/, )  - 0.7 secs</span><span><i class="fas fa-file-video"></i>0.005 s</span>' in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.815</span>Opening page LoginPage""" in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.816</span>setWindowToRequestedSize on on page LoginPage""" in html)
             self.assertTrue("""<div class="message-conf"><span class="stepTimestamp mr-1">14:53:58.816</span>maximizeWindow on on page LoginPage""" in html)
-            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 2 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">loginInvalid with args: (foo, bar, )  - 2.0 secs</span><span><i class="fas fa-file-video"></i>1.171 s</span>""" in html)
+            self.assertTrue("""<div class="box success"><!-- Step result 2 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-2" aria-expanded="false" aria-controls="box-body-2"><i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">loginInvalid with args: (foo, bar, )  - 2.0 secs</span><span><i class="fas fa-file-video"></i>1.171 s</span>""" in html)
             ### sub-step inside step
             self.assertTrue("""<ul><li><div class="message-conf"><span class="stepTimestamp mr-1">14:54:01.41</span>click on ButtonElement check, by={By.name: check}""" in html)
-            self.assertTrue('<div class="box collapsed-box success"><!-- Step result 3 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
-                            '<i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage   - 5.0 secs</span><span><i class="fas fa-file-video"></i>3.508 s</span>' in html) 
-            self.assertTrue("""<div class="box collapsed-box success"><!-- Step result 4 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>9.2 s</span>""" in html)
+            self.assertTrue('<div class="box success"><!-- Step result 3 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-3" aria-expanded="false" aria-controls="box-body-3">'
+                            '<i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">getErrorMessage   - 5.0 secs</span><span><i class="fas fa-file-video"></i>3.508 s</span>' in html) 
+            self.assertTrue("""<div class="box success"><!-- Step result 4 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-4" aria-expanded="false" aria-controls="box-body-4"><i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>9.2 s</span>""" in html)
             ## pictures on steps
             self.assertTrue('''<a href="#" onclick="$('#imagepreview').attr('src', $('#88').attr('src'));$('#imagemodal').modal('show');"><img id="88" src="/snapshot/api/file/88/download/" style="width: 300px"></a></div></div><div class="text-center">drv:main:Current Window: S&#x27;identifier [Jenkins]</div>'''
                             '<div class="text-center font-weight-lighter"><a href="https://jenkins/login?from=%2Fjenkins%2F" target=url>URL</a>' in html) 
@@ -173,12 +174,12 @@ class TestTestResultView(SnapshotTestCase):
             self.assertEqual(response.context['status'], "FAILURE")
             
             html = self.remove_spaces(response.rendered_content)
-    
+
             # a step in error has the right class
-            self.assertTrue('<div class="box collapsed-box failed"><!-- Step result 13 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
-                            '<i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage&lt;&gt;   - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>' in html)
-            self.assertTrue('<div class="box collapsed-box failed"><!-- Step result 14 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse">'
-                            '<i class="fa fa-plus"></i></button><span class="step-title">Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>10.519 s</span>' in html)
+            self.assertTrue('<div class="box failed"><!-- Step result 13 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-13" aria-expanded="false" aria-controls="box-body-13">'
+                            '<i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">❌getErrorMessage&lt;&gt;   - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>' in html)
+            self.assertTrue('<div class="box failed"><!-- Step result 14 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-14" aria-expanded="false" aria-controls="box-body-14">'
+                            '<i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">❌Test end  - 0.2 secs</span><span><i class="fas fa-file-video"></i>10.519 s</span>' in html)
              
             # error message
             ## in header
@@ -243,7 +244,8 @@ class TestTestResultView(SnapshotTestCase):
             self.assertEqual(response.context['status'], "SUCCESS")
             
             html = self.remove_spaces(response.rendered_content)
-            self.assertTrue('<div class="box collapsed-box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>Snapshot comparison' in html)
+
+            self.assertTrue('<div class="box success"><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button>Snapshot comparison' in html)
             self.assertTrue('<i class="fas fa-file-video"></i>1.171 s<i class="fa-solid fa-code-compare font-success"></i>' in html) # check icon is present when comparison is done in step
             self.assertEqual(html.count('fa-solid fa-code-compare'), 1, "Only one icon of image comparison should be present")
             self.assertTrue('Snapshot comparison OK' in html)
@@ -269,10 +271,10 @@ class TestTestResultView(SnapshotTestCase):
             self.assertEqual(response.context['status'], "SUCCESS")
             
             html = self.remove_spaces(response.rendered_content)
-            
+
             # result is OK, but snapshot comparison step is KO
-            self.assertTrue('<div class="box collapsed-box failed"><div class="box-header with-border">'
-                            '<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>Snapshot comparison' in html)
+            self.assertTrue('<div class="box failed"><div class="box-header with-border">'
+                            '<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button>Snapshot comparison' in html)
             self.assertTrue('<i class="fas fa-file-video"></i>1.171 s<i class="fa-solid fa-code-compare font-failed"></i>' in html) # check icon is present when comparison is done in step
             self.assertEqual(html.count('fa-solid fa-code-compare'), 1, "Only one icon of image comparison should be present")
             self.assertTrue('Snapshot comparison KO' in html)
@@ -299,7 +301,7 @@ class TestTestResultView(SnapshotTestCase):
             self.assertEqual(response.context['status'], "FAILURE")
             
             html = self.remove_spaces(response.rendered_content)
-            self.assertTrue('<div class="box collapsed-box failed"><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button>Snapshot comparison' in html)
+            self.assertTrue('<div class="box failed"><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button>Snapshot comparison' in html)
             self.assertTrue('Snapshot comparison KO' in html)
          
     def test_report_with_snapshot_comparison_error_change_test_result(self):
@@ -356,8 +358,8 @@ class TestTestResultView(SnapshotTestCase):
             
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
             html = self.remove_spaces(response.rendered_content)
-    
-            self.assertTrue("""<div class="box collapsed-box warning"><!-- Step result 15 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
+            print(html)
+            self.assertTrue("""<div class="box warning"><!-- Step result 15 --><div class="box-header with-border"><button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-15" aria-expanded="false" aria-controls="box-body-15"><i class="fa-solid fa-angle-right collapse-icon"></i></button><span class="step-title">getErrorMessage warn  - 5.0 secs</span><span><i class="fas fa-file-video"></i>4.35 s</span>""" in html)
 
 
     def test_report_with_error_cause(self):

@@ -85,102 +85,104 @@
                     </table>
 
 		      		{% for stepResult, snapshotsCompared in object_list.items %}
-		      			<div class="box collapsed-box {% if stepResult.details.status == 'SUCCESS' %}success{% elif stepResult.details.status == 'FAILED' %}failed{% elif stepResult.details.status == 'WARNING' %}warning{% else %}skipped{% endif %}">
+		      			<div class="box {% if stepResult.details.status == 'SUCCESS' %}success{% elif stepResult.details.status == 'FAILED' %}failed{% elif stepResult.details.status == 'WARNING' %}warning{% else %}skipped{% endif %}">
 						<!-- Step result {{stepResult.id}} -->
 							<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse">
-								<i class="fa fa-plus"></i>
-							</button>
-							<span class="step-title"> {{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs</span>
-							{% if stepResult.details.videoTimeStamp %}
-                            	<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s 
-                            	   {% for snapshotCompared in snapshotsCompared %}
-                            	       <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
-                            	   {% endfor %}
-                            	</span>
-                            {% endif %}
-						</div>
-						<div class="box-body">
-							{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
-							
-							{% if stepResult.details.exception %}
-								<div class="message-error">
-                                    {{ stepResult.details.exceptionMessage }}
-                                </div>
-							{% endif %}
-							
-							<div class="row">
-						        {% for snapshot in stepResult.details.snapshots %}
-						        	{% if snapshot.displayInReport and snapshot.idImage %}
-						        		<div class="message-snapshot col">
-							        		<div class="message-snapshot col">
-								        		<div class="text-center">
-							        			      <a href="#" onclick="$('#imagepreview').attr('src', $('#{{ snapshot.idImage }}').attr('src'));$('#imagemodal').modal('show');">
-							        			          <img id="{{ snapshot.idImage }}" src="{% url "file-download" snapshot.idImage %}" style="width: 300px">
-							        			      </a>
-							        			</div>
-											</div>
-											{% if snapshot.title %}
-												<div class="text-center">{{snapshot.name}}:{{ snapshot.title }}</div>
-											{% else %}
-												<div class="text-center">{{snapshot.name}}</div>
-											{% endif %}
-											<div class="text-center font-weight-lighter">
-											{% if snapshot.url %}<a href="{{ snapshot.url }}" target=url>URL</a>{% endif %}
-											{% if snapshot.idHtml %}| <a href="{% url "file-download" snapshot.idHtml %}" target=html>HTML Source</a>{% endif %}
-											</div>
-										</div>
-						        	{% endif %}
-						        {% endfor %}
-						    </div>
-						    <div id="step_{{ stepResult.step.id }}">
+								<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-{{ stepResult.step.id }}" aria-expanded="false" aria-controls="box-body-{{ stepResult.step.id }}">
+									<i class="fa-solid fa-angle-right collapse-icon"></i>
+								</button>
+								<span class="step-title">
+									{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
+								</span>
+								{% if stepResult.details.videoTimeStamp %}
+									<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
+									   {% for snapshotCompared in snapshotsCompared %}
+										   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
+									   {% endfor %}
+									</span>
+								{% endif %}
 							</div>
-							<!-- snapshot comparison part -->
-						    <script>
-								updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
-							</script>
-							
-							<!-- Files -->
-							{% for file in stepResult.details.files %}
-								<div class="message-snapshot">
-									{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
-								</div>
-							{% endfor %}
-							{% for har in stepResult.details.harCaptures %}
-								<div class="message-har">
-									Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
-								</div>
-							{% endfor %}
-						    
-						    <!-- TODO 
-						    Cause de l'erreur (dans le header)
-						    Possibilité d'enregistrer la cause de l'étape KO
-						    Autres infos (comme le n° de jira)
-						    -->
-				
+							<div class="box-body collapse" id="box-body-{{ stepResult.step.id }}">
+								{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
 
+								{% if stepResult.details.exception %}
+									<div class="message-error">
+										{{ stepResult.details.exceptionMessage }}
+									</div>
+								{% endif %}
+
+								<div class="row">
+									{% for snapshot in stepResult.details.snapshots %}
+										{% if snapshot.displayInReport and snapshot.idImage %}
+											<div class="message-snapshot col">
+												<div class="message-snapshot col">
+													<div class="text-center">
+														  <a href="#" onclick="$('#imagepreview').attr('src', $('#{{ snapshot.idImage }}').attr('src'));$('#imagemodal').modal('show');">
+															  <img id="{{ snapshot.idImage }}" src="{% url "file-download" snapshot.idImage %}" style="width: 300px">
+														  </a>
+													</div>
+												</div>
+												{% if snapshot.title %}
+													<div class="text-center">{{snapshot.name}}:{{ snapshot.title }}</div>
+												{% else %}
+													<div class="text-center">{{snapshot.name}}</div>
+												{% endif %}
+												<div class="text-center font-weight-lighter">
+												{% if snapshot.url %}<a href="{{ snapshot.url }}" target=url>URL</a>{% endif %}
+												{% if snapshot.idHtml %}| <a href="{% url "file-download" snapshot.idHtml %}" target=html>HTML Source</a>{% endif %}
+												</div>
+											</div>
+										{% endif %}
+									{% endfor %}
+								</div>
+								<div id="step_{{ stepResult.step.id }}">
+								</div>
+								<!-- snapshot comparison part -->
+								<script>
+									updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
+								</script>
+
+								<!-- Files -->
+								{% for file in stepResult.details.files %}
+									<div class="message-snapshot">
+										{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
+									</div>
+								{% endfor %}
+								{% for har in stepResult.details.harCaptures %}
+									<div class="message-har">
+										Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
+									</div>
+								{% endfor %}
+
+								<!-- TODO
+								Cause de l'erreur (dans le header)
+								Possibilité d'enregistrer la cause de l'étape KO
+								Autres infos (comme le n° de jira)
+								-->
+
+
+								</div>
 							</div>
-						</div>
 		      	
 		      		{% endfor %}
 		      		
 		      		<!-- step for displaying if snapshot comparison is OK or KO -->
 		      		{% if currentTest.session.compareSnapshot %}
-		      		<div class="box collapsed-box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
+		      		<div class="box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Snapshot comparison
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Snapshot comparison
 						</div>
-						<div class="box-body">
+						<div class="box-body collapse" id="box-body-snapshot-comparison">
 							Snapshot comparison {% if snasphotComparisonResult %}OK{% else %}KO{% endif %}
 						</div>
 					</div>
 		      		{% endif %}
 		
-					<div class="box collapsed-box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
+					<div class="box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Execution logs
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-exec-logs" aria-expanded="false" aria-controls="box-body-exec-logs"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Execution logs
 						</div>
-						<div class="box-body logs">
+						<div class="box-body logs collapse" id="box-body-exec-logs">
 							{% if stacktrace %}
 								<div class="message-error">
 									{% for line in stacktrace %}
