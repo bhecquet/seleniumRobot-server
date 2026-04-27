@@ -2,6 +2,8 @@
 Created on 12 déc. 2024
 
 '''
+import magic
+from auditlog.mixins import AuditlogHistoryAdminMixin
 from django import forms
 from django.conf import settings
 from django.contrib import admin, messages
@@ -10,15 +12,12 @@ from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
 
-from auditlog.mixins import AuditlogHistoryAdminMixin
-
 from variableServer.admin_site.application_admin import ApplicationFilter
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.admin_site.environment_admin import EnvironmentFilter
 from variableServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
-import magic
 
 class VariableForm(forms.ModelForm):
     
@@ -75,7 +74,7 @@ class VariableForm(forms.ModelForm):
         if upload_file:
             upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
             upload_file.seek(0)
-            if upload_file_type not in ["text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv"]:
+            if upload_file_type not in ["text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv", "application/json"]:
                 raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
             if upload_file_type == "text/plain":
                 if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
