@@ -5,11 +5,14 @@ Created on 4 sept. 2017
 '''
 
 from django.views.generic.list import ListView
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot, Error, TestInfo
 import json
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
+@method_decorator(xframe_options_exempt, name='dispatch')
 class TestResultView(LoginRequiredMixinConditional, ListView):
     """
     View displaying a single test result
