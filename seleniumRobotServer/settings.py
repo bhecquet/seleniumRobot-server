@@ -47,7 +47,9 @@ if ("${database.host}"):
             'USER': '${database.user}',
             'PASSWORD': '${database.password}',
             'HOST': '${database.host}',
-            'PORT': '${database.port}'
+            'PORT': '${database.port}',
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True
         }
     }
 else:
