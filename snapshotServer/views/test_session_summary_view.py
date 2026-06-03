@@ -3,16 +3,17 @@ Created on 3 déc. 2024
 
 @author: S047432
 '''
+import json
 from typing import Optional
 
-from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
-from django.views.generic.list import ListView
-from django.views.decorators.clickjacking import xframe_options_exempt
-from django.utils.decorators import method_decorator
-from snapshotServer.models import TestSession, TestCaseInSession, StepResult, Error
-import json
-from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
+from django.views.generic.list import ListView
+
+from snapshotServer.models import TestSession, TestCaseInSession, StepResult, Error
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
 @method_decorator(xframe_options_exempt, name='dispatch')
@@ -39,7 +40,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         for test_case_in_session in TestCaseInSession.objects.filter(session = session_id).order_by("date"):
             step_results = test_case_in_session.stepresult.all()
 
-            error = self.get_error_in_test(test_case_in_session.stepresult.all())
+            error = self.get_error_in_test(test_case_in_session.stepresult.all().order_by("id"))
             error_str = None
             
             if error:
