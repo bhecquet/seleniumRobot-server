@@ -5,6 +5,7 @@ from unittest.mock import patch
 
 from django.utils import timezone
 
+from commonsServer import preferences
 from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause
 from variableServer.models import Application
@@ -24,6 +25,8 @@ class TestViewsetStepResult(TestApi):
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_stepresult = ContentType.objects.get_for_model(StepResult)
+
+        preferences.invalidate_all_pref_cache()
 
     def _create_stepresult(self, expected_status):
         response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': True, 'stacktrace': '{"foo": "bar"}'})
@@ -1114,7 +1117,8 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = delay_execution
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True, OPEN_WEBUI_WORKERS=1):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+                preferences.set_preference('OPEN_WEBUI_WORKERS', '1')
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False

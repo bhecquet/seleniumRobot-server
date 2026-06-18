@@ -4,6 +4,7 @@ from django.db import close_old_connections
 from concurrent.futures.thread import ThreadPoolExecutor
 from typing import Optional
 
+from commonsServer import preferences
 from . import Cause, ErrorCause, Reason
 from .exception_error_cause_finder import ExceptionErrorCauseFinder
 from .image_error_cause_finder import ImageErrorCauseFinder
@@ -23,7 +24,7 @@ class ErrorCauseFinderExecutor:
     @classmethod
     def get_instance(cls):
         if not cls.executor:
-            cls.executor = ThreadPoolExecutor(max_workers=settings.OPEN_WEBUI_WORKERS)
+            cls.executor = ThreadPoolExecutor(max_workers=int(preferences.get_preference('OPEN_WEBUI_WORKERS')))
 
         return cls.executor
 
