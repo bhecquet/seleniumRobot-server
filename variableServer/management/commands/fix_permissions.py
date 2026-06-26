@@ -91,7 +91,7 @@ class Command(BaseCommand):
         ct = ContentType.objects.get_for_model(snapshotServer.models.TestStep)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_teststep') | Q(codename='change_teststep') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.StepReference)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepreference') , content_type=ct))
+        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepreference') | Q(codename='view_stepreference') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.File)
         snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_file') , content_type=ct))
         ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)

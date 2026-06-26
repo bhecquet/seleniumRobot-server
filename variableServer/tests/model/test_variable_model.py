@@ -1,4 +1,4 @@
-
+import json
 
 from django.test.testcases import TestCase
 from django.db import connection
@@ -7,6 +7,21 @@ from variableServer.models import Variable, Value, Application
 
 
 class TestAdmin(TestCase):
+
+    def test_log_variable_change(self):
+        """
+        check that audit log does not contain variable value
+        """
+        var = Variable(name="key", value="myValue")
+        var.save()
+        self.assertEqual(var.value, 'myValue')
+
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT changes from auditlog_logentry WHERE object_pk = %d" % var.id)
+            row = cursor.fetchone()
+            change = json.loads(row[0])
+            self.assertEqual(change['value'], ['No****e', 'my****e'])
+
 
     def test_save_protected_variable(self):
         """

@@ -14,6 +14,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
+    'auditlog',
     'mozilla_django_oidc',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -36,6 +37,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'auditlog.middleware.AuditlogMiddleware'
 ]
 
 

@@ -42,15 +42,14 @@ AUTHENTICATION_BACKENDS = (
 if ("${database.host}"): 
     DATABASES = {
         'default': {
-            'ENGINE': 'django.db.backends.postgresql_psycopg2',
+            'ENGINE': 'django.db.backends.postgresql',
             'NAME': '${database.name}',
             'USER': '${database.user}',
             'PASSWORD': '${database.password}',
             'HOST': '${database.host}',
             'PORT': '${database.port}',
-            'OPTIONS': {
-                'prepare_threshold': 0,  # Deactivate to avoid deadlocks when reserving variables
-            }
+            'CONN_MAX_AGE': 60,
+            'CONN_HEALTH_CHECKS': True
         }
     }
 else:

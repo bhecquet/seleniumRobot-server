@@ -1,18 +1,19 @@
 {% load static %}
 
-<div class="box {% if status %}success{% else %}failed{% endif %} {% if captureList|length == 0 %}collapsed-box{% endif %}" 
+<div class="box {% if status %}success{% else %}failed{% endif %}"
 	style="display: {% if enable %}block{% else %}none{% endif %};">
 	<div class="box-header with-border">
-		<button type="button" class="btn btn-box-tool" data-widget="collapse">
-			{% if captureList|length == 0 %}
-				<i class="fa fa-plus"></i>
-			{% else %}
-				<i class="fa fa-minus"></i>
-			{% endif %}
-		</button> 
+		<button type="button"
+				class="btn btn-box-tool {% if captureList|length == 0 %}collapsed{% endif %}"
+				data-bs-toggle="collapse"
+				data-bs-target="#box-body-panel-{{ testStepId }}"
+				aria-expanded="{% if captureList|length == 0 %}false{% else %}true{% endif %}"
+				aria-controls="box-body-panel-{{ testStepId }}">
+			<i class="fa-solid fa-angle-right collapse-icon"></i>
+		</button>
 		{{ testStepName }}
 	</div>
-	<div class="box-body" style="display: {% if captureList|length == 0 %}none{% else %}block{% endif %};">
+	<div class="box-body collapse {% if captureList|length > 0 %}show{% endif %}" id="box-body-panel-{{ testStepId }}">
 
 		<div class="container-fluid">
 			{% for namedSnapshot in captureList %}

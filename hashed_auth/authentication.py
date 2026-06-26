@@ -1,11 +1,14 @@
 import hashlib
+import logging
 
 import rest_framework.authentication
 from django.utils.translation import gettext_lazy as _
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import exceptions
 
 from django.contrib.auth.hashers import check_password
-from django.contrib.auth.hashers import PBKDF2PasswordHasher
+
+logger = logging.getLogger(__name__)
 
 def crypt_token(key):
     return hashlib.sha256(key.encode('utf-8')).hexdigest()
@@ -39,11 +42,15 @@ class TokenAuthentication(rest_framework.authentication.TokenAuthentication):
     def authenticate_credentials(self, key):
 
         model = self.get_model()
-
+        token_hash = crypt_token(key)
         try:
-            token = model.objects.select_related('user').get(key=crypt_token(key))
-        except:
-            raise exceptions.AuthenticationFailed(_('Invalid token.'))
+            token = model.objects.select_related('user').get(key=token_hash)
+        except ObjectDoesNotExist:
+            raise exceptions.AuthenticationFailed(_('Invalid token. (hash: %s...)' % token_hash[:4]))
+        except Exception as e:
+            logger.exception("Error during token authentication: %s", str(e))
+            raise exceptions.AuthenticationFailed(_('Authentication error: %s' % str(e)))
+
 
         if not token.user.is_active:
             raise exceptions.AuthenticationFailed(_('User inactive or deleted.'))

@@ -120,15 +120,15 @@ body{
     color: #F9727B;
 }
 
-.success .fa-plus, .success .fa-minus, .success a, .success a:hover{
+.success .fa-angle-right, .success .fa-angle-down, .success a, .success a:hover{
 	color: #97D086;
 }
 
-.skipped .fa-plus, .skipped .fa-minus, .skipped a, .skipped a:hover{
+.skipped .fa-angle-right, .skipped .fa-angle-down, .skipped a, .skipped a:hover{
 	color: #A7D7F3;
 }
 
-.failed .fa-plus, .failed .fa-minus, .failed a, .failed a:hover{
+.failed .fa-angle-right, .failed .fa-angle-down, .failed a, .failed a:hover{
 	color: #F9727B;
 }
 
@@ -175,7 +175,7 @@ a.errorTooltip {
 	display: inline-block;
 }
 
-.warning .fa-plus, .warning .fa-minus{
+.warning .fa-angle-right, .warning .fa-angle-down{
 	color: #FFBF80;
 }
 .warning a, .warning a:hover {
@@ -213,4 +213,11 @@ table.table-bordered > tbody > tr > td {
 .stepTimestamp {
 	display: none;
 	font-family: 'Courier New', Courier, monospace;
+}
+
+.collapse-icon {
+	transition: transform 0.2s ease;
+}
+.btn-box-tool:not(.collapsed) .collapse-icon {
+	transform: rotate(90deg);
 }

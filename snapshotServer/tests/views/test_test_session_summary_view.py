@@ -130,7 +130,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             # shortcut to image / video present
             self.assertTrue("""<td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a><a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a></td>""" in html)
             # link to detailed result
-            self.assertTrue("""<tr class="testSuccess"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
+            self.assertTrue("""<tr class="testSuccess"><td>✅</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
             # step count +  duration + no related errors
             self.assertTrue("""<td name="stepsTotal-1">4</td><td name="relatedErrors-1"></td><td>7 sec.</td>""" in html)
             # additional test information
@@ -165,7 +165,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             # shortcut to image / video present
             self.assertTrue("""<td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a><a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a></td>""" in html)
             # link to detailed result
-            self.assertTrue("""<tr class="testSuccess"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
+            self.assertTrue("""<tr class="testSuccess"><td>✅</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
             # no badge as test is OK
             self.assertTrue("""testJenkins</a><span class="badge bg-primary" style="background-color: white !important" data-bs-toggle="tooltip" title=""></span></td>""" in html)
             # step count +  duration
@@ -174,7 +174,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertTrue("""<td>7 sec.</td><td><a href="https://jiraserver/PROJECT/PRO-1">Issue</a></td><td>some text</td><td><a href="/snapshot/api/file/90/download/"><i class="fas fa-file-image" aria-hidden="true"></i></a><a href="/snapshot/api/file/91/download/"><i class="fas fa-video" aria-hidden="true"></i></a></td>""" in html)
             
             # test KO is also present
-            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
+            self.assertTrue("""<tr class="testFailed"><td>❌</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
             # badge not visible as error has not been recorded for this test
             self.assertTrue("""testJenkinsKo</a><span class="badge bg-primary" style="background-color: white !important" data-bs-toggle="tooltip" title=""></span></td>""" in html)
             # information are in the right cell
@@ -274,7 +274,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             # test is KO
-            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
+            self.assertTrue("""<tr class="testFailed"><td>❌</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
              
             # error message displayed
             self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
@@ -354,7 +354,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             # test is KO
-            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
+            self.assertTrue("""<tr class="testFailed"><td>❌</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
              
             # error message displayed
             self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
@@ -410,7 +410,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
 
             # test is KO
-            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
+            self.assertTrue("""<tr class="testFailed"><td>❌</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/11/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo</a>""" in html)
 
             # error message displayed
             self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
@@ -469,7 +469,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             # test is KO
-            self.assertTrue("""<tr class="testFailed"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/110/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo2</a>""" in html)
+            self.assertTrue("""<tr class="testFailed"><td>❌</td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/110/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkinsKo2</a>""" in html)
              
             # error message displayed
             self.assertTrue("""<a class="errorTooltip" tabindex="0" data-bs-trigger="focus" data-bs-toggle="popover" title="Exception" data-bs-content="Browsermob proxy (captureNetwork option) is only compatible with DIRECT and &lt;MANUAL&gt;"><i class="fas fa-file-alt" aria-hidden="true"></i></a></td>""" in html)
@@ -625,5 +625,5 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             html = self.remove_spaces(response.rendered_content)
             
             # test is SKIPPED
-            self.assertTrue("""<tr class="testSkipped"><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/111/' info="skipped" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
+            self.assertTrue("""<tr class="testSkipped"><td></td><td>jenkins</td><td class="alignleft"><a href='/snapshot/testResults/result/111/' info="skipped" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
          

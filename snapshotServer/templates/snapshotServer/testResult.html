@@ -239,16 +239,37 @@
 								<div class="message-snapshot">
 									{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
 								</div>
-							{% endfor %}
-							{% for har in stepResult.details.harCaptures %}
-								<div class="message-har">
-									Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
+								<div id="step_{{ stepResult.step.id }}">
 								</div>
 							{% endfor %}
 
 
 
+								<!-- snapshot comparison part -->
+								<script>
+									updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
+								</script>
 
+								<!-- Files -->
+								{% for file in stepResult.details.files %}
+									<div class="message-snapshot">
+										{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
+									</div>
+								{% endfor %}
+								{% for har in stepResult.details.harCaptures %}
+									<div class="message-har">
+										Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
+									</div>
+								{% endfor %}
+
+								<!-- TODO
+								Cause de l'erreur (dans le header)
+								Possibilité d'enregistrer la cause de l'étape KO
+								Autres infos (comme le n° de jira)
+								-->
+
+
+								</div>
 							</div>
 						</div>
 
@@ -256,11 +277,11 @@
 
 
 		      		{% if currentTest.session.compareSnapshot %}
-		      		<div class="box collapsed-box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
+		      		<div class="box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Snapshot comparison
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Snapshot comparison
 						</div>
-						<div class="box-body">
+						<div class="box-body collapse" id="box-body-snapshot-comparison">
 							Snapshot comparison {% if snasphotComparisonResult %}OK{% else %}KO{% endif %}
 						</div>
 					</div>
@@ -268,9 +289,9 @@
 
 					<div class="box collapsed-box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Execution logs
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-exec-logs" aria-expanded="false" aria-controls="box-body-exec-logs"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Execution logs
 						</div>
-						<div class="box-body logs">
+						<div class="box-body logs collapse" id="box-body-exec-logs">
 							{% if stacktrace %}
 								<div class="message-error">
 									{% for line in stacktrace %}
