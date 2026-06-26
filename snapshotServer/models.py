@@ -450,8 +450,9 @@ class ErrorCauseFromUser(models.Model):
     testStep = models.ForeignKey(TestStep, on_delete=models.CASCADE, related_name='declaredErrorCauses', null=True, blank=True)
     action = TruncatingCharField(max_length=150, default="")        # the step / action name for which the user defined the error
     exception = models.CharField(max_length=100, default="")        # the exception raised by the test. Used for correlation
-    errorMessage = models.CharField(max_length=1000, default=".*")  # the exception message associated to the exception. Used for correlation
+    errorMessage =  models.TextField()  # the exception message associated to the exception. Used for correlation
     type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
+    commentaire = models.CharField(max_length=1000, default="")
 
 class Error(models.Model):
     """
