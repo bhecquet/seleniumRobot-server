@@ -47,10 +47,7 @@ class MistralDocComparator:
                                 "explanation": {
                                     "title": "explanation",
                                     "type": "string",
-                                    "description": """Explain here how you find differences between provided documents, what you look at, which information you use, the pages you read, ... 
-                                    I need to understand how you do your job.
-                                    For example do you compare using the provided text or only through vision.
-                                    How do you tell which page is impacted, because I see some mismatchs"""
+                                    "description": """List sections / paragraphs / thematic blocks in each document."""
                                 }
                             },
                             "required": ["differences"],
