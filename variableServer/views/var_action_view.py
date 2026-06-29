@@ -7,7 +7,8 @@ from django.conf import settings
 from django.contrib import admin, messages
 from django.http.response import HttpResponseRedirect
 
-from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
+from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX, \
+    ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
 from variableServer.admin_site.variable_admin import VariableAdmin
 from variableServer.models import Variable
 from variableServer.models import Version, TestEnvironment, Application, \
@@ -25,9 +26,9 @@ def copy_variables(request):
     var_admin = VariableAdmin(Variable, admin.site)
         
     global_permission = request.user.has_perm('variableServer.add_variable')
-    has_permission, related_application = _has_application_permission(request, application, variable_ids, global_permission)
+    has_permission, related_application, related_environment = _has_context_permission(request, application, environment, variable_ids, global_permission)
     if not has_permission:
-        var_admin.message_user(request, "You don't have right to copy variables to application %s" % (related_application,), level=messages.ERROR)
+        var_admin.message_user(request, "You don't have right to copy variables to application %s or to environment" % (related_application, related_environment), level=messages.ERROR)
         return HttpResponseRedirect(request.POST['nexturl'])
     
     # copy content of each variable in a new variable
@@ -64,9 +65,9 @@ def change_variables(request):
     var_admin = VariableAdmin(Variable, admin.site)
     
     global_permission = request.user.has_perm('variableServer.change_variable')
-    has_permission, related_application = _has_application_permission(request, application, variable_ids, global_permission)
+    has_permission, related_application, related_environment = _has_context_permission(request, application, environment, variable_ids, global_permission)
     if not has_permission:
-        var_admin.message_user(request, "You don't have right to change variables to application %s" % (related_application,), level=messages.ERROR)
+        var_admin.message_user(request, "You don't have right to change variables to application %s or environment %s" % (related_application, related_environment), level=messages.ERROR)
         return HttpResponseRedirect(request.POST['nexturl'])
    
     # update each variable with the new parameters
@@ -120,11 +121,12 @@ def _get_input_data(request):
         
     return application, version, environment, tests, reservable, variable_ids
 
-def _has_application_permission(request, application, variable_ids, has_global_permission):
+def _has_context_permission(request, application, environment, variable_ids, has_global_permission):
     """
-    Check if user has permission on 'application', or any application related to variable
+    Check if user has permission on 'application' or 'environment', or any application related to variable
     @param request: The request
     @param application: the application user want to copy to / to modify
+    @param environment: the environment user want to copy to / to modify
     @param variable_ids: the variables that will be impacted by change
     @param has_global_permission: whether the user has global permission on any application
     """
@@ -133,21 +135,26 @@ def _has_application_permission(request, application, variable_ids, has_global_p
     if has_global_permission:
         return has_global_permission, application
     
-    if settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
-        # check user has permission to destination application
-        if application and not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name):
-            return False, application
-        
-        # user cannot change to 'no application'
-        if not application:
-            return False, 'None'
+    if settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
+        # check user has permission to destination application or destination environment
+        if application and not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name)\
+                or environment and not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name):
+            return False, application, environment
+
+        # user cannot change to 'no application' AND 'no environment'
+        if not (application or environment):
+            return False, 'None', 'None'
             
         # check user has permission to source application
-        for app in [var.application for var in Variable.objects.filter(id__in=variable_ids)]:
-            if app is None or not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + app.name):
-                return False, app
+        source_applications = {var.application for var in Variable.objects.filter(id__in=variable_ids)}
+        source_environments = {var.environment for var in Variable.objects.filter(id__in=variable_ids)}
+        for app in source_applications:
+            for env in source_environments:
+                if (app is None or not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + app.name))\
+                        and (env is None or not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + env.name)):
+                    return False, app, env
             
     else:
         return has_global_permission, application
     
-    return True, application
+    return True, application, environment

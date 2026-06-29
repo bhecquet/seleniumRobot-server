@@ -100,6 +100,9 @@ class TestEnvironment(models.Model):
             models.UniqueConstraint(fields=['name'], name='unique_environment')
         ]
 
+    env_variable_permission_code = 'can_view_environment_'
+    env_result_permission_code = 'can_view_results_environment_'
+
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=20)
     
@@ -116,6 +119,24 @@ class TestEnvironment(models.Model):
     
     genericEnvironment = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
     genericEnvironment.short_description = 'generic environnement'
+
+
+    def save(self, *args, **kwargs):
+        super(TestEnvironment, self).save(*args, **kwargs)
+        content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
+
+        # permissions for handling application variables / recording
+        Permission.objects.get_or_create(
+            codename=TestEnvironment.env_variable_permission_code + self.name,
+            name='Can view environment and related variables for ' + self.name,
+            content_type=content_type,
+        )
+
+        Permission.objects.get_or_create(
+            codename=TestEnvironment.env_result_permission_code + self.name,
+            name='Can view results for environment ' + self.name,
+            content_type=content_type,
+        )
 
 class TestCase(models.Model):
 

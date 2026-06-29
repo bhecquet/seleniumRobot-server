@@ -69,7 +69,7 @@ class TestViewsetTestStep(TestApi):
 
         User can add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_teststep', content_type=self.content_type_teststep)))
             self._create_teststep(201)
 
@@ -81,7 +81,7 @@ class TestViewsetTestStep(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_teststep(201)
 
@@ -93,7 +93,7 @@ class TestViewsetTestStep(TestApi):
 
         User can NOT add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_teststep')))
             self._create_teststep(403)
 
@@ -102,7 +102,7 @@ class TestViewsetTestStep(TestApi):
         """
         Check it's possible to create the same TestStep twice
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_teststep(201)
             response = self.client.post('/snapshot/api/teststep/', data={'testCase': 1, 'name': 'bla'})

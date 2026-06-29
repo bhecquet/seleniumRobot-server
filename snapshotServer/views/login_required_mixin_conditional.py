@@ -50,7 +50,7 @@ class LoginRequiredMixinConditional(AccessMixin):
         """
         Returns True if user has application permission or if it's not needed
         """
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN:
+        if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
             return True
         
         if application:

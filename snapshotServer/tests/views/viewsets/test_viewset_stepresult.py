@@ -75,7 +75,7 @@ class TestViewsetStepResult(TestApi):
 
         User can add test session
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_stepresult', content_type=self.content_type_stepresult)))
             self._create_stepresult(201)
 
@@ -87,7 +87,7 @@ class TestViewsetStepResult(TestApi):
 
         User can add test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_stepresult(201)
 
@@ -99,7 +99,7 @@ class TestViewsetStepResult(TestApi):
 
         User can NOT add test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._create_stepresult(403)
 
@@ -111,7 +111,7 @@ class TestViewsetStepResult(TestApi):
 
         User can NOT add test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_stepresult')))
             self._create_stepresult(403)
 
@@ -144,7 +144,7 @@ class TestViewsetStepResult(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._update_stepresult(200)
 
@@ -156,7 +156,7 @@ class TestViewsetStepResult(TestApi):
 
         User can NOT update test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._update_stepresult(403)
 
@@ -197,7 +197,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': True, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -208,7 +208,7 @@ class TestViewsetStepResult(TestApi):
         Check no error is raised when stacktrace is empty
         """
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': ''})
             self.assertEqual(201, response.status_code)
@@ -251,7 +251,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -297,7 +297,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -352,7 +352,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -409,7 +409,7 @@ class TestViewsetStepResult(TestApi):
         tcis2 = TestCaseInSession(testCase=TestCase.objects.get(pk=2), session=TestSession.objects.get(pk=1), date=timezone.now())
         tcis2.save()
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
 
             # create a first stepResult which will generate an error
@@ -472,7 +472,7 @@ class TestViewsetStepResult(TestApi):
         tcis2 = TestCaseInSession(testCase=TestCase.objects.get(pk=2), session=TestSession.objects.get(pk=1), date=timezone.now())
         tcis2.save()
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
 
             # create a first stepResult which will generate an error
@@ -539,7 +539,7 @@ class TestViewsetStepResult(TestApi):
         tcis2 = TestCaseInSession(testCase=TestCase.objects.get(pk=2), session=TestSession.objects.get(pk=1), date=timezone.now())
         tcis2.save()
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
 
             # create a first stepResult which will generate an error
@@ -616,7 +616,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -679,7 +679,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -745,7 +745,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
             self.assertEqual(201, response.status_code)
@@ -809,7 +809,7 @@ class TestViewsetStepResult(TestApi):
             "harCaptures": []
         }"""
 
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': '{}'})
             self.assertEqual(0, len(Error.objects.all()))
@@ -877,7 +877,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, "", [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
                 self.assertEqual(201, response.status_code)
@@ -928,7 +928,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
                 self.assertEqual(201, response.status_code)
@@ -1026,7 +1026,7 @@ class TestViewsetStepResult(TestApi):
     "status": "FAILED",
     "harCaptures": []
 }"""
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/stepresult/', data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': step_multiple_actions_ko_details})
             self.assertEqual(1, len(Error.objects.filter(exception="org.openqa.selenium.NoSuchElementException")))
@@ -1060,7 +1060,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1083,7 +1083,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1114,7 +1114,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = delay_execution
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True, OPEN_WEBUI_WORKERS=1):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True, OPEN_WEBUI_WORKERS=1):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1144,7 +1144,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [Exception("some detection error")]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1172,7 +1172,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1211,7 +1211,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, ["info1", "info2"])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1247,7 +1247,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 failed_step_result = StepResult.objects.get(pk=5)
                 failed_step_result.result = False
@@ -1285,7 +1285,7 @@ class TestViewsetStepResult(TestApi):
             mock_error_cause_finder.return_value = error_cause_finder_instance
             error_cause_finder_instance.detect_cause.side_effect = [ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])]
 
-            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+            with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
                 self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
                 response = self.client.post('/snapshot/api/stepresult/', data={'step': 5, 'testCase': 5, 'result': True, 'stacktrace': stacktrace})
                 self.assertEqual(201, response.status_code)

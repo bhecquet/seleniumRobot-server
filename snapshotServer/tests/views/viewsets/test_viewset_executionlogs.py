@@ -87,7 +87,7 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_executionlogs', content_type=self.content_type_executionlogs)))
             self._create_executionlogs(201)
 
@@ -99,7 +99,7 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_executionlogs(201)
 
@@ -111,7 +111,7 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can NOT add test info on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._create_executionlogs(403)
 
@@ -123,7 +123,7 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can NOT add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_executionlogs')))
             self._create_executionlogs(403)
 
@@ -132,7 +132,7 @@ class TestViewsetExecutionLogs(TestApi):
         """
         Check it's possible to create the same ExecutionLogs twice
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_executionlogs(201)
             with open('snapshotServer/tests/data/logs.txt', 'r') as f:
@@ -144,7 +144,7 @@ class TestViewsetExecutionLogs(TestApi):
         """
         Check file is uploaded
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             with open('snapshotServer/tests/data/test.html', 'rb') as fp:
                 response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})

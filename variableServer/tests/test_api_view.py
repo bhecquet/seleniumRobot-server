@@ -17,7 +17,7 @@ from variableServer.models import Variable, Version, \
 from variableServer.utils.utils import updateVariables
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestApiView(TestApi):
     '''
     Using APITestCase as we call the REST Framework API
@@ -134,7 +134,7 @@ class TestApiView(TestApi):
         
         User can NOT get variables
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.none())
             response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
             self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
@@ -150,7 +150,7 @@ class TestApiView(TestApi):
         
         User can get variables
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
             response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
             self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -171,7 +171,7 @@ class TestApiView(TestApi):
         
         User can get variables of app1 only
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3, 'test': 1})
             self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
@@ -800,7 +800,7 @@ class TestApiView(TestApi):
         """
         Check its possible to create a variable with application restriction when app1 permission is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             version = Version.objects.get(pk=1)
 
@@ -813,7 +813,7 @@ class TestApiView(TestApi):
         """
         Check its possible to create a variable with application restriction when 'add_variable' permission is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
             version = Version.objects.get(pk=1)
                  
@@ -826,7 +826,7 @@ class TestApiView(TestApi):
         """
         Check its NOT possible to create a variable with application restriction when app1 permission is set and variable does not belong to this application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             version = Version.objects.get(pk=3)
                  
@@ -837,7 +837,7 @@ class TestApiView(TestApi):
         """
         Check its NOT possible to create a variable with application restriction
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.none())
             version = Version.objects.get(pk=3)
                  
@@ -927,7 +927,7 @@ class TestApiView(TestApi):
         """
         Check that with application restriction set, it's possible to update a variable if it's linked to the application user is authorized on
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=1)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
@@ -945,7 +945,7 @@ class TestApiView(TestApi):
         Check that with application restriction set, it's possible to update a variable if it's linked to the application user is authorized on
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=3)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
@@ -963,7 +963,7 @@ class TestApiView(TestApi):
         Check that with application restriction set, it's not possible to update a variable on an application user has no permission
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=3)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
@@ -979,7 +979,7 @@ class TestApiView(TestApi):
         Check that with application restriction set, it's not possible to update a variable on an application user has no permission
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=3)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True)
@@ -1327,7 +1327,7 @@ class TestApiView(TestApi):
         Test custom variable deletion with application restriction and user has permission on the application linked to variable
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=1)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
@@ -1343,7 +1343,7 @@ class TestApiView(TestApi):
         Test custom variable deletion with application restriction and user has permission on all variables
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=1)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
@@ -1361,7 +1361,7 @@ class TestApiView(TestApi):
         We get a 404 because in this case, no variable is returned by the filter
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=3)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
@@ -1377,7 +1377,7 @@ class TestApiView(TestApi):
         Test custom variable deletion with application restriction and no permission for user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             test = TestCase.objects.get(pk=1)
             version = Version.objects.get(pk=3)
             var0 = Variable(name='var0', value='value0', application=version.application, reservable=True, internal=True)
@@ -1476,7 +1476,7 @@ class TestApiView(TestApi):
         - no permission on requested application
         We cannot download var file
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app2')))
             self.assertEqual(403, testfile.status_code)
 
@@ -1487,7 +1487,7 @@ class TestApiView(TestApi):
         - permission on requested application
         We can download var file
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
             self.assertEqual(200, testfile.status_code)
 
@@ -1510,7 +1510,7 @@ class TestApiView(TestApi):
         """
         With permission on the application, user CAN download variable file
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_appFileVar')))
             self.assertEqual(testfile.status_code, 200)
 
@@ -1518,7 +1518,7 @@ class TestApiView(TestApi):
         """
         With permission on another application, user can NOT download variable file
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self.assertEqual(testfile.status_code, 403)
 
@@ -1531,6 +1531,6 @@ class TestApiView(TestApi):
 
         User can download variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             testfile = self._test_download_variable(Permission.objects.filter(Q(codename='view_variable')))
             self.assertEqual(testfile.status_code, 200)

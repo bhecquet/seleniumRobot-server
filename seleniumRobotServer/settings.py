@@ -138,7 +138,7 @@ Check that the JSON response is valid
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
-RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN = True
+RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN = True
 
 # -------- OpenID Authentication -----------------
 OIDC_RP_CLIENT_ID = '${openid.clientid}'

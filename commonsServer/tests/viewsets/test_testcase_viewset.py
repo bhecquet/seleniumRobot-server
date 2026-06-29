@@ -76,7 +76,7 @@ class TestTestCaseViewset(TestApi):
         
         User can add test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testcase', content_type=self.content_type_testcase)))
             self._create_testcase(201)
     
@@ -88,7 +88,7 @@ class TestTestCaseViewset(TestApi):
         
         User can add test case on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self._create_testcase(201)
     
@@ -100,7 +100,7 @@ class TestTestCaseViewset(TestApi):
         
         User can NOT add test case on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
             self._create_testcase(403)
         
@@ -112,7 +112,7 @@ class TestTestCaseViewset(TestApi):
         
         User can NOT add test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testcase')))
             self._create_testcase(403)
 
@@ -176,7 +176,7 @@ class TestTestCaseViewset(TestApi):
         
         user can get test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testcase', content_type=self.content_type_testcase)))
             self._get_testcase(200)
         
@@ -188,7 +188,7 @@ class TestTestCaseViewset(TestApi):
         
         user can get test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self._get_testcase(200)
         
@@ -202,7 +202,7 @@ class TestTestCaseViewset(TestApi):
         
         user can NOT get test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
             self._get_testcase(403)
         
@@ -214,7 +214,7 @@ class TestTestCaseViewset(TestApi):
         
         user can NOT get test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.none())
             self._get_testcase(403)
 

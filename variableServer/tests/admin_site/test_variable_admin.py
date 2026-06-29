@@ -20,7 +20,7 @@ from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestVariableAdmin(TestAdmin):
     
     def setUp(self)->None:
@@ -59,7 +59,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that list of variables contains only variables for 'app1', the only application user is able to see
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
@@ -78,7 +78,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that list of variables contains all variables when 'view_variable' permission is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
             
@@ -358,7 +358,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to copy multiple variables when application specific permission is set 
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
@@ -369,7 +369,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to copy multiple variables when application specific permission is set and add_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='add_variable') | Q(codename='view_variable')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3,
 
@@ -380,7 +380,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's NOT possible to copy multiple variables when application specific permission is set and change_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='change_variable')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
 
@@ -392,7 +392,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's not possible to copy multiple variables when application specific permission is set and variable is not linked to that application
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
 
@@ -480,7 +480,7 @@ class TestVariableAdmin(TestAdmin):
         Check that we cannot delete selected variable when 'delete_variable' is not set
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
        
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
@@ -490,7 +490,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that we can NOT delete selected variable as restriction apply on this application but global variable permission are given
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(codename='delete_variable')), 3)
        
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
@@ -500,7 +500,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that we can delete selected variable as user has right to use this application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 3)
        
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
@@ -510,7 +510,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that we cannot delete variable without linked application when application specific permission is the only available
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 9)
        
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
@@ -521,7 +521,7 @@ class TestVariableAdmin(TestAdmin):
         """
         Check that we cannot delete selected variable if variable does not belong to the application user has permissions for
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 301)
 
             self.assertTrue('<title>Are you sure? | Django site admin</title>' in content) # variable is ready to be deleted
@@ -569,7 +569,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to unreserve a variable when application specific permission is set 
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='can_view_application_app1')), Application.objects.get(pk=1))
         
@@ -580,7 +580,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to unreserve a variable when application specific permission is set and change_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='change_variable')), Application.objects.get(pk=1))
 
@@ -591,7 +591,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to unreserve a variable when application specific permission is set and change_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
         
@@ -615,7 +615,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's not possible to unreserve a variable when application specific permission is set and variable is not linked to that application
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             reservable_var = self._test_variable_unreserve(Permission.objects.filter(Q(codename='can_view_application_app1')), Application.objects.get(pk=2))
 
@@ -691,7 +691,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to change multiple variables when application specific permission is set 
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3, 
         
@@ -702,7 +702,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to change multiple variables when application specific permission is set and change_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='change_variable')), [3, 4, 9, 10]) # 3 & 4: app1; 9: no app; 10: app3,
 
@@ -713,7 +713,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's possible to change multiple variables when application specific permission is set and change_variable permission is given to user
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
 
@@ -732,7 +732,7 @@ class TestVariableAdmin(TestAdmin):
         Check it's not possible to change multiple variables when application specific permission is set and variable is not linked to that application
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='can_view_application_app1')), [4, 9, 10]) # 4: app1; 9: no app; 10: app3,  
 
@@ -789,7 +789,7 @@ class TestVariableAdmin(TestAdmin):
         Check  user can view / change / delete / add variable with only application specific rights: can_view_application_app1
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
 
             variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
@@ -813,7 +813,7 @@ class TestVariableAdmin(TestAdmin):
         Check  user can view / change / delete / add with global view permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
@@ -837,7 +837,7 @@ class TestVariableAdmin(TestAdmin):
         Check  user can view / change / delete / add with global add permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
@@ -861,7 +861,7 @@ class TestVariableAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
@@ -885,7 +885,7 @@ class TestVariableAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VariableAdmin(model=Variable, admin_site=AdminSite())

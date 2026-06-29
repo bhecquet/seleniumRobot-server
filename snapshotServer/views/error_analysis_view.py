@@ -11,12 +11,12 @@ from rest_framework.generics import CreateAPIView
 
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinderExecutor
 from snapshotServer.models import TestCaseInSession
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultConsultation
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultConsultation
 
 logger = logging.getLogger(__name__)
 
 
-class ErrorAnalysisPermission(ApplicationSpecificPermissionsResultConsultation):
+class ErrorAnalysisPermission(ContextSpecificPermissionsResultConsultation):
 
     def get_object_application(self, test_case_in_session):
         if test_case_in_session:

@@ -65,7 +65,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_excludezone', content_type=self.content_type_excludezone)))
             self._create_excludezone(201)
 
@@ -77,7 +77,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_excludezone(201)
 
@@ -89,7 +89,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can NOT add test info on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._create_excludezone(403)
 
@@ -101,7 +101,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can NOT add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_excludezone')))
             self._create_excludezone(403)
 
@@ -110,7 +110,7 @@ class TestViewsetExcludeZone(TestApi):
         """
         Check it's not possible to create the same ExcludeZone twice
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_excludezone(201)
             self._create_excludezone(201)
@@ -154,7 +154,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._update_excludezone(200)
 
@@ -166,7 +166,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can NOT update test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._update_excludezone(403)
 
@@ -211,7 +211,7 @@ class TestViewsetExcludeZone(TestApi):
 
         User can delete test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._delete_excludezone(204)
 
@@ -223,6 +223,6 @@ class TestViewsetExcludeZone(TestApi):
 
         User can NOT delete test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._delete_excludezone(403)

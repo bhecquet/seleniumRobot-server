@@ -11,9 +11,9 @@ import io
 from PIL import Image
 import os
 from rest_framework.generics import CreateAPIView, UpdateAPIView
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 
-class SnapshotUploadPermission(ApplicationSpecificPermissionsResultRecording):
+class SnapshotUploadPermission(ContextSpecificPermissionsResultRecording):
     
     def get_application_from_step_result(self, step_result):
         if step_result:

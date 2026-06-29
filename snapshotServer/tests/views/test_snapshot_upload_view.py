@@ -115,7 +115,7 @@ class TestFileUploadView(TestApi):
         - no permission on requested application
         We cannot post snapshot
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -129,7 +129,7 @@ class TestFileUploadView(TestApi):
         - permission on requested application
         We can post snapshot
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -144,7 +144,7 @@ class TestFileUploadView(TestApi):
         - permission on requested application
         We get 403 error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -155,7 +155,7 @@ class TestFileUploadView(TestApi):
         """
         Check a reference is created when non is found
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -179,7 +179,7 @@ class TestFileUploadView(TestApi):
         """
         Check a reference is created when non is found
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -195,7 +195,7 @@ class TestFileUploadView(TestApi):
         """
         Check we find the reference snapshot when it exists in the same version / same name
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -225,7 +225,7 @@ class TestFileUploadView(TestApi):
         """
         Check we find the reference snapshot when it exists in the same version / same name
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -254,7 +254,7 @@ class TestFileUploadView(TestApi):
         Check we find the reference snapshot when it exists in the same version / same name in mobile test
         In case of mobile tests, session is recorded with the full application name, and comparison is done with only "APP"
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -284,7 +284,7 @@ class TestFileUploadView(TestApi):
         """
         issue #61: Check that when multiple references exist for the same version / name / env / ..., we take the last one.
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # upload first ref
@@ -312,7 +312,7 @@ class TestFileUploadView(TestApi):
         """
         Check we cannot find the reference snapshot when it exists in the same version / same browser / same name but for a different environment
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -333,7 +333,7 @@ class TestFileUploadView(TestApi):
         """
         Check we cannot find the reference snapshot when it exists in the same version / same environment / same name but for a different browser
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -354,7 +354,7 @@ class TestFileUploadView(TestApi):
         """
         Check that we search for a reference in a previous version if none is found in the current one
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
         
@@ -389,7 +389,7 @@ class TestFileUploadView(TestApi):
         Check that uploaded picture is stored when using the "post" method
         We provide exclude zones to check that they are used for comparison
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
         
@@ -470,7 +470,7 @@ class TestFileUploadView(TestApi):
         - no permission on requested application
         We cannot post snapshot
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             
             # check no snapshot correspond to this characteristics before the test
@@ -495,7 +495,7 @@ class TestFileUploadView(TestApi):
         - permission on requested application
         We can post snapshot
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             # check no snapshot correspond to this characteristics before the test
@@ -521,7 +521,7 @@ class TestFileUploadView(TestApi):
         - permission on requested application
         We get 403 error because object is not known
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             # check no snapshot correspond to this characteristics before the test
@@ -543,7 +543,7 @@ class TestFileUploadView(TestApi):
         """
         Check that uploaded picture is not stored when using the "put" method
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -576,7 +576,7 @@ class TestFileUploadView(TestApi):
         Check that uploaded picture is not stored when using the "put" method
         We expect to get a comparison result
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
         
@@ -618,7 +618,7 @@ class TestFileUploadView(TestApi):
         Check that uploaded picture is not stored when using the "put" method
         We provide exclude zones to check that they are used for comparison
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
         
@@ -659,7 +659,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when version is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -680,7 +680,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when environment is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -701,7 +701,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when browser is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -722,7 +722,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when test name is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -743,7 +743,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when step name is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -764,7 +764,7 @@ class TestFileUploadView(TestApi):
         """
         Check that an error is raised when imag is not provided
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # check no snapshot correspond to this characteristics before the test
@@ -783,14 +783,14 @@ class TestFileUploadView(TestApi):
            
         
     def test_post_snapshot_no_picture(self):
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'name': 'img', 'compare': 'true'})
             self.assertEqual(response.status_code, 500, 'status code should be 500')
         
     def test_post_snapshot_missing_step(self):
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -798,7 +798,7 @@ class TestFileUploadView(TestApi):
                 self.assertEqual(response.status_code, 403, 'status code should be 403') # as we use stepResult to get permissions, if it's not provided, 403 is returned
         
     def test_post_snapshot_missing_name(self):
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:

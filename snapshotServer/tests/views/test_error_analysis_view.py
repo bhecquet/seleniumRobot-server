@@ -51,7 +51,7 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and no permission on the requested application,
         the request must be rejected (403)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(
                 Permission.objects.filter(
                     Q(codename='can_view_results_application_myapp2', content_type=self.content_type_application)
@@ -65,7 +65,7 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and the correct application permission,
         the request must succeed (200)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(
                 Permission.objects.filter(
                     Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
@@ -84,7 +84,7 @@ class TestErrorAnalysisView(TestApi):
         (permission check fails before the 404 is raised because the object
         cannot be resolved to an application)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(
                 Permission.objects.filter(
                     Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
@@ -116,7 +116,7 @@ class TestErrorAnalysisView(TestApi):
         When the TestCaseInSession does not exist, a 404 must be returned
         (security disabled so we reach the view logic)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(
                 Permission.objects.filter(
                     Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)

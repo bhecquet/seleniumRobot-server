@@ -58,7 +58,7 @@ class TestTestResultView(SnapshotTestCase):
         - no permission on requested application
         We cannot view result => error page displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             
@@ -73,7 +73,7 @@ class TestTestResultView(SnapshotTestCase):
         - permission on requested application
         We can view result
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
             
@@ -87,7 +87,7 @@ class TestTestResultView(SnapshotTestCase):
         - permission on requested application
         We get 404 page
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 909}))
             
@@ -98,7 +98,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Test that step results are returned for our test
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
@@ -166,7 +166,7 @@ class TestTestResultView(SnapshotTestCase):
         . reference picture is displayed
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
@@ -199,7 +199,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check errors / messages / assertions are encoded
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
@@ -228,7 +228,7 @@ class TestTestResultView(SnapshotTestCase):
         Test the case where snapshot comparison is active, but comparison behaviour is 'DISPLAY_ONLY'
         . an additional step giving snapshot comparison result should be present 
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             step_snapshot = Snapshot.objects.get(pk=2)
@@ -255,7 +255,7 @@ class TestTestResultView(SnapshotTestCase):
         Test the case where snapshot comparison is active, but comparison behaviour is 'DISPLAY_ONLY'
         Even if comparison is KO, result should not be modified
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             step_snapshot = Snapshot.objects.get(pk=3)
@@ -285,7 +285,7 @@ class TestTestResultView(SnapshotTestCase):
         Test the case where snapshot comparison is active, but comparison behaviour is 'CHANGE_TEST_RESULT'
         Comparison is KO, result should be modified
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             step_snapshot = Snapshot.objects.get(pk=3)
@@ -309,7 +309,7 @@ class TestTestResultView(SnapshotTestCase):
         Test the case where snapshot comparison is active, but comparison behaviour is 'CHANGE_TEST_RESULT'
         Comparison is in error, result should not be modified
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             step_snapshot = Snapshot.objects.get(pk=4)
@@ -332,7 +332,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check that when grid node information is available, it's displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             test_case_in_session = TestCaseInSession.objects.get(pk=1)
@@ -349,7 +349,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check that if a step is in warning, it has the right color
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             test_case_in_session = TestCaseInSession.objects.get(pk=11)
@@ -366,7 +366,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check error cause is displayed with friendly message and analysis error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
             error = Error(stepResult=StepResult.objects.get(pk=13),
@@ -391,7 +391,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check error cause is displayed with friendly message
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
             error = Error(stepResult=StepResult.objects.get(pk=13),
@@ -416,7 +416,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check test description is displayed, and special characters are escaped
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             test_case_in_session = TestCaseInSession.objects.get(pk=1)
@@ -437,7 +437,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check "started by" is displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             test_case_in_session = TestCaseInSession.objects.get(pk=1)
@@ -454,7 +454,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check style of message is set (success, error, warning, ...)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
@@ -474,7 +474,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Test that step results are returned for our test
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             
             response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))

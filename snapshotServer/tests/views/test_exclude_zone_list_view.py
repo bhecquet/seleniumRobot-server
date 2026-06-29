@@ -50,7 +50,7 @@ class TestExcludeZoneListView(TestViews):
         - no permission on requested application
         We cannot view result => error page displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
@@ -65,7 +65,7 @@ class TestExcludeZoneListView(TestViews):
         - permission on requested application
         We can view result
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
@@ -79,7 +79,7 @@ class TestExcludeZoneListView(TestViews):
         - permission on requested application
         We get 404 page
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 4, 'step_snapshot_id': 3}))
             
@@ -90,7 +90,7 @@ class TestExcludeZoneListView(TestViews):
         """
         Check we get exclude zone for reference picture AND for the picture itself
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
             
@@ -110,7 +110,7 @@ class TestExcludeZoneListView(TestViews):
         """
         Check we get exclude zone for reference picture AND for the picture itself
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 'None', 'step_snapshot_id': 2}))
             

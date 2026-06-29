@@ -69,7 +69,7 @@ class TestViewsetTestSession(TestApi):
 
         User can add test session
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testsession', content_type=self.content_type_testsession)))
             self._create_testsession(201)
 
@@ -81,7 +81,7 @@ class TestViewsetTestSession(TestApi):
 
         User can add test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_testsession(201)
 
@@ -93,7 +93,7 @@ class TestViewsetTestSession(TestApi):
 
         User can NOT add test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._create_testsession(403)
 
@@ -105,7 +105,7 @@ class TestViewsetTestSession(TestApi):
 
         User can NOT add test session
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testsession')))
             self._create_testsession(403)
 
@@ -114,7 +114,7 @@ class TestViewsetTestSession(TestApi):
         """
         Check it's possible to add a testsession with 'add_testsession' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_testsession(201)
             self._create_testsession(201)

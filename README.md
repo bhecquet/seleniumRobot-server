@@ -321,7 +321,7 @@ Allow a user to view / add / edit snapshot comparisons
 
 ### Restrict access to a specific application ###
 
-Setting `RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN` to `'True'` allow to restrict variable / result access to a specific
+Setting `RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN` to `'True'` allow to restrict variable / result access to a specific
 application
 In this case, one needs to grant permission on application basis.
 

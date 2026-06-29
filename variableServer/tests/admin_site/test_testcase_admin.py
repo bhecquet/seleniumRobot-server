@@ -13,7 +13,7 @@ from variableServer.tests.test_admin import request, MockRequest, TestAdmin, \
     MockRequestWithApplication
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestTestCaseAdmin(TestAdmin):
     
     def test_testcase_queryset_without_application_restriction(self):
@@ -33,7 +33,7 @@ class TestTestCaseAdmin(TestAdmin):
         """
         Check that list of testcases contains only test cases for 'app1', the only application user is able to see
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
@@ -53,7 +53,7 @@ class TestTestCaseAdmin(TestAdmin):
         """
         Check that list of testcases is empty as user as no right to see any application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
@@ -72,7 +72,7 @@ class TestTestCaseAdmin(TestAdmin):
         """
         Check that list of testcases has all testcases with view_permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testcase', content_type=self.content_type_testcase)))
@@ -92,7 +92,7 @@ class TestTestCaseAdmin(TestAdmin):
         Check  user can view / change / delete / add with only application specific rights: can_view_application_app1
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
@@ -116,7 +116,7 @@ class TestTestCaseAdmin(TestAdmin):
         Check  user can view / change / delete / add with global view permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
@@ -140,7 +140,7 @@ class TestTestCaseAdmin(TestAdmin):
         Check  user can view / change / delete / add with global add permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
@@ -164,7 +164,7 @@ class TestTestCaseAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())
@@ -188,7 +188,7 @@ class TestTestCaseAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = TestCaseAdmin(model=TestCase, admin_site=AdminSite())

@@ -68,7 +68,7 @@ class TestApplicationViewSet(TestApi):
         """
         Check it's NOT possible to add an environment without 'add_environment' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self._create_environment(403)
 
@@ -76,7 +76,7 @@ class TestApplicationViewSet(TestApi):
         """
         Check it's possible to add an environment with 'add_environment' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testenvironment')))
             self._create_environment(201)
 
@@ -112,7 +112,7 @@ class TestApplicationViewSet(TestApi):
         """
         Check it's possible to get an environment by name when application restriction is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self._get_environment(200)
 

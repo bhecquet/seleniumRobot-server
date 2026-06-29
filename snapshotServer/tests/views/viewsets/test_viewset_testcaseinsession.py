@@ -65,7 +65,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can add test session
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testcaseinsession', content_type=self.content_type_testcaseinsession)))
             self._create_testcaseinsession(201)
 
@@ -77,7 +77,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can add test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_testcaseinsession(201)
 
@@ -89,7 +89,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can NOT add test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._create_testcaseinsession(403)
 
@@ -101,7 +101,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can NOT add test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testcaseinsession')))
             self._create_testcaseinsession(403)
 
@@ -110,7 +110,7 @@ class TestViewsetTestCaseInSession(TestApi):
         """
         Check if a TestCaseInSession already exist, it's possible to recreate an other with same parameters
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_testcaseinsession(201)
             self._create_testcaseinsession(201)
@@ -122,7 +122,7 @@ class TestViewsetTestCaseInSession(TestApi):
         """
         New testCaseInSession should be created as it does not match any existing testCaseInSession (no test steps)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4})
             self.assertEqual(response.status_code, 201)
@@ -133,7 +133,7 @@ class TestViewsetTestCaseInSession(TestApi):
         """
         New testCaseInSession should be created as it does not match any existing testCaseInSession (with test steps)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 4, 'testSteps': [2, 3, 4]})
             self.assertEqual(response.status_code, 201)
@@ -145,7 +145,7 @@ class TestViewsetTestCaseInSession(TestApi):
         """
         New testCaseInSession should not be created as it does match an existing testCaseInSession
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 7, 'testCase': 4, 'testSteps': [2, 3, 4]})
             self.assertEqual(response.status_code, 201)
@@ -156,7 +156,7 @@ class TestViewsetTestCaseInSession(TestApi):
         """
         New session should not be created as there are no test steps
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             response = self.client.post('/snapshot/api/testcaseinsession/', data={'session': 8, 'testCase': 2, 'testSteps': []})
             self.assertEqual(response.status_code, 201)
@@ -194,7 +194,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._update_testcaseinsession(200)
 
@@ -206,7 +206,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can NOT update test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._update_testcaseinsession(403)
 
@@ -239,7 +239,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._retrieve_testcaseinsession(200)
 
@@ -251,7 +251,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             response = self.client.get('/snapshot/api/testcaseinsession/12345/')
             self.assertEqual(403, response.status_code)
@@ -264,7 +264,7 @@ class TestViewsetTestCaseInSession(TestApi):
 
         User can NOT update test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
             self._retrieve_testcaseinsession(403)
 

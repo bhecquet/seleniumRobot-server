@@ -11,7 +11,7 @@ from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestVersionAdmin(TestAdmin):
     
     def setUp(self)->None:
@@ -188,7 +188,7 @@ class TestVersionAdmin(TestAdmin):
         
         application is app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             self.assertTrue(version_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
@@ -203,7 +203,7 @@ class TestVersionAdmin(TestAdmin):
         
         application is app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='delete_version', content_type=self.content_type_version)))
             self.assertTrue(version_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
@@ -218,7 +218,7 @@ class TestVersionAdmin(TestAdmin):
         
         application is app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_version', content_type=self.content_type_version)))
             self.assertFalse(version_admin.has_delete_permission(request=MockRequestWithApplication(user=user)))
@@ -253,7 +253,7 @@ class TestVersionAdmin(TestAdmin):
         """
         Check that list of versions contains only versions for 'app1', the only application user is able to see
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
             
@@ -271,7 +271,7 @@ class TestVersionAdmin(TestAdmin):
         """
         Check that list of versions contains versions for all application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_version', content_type=self.content_type_version)))
             
@@ -290,7 +290,7 @@ class TestVersionAdmin(TestAdmin):
         """
         Check that list of versions is empty as user as no right to see any application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
 
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_variable')))
             
@@ -308,7 +308,7 @@ class TestVersionAdmin(TestAdmin):
         Check  user can view / change / delete / add with only application specific rights: can_view_application_app1
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             
             testcase_admin = VersionAdmin(model=Version, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
@@ -331,7 +331,7 @@ class TestVersionAdmin(TestAdmin):
         Check  user can view / change / delete / add with global view permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VersionAdmin(model=Version, admin_site=AdminSite())
@@ -355,7 +355,7 @@ class TestVersionAdmin(TestAdmin):
         Check  user can view / change / delete / add with global add permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VersionAdmin(model=Version, admin_site=AdminSite())
@@ -379,7 +379,7 @@ class TestVersionAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VersionAdmin(model=Version, admin_site=AdminSite())
@@ -403,7 +403,7 @@ class TestVersionAdmin(TestAdmin):
         Check  user can view / change / delete / add with global change permission
         when application restriction are applied
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             Application.objects.get(pk=1).save()
             
             testcase_admin = VersionAdmin(model=Version, admin_site=AdminSite())

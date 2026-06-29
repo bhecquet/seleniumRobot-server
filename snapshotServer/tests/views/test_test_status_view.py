@@ -56,7 +56,7 @@ class TestTestStatusView(TestViews):
         - no permission on requested application
         We cannot view status => error page displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             
@@ -71,7 +71,7 @@ class TestTestStatusView(TestViews):
         - permission on requested application
         We can view status
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
             
@@ -86,7 +86,7 @@ class TestTestStatusView(TestViews):
         - permission on requested application
         We get 404 error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 568}))
             
@@ -97,7 +97,7 @@ class TestTestStatusView(TestViews):
         """
         Test the result of a test session status when looking for reference
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
@@ -120,7 +120,7 @@ class TestTestStatusView(TestViews):
         s3.pixelsDiff = pickle.dumps([])
         s3.save()
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
           
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
@@ -143,7 +143,7 @@ class TestTestStatusView(TestViews):
         s3.pixelsDiff = pickle.dumps([Pixel(1,1)])
         s3.save()
           
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 6}))
@@ -157,7 +157,7 @@ class TestTestStatusView(TestViews):
         """
         Test the result of a test session status when looking for reference
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('testStepStatusView', kwargs={'testCaseId': 5, 'testStepId': 2}))

@@ -10,7 +10,6 @@ import random
 import time
 from builtins import ValueError
 
-from django.conf import settings
 from django.db import transaction
 from django.http.response import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -20,9 +19,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
-from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, \
-    ApplicationSpecificPermissionsVariables
+from commonsServer.views.viewsets import ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ContextPermissionChecker, \
+    ContextSpecificPermissionsVariables
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from variableServer.models import Variable, TestEnvironment, Version, TestCase, Application
 from variableServer.utils.utils import updateVariables
@@ -69,7 +68,7 @@ class VariableQuerySet(list):
                     
         return new_list
     
-class VariableFilter(ApplicationSpecificFilter): 
+class VariableFilter:
     
     def _filter_get_queryset(self, request, queryset, view):
         """
@@ -222,12 +221,13 @@ class VariableFilter(ApplicationSpecificFilter):
             return queryset
 
         # return the whole list when permission are not restricted to some applications
-        if view.get_permissions()[0]._bypass_application_permissions(request, view):
+        if view.get_permissions()[0]._bypass_context_permissions(request, view):
             return VariableQuerySet(variable_list)
         
-        allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request)
+        allowed_applications = ContextPermissionChecker.get_allowed_applications(request)
+        allowed_environments = ContextPermissionChecker.get_allowed_environments(request)
         
-        filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_applications]
+        filtered_variables = [v for v in variable_list if (v.application and v.application.name in allowed_applications) or (v.environment and v.environment.name in allowed_environments)]
         return VariableQuerySet(filtered_variables)
     
     def _unique_variable(self, variable_query_set):
@@ -296,19 +296,29 @@ class VariableFilter(ApplicationSpecificFilter):
  
         return updated_linked_application_variables
     
-class VariablesPermissions(ApplicationSpecificPermissionsVariables):
+class VariablesPermissions(ContextSpecificPermissionsVariables):
     """
     We get variables by various parameters: "name", "environment", "application", ...
     Search criteria cannot always help associating an application.
-    So, in case of GET request, let user go on as filtering in VariableFilter.filter_queryset where only variable
+    So, in case of GET request, let user go on as filtering is in VariableFilter.filter_queryset where only variable
     that can be seen by user will be returned
     """
 
     def get_application(self, request, view):
         if request.method == 'GET':
-            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.prefix)
             if allowed_applications:
                 return Application.objects.get(name=allowed_applications[0])
+            else:
+                return ''
+        else:
+            return super().get_application(request, view)
+
+    def get_environment(self, request, view):
+        if request.method == 'GET':
+            allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.prefix)
+            if allowed_environments:
+                return TestEnvironment.objects.get(name=allowed_environments[0])
             else:
                 return ''
         else:
@@ -372,7 +382,7 @@ class VariableList(ApplicationSpecificViewSet):
         
         return self.partial_update(request, *args, **kwargs)
 
-class VariableDownloadPermissions(ApplicationSpecificPermissionsVariables):
+class VariableDownloadPermissions(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         if request.method == 'GET':

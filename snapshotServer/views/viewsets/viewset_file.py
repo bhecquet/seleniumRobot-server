@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.http.response import FileResponse, HttpResponse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import StepResult, File
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -29,7 +29,7 @@ class PassthroughRenderer(renderers.BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
 
-class FilePermission(ApplicationSpecificPermissionsResultRecording):
+class FilePermission(ContextSpecificPermissionsResultRecording):
     """
     Redefine permission class so that it's possible to get application from data
     """
@@ -40,11 +40,25 @@ class FilePermission(ApplicationSpecificPermissionsResultRecording):
         else:
             return ''
 
+    def get_object_environment(self, file):
+        if file:
+            return file.stepResult.testCase.session.environment
+        else:
+            return ''
+
     def get_application(self, request, view):
         if request.POST.get('stepResult', ''): # POST
             return StepResult.objects.get(pk=request.data['stepResult']).testCase.session.version.application
         elif view.kwargs.get('pk', ''): # GET, needed so that we can refuse access if object is unknown
             return self.get_object_application(File.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return StepResult.objects.get(pk=request.data['stepResult']).testCase.session.environment
+        elif view.kwargs.get('pk', ''): # GET, needed so that we can refuse access if object is unknown
+            return self.get_object_environment(File.objects.get(pk=view.kwargs['pk']))
         else:
             return ''
 

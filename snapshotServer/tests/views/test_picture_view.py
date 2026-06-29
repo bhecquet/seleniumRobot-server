@@ -44,7 +44,7 @@ class TestPictureView(TestViews):
         - no permission on requested application
         We cannot view result => error page displayed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
@@ -59,7 +59,7 @@ class TestPictureView(TestViews):
         - permission on requested application
         We can view result
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
             
@@ -73,7 +73,7 @@ class TestPictureView(TestViews):
         - permission on requested application
         We get 404 page
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 147, 'test_step_id': 1}))
             
@@ -86,7 +86,7 @@ class TestPictureView(TestViews):
         With this Test Step, reference should be found (snapshot.id = 2)
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
@@ -107,7 +107,7 @@ class TestPictureView(TestViews):
         Check its possible to call picture view from TestResultView, where we do not need step name
         With this Test Step, reference should be found (snapshot.id = 2)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
@@ -128,7 +128,7 @@ class TestPictureView(TestViews):
         Check that when no picture exists for comparison, 'enable' should be set to false so that it's not displayed in test report
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 2}))
@@ -145,7 +145,7 @@ class TestPictureView(TestViews):
         Check that no error is raised when one of step / test case / session does not exist
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 1, 'test_step_id': 2}))
@@ -158,7 +158,7 @@ class TestPictureView(TestViews):
         'snapshot_same_env' should then have 'snapshot_future_ref_same_env' as reference because it has a higher id than 'initialRefSnapshot' and same name / browser / environment / version
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
@@ -206,7 +206,7 @@ class TestPictureView(TestViews):
         Check we get the diff percentage
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
@@ -247,7 +247,7 @@ class TestPictureView(TestViews):
         Test that all snapshots are returned when there are multiple in one test
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
@@ -294,7 +294,7 @@ class TestPictureView(TestViews):
         
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=True&snapshotId=3")
@@ -329,7 +329,7 @@ class TestPictureView(TestViews):
                 image: documents/test_Image1.png
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):  
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):  
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=False&snapshotId=3")
@@ -364,7 +364,7 @@ class TestPictureView(TestViews):
                 refSnapshot: 3
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True): 
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True): 
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
          
             response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 4, 'test_step_id': 1}) + "?makeRef=False&snapshotId=4")
@@ -379,7 +379,7 @@ class TestPictureView(TestViews):
         reference available
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile: 
@@ -413,7 +413,7 @@ class TestPictureView(TestViews):
         Test the case where we remove a ref a we want to make sure that the new reference is searched with the same environment
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  
@@ -455,7 +455,7 @@ class TestPictureView(TestViews):
         Test the case where we remove a ref a we want to make sure that the new reference is searched with the same browsert 
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
         
             with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:  

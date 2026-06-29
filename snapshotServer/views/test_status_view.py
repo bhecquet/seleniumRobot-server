@@ -9,11 +9,11 @@ import pickle
 from django.http.response import HttpResponse
 
 from snapshotServer.models import TestCaseInSession, Snapshot
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from rest_framework.generics import RetrieveAPIView
 
 
-class TestStatusPermission(ApplicationSpecificPermissionsResultRecording):
+class TestStatusPermission(ContextSpecificPermissionsResultRecording):
     
     def get_object_application(self, test_case_in_session):
         if test_case_in_session:

@@ -101,7 +101,7 @@ class TestRecomputeDiffView(TestApi):
         - no permission on requested application
         We cannot post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[2]))
@@ -114,7 +114,7 @@ class TestRecomputeDiffView(TestApi):
         - permission on requested application
         We can post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[2]))
@@ -128,7 +128,7 @@ class TestRecomputeDiffView(TestApi):
         - permission on requested application
         We get 404 error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[222]))
@@ -138,7 +138,7 @@ class TestRecomputeDiffView(TestApi):
         """
         Send recompute request whereas no ref exists. Nothing should be done
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
               
             response = self.client.post(reverse('recompute', args=[1]))
@@ -148,7 +148,7 @@ class TestRecomputeDiffView(TestApi):
         """
         Reference exists for the snapshot, do computing
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('recompute', args=[2]))

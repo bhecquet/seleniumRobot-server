@@ -14,7 +14,7 @@ from variableServer.models import Variable
 from variableServer.tests.test_admin import request, MockRequest, TestAdmin
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
+@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestApplicationAdmin(TestAdmin):
     
     fixtures = ['varServer']
@@ -254,7 +254,7 @@ class TestApplicationAdmin(TestAdmin):
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
             
             # only app1 is present

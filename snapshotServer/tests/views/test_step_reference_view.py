@@ -146,7 +146,7 @@ class TestStepReferenceView(TestApi):
         - no permission on requested application
         We cannot post/get step reference
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -166,7 +166,7 @@ class TestStepReferenceView(TestApi):
         - permission on requested application
         We can post/get step reference
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -187,7 +187,7 @@ class TestStepReferenceView(TestApi):
         - permission on requested application
         We get 404 error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.get(reverse('stepReference', kwargs={'step_result_id': 1234}))
@@ -200,7 +200,7 @@ class TestStepReferenceView(TestApi):
         Check we can get reference snapshot if it exists
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             # upload image to be tested
@@ -218,7 +218,7 @@ class TestStepReferenceView(TestApi):
         Check a reference step is created when none is found
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
@@ -235,7 +235,7 @@ class TestStepReferenceView(TestApi):
         Check old reference information are deleted when reference is updated
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/replyDetection.json.png', 'rb') as fp:
@@ -266,7 +266,7 @@ class TestStepReferenceView(TestApi):
         reference should not be recorded if step result is KO
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -284,7 +284,7 @@ class TestStepReferenceView(TestApi):
         Check we find the reference step when it exists in the same version / same name
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -317,7 +317,7 @@ class TestStepReferenceView(TestApi):
         """
         
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
         
             # prevent overwriting of step reference
@@ -348,7 +348,7 @@ class TestStepReferenceView(TestApi):
         Check a reference step is created when none is found for the same environment
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -370,7 +370,7 @@ class TestStepReferenceView(TestApi):
         Check a reference step is created when none is found for the same version
         """
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
@@ -389,7 +389,7 @@ class TestStepReferenceView(TestApi):
   
     def test_post_snapshot_no_picture(self):
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id})
@@ -397,7 +397,7 @@ class TestStepReferenceView(TestApi):
         
     def test_post_snapshot_missing_step(self):
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
             
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
