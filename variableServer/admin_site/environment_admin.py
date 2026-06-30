@@ -7,6 +7,9 @@ from operator import attrgetter
 from django import forms
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
+
+from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
+from variableServer.admin_site.base_model_admin import bypass_context_permissions
 from variableServer.models import TestEnvironment
 
 class EnvironmentFilter(SimpleListFilter):
@@ -17,12 +20,17 @@ class EnvironmentFilter(SimpleListFilter):
     parameter_name = 'environment'
 
     def lookups(self, request, model_admin):
+        if bypass_context_permissions(request, 'variableServer.view_environment'):
+            return [(e.id, str(e)) for e in TestEnvironment.objects.all().order_by('name')]
+
         if 'application' in request.GET:
             app_id = request.GET['application']
-            environments = set([c.environment for c in model_admin.model.objects.all().filter(application=app_id)])
+            environments = {c.environment for c in model_admin.model.objects.all().filter(application=app_id)}
         else:
-            environments = set(TestEnvironment.objects.all())
-        environments = sorted([e for e in environments if e is not None], key=attrgetter('name'))
+            environments = set(TestEnvironment.objects.all().order_by('name'))
+
+        environments = [e for e in environments if e is not None and request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + e.name)]
+        environments = sorted(environments, key=attrgetter('name'))
         return [(e.id, str(e)) for e in environments] + [('_None_', 'None')]
 
     def queryset(self, request, queryset):

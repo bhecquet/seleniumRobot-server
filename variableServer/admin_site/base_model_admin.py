@@ -114,11 +114,11 @@ class BaseServerModelAdmin(admin.ModelAdmin):
                     forbidden_environments.append(environment_name)
 
             environment_queryset = environment_queryset.exclude(environment=None)
-            application_queryset.union(environment_queryset)
+            application_queryset = application_queryset | environment_queryset
 
 
             
-        return application_queryset, forbidden_applications, forbidden_environments
+        return application_queryset.distinct(), forbidden_applications, forbidden_environments
     
    
     

@@ -487,7 +487,21 @@
     creationDate: "2018-07-10 13:01:56.784734+00:00"
   model: variableServer.variable
   pk: 20
-
+- fields:
+    name: varApp1AndEnvDev
+    value: ''
+    uploadFile: null
+    application: 1
+    version: 1
+    environment: 1
+    test: [ ]
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 21
 
 - fields:
     name: user

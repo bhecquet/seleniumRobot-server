@@ -14,8 +14,7 @@ from django.urls.base import reverse
 from django.utils import timezone
 
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
-from variableServer.models import Application, Version
-from variableServer.models import Variable
+from variableServer.models import Variable, Application, Version, TestEnvironment
 from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
     MockRequestWithApplication
 
@@ -29,6 +28,7 @@ class TestVariableAdmin(TestAdmin):
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=777).save()
+        TestEnvironment.objects.get(pk=1).save()
 
 
     def test_variable_get_list_display_with_authorized_user(self):
@@ -73,7 +73,29 @@ class TestVariableAdmin(TestAdmin):
             
             self.assertEqual(len(list(set(app_list))), 1) # 'None' and 'app1'
             self.assertTrue(Application.objects.get(pk=1) in app_list)
-        
+
+    def test_variable_queryset_with_application_and_environment_restriction(self):
+        """
+        Check that list of variables contains only variables for 'app1' or 'DEV' environment, the only application / environment user is able to see
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            Application.objects.get(pk=1).save()
+
+            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='can_view_environment_DEV')))
+
+            variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+            query_set = variable_admin.get_queryset(request=MockRequest(user=user))
+
+            expected_application = Application.objects.get(pk=1)
+            expected_environment = TestEnvironment.objects.get(pk=1)
+
+            for var in query_set:
+                self.assertTrue(var.application == expected_application or var.environment == expected_environment)
+
+            # we get only what we want, not more, not less and no duplicate entries
+            self.assertEqual(len(query_set), Variable.objects.filter(Q(application=expected_application) | Q(environment=expected_environment)).distinct().count())
+
+
     def test_variable_queryset_with_application_restriction_and_view_variable_permission(self):
         """
         Check that list of variables contains all variables when 'view_variable' permission is set
