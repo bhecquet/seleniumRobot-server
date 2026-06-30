@@ -3,7 +3,8 @@ from looseversion import LooseVersion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import Permission
-
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 class TruncatingCharField(models.CharField):
     def get_prep_value(self, value):
@@ -151,3 +152,31 @@ class TestCase(models.Model):
     
     def __str__(self):
         return "%s - %s" % (self.name, self.application.name)
+
+class AppPreference(models.Model):
+    key = models.CharField(max_length=128, unique=True)
+    value = models.TextField(blank=True, default="")
+    initialValue = models.TextField(blank=True, default="") # value that user should not change, juste here for information
+    description = models.TextField(blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Application preference"
+        verbose_name_plural = "Application preferences"
+        ordering = ("key",)
+
+    def __str__(self):
+        return self.key
+
+@receiver(post_save, sender=AppPreference)
+def preference_saved(sender, instance, **kwargs):
+
+    from commonsServer.preferences import invalidate_pref_cache
+    invalidate_pref_cache(instance.key)
+
+
+@receiver(post_delete, sender=AppPreference)
+def preference_deleted(sender, instance, **kwargs):
+
+    from commonsServer.preferences import invalidate_pref_cache
+    invalidate_pref_cache(instance.key)

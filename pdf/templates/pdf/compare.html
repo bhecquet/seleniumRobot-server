@@ -1,0 +1,63 @@
+{% extends "pdf/base.html" %}
+
+{% block title %}Comparaison de fichiers PDF{% endblock %}
+
+{% block body %}
+<div class="row">
+    <div class="col-lg-8">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'pdf-home' %}">PDF Tools</a></li>
+                <li class="breadcrumb-item active">Comparaison de fichiers PDF</li>
+            </ol>
+        </nav>
+        <h3><i class="fas fa-not-equal" style="color:#00888d;"></i> PDF file comparison</h3>
+        <hr>
+
+        <form method="post" enctype="multipart/form-data" class="card shadow-sm">
+            <div class="card-body">
+                {% csrf_token %}
+
+                <div class="mb-3">
+                    <label for="{{ form.pdf_file_1.id_for_label }}" class="form-label">{{ form.pdf_file_1.label }}</label>
+                    {{ form.pdf_file_1 }}
+                        <div class="form-text">{{ form.pdf_file_1.help_text }}</div>
+                    {% for error in form.pdf_file_1.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.pdf_file_2.id_for_label }}" class="form-label">{{ form.pdf_file_2.label }}</label>
+                    {{ form.pdf_file_2 }}
+                        <div class="form-text">{{ form.pdf_file_2.help_text }}</div>
+                    {% for error in form.pdf_file_2.errors %}
+                        <div class="text-danger small">{{ error }}</div>
+                    {% endfor %}
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.model.id_for_label }}" class="form-label">{{ form.model.label }}</label>
+                    {{ form.model }}
+                    <div class="form-text">{{ form.model.help_text }}</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="{{ form.user_prompt.id_for_label }}" class="form-label">{{ form.user_prompt.label }}</label><br/>
+                    {{ form.user_prompt }}
+                    <div class="form-text">{{ form.user_prompt.help_text }}</div>
+                </div>
+
+                {% for error in form.non_field_errors %}
+                    <div class="alert alert-danger">{{ error }}</div>
+                {% endfor %}
+
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-play"></i> Compare
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
