@@ -20,7 +20,7 @@ from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, Snapshot, TestCaseInSession, \
     StepResult
 from commonsServer.tests.test_api import TestApi
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment as TestEnvironmentV
 
 
 class TestFileUploadView(TestApi):
@@ -74,8 +74,11 @@ class TestFileUploadView(TestApi):
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironmentV.objects.get(pk=1).save()
+        TestEnvironmentV.objects.get(pk=2).save()
         self.content_type_application = ContentType.objects.get_for_model(Application, for_concrete_model=False)
-        
+        self.content_type_environment = ContentType.objects.get_for_model(TestEnvironmentV, for_concrete_model=False)
+
         
     def tearDown(self):
         """
@@ -108,7 +111,7 @@ class TestFileUploadView(TestApi):
             response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
             self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
         
-    def test_post_snapshot_security_authenticated_no_permission(self):
+    def test_post_snapshot_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -122,7 +125,7 @@ class TestFileUploadView(TestApi):
                 response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
                 self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
         
-    def test_post_snapshot_security_authenticated_with_permission(self):
+    def test_post_snapshot_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -135,7 +138,35 @@ class TestFileUploadView(TestApi):
             with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
                 response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
                 self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
-            
+
+    def test_post_snapshot_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can post snapshot
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV', content_type=self.content_type_environment)))
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+                response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+                self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+
+    def test_post_snapshot_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We cannot post snapshot
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD', content_type=self.content_type_environment)))
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+                response = self.client.post(reverse('upload', args=['img']), data={'stepResult': self.sr1.id, 'image': fp, 'name': 'img', 'compare': 'true'})
+                self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
             
     def test_post_snapshot_security_authenticated_with_permission_object_not_found(self):
         """
@@ -463,7 +494,7 @@ class TestFileUploadView(TestApi):
                                                                                    'stepName': 'Step 1'})
             self.assertEqual(response.status_code, 401, 'status code should be 401: ' + str(response.content))
         
-    def test_post_snapshot_no_store_security_authenticated_no_permission(self):
+    def test_post_snapshot_no_store_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -488,7 +519,7 @@ class TestFileUploadView(TestApi):
                                                                                    'stepName': 'Step 1'})
                 self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
         
-    def test_post_snapshot_no_store_security_authenticated_with_permission(self):
+    def test_post_snapshot_no_store_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -512,8 +543,58 @@ class TestFileUploadView(TestApi):
                                                                                    'testCaseName': 'test1',
                                                                                    'stepName': 'Step 1'})
                 self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
-            
-            
+
+    def test_post_snapshot_no_store_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can post snapshot
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV', content_type=self.content_type_environment)))
+
+            # check no snapshot correspond to this characteristics before the test
+            self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+
+                response = self.client.put(reverse('upload', args=['img']), data={'image': fp,
+                                                                                   'name': 'img',
+                                                                                   'compare': 'true',
+                                                                                   'versionId': Version.objects.get(pk=1).id,
+                                                                                   'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                                   'browser': 'firefox',
+                                                                                   'testCaseName': 'test1',
+                                                                                   'stepName': 'Step 1'})
+                self.assertEqual(response.status_code, 201, 'status code should be 201: ' + str(response.content))
+
+    def test_post_snapshot_no_store_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We should get a 403 error
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD', content_type=self.content_type_environment)))
+
+            # check no snapshot correspond to this characteristics before the test
+            self.assertIsNone(Snapshot.objects.filter(stepResult__testCase=self.tcs1, stepResult__step__id=1).last())
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+
+                response = self.client.put(reverse('upload', args=['img']), data={'image': fp,
+                                                                                   'name': 'img',
+                                                                                   'compare': 'true',
+                                                                                   'versionId': Version.objects.get(pk=1).id,
+                                                                                   'environmentId': TestEnvironment.objects.get(pk=1).id,
+                                                                                   'browser': 'firefox',
+                                                                                   'testCaseName': 'test1',
+                                                                                   'stepName': 'Step 1'})
+                self.assertEqual(response.status_code, 403, 'status code should be 403: ' + str(response.content))
+
+
     def test_post_snapshot_no_store_security_authenticated_with_permission_object_not_found(self):
         """
         Check that with 

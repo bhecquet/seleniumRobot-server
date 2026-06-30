@@ -306,7 +306,7 @@ class VariablesPermissions(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         if request.method == 'GET':
-            allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.prefix)
+            allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.app_prefix)
             if allowed_applications:
                 return Application.objects.get(name=allowed_applications[0])
             else:
@@ -316,7 +316,7 @@ class VariablesPermissions(ContextSpecificPermissionsVariables):
 
     def get_environment(self, request, view):
         if request.method == 'GET':
-            allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.prefix)
+            allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.env_prefix)
             if allowed_environments:
                 return TestEnvironment.objects.get(name=allowed_environments[0])
             else:

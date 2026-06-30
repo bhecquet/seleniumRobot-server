@@ -25,7 +25,7 @@ class StepResultPermission(ContextSpecificPermissionsResultRecording):
         else:
             return ''
 
-    def get_object_application(self, step_result):
+    def get_object_environment(self, step_result):
         if step_result:
             return step_result.testCase.session.environment
         else:

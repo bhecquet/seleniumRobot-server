@@ -1,5 +1,5 @@
 import json
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from snapshotServer.models import TestStep
@@ -11,8 +11,11 @@ class TestViewsetTestStep(TestApi):
 
     def setUp(self):
 
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_teststep = ContentType.objects.get_for_model(TestStep)

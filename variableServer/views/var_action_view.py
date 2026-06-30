@@ -28,7 +28,7 @@ def copy_variables(request):
     global_permission = request.user.has_perm('variableServer.add_variable')
     has_permission, related_application, related_environment = _has_context_permission(request, application, environment, variable_ids, global_permission)
     if not has_permission:
-        var_admin.message_user(request, "You don't have right to copy variables to application %s or to environment" % (related_application, related_environment), level=messages.ERROR)
+        var_admin.message_user(request, "You don't have right to copy variables to application %s or to environment %s" % (related_application, related_environment), level=messages.ERROR)
         return HttpResponseRedirect(request.POST['nexturl'])
     
     # copy content of each variable in a new variable
@@ -133,7 +133,7 @@ def _has_context_permission(request, application, environment, variable_ids, has
     
     # global permission has priority over application permission
     if has_global_permission:
-        return has_global_permission, application
+        return has_global_permission, application, environment
     
     if settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
         # check user has permission to destination application or destination environment
@@ -155,6 +155,6 @@ def _has_context_permission(request, application, environment, variable_ids, has
                     return False, app, env
             
     else:
-        return has_global_permission, application
+        return has_global_permission, application, environment
     
     return True, application, environment

@@ -240,9 +240,10 @@ class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
         """
         Filters the queryset variable depending on permissions
         """
-        queryset, forbidden_applications, forbiddent_environments = self._filter_queryset(request, queryset, global_permission_code_name)
+        queryset, forbidden_applications, forbidden_environments = self._filter_queryset(request, queryset, global_permission_code_name)
 
-        self.message_user(request, "You do not have right to %s variables from application %s or environments %s" % (message, forbidden_applications, forbiddent_environments), level=messages.ERROR)
+        if forbidden_applications or forbidden_environments:
+            self.message_user(request, "You do not have right to %s variables from application %s or environments %s" % (message, forbidden_applications, forbidden_environments), level=messages.ERROR)
 
         return queryset
     

@@ -14,16 +14,27 @@ from rest_framework.generics import RetrieveAPIView
 
 
 class TestStatusPermission(ContextSpecificPermissionsResultRecording):
-    
+
     def get_object_application(self, test_case_in_session):
         if test_case_in_session:
             return test_case_in_session.session.version.application
+        else:
+            return ''
+
+    def get_object_environment(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.environment
         else:
             return ''
         
     def get_application(self, request, view):
         if view.kwargs.get('testCaseId', ''): # GET
             return self.get_object_application(TestCaseInSession.objects.get(pk=view.kwargs['testCaseId']))
+        return ''
+
+    def get_environment(self, request, view):
+        if view.kwargs.get('testCaseId', ''): # GET
+            return self.get_object_environment(TestCaseInSession.objects.get(pk=view.kwargs['testCaseId']))
         return ''
 
 class TestStatusView(RetrieveAPIView):

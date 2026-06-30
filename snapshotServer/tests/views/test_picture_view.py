@@ -37,7 +37,7 @@ class TestPictureView(TestViews):
         self.assertEqual(302, response.status_code)
         self.assertEqual("/accounts/login/?next=/snapshot/compare/picture/100/1/", response.url)
         
-    def test_pictures_security_authenticated_no_permission(self):
+    def test_pictures_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -52,7 +52,7 @@ class TestPictureView(TestViews):
             self.assertEqual(403, response.status_code)
            
         
-    def test_pictures_security_authenticated_with_permission(self):
+    def test_pictures_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -65,6 +65,34 @@ class TestPictureView(TestViews):
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
+
+    def test_pictures_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can view result
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+
+            # check we have no permission to view the report
+            self.assertEqual(200, response.status_code)
+
+    def test_pictures_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can view result
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+
+            # check we have no permission to view the report
+            self.assertEqual(403, response.status_code)
             
     def test_pictures_security_authenticated_with_permission_object_not_found(self):
         """

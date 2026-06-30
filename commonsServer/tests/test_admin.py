@@ -28,6 +28,7 @@ class TestAdmin(TestApi):
         self.user = User.objects.create(username="bob")
         Application.objects.get(pk=1).save()
 
+
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)
 

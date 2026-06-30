@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.forms import ImageForComparisonUploadForm,\
     ImageForComparisonUploadFormNoStorage
-from snapshotServer.models import Snapshot, StepResult, Version
+from snapshotServer.models import Snapshot, StepResult, Version, TestEnvironment
 import json
 from django.http.response import HttpResponse
 import io
@@ -14,7 +14,7 @@ from rest_framework.generics import CreateAPIView, UpdateAPIView
 from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 
 class SnapshotUploadPermission(ContextSpecificPermissionsResultRecording):
-    
+
     def get_application_from_step_result(self, step_result):
         if step_result:
             return step_result.testCase.session.version.application
@@ -32,6 +32,20 @@ class SnapshotUploadPermission(ContextSpecificPermissionsResultRecording):
             return self.get_application_from_version(Version.objects.get(pk=request.POST['versionId']))
         else:
             return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return self.get_environment_from_step_result(StepResult.objects.get(pk=request.POST['stepResult']))
+        elif request.POST.get('environmentId', ''): #PUT
+            return TestEnvironment.objects.get(pk=request.POST['environmentId'])
+        else:
+            return ''
+
+    def get_environment_from_step_result(self, step_result):
+        if step_result:
+            return step_result.testCase.session.environment
+        return ''
+
 
 class SnapshotUploadView(CreateAPIView, UpdateAPIView):
     """
@@ -91,7 +105,7 @@ class SnapshotUploadView(CreateAPIView, UpdateAPIView):
         
         # check for a reference in previous versions
         if not most_recent_reference_snapshot:
-            for app_version in reversed(step_result.testCase.session.version.previousVersions()):
+            for app_version in reversed(step_result.testCase.session.version.previous_versions()):
                 most_recent_reference_snapshot = Snapshot.objects.filter(stepResult__step=step_result.step, 
                                                               stepResult__testCase__testCase__name=step_result.testCase.testCase.name, 
                                                               stepResult__testCase__session__version=app_version, 

@@ -9,7 +9,7 @@ import variableServer
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.models import Variable, Application
 from variableServer.tests.test_admin import MockRequestWithApplication,\
-    MockRequest, TestAdmin, MockRequestEmptyApplication
+    MockRequest, TestAdmin, MockRequestEmptyApplicationEmptyEnvironment
 
 class TestBaseModelAdmin(TestAdmin):
     
@@ -22,7 +22,7 @@ class TestBaseModelAdmin(TestAdmin):
         
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
         user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
-        self.assertTrue(base_admin.has_add_permission(request=MockRequestWithApplication(user=user)))
+        self.assertTrue(base_admin.has_add_permission(request=MockRequestEmptyApplicationEmptyEnvironment(user=user)))
         
     def test_has_add_permission_allowed_and_authenticated(self):
         """
@@ -115,7 +115,7 @@ class TestBaseModelAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_add_permission(request=MockRequestEmptyApplication(user=user)))
+            self.assertFalse(base_admin.has_add_permission(request=MockRequestEmptyApplicationEmptyEnvironment(user=user)))
               
     def test_has_add_permission_not_allowed_and_restriction_on_application(self):
         """
@@ -356,7 +356,7 @@ class TestBaseModelAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_change_permission(request=MockRequestEmptyApplication(user=user))) 
+            self.assertFalse(base_admin.has_change_permission(request=MockRequestEmptyApplicationEmptyEnvironment(user=user)))
             
     def test_has_change_permission_not_allowed_and_authenticated_with_restrictions_variable_with_application(self):
         """
@@ -821,7 +821,7 @@ class TestBaseModelAdmin(TestAdmin):
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())
             user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self.assertFalse(base_admin.has_delete_permission(request=MockRequestEmptyApplication(user=user))) 
+            self.assertFalse(base_admin.has_delete_permission(request=MockRequestEmptyApplicationEmptyEnvironment(user=user)))
             
     def test_has_delete_permission_allowed_and_authenticated_with_restrictions_variable_without_application(self):
         """

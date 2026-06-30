@@ -16,7 +16,7 @@ from snapshotServer.tests.views.test_views import TestViews
 from snapshotServer.models import Snapshot
 from snapshotServer.controllers.picture_comparator import Pixel
 from snapshotServer.tests import authenticate_test_client_for_web_view_with_permissions
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 import variableServer
 
 
@@ -25,12 +25,9 @@ class TestTestStatusView(TestViews):
     def setUp(self):
         super().setUp()
         
-        # be sure permission for application is created
-        Application.objects.get(pk=1).save()
-        Application.objects.get(pk=2).save()
-        
         self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)        
-        
+        self.content_type_environment = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
+
 
     def test_session_status_no_security_not_authenticated(self):
         """
@@ -49,7 +46,7 @@ class TestTestStatusView(TestViews):
         # check we are redirected to login
         self.assertEqual(401, response.status_code)
         
-    def test_session_status_security_authenticated_no_permission(self):
+    def test_session_status_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -64,7 +61,7 @@ class TestTestStatusView(TestViews):
             self.assertEqual(403, response.status_code)
            
         
-    def test_session_status_security_authenticated_with_permission(self):
+    def test_session_status_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -77,6 +74,34 @@ class TestTestStatusView(TestViews):
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
+
+    def test_session_status_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can view status
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_environment_DEV', content_type=self.content_type_environment)))
+            response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
+
+            # check we have no permission to view the report
+            self.assertEqual(200, response.status_code)
+
+    def test_session_status_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We cannot view status
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_environment_PROD', content_type=self.content_type_environment)))
+            response = self.client.get(reverse('testStatusView', kwargs={'testCaseId': 5}))
+
+            # check we have no permission to view the report
+            self.assertEqual(403, response.status_code)
             
             
     def test_session_status_security_authenticated_with_permission_object_not_found(self):

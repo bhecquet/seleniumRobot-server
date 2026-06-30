@@ -315,11 +315,11 @@ class Snapshot(models.Model):
         """
         
         # get list of all snapshots following ourself, sharing 'refSnapshot'
-        next_snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
-                                            stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
-                                            stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.nextVersions(),
-                                            refSnapshot=ref_snapshot,
-                                            id__gt=self.id) \
+        next_snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step,
+                                                 stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name,
+                                                 stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.next_versions(),
+                                                 refSnapshot=ref_snapshot,
+                                                 id__gt=self.id) \
                                         .order_by('id')
         
         snapshots = []

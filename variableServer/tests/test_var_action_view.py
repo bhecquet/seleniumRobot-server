@@ -6,7 +6,7 @@ from django.db.models import Q
 from django.test import override_settings
 from django.urls.base import reverse
 
-from variableServer.models import Variable, Application
+from variableServer.models import Variable, Application, TestEnvironment
 from variableServer.tests.test_admin import TestAdmin
 
 
@@ -18,9 +18,11 @@ class TestVarActionView(TestAdmin):
     def setUp(self)->None:
         TestAdmin.setUp(self)
 
-        # be sure permission for application is created
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
     def _test_copy_variable(self, permissions, post_data, number_of_created_variables):
 

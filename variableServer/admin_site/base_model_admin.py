@@ -25,6 +25,7 @@ def bypass_context_permissions(request, global_permission_code_name):
 class BaseServerModelAdmin(admin.ModelAdmin):
     """
     Base class to restrict access to application objects the user has rights to see
+    If model has 'environment' field, then restriction will also be based on environment
     """
     
     def _has_context_permission(self, global_permission, request, obj=None):
@@ -34,18 +35,13 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
             return global_permission
 
-        has_application_permission = False
-        has_environment_permission = False
+        has_application_permission = None
+        has_environment_permission = None
 
         # submiting a new variable with no application will lead to an empty string application
         # in this case, we do not allow adding this
         if request.method == 'POST' and request.POST.get('application') == '' and request.POST.get('environment') == '':
             return False
-
-        # if user has at least a permission on any application OR environment, let him see models and do actions (delete action / modify / ...)
-        # TODO: not filtering on method verb allow a user with any application specific permission to add a variable not linked to application
-        elif not obj and (ContextPermissionChecker.get_allowed_applications(request) or ContextPermissionChecker.get_allowed_environments(request)):
-            return True
 
         if request.method == 'POST' and request.POST.get('application'):
             application = Application.objects.get(pk=int(request.POST['application']))
@@ -54,12 +50,20 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         elif obj and obj.application:
             has_application_permission = request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.application.name)
 
+        # if user has at least a permission on any application OR environment, let him see models and do actions (delete action / modify / ...)
+        elif not obj and ContextPermissionChecker.get_allowed_applications(request):
+            has_application_permission = True
+
         if request.method == 'POST' and request.POST.get('environment'):
             environment = TestEnvironment.objects.get(pk=int(request.POST['environment']))
             has_environment_permission = request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name)
 
-        elif obj and obj.environment:
+        elif obj and hasattr(obj, 'environment') and obj.environment:
             has_environment_permission = request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + obj.environment.name)
+
+        # if user has at least a permission on any application OR environment, let him see models and do actions (delete action / modify / ...)
+        elif not obj and ContextPermissionChecker.get_allowed_environments(request):
+            has_environment_permission = True
 
         return global_permission or has_application_permission or has_environment_permission
     
@@ -68,7 +72,7 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         Returns the queryset, filtered with only values that the user has rights to see
         """
         queryset = super().get_queryset(request)
-        queryset, _ = self._filter_queryset(request, queryset, requested_permission)
+        queryset, forbidden_applications, forbidden_environments = self._filter_queryset(request, queryset, requested_permission)
                  
         return queryset 
     
@@ -92,17 +96,29 @@ class BaseServerModelAdmin(admin.ModelAdmin):
                 return queryset, forbidden_applications, forbidden_environments
             else:                        
                 return queryset.none(), forbidden_applications, forbidden_environments
-            
-        for application_id, application_name, environment_id, environment_name in queryset.values_list('application', 'application__name', 'environment', 'environment__name').distinct().exclude(application=None):
-            if not (request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application_name)
-                 or request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment_name)):
-                queryset = queryset.exclude(application__name=application_name, environment_name=environment_name)
+
+        application_queryset = queryset.all()
+
+        for application_id, application_name in application_queryset.values_list('application', 'application__name').distinct().exclude(application=None):
+            if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application_name):
+                application_queryset = application_queryset.exclude(application__name=application_name)
                 forbidden_applications.append(application_name)
-                forbidden_environments.append(environment_name)
-                
-        queryset = queryset.exclude(application=None)
+
+        application_queryset = application_queryset.exclude(application=None)
+
+        if hasattr(self.model, 'environment'):
+            environment_queryset = queryset.all()
+            for environment_id, environment_name in environment_queryset.values_list('environment', 'environment__name').distinct().exclude(environment=None):
+                if not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment_name):
+                    environment_queryset = environment_queryset.exclude(environment__name=environment_name)
+                    forbidden_environments.append(environment_name)
+
+            environment_queryset = environment_queryset.exclude(environment=None)
+            application_queryset.union(environment_queryset)
+
+
             
-        return queryset, forbidden_applications, forbidden_environments
+        return application_queryset, forbidden_applications, forbidden_environments
     
    
     

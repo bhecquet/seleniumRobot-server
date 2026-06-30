@@ -10,7 +10,7 @@ from snapshotServer.models import StepResult, Snapshot, TestSession,\
 from django.db.models import Q
 from django.contrib.auth.models import Permission
 
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 
 
 class TestTestSessionSummaryView(SnapshotTestCase):
@@ -31,9 +31,11 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         super().setUp()
         self.client = Client()
         
-        # be sure permission for application is created
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
         
     def test_summary_report_no_security_not_authenticated(self):
         """
@@ -53,7 +55,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual("/accounts/login/?next=/snapshot/testResults/summary/1/", response.url)
         
-    def test_summary_report_security_authenticated_no_permission(self):
+    def test_summary_report_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -68,7 +70,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             self.assertEqual(403, response.status_code)
            
         
-    def test_summary_report_security_authenticated_with_permission(self):
+    def test_summary_report_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -81,6 +83,32 @@ class TestTestSessionSummaryView(SnapshotTestCase):
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
+
+    def test_summary_report_security_authenticated_with_environment_permission(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can view result if session is attached to this environment
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+            response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+
+            self.assertEqual(200, response.status_code)
+
+    def test_summary_report_security_authenticated_with_other_environment_permission(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We cannot view result if session is attached to another environment
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+            response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+
+            self.assertEqual(403, response.status_code)
             
             
     def test_summary_report_security_authenticated_with_permission_object_not_found(self):

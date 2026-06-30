@@ -43,7 +43,7 @@ class ContextSpecificPermissions(GenericPermissions):
         queryset = self._queryset(view)
         model_permissions = self.get_required_permissions(request.method, queryset.model)
             
-        return any([request.user.has_perm(model_permission) for model_permission in model_permissions])
+        return any(request.user.has_perm(model_permission) for model_permission in model_permissions)
     
     def get_application(self, request, view):
         """
@@ -98,8 +98,8 @@ class ContextSpecificPermissions(GenericPermissions):
         except:
             # if we cannot check the application, stop
             return has_model_permission
-        allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.prefix)
-        allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.prefix)
+        allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.app_prefix)
+        allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.env_prefix)
 
         return ((application and application.name in allowed_applications)
                 or (environment and environment.name in allowed_environments)
@@ -145,17 +145,26 @@ class ContextSpecificPermissions(GenericPermissions):
         application = self.get_object_application(obj)
         environment = self.get_object_environment(obj)
 
+        has_application_permission = None
+        has_environment_permission = None
+
         if self._bypass_context_permissions(request, view):
             return super().has_object_permission(request, view, obj)
-        
-        elif obj and application:
+
+
+
+        if obj and application:
             permission = self.app_prefix + application.name
-            return request.user.has_perm(permission)
-        elif obj and environment:
+            has_application_permission = request.user.has_perm(permission)
+        if obj and environment:
             permission = self.env_prefix + environment.name
-            return request.user.has_perm(permission)
-        else:
+            has_environment_permission = request.user.has_perm(permission)
+
+        if has_environment_permission is None and has_application_permission is None:
             return super().has_object_permission(request, view, obj)
+
+        else:
+            return has_application_permission or has_environment_permission
         
                 
 class ContextSpecificPermissionsResultRecording(ContextSpecificPermissions):

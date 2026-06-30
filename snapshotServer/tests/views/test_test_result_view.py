@@ -16,7 +16,7 @@ from django.test.client import Client
 from django.db.models import Q
 from django.contrib.auth.models import Permission
 
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 
 
 class TestTestResultView(SnapshotTestCase):
@@ -29,9 +29,11 @@ class TestTestResultView(SnapshotTestCase):
         super().setUp()
         self.client = Client()
         
-        # be sure permission for application is created
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
         
     def test_report_result_no_security_not_authenticated(self):
         """
@@ -51,7 +53,7 @@ class TestTestResultView(SnapshotTestCase):
         self.assertEqual(302, response.status_code)
         self.assertEqual("/accounts/login/?next=/snapshot/testResults/result/1/", response.url)
         
-    def test_report_result_security_authenticated_no_permission(self):
+    def test_report_result_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -66,7 +68,7 @@ class TestTestResultView(SnapshotTestCase):
             self.assertEqual(403, response.status_code)
            
         
-    def test_report_result_security_authenticated_with_permission(self):
+    def test_report_result_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -79,6 +81,34 @@ class TestTestResultView(SnapshotTestCase):
             
             # check we have no permission to view the report
             self.assertEqual(200, response.status_code)
+
+    def test_report_result_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can view result
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+
+            # check we have no permission to view the report
+            self.assertEqual(200, response.status_code)
+
+    def test_report_result_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We cannot view result
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+            response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+
+            # check we have no permission to view the report
+            self.assertEqual(403, response.status_code)
             
     def test_report_result_security_authenticated_with_permission_object_not_found(self):
         """

@@ -24,11 +24,26 @@ class ErrorAnalysisPermission(ContextSpecificPermissionsResultConsultation):
         else:
             return ''
 
+    def get_object_environment(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.environment
+        else:
+            return ''
+
     def get_application(self, request, view):
         test_case_in_session_id = view.kwargs.get('test_case_in_session_id', '')
         if test_case_in_session_id:
             try:
                 return self.get_object_application(TestCaseInSession.objects.get(pk=test_case_in_session_id))
+            except TestCaseInSession.DoesNotExist:
+                return ''
+        return ''
+
+    def get_environment(self, request, view):
+        test_case_in_session_id = view.kwargs.get('test_case_in_session_id', '')
+        if test_case_in_session_id:
+            try:
+                return self.get_object_environment(TestCaseInSession.objects.get(pk=test_case_in_session_id))
             except TestCaseInSession.DoesNotExist:
                 return ''
         return ''

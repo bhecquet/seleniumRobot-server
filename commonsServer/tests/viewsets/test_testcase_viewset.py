@@ -15,9 +15,12 @@ class TestTestCaseViewset(TestApi):
     fixtures = ['commons_server.yaml']
     
     def setUp(self):
-        
+
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_testcase = ContentType.objects.get_for_model(variableServer.models.TestCase, for_concrete_model=False)

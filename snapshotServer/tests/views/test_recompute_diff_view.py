@@ -19,7 +19,7 @@ from snapshotServer.models import TestSession, TestStep, Snapshot,\
     TestCaseInSession, StepResult, Version, TestEnvironment, TestCase
 from django.contrib.contenttypes.models import ContentType
 
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment as TestEnvironmentV
 
 
 class TestRecomputeDiffView(TestApi):
@@ -33,6 +33,8 @@ class TestRecomputeDiffView(TestApi):
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironmentV.objects.get(pk=1).save()
+        TestEnvironmentV.objects.get(pk=2).save()
         
         # prepare data
         self.testCase = TestCase.objects.get(id=1)
@@ -64,7 +66,8 @@ class TestRecomputeDiffView(TestApi):
         self.step_result_other_browser = StepResult.objects.get(pk=12)
         
         self.content_type_application = ContentType.objects.get_for_model(Application, for_concrete_model=False)
-        
+        self.content_type_environment = ContentType.objects.get_for_model(TestEnvironmentV, for_concrete_model=False)
+
     
     def tearDown(self):
         """
@@ -94,7 +97,7 @@ class TestRecomputeDiffView(TestApi):
         response = self.client.post(reverse('recompute', args=[2]))
         self.assertEqual(response.status_code, 401, "Reference exists for the snapshot, do computing")
         
-    def test_recompute_diff_security_authenticated_no_permission(self):
+    def test_recompute_diff_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -107,7 +110,7 @@ class TestRecomputeDiffView(TestApi):
             response = self.client.post(reverse('recompute', args=[2]))
             self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
         
-    def test_recompute_diff_security_authenticated_with_permission(self):
+    def test_recompute_diff_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -119,7 +122,33 @@ class TestRecomputeDiffView(TestApi):
             
             response = self.client.post(reverse('recompute', args=[2]))
             self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
-            
+
+    def test_recompute_diff_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can post recompute
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)))
+
+            response = self.client.post(reverse('recompute', args=[2]))
+            self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
+
+    def test_recompute_diff_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We cannot post recompute
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)))
+
+            response = self.client.post(reverse('recompute', args=[2]))
+            self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
+
             
     def test_recompute_diff_security_authenticated_with_permission_object_not_found(self):
         """

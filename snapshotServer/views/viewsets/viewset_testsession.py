@@ -25,7 +25,7 @@ class TestSessionPermission(ContextSpecificPermissionsResultRecording):
 
     def get_environment(self, request, view):
         if request.POST.get('environment', ''): # POST
-            return Version.objects.get(pk=request.data['environment'])
+            return TestEnvironment.objects.get(name=request.data['environment'])
         else:
             return ''
 

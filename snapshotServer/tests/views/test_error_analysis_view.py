@@ -12,7 +12,7 @@ from django.urls.base import reverse
 from django.contrib.contenttypes.models import ContentType
 
 from commonsServer.tests.test_api import TestApi
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 
 
 class TestErrorAnalysisView(TestApi):
@@ -23,8 +23,11 @@ class TestErrorAnalysisView(TestApi):
         # ensure application-specific permissions are created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         self.content_type_application = ContentType.objects.get_for_model(Application, for_concrete_model=False)
+        self.content_type_environment = ContentType.objects.get_for_model(TestEnvironment, for_concrete_model=False)
 
     # -------------------------------------------------------------------------
     # Security / permission tests
@@ -46,7 +49,7 @@ class TestErrorAnalysisView(TestApi):
         response = self.client.post(reverse('errorAnalysisView', args=[1]))
         self.assertEqual(response.status_code, 401)
 
-    def test_error_analysis_security_authenticated_no_permission(self):
+    def test_error_analysis_security_authenticated_no_permission_on_application(self):
         """
         With security enabled and no permission on the requested application,
         the request must be rejected (403)
@@ -60,7 +63,7 @@ class TestErrorAnalysisView(TestApi):
             response = self.client.post(reverse('errorAnalysisView', args=[1]))
         self.assertEqual(response.status_code, 403)
 
-    def test_error_analysis_security_authenticated_with_permission(self):
+    def test_error_analysis_security_authenticated_with_permission_on_application(self):
         """
         With security enabled and the correct application permission,
         the request must succeed (200)
@@ -76,6 +79,40 @@ class TestErrorAnalysisView(TestApi):
 
         self.assertEqual(response.status_code, 200)
         mock_submit.assert_called_once()
+
+    def test_error_analysis_security_authenticated_with_permission_on_environment(self):
+        """
+        With security enabled and the correct environment permission,
+        the request must succeed (200)
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(
+                Permission.objects.filter(
+                    Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)
+                )
+            )
+            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+                response = self.client.post(reverse('errorAnalysisView', args=[1]))
+
+        self.assertEqual(response.status_code, 200)
+        mock_submit.assert_called_once()
+
+    def test_error_analysis_security_authenticated_with_permission_on_other_environment(self):
+        """
+        With security enabled and an other environment permission,
+        the request must be rejected (403)
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(
+                Permission.objects.filter(
+                    Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)
+                )
+            )
+            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+                response = self.client.post(reverse('errorAnalysisView', args=[1]))
+
+        self.assertEqual(response.status_code, 403)
+        mock_submit.assert_not_called()
 
     def test_error_analysis_security_authenticated_with_permission_object_not_found(self):
         """

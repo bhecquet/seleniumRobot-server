@@ -197,7 +197,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'engie.png', 'image/png', os.path.getsize(file_path), None)
             form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
             self.assertFalse(form.is_valid())
-            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls, xlsx or json file..*", form.clean)
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv,xls,xlsx,json,txt,pdf file..*", form.clean)
 
     def test_variable_clean_file_wrong_type_txt(self):
         """
@@ -208,7 +208,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'dummy.txt', 'text/plain', os.path.getsize(file_path), None)
             form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
             self.assertFalse(form.is_valid())
-            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv, xls, xlsx or json file..*", form.clean)
+            self.assertRaisesRegex(ValidationError, ".*is an unsupported file type. Please, select csv,xls,xlsx,json,txt,pdf file..*", form.clean)
 
     def test_variable_clean_file_too_large(self):
         """
@@ -219,7 +219,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'toobig.csv', 'text/csv', os.path.getsize(file_path), None)
             form = VariableForm(data={'name': 'foo'}, files={'uploadFile': in_memory_uploaded_file})
             self.assertFalse(form.is_valid())
-            self.assertRaisesRegex(ValidationError, ".*File too large. 10Mo max.*", form.clean)
+            self.assertRaisesRegex(ValidationError, ".*File too large. 10.0Mo max.*", form.clean)
 
     def test_variable_as_file_change_file(self):
         """

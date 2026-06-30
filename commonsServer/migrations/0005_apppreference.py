@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('commonsServer', '0003_application_linkedapplication'),
+        ('commonsServer', '0004_application_unique_name_and_more'),
     ]
 
     operations = [

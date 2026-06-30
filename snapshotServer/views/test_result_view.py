@@ -99,6 +99,10 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
         return test_case_in_session.session.version.application
 
+    def get_target_environment(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.environment
+
         
     
 # Tests

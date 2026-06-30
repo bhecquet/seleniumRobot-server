@@ -86,10 +86,13 @@ class TestStepReferenceView(TestApi):
         StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 0
         
         self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)
-        
-        # be sure permission for application is created
+        self.content_type_environment = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
+
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        variableServer.models.TestEnvironment.objects.get(pk=1).save()
+        variableServer.models.TestEnvironment.objects.get(pk=2).save()
           
     def tearDown(self):
         """
@@ -139,7 +142,7 @@ class TestStepReferenceView(TestApi):
         # check we are redirected to login
         self.assertEqual(403, response.status_code)
         
-    def test_get_snapshot_security_authenticated_no_permission(self):
+    def test_get_snapshot_security_authenticated_no_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -159,7 +162,7 @@ class TestStepReferenceView(TestApi):
             # check we have no permission to view the report
             self.assertEqual(403, response.status_code)
         
-    def test_get_snapshot_security_authenticated_with_permission(self):
+    def test_get_snapshot_security_authenticated_with_permission_on_application(self):
         """
         Check that with 
         - security enabled
@@ -178,7 +181,47 @@ class TestStepReferenceView(TestApi):
             
             # check we have permission to get step reference
             self.assertEqual(200, response.status_code)
-            
+
+    def test_get_snapshot_security_authenticated_with_permission_on_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on requested environment
+        We can post/get step reference
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV', content_type=self.content_type_environment)))
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+                response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
+                time.sleep(0.5) # wait field computing
+                self.assertEqual(201, response.status_code)
+
+            response = self.client.get(reverse('stepReference', kwargs={'step_result_id': self.sr1.id}))
+
+            # check we have permission to get step reference
+            self.assertEqual(200, response.status_code)
+
+    def test_get_snapshot_security_authenticated_with_permission_on_other_environment(self):
+        """
+        Check that with
+        - security enabled
+        - permission on other environment
+        We cannot post/get step reference
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD', content_type=self.content_type_environment)))
+
+            with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
+                response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
+                time.sleep(0.5) # wait field computing
+                self.assertEqual(403, response.status_code)
+
+            response = self.client.get(reverse('stepReference', kwargs={'step_result_id': self.sr1.id}))
+
+            # check we have permission to get step reference
+            self.assertEqual(403, response.status_code)
+
             
     def test_get_snapshot_security_authenticated_with_permission_object_not_found(self):
         """

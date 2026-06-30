@@ -39,9 +39,8 @@ class Application(models.Model):
     
     def __str__(self):
         return self.name
-     
-    def save(self, *args, **kwargs):
-        super(Application, self).save(*args, **kwargs)
+
+    def add_application_permission(self):
         content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
 
         # permissions for handling application variables / recording
@@ -49,13 +48,18 @@ class Application(models.Model):
             codename=Application.app_variable_permission_code + self.name,
             name='Can view application and related variables and versions for ' + self.name,
             content_type=content_type,
-            )
+        )
 
         Permission.objects.get_or_create(
             codename=Application.app_result_permission_code + self.name,
             name='Can view results for ' + self.name,
             content_type=content_type,
         )
+     
+    def save(self, *args, **kwargs):
+        super(Application, self).save(*args, **kwargs)
+        self.add_application_permission()
+
         
     def delete(self, *args, **kwargs):
         super(Application, self).delete(*args, **kwargs)
@@ -74,7 +78,7 @@ class Version(models.Model):
     def __str__(self):
         return self.application.name + '-' + self.name
     
-    def previousVersions(self):
+    def previous_versions(self):
         """
         Get all versions for the same application, previous to this one
         """
@@ -82,7 +86,7 @@ class Version(models.Model):
         versions.sort(key=lambda v: LooseVersion(v.name), reverse=False)
         return versions
     
-    def nextVersions(self):
+    def next_versions(self):
         """
         Get all versions for the same application, previous to this one
         """
@@ -121,12 +125,10 @@ class TestEnvironment(models.Model):
     genericEnvironment = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
     genericEnvironment.short_description = 'generic environnement'
 
-
-    def save(self, *args, **kwargs):
-        super(TestEnvironment, self).save(*args, **kwargs)
+    def add_environment_permission(self):
         content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
 
-        # permissions for handling application variables / recording
+        # permissions for handling environment variables / recording
         Permission.objects.get_or_create(
             codename=TestEnvironment.env_variable_permission_code + self.name,
             name='Can view environment and related variables for ' + self.name,
@@ -138,6 +140,10 @@ class TestEnvironment(models.Model):
             name='Can view results for environment ' + self.name,
             content_type=content_type,
         )
+
+    def save(self, *args, **kwargs):
+        super(TestEnvironment, self).save(*args, **kwargs)
+        self.add_environment_permission()
 
 class TestCase(models.Model):
 

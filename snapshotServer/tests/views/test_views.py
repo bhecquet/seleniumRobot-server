@@ -8,13 +8,14 @@ import os
 import datetime
 import pytz
 
+
 from django.test import Client
 from django.conf import settings
 
 from snapshotServer.models import Snapshot, TestSession, TestStep, TestCase, \
     TestEnvironment, Version, TestCaseInSession, StepResult
 from snapshotServer.tests import SnapshotTestCase
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment as TestEnvironmentV
 
 
 class TestViews(SnapshotTestCase):
@@ -25,10 +26,12 @@ class TestViews(SnapshotTestCase):
     
     def setUp(self):
         self.client = Client()
-        
-        # be sure permission for application is created
+
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironmentV.objects.get(pk=1).save()
+        TestEnvironmentV.objects.get(pk=2).save()
         
         # prepare data
         self.testCase = TestCase.objects.get(id=1)

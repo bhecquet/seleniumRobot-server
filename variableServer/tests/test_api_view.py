@@ -41,8 +41,11 @@ class TestApiView(TestApi):
     
     
     def setUp(self):
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
         Application.objects.get(pk=777).save()
 
     def test_ping(self):

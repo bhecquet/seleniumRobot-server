@@ -14,8 +14,11 @@ class TestApplicationViewSet(TestApi):
 
     def setUp(self):
 
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_environment = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)

@@ -8,7 +8,7 @@ from django.utils import timezone
 from commonsServer import preferences
 from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from snapshotServer.models import StepResult, Error, TestCaseInSession, TestCase, TestSession, TestStep
@@ -20,8 +20,11 @@ class TestViewsetStepResult(TestApi):
 
     def setUp(self):
 
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_stepresult = ContentType.objects.get_for_model(StepResult)
@@ -94,7 +97,7 @@ class TestViewsetStepResult(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._create_stepresult(201)
 
-    def test_stepresult_create_with_application_restriction_and_app1_permission2(self):
+    def test_stepresult_create_with_application_restriction_and_app2_permission(self):
         """
         User
         - has NOT add_stepresult permission
@@ -104,6 +107,30 @@ class TestViewsetStepResult(TestApi):
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            self._create_stepresult(403)
+
+    def test_stepresult_create_with_application_restriction_and_env_DEV_permission(self):
+        """
+        User
+        - has NOT add_stepresult permission
+        - has DEV environment permission
+
+        User can add test session on DEV environment
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+            self._create_stepresult(201)
+
+    def test_stepresult_create_with_application_restriction_and_env_PROD_permission(self):
+        """
+        User
+        - has NOT add_stepresult permission
+        - has PROD environment permission
+
+        User can NOT add test session on an other environment than PROD
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
             self._create_stepresult(403)
 
     def test_stepresult_create_with_application_restriction_and_change_permission(self):
@@ -151,16 +178,40 @@ class TestViewsetStepResult(TestApi):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
             self._update_stepresult(200)
 
-    def test_stepresult_update_with_application_restriction_and_app1_permission2(self):
+    def test_stepresult_update_with_application_restriction_and_app2_permission(self):
         """
         User
         - has NOT change_stepresult permission
-        - has app1 permission
+        - has app2 permission
 
         User can NOT update test session on an other application than app1
         """
         with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
             self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+            self._update_stepresult(403)
+
+    def test_stepresult_update_with_application_restriction_and_env_DEV_permission(self):
+        """
+        User
+        - has NOT change_stepresult permission
+        - has env DEV permission
+
+        User can update test session on DEV environment
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+            self._update_stepresult(200)
+
+    def test_stepresult_update_with_application_restriction_and_env_PROD_permission(self):
+        """
+        User
+        - has NOT change_stepresult permission
+        - has env PROD permission
+
+        User can NOT update test session on an other environment than PROD
+        """
+        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
+            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
             self._update_stepresult(403)
 
     def test_stepresult_parse_stacktrace_result_ok(self):

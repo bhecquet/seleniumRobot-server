@@ -2,7 +2,7 @@ from commonsServer.tests.test_api import TestApi
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 from django.urls.base import reverse
-from variableServer.models import Application, Version
+from variableServer.models import Application, Version, TestEnvironment
 from django.contrib.contenttypes.models import ContentType
 import variableServer
 from commonsServer.views.viewsets import VersionViewSet, \
@@ -14,8 +14,11 @@ class TestVersionViewSet(TestApi):
 
     def setUp(self):
 
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_version = ContentType.objects.get_for_model(variableServer.models.Version, for_concrete_model=False)

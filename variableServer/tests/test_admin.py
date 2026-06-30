@@ -37,13 +37,13 @@ class MockRequestWithApplication(object):
         self.POST = {'application': '1'}
         self.method = 'POST'
         
-class MockRequestEmptyApplication(object):
+class MockRequestEmptyApplicationEmptyEnvironment(object):
     """
-    Mimic POST request when adding a variable (for example) not linked to any application
+    Mimic POST request when adding a variable (for example) not linked to any application or environment
     """
     def __init__(self, user=None):
         self.user = user
-        self.POST = {'application': ''}
+        self.POST = {'application': '', 'environment': ''}
         self.method = 'POST'
 
 class MockSuperUser:
