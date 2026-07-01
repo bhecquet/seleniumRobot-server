@@ -4,7 +4,7 @@ import zipfile
 from pathlib import Path
 
 from snapshotServer.utils.utils import getTestDirectory
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
 from snapshotServer.models import File
@@ -23,8 +23,11 @@ class TestViewsetFile(TestApi):
 
     def setUp(self):
 
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
         # permissions will be allowed on variableServer models, not commonsServer models
         self.content_type_file = ContentType.objects.get_for_model(File)
@@ -155,14 +158,6 @@ class TestViewsetFile(TestApi):
         response = self.client.delete('/snapshot/api/file/1/')
         self.assertEqual(405, response.status_code)
 
-    def test_file_create_no_api_security(self):
-        """
-        Check it's possible to add a file when API security is disabled and user has no permissions
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_file(201)
-
     def test_file_create_forbidden(self):
         """
         Check it's NOT possible to add a file without 'add_file' permission
@@ -178,9 +173,9 @@ class TestViewsetFile(TestApi):
 
         User can add test session
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
-            self._create_file(201)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        self._create_file(201)
 
     def test_file_create_with_application_restriction_and_app1_permission(self):
         """
@@ -190,21 +185,45 @@ class TestViewsetFile(TestApi):
 
         User can add test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._create_file(201)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._create_file(201)
 
-    def test_file_create_with_application_restriction_and_app1_permission2(self):
+    def test_file_create_with_application_restriction_and_app2_permission(self):
         """
         User
         - has NOT add_file permission
-        - has app1 permission
+        - has app2 permission
 
         User can NOT add test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            self._create_file(403)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        self._create_file(403)
+
+    def test_file_create_with_application_restriction_and_env_DEV_permission(self):
+        """
+        User
+        - has NOT add_file permission
+        - has DEV environment permission
+
+        User can add test session on app1
+        """
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        self._create_file(201)
+
+    def test_file_create_with_application_restriction_and_env_PROD_permission(self):
+        """
+        User
+        - has NOT add_file permission
+        - has PROD environment permission
+
+        User can NOT add test session on an other application than app1
+        """
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
+        self._create_file(403)
 
     def test_file_create_with_application_restriction_and_change_permission(self):
         """
@@ -214,9 +233,9 @@ class TestViewsetFile(TestApi):
 
         User can NOT add test case
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_file')))
-            self._create_file(403)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_file')))
+        self._create_file(403)
 
     def _retrieve_file_content(self, file_id, expected_status, content_type, file_name, attachment_name):
         """
@@ -255,9 +274,17 @@ class TestViewsetFile(TestApi):
         """
         Test it's possible to get file content and headers / content are correct
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png', 'test_Image1.png')
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png', 'test_Image1.png')
+
+    def test_file_retrieve_content_with_environment_permission(self):
+        """
+        Test it's possible to get file content and headers / content are correct
+        """
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        self._retrieve_file_content(1, 200, 'image/png', 'test_Image1.png', 'test_Image1.png')
 
     def test_html_file_retrieve_content_with_model_permission(self):
         """
@@ -342,9 +369,9 @@ class TestViewsetFile(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._retrieve_file(200)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._retrieve_file(200)
 
     def test_file_retrieve_with_application_restriction_and_app1_permission_non_existent(self):
         """
@@ -354,10 +381,10 @@ class TestViewsetFile(TestApi):
 
         User can update test session on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            response = self.client.get('/snapshot/api/file/12345/')
-            self.assertEqual(403, response.status_code)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        response = self.client.get('/snapshot/api/file/12345/')
+        self.assertEqual(403, response.status_code)
 
     def test_file_retrieve_with_application_restriction_and_app2_permission(self):
         """
@@ -367,6 +394,32 @@ class TestViewsetFile(TestApi):
 
         User can NOT update test session on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            self._retrieve_file(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        self._retrieve_file(403)
+
+
+    def test_file_retrieve_with_application_restriction_and_env_DEV_permission(self):
+        """
+        User
+        - has NOT change_file permission
+        - has env_DEV permission
+
+        User can update test session on env_DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        self._retrieve_file(200)
+
+    def test_file_retrieve_with_application_restriction_and_env_PROD_permission(self):
+        """
+        User
+        - has NOT change_file permission
+        - has env PROD permission
+
+        User can update test session on env PROD
+        """
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
+        self._retrieve_file(403)
+

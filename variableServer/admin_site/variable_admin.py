@@ -12,6 +12,7 @@ from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
 
+from commonsServer import preferences
 from variableServer.admin_site.application_admin import ApplicationFilter
 from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
 from variableServer.admin_site.environment_admin import EnvironmentFilter
@@ -20,20 +21,20 @@ from variableServer.models import Variable, TestCase, Version
 
 
 class VariableForm(forms.ModelForm):
-    
-    
+
+
     class Meta:
         model = Variable
         exclude = []
 
     def __init__(self, *args, **kwargs):
         super(VariableForm, self).__init__(*args, **kwargs)
-        
+
         try:
             user = self.instance.user
         except:
             user = None
-        
+
         # required
         self.fields['application'].required = False
         self.fields['version'].required = False
@@ -43,7 +44,7 @@ class VariableForm(forms.ModelForm):
         self.fields['internal'].required = False
         self.fields['protected'].required = False
         self.fields['description'].required = False
-        
+
         # field length
         self.fields['value'].widget.attrs['style'] = "width:50em"
         self.fields['name'].widget.attrs['style'] = "width:30em"
@@ -53,13 +54,13 @@ class VariableForm(forms.ModelForm):
         if 'application' in self.initial and self.initial['application'] != None:
             self.fields['test'].help_text = "If 'application' value is modified, click 'save and continue editing' to display the related list of tests"
             self.fields['test'].queryset = TestCase.objects.filter(application__id=self.initial['application'])
-            
+
             self.fields['version'].help_text = "If 'application' value is modified, click 'save and continue editing' to display the related list of versions"
             self.fields['version'].queryset = Version.objects.filter(application__id=self.initial['application'])
         else:
             self.fields['test'].help_text = "Select an application, click 'save and continue editing' to display the list of related tests"
             self.fields['test'].disabled = True
-            
+
             self.fields['version'].help_text = "Select an application, click 'save and continue editing' to display the list of related versions"
             self.fields['version'].disabled = True
 
@@ -74,13 +75,13 @@ class VariableForm(forms.ModelForm):
         if upload_file:
             upload_file_type = magic.from_buffer(upload_file.read(), mime=True)
             upload_file.seek(0)
-            if upload_file_type not in ["text/plain", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "text/csv", "application/json"]:
-                raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
+            if upload_file_type not in preferences.get_preference('VAR_UPLOAD_FILE_MIMETYPES').split(','):
+                raise forms.ValidationError(f"{upload_file_type} is an unsupported file type. Please, select {preferences.get_preference('VAR_UPLOAD_EXTENSIONS')} file.")
             if upload_file_type == "text/plain":
-                if 'uploadFile' in self.changed_data and upload_file.content_type not in ["application/json", "text/csv"]:
-                    raise forms.ValidationError(upload_file_type + " is an unsupported file type. Please, select csv, xls, xlsx or json file.")
-            if upload_file.size > settings.VAR_UPLOAD_FILE_MAX_SIZE:
-                raise forms.ValidationError("File too large. "+str(int(settings.VAR_UPLOAD_FILE_MAX_SIZE/1000000))+"Mo max")
+                if 'uploadFile' in self.changed_data and upload_file.content_type not in ['application/json', 'text/csv', 'application/vnd.ms-excel']:
+                    raise forms.ValidationError(f"{upload_file_type} is an unsupported file type. Please, select {preferences.get_preference('VAR_UPLOAD_EXTENSIONS')} file.")
+            if upload_file.size > int(preferences.get_preference("VAR_UPLOAD_FILE_MAX_SIZE")):
+                raise forms.ValidationError("File too large. "+ str(int(preferences.get_preference("VAR_UPLOAD_FILE_MAX_SIZE")) / 1000000) + "Mo max")
 
         return cleaned_data
 
@@ -239,10 +240,10 @@ class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
         """
         Filters the queryset variable depending on permissions
         """
-        queryset, forbidden_applications = self._filter_queryset(request, queryset, global_permission_code_name)
-        
-        for application in forbidden_applications:
-            self.message_user(request, "You do not have right to %s variables from application %s" % (message, application), level=messages.ERROR)
+        queryset, forbidden_applications, forbidden_environments = self._filter_queryset(request, queryset, global_permission_code_name)
+
+        if forbidden_applications or forbidden_environments:
+            self.message_user(request, "You do not have right to %s variables from application %s or environments %s" % (message, forbidden_applications, forbidden_environments), level=messages.ERROR)
 
         return queryset
     

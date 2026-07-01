@@ -17,7 +17,7 @@ import sys
 import variableServer
 import snapshotServer
 
-from variableServer.models import Application
+from variableServer.models import Application, TestEnvironment
 from django.contrib.auth.management import _get_all_permissions
 from django.contrib.auth.models import Permission, Group
 from django.contrib.contenttypes.models import ContentType
@@ -45,18 +45,10 @@ class Command(BaseCommand):
 
         # add application specific rights
         for app in Application.objects.all():
-            content_type = ContentType.objects.get_for_model(Application, False)
-            Permission.objects.get_or_create(
-                codename=Application.app_variable_permission_code + app.name,
-                name='Can view application and related variables and versions for ' + app.name,
-                content_type=content_type,
-                )
+            app.add_application_permission()
 
-            Permission.objects.get_or_create(
-                codename=Application.app_result_permission_code + app.name,
-                name='Can view results for ' + app.name,
-                content_type=content_type,
-            )
+        for env in TestEnvironment.objects.all():
+            env.add_environment_permission()
             
         # add 'Variable Users' group
         variable_users_group, created = Group.objects.get_or_create(name='Variable Users')

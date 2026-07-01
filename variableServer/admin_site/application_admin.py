@@ -6,7 +6,7 @@ from django import forms
 from django.contrib import admin
 from variableServer.models import Variable, Application, TestCase
 from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
-from variableServer.admin_site.base_model_admin import bypass_application_permissions
+from variableServer.admin_site.base_model_admin import bypass_context_permissions
 
 class ApplicationFilter(admin.SimpleListFilter):
     """
@@ -16,9 +16,12 @@ class ApplicationFilter(admin.SimpleListFilter):
     parameter_name = 'application'
 
     def lookups(self, request, model_admin):
+        if not request.user:
+            return []
+
         queryset = Application.objects.all().order_by('name')
         
-        if bypass_application_permissions(request, 'variableServer.view_application'):
+        if bypass_context_permissions(request, 'variableServer.view_application'):
             return [(app.id, str(app)) for app in queryset]
         
         # remove applications that user has not permissions on

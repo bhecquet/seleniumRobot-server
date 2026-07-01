@@ -13,6 +13,10 @@ from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic.list import ListView
 
 from snapshotServer.models import TestSession, TestCaseInSession, StepResult, Error
+import json
+from django.utils import timezone
+from django.shortcuts import get_object_or_404
+from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
 
@@ -91,7 +95,22 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
     def get_target_application(self):
         test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
         return test_session.version.application
-            
+
+    def get_target_environment(self):
+        test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
+        return test_session.environment
+
+    def _has_application_permission(self, application):
+        if super()._has_application_permission(application):
+            return True
+
+        try:
+            test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
+        except TestSession.DoesNotExist:
+            return True
+
+        return self.request.user.has_perm(ENV_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX + test_session.environment.name)
+
     def get_context_data(self, **kwargs):
         
         context = super(TestSessionSummaryView, self).get_context_data(**kwargs)
