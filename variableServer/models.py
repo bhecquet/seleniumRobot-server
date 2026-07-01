@@ -1,10 +1,10 @@
 import os
 
-from auditlog.signals import pre_log
 from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.contrib import admin
 from django.db.models.signals import pre_save, post_delete
 
 from auditlog.registry import auditlog
@@ -88,7 +88,8 @@ class Variable(models.Model):
     
     def __str__(self):
         return self.name
-    
+
+    @admin.display(ordering='name')
     def nameWithApp(self):
         if self.application:
             return "%s.%s" % (self.application, self.name)
@@ -150,7 +151,8 @@ class Variable(models.Model):
             if list(var.test.all()) == list(self.test.all()):
                 var.reservable = self.reservable
                 var.save()
-    
+
+    @admin.display(ordering='test__name')
     def allTests(self):
         return ",".join([t.name for t in self.test.all()])
 
