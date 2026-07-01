@@ -64,38 +64,30 @@ class TestApplicationViewSet(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_application', content_type=self.content_type_application)))
         self._get_application_by_name(403)
 
-    def test_get_application_by_name_no_api_security(self):
-        """
-        Check it's possible to get an application case by name when API security is disabled and no permission given to user
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._get_application_by_name(200)
-
     def test_get_application_by_name_with_application_restriction(self):
         """
         Check it's possible to get an application case by name when application restriction is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1', content_type=self.content_type_application)))
-            self._get_application_by_name(200)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1', content_type=self.content_type_application)))
+        self._get_application_by_name(200)
 
     def test_get_application_by_name_with_application_restriction2(self):
         """
         Check it's NOT possible to get an application case by name when application restriction is set and the application does not correspond to app on which user has permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
-            self._get_application_by_name(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+        self._get_application_by_name(403)
 
     def test_get_application_by_name_with_application_restriction_inexistent(self):
         """
         Check we get 403 if application is unknown
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1', content_type=self.content_type_application)))
-            response = self.client.get(reverse('application'), data={'name': 'appNotFound'})
-            self.assertEqual(403, response.status_code)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1', content_type=self.content_type_application)))
+        response = self.client.get(reverse('application'), data={'name': 'appNotFound'})
+        self.assertEqual(403, response.status_code)
 
     def _create_application(self, expected_status):
         response = self.client.post(reverse('application'), data={'name': 'newapp'})
@@ -126,14 +118,6 @@ class TestApplicationViewSet(TestApi):
         response = self.client.post(reverse('application'), data={'noname': 'newapp'})
         self.assertEqual(400, response.status_code)
 
-    def test_create_application_no_api_security(self):
-        """
-        Check it's possible to add an application when API security is disabled and no permission given to user
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_application(201)
-
     def test_create_application_forbidden(self):
         """
         Check it's NOT possible to add an application without 'add_application' permission
@@ -145,14 +129,14 @@ class TestApplicationViewSet(TestApi):
         """
         Check it's NOT possible to add an application without 'add_application' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self._create_application(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self._create_application(403)
 
     def test_create_application_with_application_restriction2(self):
         """
         Check it's possible to add an application with 'add_application' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application')))
-            self._create_application(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_application')))
+        self._create_application(201)

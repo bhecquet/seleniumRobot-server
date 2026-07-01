@@ -33,15 +33,6 @@ class TestErrorAnalysisView(TestApi):
     # Security / permission tests
     # -------------------------------------------------------------------------
 
-    def test_error_analysis_no_security_not_authenticated(self):
-        """
-        With security disabled, an unauthenticated request must succeed (200)
-        """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit'):
-                response = self.client.post(reverse('errorAnalysisView', args=[1]))
-        self.assertEqual(response.status_code, 200)
-
     def test_error_analysis_security_not_authenticated(self):
         """
         With security enabled, an unauthenticated request must be rejected (401)
@@ -54,13 +45,13 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and no permission on the requested application,
         the request must be rejected (403)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_application_myapp2', content_type=self.content_type_application)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp2', content_type=self.content_type_application)
             )
-            response = self.client.post(reverse('errorAnalysisView', args=[1]))
+        )
+        response = self.client.post(reverse('errorAnalysisView', args=[1]))
         self.assertEqual(response.status_code, 403)
 
     def test_error_analysis_security_authenticated_with_permission_on_application(self):
@@ -68,14 +59,14 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and the correct application permission,
         the request must succeed (200)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
             )
-            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
-                response = self.client.post(reverse('errorAnalysisView', args=[1]))
+        )
+        with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+            response = self.client.post(reverse('errorAnalysisView', args=[1]))
 
         self.assertEqual(response.status_code, 200)
         mock_submit.assert_called_once()
@@ -85,14 +76,14 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and the correct environment permission,
         the request must succeed (200)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)
             )
-            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
-                response = self.client.post(reverse('errorAnalysisView', args=[1]))
+        )
+        with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+            response = self.client.post(reverse('errorAnalysisView', args=[1]))
 
         self.assertEqual(response.status_code, 200)
         mock_submit.assert_called_once()
@@ -102,14 +93,14 @@ class TestErrorAnalysisView(TestApi):
         With security enabled and an other environment permission,
         the request must be rejected (403)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)
             )
-            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
-                response = self.client.post(reverse('errorAnalysisView', args=[1]))
+        )
+        with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+            response = self.client.post(reverse('errorAnalysisView', args=[1]))
 
         self.assertEqual(response.status_code, 403)
         mock_submit.assert_not_called()
@@ -121,13 +112,13 @@ class TestErrorAnalysisView(TestApi):
         (permission check fails before the 404 is raised because the object
         cannot be resolved to an application)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
             )
-            response = self.client.post(reverse('errorAnalysisView', args=[9999]))
+        )
+        response = self.client.post(reverse('errorAnalysisView', args=[9999]))
         self.assertEqual(response.status_code, 403)
 
     # -------------------------------------------------------------------------
@@ -139,42 +130,57 @@ class TestErrorAnalysisView(TestApi):
         A valid POST must call ErrorCauseFinderExecutor.submit with the
         correct TestCaseInSession instance
         """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
-                response = self.client.post(reverse('errorAnalysisView', args=[1]))
 
-                self.assertEqual(response.status_code, 200)
-                # verify the executor was called with the correct object
-                args, _ = mock_submit.call_args
-                self.assertEqual(args[0].pk, 1)
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
+            )
+        )
+        with patch('snapshotServer.views.error_analysis_view.ErrorCauseFinderExecutor.submit') as mock_submit:
+            response = self.client.post(reverse('errorAnalysisView', args=[1]))
+
+            self.assertEqual(response.status_code, 200)
+            # verify the executor was called with the correct object
+            args, _ = mock_submit.call_args
+            self.assertEqual(args[0].pk, 1)
 
     def test_error_analysis_testcaseinsession_not_found(self):
         """
         When the TestCaseInSession does not exist, a 404 must be returned
         (security disabled so we reach the view logic)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(
-                    Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
-                )
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
             )
-            response = self.client.post(reverse('errorAnalysisView', args=[9999]))
-            self.assertEqual(response.status_code, 403)
+        )
+        response = self.client.post(reverse('errorAnalysisView', args=[9999]))
+        self.assertEqual(response.status_code, 403)
 
     def test_error_analysis_wrong_http_method_get(self):
         """
         GET requests must be rejected (405 Method Not Allowed)
         """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            response = self.client.get(reverse('errorAnalysisView', args=[1]))
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
+            )
+        )
+        response = self.client.get(reverse('errorAnalysisView', args=[1]))
         self.assertEqual(response.status_code, 405)
 
     def test_error_analysis_wrong_http_method_delete(self):
         """
         DELETE requests must be rejected (405 Method Not Allowed)
         """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            response = self.client.delete(reverse('errorAnalysisView', args=[1]))
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(
+                Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)
+            )
+        )
+        response = self.client.delete(reverse('errorAnalysisView', args=[1]))
         self.assertEqual(response.status_code, 405)
 

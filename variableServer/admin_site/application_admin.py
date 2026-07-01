@@ -16,6 +16,9 @@ class ApplicationFilter(admin.SimpleListFilter):
     parameter_name = 'application'
 
     def lookups(self, request, model_admin):
+        if not request.user:
+            return []
+
         queryset = Application.objects.all().order_by('name')
         
         if bypass_context_permissions(request, 'variableServer.view_application'):

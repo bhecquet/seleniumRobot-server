@@ -64,28 +64,16 @@ else:
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join('${data.dir}', 'media')
 
-# whether to enable security of API / GUI
-SECURITY_WEB_ENABLED = "${security.web}"
-SECURITY_API_ENABLED = "${security.api}"
-
-if (SECURITY_API_ENABLED):
-    REST_FRAMEWORK = {
-        # Use Django's standard `django.contrib.auth` permissions,
-        'DEFAULT_PERMISSION_CLASSES': [
-            'seleniumRobotServer.permissions.permissions.GenericPermissions'
-        ],
-        'DEFAULT_AUTHENTICATION_CLASSES': [
-            'hashed_auth.authentication.TokenAuthentication',   # for API calls
-            'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
-        ]
-    }
-else:
-    REST_FRAMEWORK = {
-        # allow read-only access for unauthenticated users.
-        'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.AllowAny'
-        ]
-    }
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    'DEFAULT_PERMISSION_CLASSES': [
+        'seleniumRobotServer.permissions.permissions.GenericPermissions'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'hashed_auth.authentication.TokenAuthentication',   # for API calls
+        'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
+    ]
+}
 
 # Connection to Open-WebUI instance. set empty URL to disable
 OPEN_WEBUI_URL = '${openwebui.url}'

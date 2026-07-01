@@ -283,7 +283,7 @@ class TestErrorCauseFinder(TestApi):
             self.assertEqual(["some error", "some error2"], error_cause.analysis_errors)
 
 
-    @override_settings(OPEN_WEBUI_URL='', RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True)
+    @override_settings(OPEN_WEBUI_URL='')
     def test_stepresult_analyze_test_run_result_ko_on_update_full_process(self):
         """
         When error in step, error cause detection is performed
@@ -375,7 +375,7 @@ class TestErrorCauseFinder(TestApi):
             self.assertEqual('java.lang.AssertionError: expected [false] but <_> found [true]', error.causeDetails)
 
 
-    @override_settings(OPEN_WEBUI_URL='', RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True)
+    @override_settings(OPEN_WEBUI_URL='')
     def test_stepresult_analyze_test_run_result_ko_on_update_full_process2(self):
         """
         When error in step, error cause detection is performed

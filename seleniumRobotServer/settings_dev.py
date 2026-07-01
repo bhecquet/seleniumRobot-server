@@ -74,29 +74,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
-# whether to enable security of API / GUI
-SECURITY_WEB_ENABLED = "True"
-SECURITY_API_ENABLED = "True" 
-
-if (SECURITY_API_ENABLED):
-    REST_FRAMEWORK = {
-        # Use Django's standard `django.contrib.auth` permissions,
-        'DEFAULT_PERMISSION_CLASSES': [
-            'seleniumRobotServer.permissions.permissions.GenericPermissions'
-        ],
-        'DEFAULT_AUTHENTICATION_CLASSES': [
-            'hashed_auth.authentication.TokenAuthentication',   # for API calls
-            'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
-        ]
-    }
-else:
-    REST_FRAMEWORK = {
-        # allow read-only access for unauthenticated users.
-        'DEFAULT_PERMISSION_CLASSES': [
-            'rest_framework.permissions.AllowAny'
-        ]
-    }
-
+REST_FRAMEWORK = {
+    # Use Django's standard `django.contrib.auth` permissions,
+    'DEFAULT_PERMISSION_CLASSES': [
+        'seleniumRobotServer.permissions.permissions.GenericPermissions'
+    ],
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'hashed_auth.authentication.TokenAuthentication',   # for API calls
+        'rest_framework.authentication.SessionAuthentication', # for Ajax requests from GUI
+    ]
+}
 
 # Connection to Open-WebUI instance. set empty URL to disable
 OPEN_WEBUI_URL = 'http://localhost:8080'
@@ -105,10 +92,6 @@ OPEN_WEBUI_TOKEN = 'abc'
 # URL to API OCR document annotation of mistral AI
 MISTRAL_DOCUMENT_URL = 'http://localhost/ocr'
 MISTRAL_DOCUMENT_API_KEY = 'abc'
-
-# -------- Application specific flags ------------
-# whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
-RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN = False
 
 # -------- OpenID Authentication -----------------
 OIDC_RP_CLIENT_ID = 'seleniumserver'

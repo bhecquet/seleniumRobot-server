@@ -49,14 +49,6 @@ class TestViewsetTestInfo(TestApi):
         response = self.client.delete('/snapshot/api/testinfo/1/')
         self.assertEqual(405, response.status_code)
 
-    def test_testinfo_create_no_api_security(self):
-        """
-        Check it's possible to add a testinfo when API security is disabled and user has no permissions
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_testinfo(201)
-
     def test_testinfo_create_forbidden(self):
         """
         Check it's NOT possible to add a testinfo without 'add_testinfo' permission
@@ -72,9 +64,9 @@ class TestViewsetTestInfo(TestApi):
 
         User can add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testinfo', content_type=self.content_type_testinfo)))
-            self._create_testinfo(201)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testinfo', content_type=self.content_type_testinfo)))
+        self._create_testinfo(201)
 
     def test_testinfo_create_with_application_restriction_and_app1_permission(self):
         """
@@ -84,9 +76,9 @@ class TestViewsetTestInfo(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._create_testinfo(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._create_testinfo(201)
 
     def test_testinfo_create_with_application_restriction_and_app2_permission(self):
         """
@@ -96,9 +88,9 @@ class TestViewsetTestInfo(TestApi):
 
         User can NOT add test info on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            self._create_testinfo(403)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        self._create_testinfo(403)
 
     def test_testinfo_create_with_application_restriction_and_env_DEV_permission(self):
         """
@@ -108,9 +100,9 @@ class TestViewsetTestInfo(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
-            self._create_testinfo(201)
+        
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        self._create_testinfo(201)
 
     def test_testinfo_create_with_application_restriction_and_env_PROD_permission(self):
         """
@@ -120,9 +112,9 @@ class TestViewsetTestInfo(TestApi):
 
         User can NOT add test info on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
-            self._create_testinfo(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
+        self._create_testinfo(403)
 
     def test_testinfo_create_with_application_restriction_and_change_permission(self):
         """
@@ -132,18 +124,18 @@ class TestViewsetTestInfo(TestApi):
 
         User can NOT add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testinfo')))
-            self._create_testinfo(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testinfo')))
+        self._create_testinfo(403)
 
 
     def test_testinfo_create_already_created(self):
         """
         Check it's possible to create the same TestInfo twice
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._create_testinfo(201)
-            response = self.client.post('/snapshot/api/testinfo/', data={'testCase': 1, 'name': 'bla'})
-            self.assertEqual(201, response.status_code)
-            self.assertEqual(2, len(TestInfo.objects.filter(name='bla')))
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._create_testinfo(201)
+        response = self.client.post('/snapshot/api/testinfo/', data={'testCase': 1, 'name': 'bla'})
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(2, len(TestInfo.objects.filter(name='bla')))

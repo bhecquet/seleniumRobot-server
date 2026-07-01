@@ -20,7 +20,7 @@ def bypass_context_permissions(request, global_permission_code_name):
     Returns false if application permissions should be checked
     """
 
-    return not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN or request.user.has_perm(global_permission_code_name)
+    return request.user is not None and request.user.has_perm(global_permission_code_name)
 
 class BaseServerModelAdmin(admin.ModelAdmin):
     """
@@ -32,8 +32,6 @@ class BaseServerModelAdmin(admin.ModelAdmin):
         """
         Whether user has rights on this application or environment
         """
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
-            return global_permission
 
         has_application_permission = None
         has_environment_permission = None
@@ -97,23 +95,21 @@ class BaseServerModelAdmin(admin.ModelAdmin):
             else:                        
                 return queryset.none(), forbidden_applications, forbidden_environments
 
-        application_queryset = queryset.all()
+        application_queryset = queryset.exclude(application=None)
 
-        for application_id, application_name in application_queryset.values_list('application', 'application__name').distinct().exclude(application=None):
+        for application_id, application_name in application_queryset.values_list('application', 'application__name').distinct():
             if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application_name):
                 application_queryset = application_queryset.exclude(application__name=application_name)
                 forbidden_applications.append(application_name)
 
-        application_queryset = application_queryset.exclude(application=None)
 
         if hasattr(self.model, 'environment'):
-            environment_queryset = queryset.all()
-            for environment_id, environment_name in environment_queryset.values_list('environment', 'environment__name').distinct().exclude(environment=None):
+            environment_queryset = queryset.exclude(environment=None)
+            for environment_id, environment_name in environment_queryset.values_list('environment', 'environment__name').distinct():
                 if not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment_name):
                     environment_queryset = environment_queryset.exclude(environment__name=environment_name)
                     forbidden_environments.append(environment_name)
 
-            environment_queryset = environment_queryset.exclude(environment=None)
             application_queryset = application_queryset | environment_queryset
 
 

@@ -14,7 +14,6 @@ from variableServer.models import Variable
 from variableServer.tests.test_admin import request, MockRequest, TestAdmin
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=False)
 class TestApplicationAdmin(TestAdmin):
     
     fixtures = ['varServer']
@@ -233,8 +232,9 @@ class TestApplicationAdmin(TestAdmin):
         Without restrictions, all applications are shown
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_application')))
+        request = MockRequest(user=user)
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
         filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
@@ -254,19 +254,20 @@ class TestApplicationAdmin(TestAdmin):
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
         
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
-            
-            # only app1 is present
-            self.assertEqual(filtered_applications,  [(1, 'app1')])
+
+        filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)
+
+        # only app1 is present
+        self.assertEqual(filtered_applications,  [(1, 'app1')])
 
     def test_application_filter_queryset_no_restriction(self): 
         """
         Without restrictions, all objects linked to selected application are shown
         """
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_application')))
+        request = MockRequest(user=user)
         
         application_filter = ApplicationFilter(request, {}, Application, version_admin)
         filtered_applications = application_filter.lookups(request=request, model_admin=version_admin)

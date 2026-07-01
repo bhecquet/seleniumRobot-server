@@ -29,7 +29,7 @@ class EnvironmentFilter(SimpleListFilter):
         else:
             environments = set(TestEnvironment.objects.all().order_by('name'))
 
-        environments = [e for e in environments if e is not None and request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + e.name)]
+        environments = [e for e in environments if e is not None]
         environments = sorted(environments, key=attrgetter('name'))
         return [(e.id, str(e)) for e in environments] + [('_None_', 'None')]
 

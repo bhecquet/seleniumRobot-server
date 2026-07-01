@@ -81,15 +81,6 @@ class TestRecomputeDiffView(TestApi):
 
         DiffComputer.stopThread()
 
-    def test_recompute_diff_no_security_not_authenticated(self):
-        """
-        Check that with security disabled, we  access view without authentication
-        """
-        with self.settings(SECURITY_WEB_ENABLED=''):
-            
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
-        
     def test_recompute_diff_security_not_authenticated(self):
         """
         Check that with security enabled, we cannot access view without authentication
@@ -104,11 +95,11 @@ class TestRecomputeDiffView(TestApi):
         - no permission on requested application
         We cannot post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
-            
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2', content_type=self.content_type_application)))
+
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
         
     def test_recompute_diff_security_authenticated_with_permission_on_application(self):
         """
@@ -117,11 +108,11 @@ class TestRecomputeDiffView(TestApi):
         - permission on requested application
         We can post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
-            
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
+
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
 
     def test_recompute_diff_security_authenticated_with_permission_on_environment(self):
         """
@@ -130,11 +121,11 @@ class TestRecomputeDiffView(TestApi):
         - permission on requested environment
         We can post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)))
 
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_DEV', content_type=self.content_type_environment)))
+
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
 
     def test_recompute_diff_security_authenticated_with_permission_on_other_environment(self):
         """
@@ -143,11 +134,11 @@ class TestRecomputeDiffView(TestApi):
         - permission on other environment
         We cannot post recompute
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)))
 
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_PROD', content_type=self.content_type_environment)))
+
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 403, "Reference exists for the snapshot, do computing")
 
             
     def test_recompute_diff_security_authenticated_with_permission_object_not_found(self):
@@ -157,29 +148,29 @@ class TestRecomputeDiffView(TestApi):
         - permission on requested application
         We get 404 error
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
-            
-            response = self.client.post(reverse('recompute', args=[222]))
-            self.assertEqual(response.status_code, 403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
+
+        response = self.client.post(reverse('recompute', args=[222]))
+        self.assertEqual(response.status_code, 403)
    
     def test_recompute_diff_snapshot_exist_no_ref(self):
         """
         Send recompute request whereas no ref exists. Nothing should be done
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
-              
-            response = self.client.post(reverse('recompute', args=[1]))
-            self.assertEqual(response.status_code, 304, "No ref for this snapshot, 304 should be returned")
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
+
+        response = self.client.post(reverse('recompute', args=[1]))
+        self.assertEqual(response.status_code, 304, "No ref for this snapshot, 304 should be returned")
           
     def test_recompute_diff_snapshot_exist_with_ref(self):
         """
         Reference exists for the snapshot, do computing
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
-            
-            response = self.client.post(reverse('recompute', args=[2]))
-            self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp', content_type=self.content_type_application)))
+
+        response = self.client.post(reverse('recompute', args=[2]))
+        self.assertEqual(response.status_code, 200, "Reference exists for the snapshot, do computing")
           

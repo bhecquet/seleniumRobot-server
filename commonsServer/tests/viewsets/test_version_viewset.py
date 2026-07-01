@@ -69,14 +69,6 @@ class TestVersionViewSet(TestApi):
         response = self.client.post(reverse('version'), data={'name': 'newversion'})
         self.assertEqual(400, response.status_code)
 
-    def test_create_version_no_api_security(self):
-        """
-        Check it's possible to add an version when API security is disabled and no permission given to user
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_version(201)
-
     def test_create_version_forbidden(self):
         """
         Check it's NOT possible to add an version without 'add_version' permission
@@ -88,22 +80,22 @@ class TestVersionViewSet(TestApi):
         """
         Check it's possible to add a version with application specific permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self._create_version(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self._create_version(201)
 
     def test_create_version_without_application_permission(self):
         """
         Check it's NOT possible to add a version on an application on which user has no right
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
-            self._create_version(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app2')))
+        self._create_version(403)
 
     def test_create_version_with_application_restriction_and_model_permission(self):
         """
         Check it's possible to add an version with 'add_version' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_version')))
-            self._create_version(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_version')))
+        self._create_version(201)

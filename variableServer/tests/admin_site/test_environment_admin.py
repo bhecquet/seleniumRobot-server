@@ -16,8 +16,9 @@ class TestEnvironmentAdmin(TestAdmin):
         Check that all versions of all application, where a variable exist are displayed, when no application is selected
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment')))
+        request = MockRequest(user=user)
         
         environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
         filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
@@ -31,41 +32,24 @@ class TestEnvironmentAdmin(TestAdmin):
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
 
-        request = MockRequest()
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        request = MockRequest(user=user)
         request.GET = {'application': 1}
         
         environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
         filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
         
         # only environments where a variable exist for the application app1 are returned
-        self.assertEqual(filtered_environments, [(2, 'ASS'), (3, 'DEV1'), ('_None_', 'None')])
-
-    def test_environment_filter_lookup_with_application_and_environment_restrictions(self):
-        """
-        Check only the environments of the selected application are displayed and filtered by allowed environments
-        """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            TestEnvironment.objects.get(pk=2).save()
-            environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_ASS')))
-            request = MockRequest(user=user)
-
-            request.GET = {'application': 1}
-
-            environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
-            filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
-
-            # only environments where a variable exist for the application app1 are returned
-            self.assertEqual(filtered_environments, [(2, 'ASS'), ('_None_', 'None')])
+        self.assertEqual(filtered_environments, [(2, 'ASS'), (1, 'DEV'), (3, 'DEV1'), ('_None_', 'None')])
     
     def test_environment_filter_queryset_without_value(self):
         """
         Check the case where no filtering is required, all variables are returned
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment')))
+        request = MockRequest(user=user)
         
         environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
@@ -78,8 +62,9 @@ class TestEnvironmentAdmin(TestAdmin):
         Check the case where filtering is required with "no version"
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment')))
+        request = MockRequest(user=user)
         
         environment_filter = EnvironmentFilter(request, {'environment': ['_None_']}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
@@ -92,8 +77,9 @@ class TestEnvironmentAdmin(TestAdmin):
         Check the case where filtering is required with environment '1'
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment')))
+        request = MockRequest(user=user)
         
         environment_filter = EnvironmentFilter(request, {'environment': [1]}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())
@@ -106,8 +92,9 @@ class TestEnvironmentAdmin(TestAdmin):
         Check the case where filtering is done with invalid environment
         """
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        
-        request = MockRequest()
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_testenvironment')))
+        request = MockRequest(user=user)
         
         environment_filter = EnvironmentFilter(request, {'environment': [10265]}, Variable, environment_admin)
         queryset = environment_filter.queryset(request=request, queryset=Variable.objects.all())

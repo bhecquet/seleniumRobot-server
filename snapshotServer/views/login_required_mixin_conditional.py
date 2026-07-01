@@ -39,18 +39,11 @@ class LoginRequiredMixinConditional(AccessMixin):
             return self.get_target_environment()
         except Exception as e:
             return None
-    
-    def __init__(self, *args, **kwargs):
-        
-        # security is enabled by default
-        self.security_enabled = bool(getattr(settings, 'SECURITY_WEB_ENABLED', True))
-        
-        super().__init__(*args, **kwargs)
-    
+
     def dispatch(self, request, *args, **kwargs):
         
         # No permission if not authenticated
-        if self.security_enabled and not request.user.is_authenticated:
+        if not request.user.is_authenticated:
             return self.handle_no_permission()
         
         # No permission if user is authenticated, but has no permission for requested application
@@ -63,9 +56,6 @@ class LoginRequiredMixinConditional(AccessMixin):
         """
         Returns True if user has application permission or if it's not needed
         """
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
-            return True
-        
         if application:
             return self.request.user.has_perm(APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX + application.name)
         
@@ -76,9 +66,6 @@ class LoginRequiredMixinConditional(AccessMixin):
         """
         Returns True if user has environment permission or if it's not needed
         """
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
-            return True
-
         if environment:
             return self.request.user.has_perm(ENV_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX + environment.name)
 

@@ -134,27 +134,23 @@ def _has_context_permission(request, application, environment, variable_ids, has
     # global permission has priority over application permission
     if has_global_permission:
         return has_global_permission, application, environment
-    
-    if settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
-        # check user has permission to destination application or destination environment
-        if application and not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name)\
-                or environment and not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name):
-            return False, application, environment
 
-        # user cannot change to 'no application' AND 'no environment'
-        if not (application or environment):
-            return False, 'None', 'None'
-            
-        # check user has permission to source application
-        source_applications = {var.application for var in Variable.objects.filter(id__in=variable_ids)}
-        source_environments = {var.environment for var in Variable.objects.filter(id__in=variable_ids)}
-        for app in source_applications:
-            for env in source_environments:
-                if (app is None or not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + app.name))\
-                        and (env is None or not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + env.name)):
-                    return False, app, env
-            
-    else:
-        return has_global_permission, application, environment
+    # check user has permission to destination application or destination environment
+    if application and not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name)\
+            or environment and not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name):
+        return False, application, environment
+
+    # user cannot change to 'no application' AND 'no environment'
+    if not (application or environment):
+        return False, 'None', 'None'
+
+    # check user has permission to source application
+    source_applications = {var.application for var in Variable.objects.filter(id__in=variable_ids)}
+    source_environments = {var.environment for var in Variable.objects.filter(id__in=variable_ids)}
+    for app in source_applications:
+        for env in source_environments:
+            if (app is None or not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + app.name))\
+                    and (env is None or not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + env.name)):
+                return False, app, env
     
     return True, application, environment

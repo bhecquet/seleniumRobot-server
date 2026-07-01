@@ -52,14 +52,6 @@ class TestApplicationViewSet(TestApi):
         response = self.client.post(reverse('environment'), data={'noname': 'newenv'})
         self.assertEqual(400, response.status_code)
 
-    def test_create_environment_no_api_security(self):
-        """
-        Check it's possible to add an environment when application restriction is set and the application does not correspond to app on which user has permission
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_environment(201)
-
     def test_create_environment_forbidden(self):
         """
         Check it's NOT possible to add an environment without 'add_environment' permission
@@ -71,17 +63,17 @@ class TestApplicationViewSet(TestApi):
         """
         Check it's NOT possible to add an environment without 'add_environment' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self._create_environment(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self._create_environment(403)
 
     def test_create_environment_with_application_restriction2(self):
         """
         Check it's possible to add an environment with 'add_environment' permission
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testenvironment')))
-            self._create_environment(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_testenvironment')))
+        self._create_environment(201)
 
     def _get_environment(self, expected_status):
         response = self.client.get(reverse('environment'), data={'name': 'DEV'})
@@ -103,21 +95,13 @@ class TestApplicationViewSet(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_testenvironment', content_type=self.content_type_environment)))
         self._get_environment(403)
 
-    def test_get_environment_by_name_no_api_security(self):
-        """
-        Check it's possible to get an environment case by name when application restriction is set and the application does not correspond to app on which user has permission
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._get_environment(200)
-
     def test_get_environment_by_name_with_application_restriction(self):
         """
         Check it's possible to get an environment by name when application restriction is set
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            self._get_environment(200)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        self._get_environment(200)
 
     def test_environment_other_verbs_forbidden(self):
         """

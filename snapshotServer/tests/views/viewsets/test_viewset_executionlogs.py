@@ -67,14 +67,6 @@ class TestViewsetExecutionLogs(TestApi):
         response = self.client.delete('/snapshot/api/logs/1/')
         self.assertEqual(405, response.status_code)
 
-    def test_executionlogs_create_no_api_security(self):
-        """
-        Check it's possible to add a executionlogs when API security is disabled and user has no permissions
-        """
-        with self.settings(SECURITY_API_ENABLED=''):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.none())
-            self._create_executionlogs(201)
-
     def test_executionlogs_create_forbidden(self):
         """
         Check it's NOT possible to add a executionlogs without 'add_executionlogs' permission
@@ -90,9 +82,9 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_executionlogs', content_type=self.content_type_executionlogs)))
-            self._create_executionlogs(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_executionlogs', content_type=self.content_type_executionlogs)))
+        self._create_executionlogs(201)
 
     def test_executionlogs_create_with_application_restriction_and_app1_permission(self):
         """
@@ -102,9 +94,9 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can add test info on app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._create_executionlogs(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._create_executionlogs(201)
 
     def test_executionlogs_create_with_application_restriction_and_app2_permission(self):
         """
@@ -114,9 +106,9 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can NOT add test info on an other application than app1
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
-            self._create_executionlogs(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        self._create_executionlogs(403)
 
     def test_executionlogs_create_with_application_restriction_and_env_DEV_permission(self):
         """
@@ -126,9 +118,9 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can add test info on environment DEV
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
-            self._create_executionlogs(201)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        self._create_executionlogs(201)
 
     def test_executionlogs_create_with_application_restriction_and_env_PROD_permission(self):
         """
@@ -138,9 +130,9 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can NOT add test info on environment DEV
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
-            self._create_executionlogs(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_PROD')))
+        self._create_executionlogs(403)
 
     def test_executionlogs_create_with_application_restriction_and_change_permission(self):
         """
@@ -150,35 +142,35 @@ class TestViewsetExecutionLogs(TestApi):
 
         User can NOT add test info
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_executionlogs')))
-            self._create_executionlogs(403)
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='change_executionlogs')))
+        self._create_executionlogs(403)
 
 
     def test_executionlogs_create_already_created(self):
         """
         Check it's possible to create the same ExecutionLogs twice
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            self._create_executionlogs(201)
-            with open('snapshotServer/tests/data/logs.txt', 'r') as f:
-                response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': f})
-                self.assertEqual(201, response.status_code)
-                self.assertEqual(2, len(ExecutionLogs.objects.filter(file__contains='logs')))
+
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        self._create_executionlogs(201)
+        with open('snapshotServer/tests/data/logs.txt', 'r') as f:
+            response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': f})
+            self.assertEqual(201, response.status_code)
+            self.assertEqual(2, len(ExecutionLogs.objects.filter(file__contains='logs')))
 
     def test_delete_file(self):
         """
         Check file is uploaded
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN=True):
-            self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            with open('snapshotServer/tests/data/test.html', 'rb') as fp:
-                response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})
-                self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-                file = ExecutionLogs.objects.filter(testCase__id=1).last()
-                file_path = Path(file.file.path)
-                self.assertTrue(file_path.exists())
-                file.delete()
-                self.assertFalse(file_path.exists())
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        with open('snapshotServer/tests/data/test.html', 'rb') as fp:
+            response = self.client.post('/snapshot/api/logs/', data={'testCase': 1, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            file = ExecutionLogs.objects.filter(testCase__id=1).last()
+            file_path = Path(file.file.path)
+            self.assertTrue(file_path.exists())
+            file.delete()
+            self.assertFalse(file_path.exists())

@@ -30,16 +30,12 @@ class ContextSpecificPermissions(GenericPermissions):
     
     app_prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     env_prefix = ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
-    security_key = 'SECURITY_API_ENABLED'
     bypass_application_check = 'BYPASS_APPLICATION_CHECK'
     
     def _has_model_permission(self, request, view):
         """
         Returns True if user has the required permission on the model
         """
-        if not getattr(settings, self.security_key):
-            return True
-
         queryset = self._queryset(view)
         model_permissions = self.get_required_permissions(request.method, queryset.model)
             
@@ -58,7 +54,7 @@ class ContextSpecificPermissions(GenericPermissions):
                 return self.get_object_application(view.queryset.model.objects.get(pk=view.kwargs['pk']))
             else:
                 return ''
-        except:
+        except Exception:
             return ''
 
     def get_environment(self, request, view):
@@ -74,7 +70,7 @@ class ContextSpecificPermissions(GenericPermissions):
                 return self.get_object_environment(view.queryset.model.objects.get(pk=view.kwargs['pk']))
             else:
                 return ''
-        except:
+        except Exception:
             return ''
     
 
@@ -84,18 +80,12 @@ class ContextSpecificPermissions(GenericPermissions):
         In the later case, object filtering will be done later
         """
         
-        if not getattr(settings, self.security_key):
-            return True
-        
         has_model_permission = super().has_permission(request, view)
-        
-        if not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN:
-            return has_model_permission
-        
+
         try:
             application = self.get_application(request, view)
             environment = self.get_environment(request, view)
-        except:
+        except Exception:
             # if we cannot check the application, stop
             return has_model_permission
         allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.app_prefix)
@@ -116,9 +106,8 @@ class ContextSpecificPermissions(GenericPermissions):
         
         Returns false if application permissions should be checked
         """
-        
-        has_model_permission = self._has_model_permission(request, view)
-        return not settings.RESTRICT_ACCESS_TO_APPLICATION_OR_ENVIRONMENT_IN_ADMIN or has_model_permission or not getattr(settings, self.security_key)
+
+        return self._has_model_permission(request, view)
     
     def get_object_application(self, obj):
         """
@@ -151,8 +140,6 @@ class ContextSpecificPermissions(GenericPermissions):
         if self._bypass_context_permissions(request, view):
             return super().has_object_permission(request, view, obj)
 
-
-
         if obj and application:
             permission = self.app_prefix + application.name
             has_application_permission = request.user.has_perm(permission)
@@ -177,7 +164,6 @@ class ContextSpecificPermissionsResultRecording(ContextSpecificPermissions):
     """
     app_prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     env_prefix = ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
-    security_key = 'SECURITY_API_ENABLED'
                 
 class ContextSpecificPermissionsResultConsultation(ContextSpecificPermissions):
     """
@@ -185,7 +171,6 @@ class ContextSpecificPermissionsResultConsultation(ContextSpecificPermissions):
     """
     app_prefix = APP_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX
     env_prefix = ENV_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX
-    security_key = 'SECURITY_WEB_ENABLED'
     
 class ContextSpecificPermissionsVariables(ContextSpecificPermissions):
     """
@@ -193,7 +178,6 @@ class ContextSpecificPermissionsVariables(ContextSpecificPermissions):
     """
     app_prefix = APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
     env_prefix = ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
-    security_key = 'SECURITY_API_ENABLED'
     
 
 class ContextPermissionChecker:
@@ -206,12 +190,12 @@ class ContextPermissionChecker:
         """
         Returns the list of applications a user has rights on
         """
-        return [p.replace(prefix, '') for p in request.user.get_all_permissions() if prefix in p]
+        return [p.removeprefix(prefix) for p in request.user.get_all_permissions() if prefix in p]
 
     @staticmethod
     def get_allowed_environments(request, prefix=ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX):
         """
         Returns the list of environments a user has rights on
         """
-        return [p.replace(prefix, '') for p in request.user.get_all_permissions() if prefix in p]
+        return [p.removeprefix(prefix) for p in request.user.get_all_permissions() if prefix in p]
    
