@@ -322,7 +322,7 @@ class VariablesPermissions(ContextSpecificPermissionsVariables):
             else:
                 return ''
         else:
-            return super().get_application(request, view)
+            return super().get_environment(request, view)
 
 
 class VariableList(ApplicationSpecificViewSet):
