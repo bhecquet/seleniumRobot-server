@@ -103,6 +103,60 @@ class TestEnvironmentAdmin(TestAdmin):
         self.assertEqual(len(queryset), 0)
         
        
+    def test_environment_filter_lookup_with_allowed_environments(self):
+        """
+        Check that a user without global nor application permission only sees the environments
+        he has specific rights on (here 'DEV'), when no application is selected
+        """
+        # make sure the environment specific permission 'can_view_environment_DEV' exists
+        TestEnvironment.objects.get(pk=1).save()
+
+        environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        request = MockRequest(user=user)
+
+        environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
+        filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
+
+        # only the environment the user has specific rights on is displayed
+        self.assertEqual(filtered_environments, [(1, 'DEV'), ('_None_', 'None')])
+
+    def test_environment_filter_lookup_with_application_and_allowed_environments(self):
+        """
+        Check that a user without global nor application permission only sees the environments
+        he has specific rights on, restricted to the environments of the selected application
+        """
+        # make sure the environment specific permission 'can_view_environment_DEV' exists
+        TestEnvironment.objects.get(pk=1).save()
+
+        environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_environment_DEV')))
+        request = MockRequest(user=user)
+        request.GET = {'application': 1}
+
+        environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
+        filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
+
+        # among the environments of app1 (ASS, DEV, DEV1), only 'DEV' is allowed for the user
+        self.assertEqual(filtered_environments, [(1, 'DEV'), ('_None_', 'None')])
+
+    def test_environment_filter_lookup_without_allowed_environments(self):
+        """
+        Check that a user without any permission (global, application or environment) sees no environment
+        """
+        environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+        request = MockRequest(user=user)
+
+        environment_filter = EnvironmentFilter(request, {}, Variable, environment_admin)
+        filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
+
+        # no environment allowed, only the 'None' entry is displayed
+        self.assertEqual(filtered_environments, [('_None_', 'None')])
+
     def test_user_cannot_see_environments_without_global_rights(self):
         """
         Check  user cannot list environment with only application specific rights: can_view_application_app1

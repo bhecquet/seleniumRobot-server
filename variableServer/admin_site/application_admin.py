@@ -14,6 +14,7 @@ class ApplicationFilter(admin.SimpleListFilter):
     """
     title = 'Application'
     parameter_name = 'application'
+    application_filter_path = 'application'
 
     def lookups(self, request, model_admin):
         if not request.user:
@@ -34,9 +35,12 @@ class ApplicationFilter(admin.SimpleListFilter):
     def queryset(self, request, queryset):
         
         if self.value():
-            queryset = queryset.filter(application__id=self.value())
+            queryset = queryset.filter(**{self.application_filter_path + '__id': self.value()})
        
         return queryset
+
+class ApplicationFromVersionFilter(ApplicationFilter):
+    application_filter_path = 'version__application'
     
         
 

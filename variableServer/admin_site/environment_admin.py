@@ -8,13 +8,14 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
 
-from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
+from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX, \
+    ContextPermissionChecker
 from variableServer.admin_site.base_model_admin import bypass_context_permissions
 from variableServer.models import TestEnvironment
 
 class EnvironmentFilter(SimpleListFilter):
     """
-    Depending on selected application, will show only related versions
+    Depending on selected application, will show only related environments
     """
     title = 'Environment'
     parameter_name = 'environment'
@@ -23,6 +24,9 @@ class EnvironmentFilter(SimpleListFilter):
         if bypass_context_permissions(request, 'variableServer.view_environment'):
             return [(e.id, str(e)) for e in TestEnvironment.objects.all().order_by('name')]
 
+        allowed_applications = ContextPermissionChecker.get_allowed_applications(request)
+        allowed_environments = ContextPermissionChecker.get_allowed_environments(request)
+
         if 'application' in request.GET:
             app_id = request.GET['application']
             environments = {c.environment for c in model_admin.model.objects.all().filter(application=app_id)}
@@ -30,6 +34,11 @@ class EnvironmentFilter(SimpleListFilter):
             environments = set(TestEnvironment.objects.all().order_by('name'))
 
         environments = [e for e in environments if e is not None]
+
+        # in case user has no permission on application, it will only see environments on which he has permissions for
+        if not allowed_applications:
+            environments = [e for e in environments if e.name in allowed_environments]
+
         environments = sorted(environments, key=attrgetter('name'))
         return [(e.id, str(e)) for e in environments] + [('_None_', 'None')]
 

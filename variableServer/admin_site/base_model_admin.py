@@ -27,6 +27,10 @@ class BaseServerModelAdmin(admin.ModelAdmin):
     Base class to restrict access to application objects the user has rights to see
     If model has 'environment' field, then restriction will also be based on environment
     """
+
+    # model path to get application from objects in queryset
+    # give None or empty string to skip application filtering
+    application_field_path = 'application'
     
     def _has_context_permission(self, global_permission, request, obj=None):
         """
@@ -95,12 +99,15 @@ class BaseServerModelAdmin(admin.ModelAdmin):
             else:                        
                 return queryset.none(), forbidden_applications, forbidden_environments
 
-        application_queryset = queryset.exclude(application=None)
+        if self.application_field_path:
+            application_queryset = queryset.exclude(**{self.application_field_path: None})
 
-        for application_id, application_name in application_queryset.values_list('application', 'application__name').distinct():
-            if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application_name):
-                application_queryset = application_queryset.exclude(application__name=application_name)
-                forbidden_applications.append(application_name)
+            for application_id, application_name in application_queryset.values_list(self.application_field_path, self.application_field_path + '__name').distinct():
+                if not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application_name):
+                    application_queryset = application_queryset.exclude(**{self.application_field_path + '__name': application_name})
+                    forbidden_applications.append(application_name)
+        else:
+            application_queryset = queryset.all()
 
 
         if hasattr(self.model, 'environment'):

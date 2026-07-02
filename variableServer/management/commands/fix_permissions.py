@@ -1,5 +1,6 @@
 from __future__ import unicode_literals, absolute_import, division
 
+from commonsServer.admin import CustomUserAdmin
 
 """Add permissions for proxy model.
 This is needed because of the bug https://code.djangoproject.com/ticket/11154
@@ -14,16 +15,14 @@ itself, in order to have the proper entries displayed in the admin.
 
 
 import sys
-import variableServer
-import snapshotServer
 
 from variableServer.models import Application, TestEnvironment
 from django.contrib.auth.management import _get_all_permissions
-from django.contrib.auth.models import Permission, Group
+from django.contrib.auth.models import Permission, User
 from django.contrib.contenttypes.models import ContentType
 from django.core.management.base import BaseCommand
 from django.apps import apps
-from django.db.models import Q
+
 
 class Command(BaseCommand):
     help = "Fix permissions for proxy models."
@@ -50,51 +49,9 @@ class Command(BaseCommand):
         for env in TestEnvironment.objects.all():
             env.add_environment_permission()
             
-        # add 'Variable Users' group
-        variable_users_group, created = Group.objects.get_or_create(name='Variable Users')
-        
-        # Add permissions to 'Variable Users' group
-        ct = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') | Q(codename='view_application') , content_type=ct))
-        ct = ContentType.objects.get_for_model(variableServer.models.TestCase, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcase') | Q(codename='change_testcase') | Q(codename='view_testcase') , content_type=ct))
-        ct = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testenvironment') | Q(codename='change_testenvironment') | Q(codename='view_testenvironment') , content_type=ct))
-        ct = ContentType.objects.get_for_model(variableServer.models.Version, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_version') | Q(codename='change_version') | Q(codename='view_version'), content_type=ct))
-        ct = ContentType.objects.get_for_model(variableServer.models.Variable, for_concrete_model=False)
-        variable_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_variable') | Q(codename='change_variable') | Q(codename='delete_variable') | Q(codename='see_protected_var') | Q(codename='view_variable') , content_type=ct))
-        
-            
-        # add 'Snapshot Users' group
-        snapshot_users_group, created = Group.objects.get_or_create(name='Snapshot Users')
-        
-        # Add permissions to 'Snapshot Users' group
-        ct = ContentType.objects.get_for_model(snapshotServer.models.ExcludeZone)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_excludezone') | Q(codename='change_excludezone') | Q(codename='delete_excludezone') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.Snapshot) # for upload
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot'), content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.TestCaseInSession)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') | Q(codename='view_testcaseinsession'), content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.StepResult)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult'), content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.TestSession)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testsession'), content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.TestStep)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_teststep') | Q(codename='change_teststep') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.StepReference)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_stepreference') | Q(codename='view_stepreference') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.File)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_file') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') , content_type=ct))
-        ct = ContentType.objects.get_for_model(snapshotServer.models.TestInfo)
-        snapshot_users_group.permissions.add(*Permission.objects.filter(Q(codename='add_testinfo') | Q(codename='change_testinfo') , content_type=ct))
-
-        print("Groups and permissions added")
-        
-        
-        
+        # add 'view session' permission for each user that can already see results
+        for user in User.objects.all():
+            CustomUserAdmin.add_view_test_session_permission(user)
         
         
         
