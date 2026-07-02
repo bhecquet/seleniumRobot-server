@@ -20,8 +20,10 @@ from variableServer.models import Application, TestEnvironment
 
 
 class TestTestResultView(SnapshotTestCase):
-    fixtures = ['testresult_commons.yaml', 'testresult_ok.yaml', 'testresult_ko.yaml',
-                'test_result_snapshot_comparison.yaml']
+    fixtures = ['test_result/testresult_commons.yaml',
+                'test_result/testresult_ok.yaml',
+                'test_result/testresult_ko.yaml',
+                'test_result/test_result_snapshot_comparison.yaml']
     dataDir = 'snapshotServer/tests/data/'
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
 

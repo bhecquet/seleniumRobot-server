@@ -49,7 +49,9 @@ class FakeNetworkErrorCauseFinder(NetworkErrorCauseFinder):
 
 class TestErrorCauseFinder(TestApi):
 
-    fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
+    fixtures = ['error_cause_finder/error_cause_finder_commons.yaml',
+                'error_cause_finder/error_cause_finder_test_ok.yaml',
+                'error_cause_finder/error_cause_finder_test_ko.yaml']
 
     def setUp(self):
         Application.objects.get(pk=1).save()

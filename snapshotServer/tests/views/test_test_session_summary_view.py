@@ -14,12 +14,12 @@ from variableServer.models import Application, TestEnvironment
 
 class TestTestSessionSummaryView(SnapshotTestCase):
 
-    fixtures = ['tests_summary_commons.yaml', 
-                'tests_summary_ok.yaml', 
-                'tests_summary_ko.yaml', 
-                'tests_summary_ko2.yaml', 
-                'tests_summary_skipped.yaml', 
-                'tests_summary_snapshot_comparison.yaml'
+    fixtures = ['tests_summary/tests_summary_commons.yaml',
+                'tests_summary/tests_summary_ok.yaml',
+                'tests_summary/tests_summary_ko.yaml',
+                'tests_summary/tests_summary_ko2.yaml',
+                'tests_summary/tests_summary_skipped.yaml',
+                'tests_summary/tests_summary_snapshot_comparison.yaml'
                 ]
     dataDir = 'snapshotServer/tests/data/'
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
