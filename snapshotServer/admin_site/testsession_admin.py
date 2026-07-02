@@ -44,6 +44,7 @@ class TestSessionAdmin(BaseServerModelAdmin):
     def get_queryset(self, request):
         """
         Filter the returned variables with the application user is allowed to see
+        view_testenvironment won't allow to view all test sessions
         """
         return super().get_queryset(request, '')
 

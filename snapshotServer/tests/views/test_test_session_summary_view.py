@@ -70,6 +70,21 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
 
+    def test_summary_report_security_authenticated_with_permission_on_application_no_staff(self):
+        """
+        Check that with
+        - permission on requested application
+        - no staff status
+        We can view result
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user.is_staff = False
+        user.save()
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+
+        # check we have no permission to view the report
+        self.assertEqual(200, response.status_code)
+
     def test_summary_report_security_authenticated_with_environment_permission(self):
         """
         Check that with
