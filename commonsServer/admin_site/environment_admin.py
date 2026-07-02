@@ -8,9 +8,8 @@ from django import forms
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
 
-from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX, \
-    ContextPermissionChecker
-from variableServer.admin_site.base_model_admin import bypass_context_permissions
+from seleniumRobotServer.permissions.permissions import ContextPermissionChecker
+from commonsServer.admin_site.base_model_admin import bypass_context_permissions
 from variableServer.models import TestEnvironment
 
 class EnvironmentFilter(SimpleListFilter):
@@ -21,8 +20,8 @@ class EnvironmentFilter(SimpleListFilter):
     parameter_name = 'environment'
 
     def lookups(self, request, model_admin):
-        if bypass_context_permissions(request, 'variableServer.view_environment'):
-            return [(e.id, str(e)) for e in TestEnvironment.objects.all().order_by('name')]
+        if bypass_context_permissions(request, 'variableServer.view_testenvironment'):
+            return [(e.id, str(e)) for e in TestEnvironment.objects.all().order_by('name')] + [('_None_', 'None')]
 
         allowed_applications = ContextPermissionChecker.get_allowed_applications(request)
         allowed_environments = ContextPermissionChecker.get_allowed_environments(request)

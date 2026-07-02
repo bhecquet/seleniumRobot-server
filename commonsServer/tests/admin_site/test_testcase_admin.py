@@ -2,25 +2,31 @@
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Permission
 from django.db.models import Q
-from django.test import override_settings
 
 import commonsServer
 import variableServer
-from variableServer.admin_site.test_case_admin import TestCaseAdmin
+from commonsServer.admin_site.test_case_admin import TestCaseAdmin
+from commonsServer.tests.test_parent import MockRequest, MockSuperUser, MockRequestWithApplication
 from variableServer.models import Application
 from variableServer.models import TestCase
-from variableServer.tests.test_admin import request, MockRequest, TestAdmin, \
-    MockRequestWithApplication
 
 
-class TestTestCaseAdmin(TestAdmin):
+class TestTestCaseAdmin(TestCaseAdmin):
+
+    fixtures = ['varServer']
+
+    def setUp(self):
+        super().setUp()
+
+        self.request = MockRequest()
+        self.request.user = MockSuperUser()
     
     def test_testcase_queryset_without_application_restriction(self):
         """
         Check that list of testcases contains variables for all application when restriction is not set
         """
         testcase_admin = TestCaseAdmin(model=commonsServer.models.TestCase, admin_site=AdminSite())
-        query_set = testcase_admin.get_queryset(request)
+        query_set = testcase_admin.get_queryset(self.request)
         
         app_list = []
         for test_case in query_set:

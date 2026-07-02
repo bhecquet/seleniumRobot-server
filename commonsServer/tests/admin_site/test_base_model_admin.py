@@ -1,22 +1,23 @@
 from django.contrib.admin.sites import AdminSite
-from django.contrib.auth.models import User, Permission, Group
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User, Permission
 from django.db.models import Q
-from django.test.client import Client
 
-import variableServer
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
+from commonsServer.admin_site.base_model_admin import BaseServerModelAdmin
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockSuperUser, \
+    MockRequestEmptyApplicationEmptyEnvironment, MockRequestWithApplication
 from variableServer.models import Variable, Application
-from variableServer.tests.test_admin import MockRequestWithApplication, \
-    MockRequest, TestAdmin, MockRequestEmptyApplicationEmptyEnvironment
 
 
-class TestBaseModelAdmin(TestAdmin):
+class TestBaseModelAdmin(TestWebAndAdmin):
 
-    def setUp(self) -> None:
-        TestAdmin.setUp(self)
+    fixtures = ['varServer']
 
+    def setUp(self):
+        super().setUp()
         Application.objects.get(pk=1).save()
+
+        self.request = MockRequest()
+        self.request.user = MockSuperUser()
 
     def test_has_add_permission_superuser(self):
         base_admin = BaseServerModelAdmin(model=Variable, admin_site=AdminSite())

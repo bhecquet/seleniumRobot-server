@@ -3,16 +3,12 @@ Created on 12 déc. 2024
 
 @author: S047432
 '''
-from django.template.context_processors import csrf
-from django.shortcuts import render
-from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
-from variableServer.models import Variable, Application, Version
-from django.conf import settings
+from variableServer.models import Variable, Version
 from django.contrib import admin
 from django.contrib.admin.filters import SimpleListFilter
 from django import forms
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
-from variableServer.admin_site.application_admin import ApplicationFilter
+from commonsServer.admin_site.base_model_admin import BaseServerModelAdmin
+from commonsServer.admin_site.application_admin import ApplicationFilter
 
 class VersionFilter(SimpleListFilter):
     """

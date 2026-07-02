@@ -6,14 +6,13 @@ Created on 26 juil. 2017
 
 from django.core.files.images import ImageFile
 from django.urls.base import reverse
-from django.test.client import Client
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.models import Permission
 from django.db.models import Q
+from django.test.client import Client
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot, ExcludeZone
 from snapshotServer.tests.views.test_views import TestViews
-from snapshotServer.tests import authenticate_test_client_for_web_view_with_permissions
 
 
 class TestPictureView(TestViews):
@@ -22,7 +21,7 @@ class TestPictureView(TestViews):
         """
         Check that with security enabled, we cannot access view without authentication
         """
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = Client().get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
 
         # check we are redirected to login
         self.assertEqual(302, response.status_code)
@@ -30,15 +29,27 @@ class TestPictureView(TestViews):
 
     def test_pictures_security_authenticated_no_permission_on_application(self):
         """
-        Check that with 
-        - security enabled
+        Check that with
         - no permission on requested application
         We cannot view result => error page displayed
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp2')))
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+
+        # check we have no permission to view the report
+        self.assertEqual(403, response.status_code)
+
+    def test_pictures_security_authenticated_no_permission(self):
+        """
+        Check that with
+        - no permission
+        We cannot view result => error page displayed
+        """
+
+        user, client = self._create_and_authenticate_user_without_permissions()
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -47,14 +58,13 @@ class TestPictureView(TestViews):
     def test_pictures_security_authenticated_with_permission_on_application(self):
         """
         Check that with
-        - security enabled
         - permission on requested application
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -63,14 +73,13 @@ class TestPictureView(TestViews):
     def test_pictures_security_authenticated_with_permission_on_environment(self):
         """
         Check that with
-        - security enabled
         - permission on requested environment
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_environment_DEV')))
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -79,14 +88,13 @@ class TestPictureView(TestViews):
     def test_pictures_security_authenticated_with_permission_on_other_environment(self):
         """
         Check that with
-        - security enabled
         - permission on requested environment
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_environment_PROD')))
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -95,14 +103,13 @@ class TestPictureView(TestViews):
     def test_pictures_security_authenticated_with_permission_object_not_found(self):
         """
         Check that with
-        - security enabled
         - permission on requested application
         We get 404 page
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 147, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 147, 'test_step_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(404, response.status_code)
@@ -114,10 +121,10 @@ class TestPictureView(TestViews):
         With this Test Step, reference should be found (snapshot.id = 2)
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
         self.assertIsNotNone(response.context['captureList'][0]['reference'])
         self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'])
 
@@ -137,10 +144,10 @@ class TestPictureView(TestViews):
         With this Test Step, reference should be found (snapshot.id = 2)
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(
+        response = client.get(
             reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 1}))
         self.assertIsNotNone(response.context['captureList'][0]['reference'])
         self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'])
@@ -160,10 +167,10 @@ class TestPictureView(TestViews):
         Check that when no picture exists for comparison, 'enable' should be set to false so that it's not displayed in test report
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(
+        response = client.get(
             reverse('pictureViewNoHeader', kwargs={'test_case_in_session_id': 100, 'test_step_id': 2}))
         self.assertEqual(len(response.context['captureList']), 0)
 
@@ -179,10 +186,10 @@ class TestPictureView(TestViews):
         Check that no error is raised when one of step / test case / session does not exist
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 1, 'test_step_id': 2}))
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 1, 'test_step_id': 2}))
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['captureList']), 0, "No picture should be returned")
 
@@ -193,7 +200,7 @@ class TestPictureView(TestViews):
         'snapshot_same_env' should then have 'snapshot_future_ref_same_env' as reference because it has a higher id than 'initialRefSnapshot' and same name / browser / environment / version
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -218,7 +225,7 @@ class TestPictureView(TestViews):
             snapshot_same_env.image.save("img", img)
             snapshot_same_env.save()
 
-            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
+            response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
                                                                       'test_step_id': 1}) + "?makeRef=True&snapshotId=" + str(
                 snapshot_future_ref_same_env.id))
 
@@ -249,7 +256,7 @@ class TestPictureView(TestViews):
         Check we get the diff percentage
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -277,14 +284,14 @@ class TestPictureView(TestViews):
                 snapshot_same_env.save()
 
                 # force computing
-                self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
+                client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
                                                                'test_step_id': 1}) + "?makeRef=True&snapshotId=" + str(
                     snapshot_future_ref_same_env.id))
 
                 DiffComputer.stopThread()
 
                 # ask for the step snapshot and look for data
-                response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs_same_env.id,
+                response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs_same_env.id,
                                                                           'test_step_id': 1}) + "?snapshotId=" + str(
                     snapshot_same_env.id))
                 self.assertIsNotNone(response.context['captureList'][0]['stepSnapshot'].pixelsDiff)
@@ -296,7 +303,7 @@ class TestPictureView(TestViews):
         Test that all snapshots are returned when there are multiple in one test
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -314,7 +321,7 @@ class TestPictureView(TestViews):
             snapshot_same_env.image.save("img", img)
             snapshot_same_env.save()
 
-            response = self.client.get(
+            response = client.get(
                 reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id, 'test_step_id': 1}))
             self.assertEqual(len(response.context['captureList']), 2, "2 snapshots should be returned")
             self.assertEqual(response.context['captureList'][0]['name'], 'cap1')
@@ -346,10 +353,10 @@ class TestPictureView(TestViews):
 
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(
+        response = client.get(
             reverse('pictureView', kwargs={'test_case_in_session_id': 3, 'test_step_id': 1}) + "?makeRef=True&snapshotId=3")
 
         # check display
@@ -384,10 +391,10 @@ class TestPictureView(TestViews):
                 image: documents/test_Image1.png
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3,
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 3,
                                                                   'test_step_id': 1}) + "?makeRef=False&snapshotId=3")
 
         # check display
@@ -422,10 +429,10 @@ class TestPictureView(TestViews):
                 refSnapshot: 3
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 4,
+        response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': 4,
                                                                   'test_step_id': 1}) + "?makeRef=False&snapshotId=4")
 
         # check display
@@ -439,7 +446,7 @@ class TestPictureView(TestViews):
         reference available
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -456,7 +463,7 @@ class TestPictureView(TestViews):
             snapshot_same_env.image.save("img", img)
             snapshot_same_env.save()
 
-            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
+            response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
                                                                       'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(
                 snapshot_ref_same_env.id))
 
@@ -479,7 +486,7 @@ class TestPictureView(TestViews):
         Test the case where we remove a ref a we want to make sure that the new reference is searched with the same environment
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -504,7 +511,7 @@ class TestPictureView(TestViews):
             snapshot_same_env.image.save("img", img)
             snapshot_same_env.save()
 
-            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
+            response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
                                                                       'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(
                 snapshot_ref_same_env.id))
 
@@ -526,7 +533,7 @@ class TestPictureView(TestViews):
         Test the case where we remove a ref a we want to make sure that the new reference is searched with the same browsert
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
@@ -551,7 +558,7 @@ class TestPictureView(TestViews):
             snapshot_same_env.image.save("img", img)
             snapshot_same_env.save()
 
-            response = self.client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
+            response = client.get(reverse('pictureView', kwargs={'test_case_in_session_id': self.tcs1.id,
                                                                       'test_step_id': 1}) + "?makeRef=False&snapshotId=" + str(
                 snapshot_ref_same_env.id))
 

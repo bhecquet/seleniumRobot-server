@@ -1,15 +1,17 @@
 
 from django.contrib.admin.sites import AdminSite
 
-from variableServer.models import Variable, TestEnvironment
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockSuperUser
+from variableServer.models import Variable, TestEnvironment, Application
 from variableServer.admin_site.variable_admin import VariableAdmin
-from variableServer.tests.test_admin import MockRequest, TestAdmin
-from variableServer.admin_site.environment_admin import EnvironmentFilter,\
+from commonsServer.admin_site.environment_admin import EnvironmentFilter,\
     EnvironmentAdmin
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 
-class TestEnvironmentAdmin(TestAdmin):
+class TestEnvironmentAdmin(TestWebAndAdmin):
+
+    fixtures = ['varServer']
     
     def test_environment_filter_lookup_without_application(self):
         """
@@ -30,6 +32,7 @@ class TestEnvironmentAdmin(TestAdmin):
         """
         Check only the environments of the selected application are displayed
         """
+        Application.objects.get(pk=1).save()
         environment_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
 
         user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))

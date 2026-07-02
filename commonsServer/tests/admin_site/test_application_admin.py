@@ -1,22 +1,25 @@
-from operator import itemgetter
-
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import User, Permission
 from django.db.models import Q
-from django.test import override_settings
 
 import commonsServer
-from variableServer.admin_site.application_admin import ApplicationAdmin, \
+from commonsServer.admin_site.application_admin import ApplicationAdmin, \
     ApplicationFilter
-from variableServer.admin_site.version_admin import VersionAdmin
+from commonsServer.admin_site.version_admin import VersionAdmin
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockSuperUser
 from variableServer.models import Application, Version
 from variableServer.models import Variable
-from variableServer.tests.test_admin import request, MockRequest, TestAdmin
 
 
-class TestApplicationAdmin(TestAdmin):
+class TestApplicationAdmin(TestWebAndAdmin):
     
     fixtures = ['varServer']
+    
+    def setUp(self):
+        super().setUp()
+
+        self.request = MockRequest()
+        self.request.user = MockSuperUser()
 
     def test_application_fieldset_with_variables(self):
         """
@@ -24,7 +27,7 @@ class TestApplicationAdmin(TestAdmin):
         """
         app = Application.objects.get(pk=1)
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        fieldset = application_admin.get_fieldsets(request, app)
+        fieldset = application_admin.get_fieldsets(self.request, app)
         
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ('name', 'linkedApplication'), 'description': '<div style="font-size: 16px;color: red;">All tests / variables must be deleted before this application can be deleted</div>'}))
@@ -36,7 +39,7 @@ class TestApplicationAdmin(TestAdmin):
         app = Application.objects.get(pk=5)
         self.assertEqual(len(app.testCase.all()), 1)
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        fieldset = application_admin.get_fieldsets(request, app)
+        fieldset = application_admin.get_fieldsets(self.request, app)
 
 
         self.assertEqual(len(fieldset), 1)
@@ -49,7 +52,7 @@ class TestApplicationAdmin(TestAdmin):
         app = Application.objects.get(pk=6)
         self.assertEqual(len(app.testCase.all()), 0)
         application_admin = ApplicationAdmin(model=Application, admin_site=AdminSite())
-        fieldset = application_admin.get_fieldsets(request, app)
+        fieldset = application_admin.get_fieldsets(self.request, app)
 
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ['name', 'linkedApplication']}))

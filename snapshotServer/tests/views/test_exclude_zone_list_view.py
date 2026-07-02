@@ -9,7 +9,7 @@ from django.contrib.auth.models import User, Permission
 from django.db.models import Q
 from django.test import Client
 
-from snapshotServer.tests import authenticate_test_client_for_web_view_with_permissions, SnapshotTestCase
+from snapshotServer.tests import SnapshotTestCase
 from variableServer.models import Application, TestEnvironment
 
 
@@ -18,7 +18,6 @@ class TestExcludeZoneListView(SnapshotTestCase):
     fixtures = ['exclude_zone_list.yaml']
 
     def setUp(self):
-        self.client = Client()
 
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -44,8 +43,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         We cannot view result => error page displayed
         """
         
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -59,8 +58,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -73,8 +72,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -87,8 +86,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -101,8 +100,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         We get 404 page
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 4, 'step_snapshot_id': 3}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 4, 'step_snapshot_id': 3}))
 
         # check we have no permission to view the report
         self.assertEqual(404, response.status_code)
@@ -112,8 +111,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         Check we get exclude zone for reference picture AND for the picture itself
         """
         
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 1, 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -132,8 +131,8 @@ class TestExcludeZoneListView(SnapshotTestCase):
         Check we get exclude zone for reference picture AND for the picture itself
         """
         
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 'None', 'step_snapshot_id': 2}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('excludeListView', kwargs={'ref_snapshot_id': 'None', 'step_snapshot_id': 2}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)

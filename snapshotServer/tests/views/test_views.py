@@ -25,7 +25,6 @@ class TestViews(SnapshotTestCase):
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
-        self.client = Client()
 
         # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()

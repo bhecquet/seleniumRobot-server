@@ -30,7 +30,6 @@ class TestApiView(TestApi):
     #        * without token => access denied (for all operations)
 
     #        * with token / staff / rights for view applications => can view all application data
-    #    . remove authenticate_test_client & authenticate_test_client_with_see_protected_vars
     # - IHM
     #    . permission on results based on a specific group
     #    . global groups are not set anymore

@@ -13,14 +13,12 @@ import pytz
 from django.conf import settings
 from django.urls.base import reverse
 from django.db.models import Q
-from django.test.utils import override_settings
 
 from pathlib import Path
 
 from snapshotServer.models import TestCase, TestStep, TestSession, \
     TestEnvironment, Version, TestCaseInSession, \
     StepResult, StepReference
-from snapshotServer.tests import authenticate_test_client_for_api
 from snapshotServer.views.step_reference_view import StepReferenceView
 from commonsServer.tests.test_api import TestApi
 
@@ -31,7 +29,6 @@ import variableServer
 from variableServer.models import Application
 
 
-@override_settings(FIELD_DETECTOR_ENABLED='True')
 class TestStepReferenceView(TestApi):
     fixtures = ['snapshotServer.yaml']
 
@@ -39,7 +36,6 @@ class TestStepReferenceView(TestApi):
     reference_dir = os.path.join(media_dir, 'references', 'myapp', 'test upload')
 
     def setUp(self):
-        authenticate_test_client_for_api(self.client)
 
         # test in a version
         self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))
@@ -134,12 +130,12 @@ class TestStepReferenceView(TestApi):
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
             response = self.client.post(reverse('uploadStepRef'), data={'stepResult': self.sr1.id, 'image': fp})
             time.sleep(0.5)  # wait field computing
-            self.assertEqual(403, response.status_code)
+            self.assertEqual(401, response.status_code)
 
         response = self.client.get(reverse('stepReference', kwargs={'step_result_id': self.sr1.id}))
 
         # check we are redirected to login
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(401, response.status_code)
 
     def test_get_snapshot_security_authenticated_no_permission_on_application(self):
         """

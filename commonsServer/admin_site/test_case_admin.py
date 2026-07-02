@@ -1,8 +1,6 @@
 from django import forms
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
-from django.conf import settings
-from variableServer.models import Application
-from variableServer.admin_site.application_admin import ApplicationFilter
+from commonsServer.admin_site.base_model_admin import BaseServerModelAdmin
+from commonsServer.admin_site.application_admin import ApplicationFilter
 
 
 

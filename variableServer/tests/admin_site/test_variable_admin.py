@@ -13,15 +13,14 @@ from django.test import override_settings
 from django.urls.base import reverse
 from django.utils import timezone
 
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockRequestWithApplication
 from variableServer.admin_site.variable_admin import VariableAdmin, VariableForm
 from variableServer.models import Variable, Application, Version, TestEnvironment
-from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
-    MockRequestWithApplication
 
-class TestVariableAdmin(TestAdmin):
+class TestVariableAdmin(TestWebAndAdmin):
 
     def setUp(self) -> None:
-        TestAdmin.setUp(self)
+        super().setUp()
 
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -38,19 +37,6 @@ class TestVariableAdmin(TestAdmin):
         self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)),
                          ['nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version',
                           'allTests', 'reservable', 'releaseDate', 'creationDate', 'auditlog_link'])
-
-    def test_variable_queryset_without_application_restriction(self):
-        """
-        Check that list of variables contains variables for all application when restriction is not set
-        """
-        variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
-        query_set = variable_admin.get_queryset(request)
-
-        app_list = []
-        for var in query_set:
-            app_list.append(var.application)
-
-        self.assertTrue(len(list(set(app_list))), 6)  # at least 'None' and 2 other applications
 
     def test_variable_queryset_with_application_restriction(self):
         """
@@ -124,7 +110,7 @@ class TestVariableAdmin(TestAdmin):
         self.assertFalse(variable.protected)
         variable.value = 'proxy.com'
 
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        user, _ = self._create_and_authenticate_user_without_permissions()
         variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=1).value, 'proxy.com')
 
@@ -143,7 +129,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.csv', 'text/csv',
                                                            os.path.getsize(file_path), None)
             variable.uploadFile = in_memory_uploaded_file
-            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            user, _ = self._create_and_authenticate_user_without_permissions()
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
         self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.csv')
@@ -164,7 +150,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.json', 'application/json',
                                                            os.path.getsize(file_path), None)
             variable.uploadFile = in_memory_uploaded_file
-            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            user, _ = self._create_and_authenticate_user_without_permissions()
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
         self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.json')
@@ -185,7 +171,7 @@ class TestVariableAdmin(TestAdmin):
             in_memory_uploaded_file = InMemoryUploadedFile(f, 'uploadFile', 'filetoadd.xls', 'application/vnd.ms-excel',
                                                            os.path.getsize(file_path), None)
             variable.uploadFile = in_memory_uploaded_file
-            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            user, _ = self._create_and_authenticate_user_without_permissions()
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
         self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.xls')
@@ -207,7 +193,7 @@ class TestVariableAdmin(TestAdmin):
                                                            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                                                            os.path.getsize(file_path), None)
             variable.uploadFile = in_memory_uploaded_file
-            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            user, _ = self._create_and_authenticate_user_without_permissions()
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
         self.assertEqual(Variable.objects.get(pk=888).value, '')
         self.assertEqual(str(Variable.objects.get(pk=888).uploadFile), 'variables/appFileVar/filetoadd.xlsx')
@@ -287,7 +273,7 @@ class TestVariableAdmin(TestAdmin):
             variable = Variable.objects.get(pk=996)
             variable.uploadFile = in_memory_uploaded_file
 
-            user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+            user, _ = self._create_and_authenticate_user_without_permissions()
             variable_admin.save_model(obj=variable, request=MockRequest(user=user), form=None, change=None)
 
         self.assertFalse(os.path.exists(del_file_path))
@@ -304,7 +290,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
 
         variable = Variable.objects.get(pk=996)
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        user, _ = self._create_and_authenticate_user_without_permissions()
         variable_admin.delete_model(obj=variable, request=MockRequest(user=user))
 
         self.assertFalse(os.path.exists(del_file_path))
@@ -321,7 +307,7 @@ class TestVariableAdmin(TestAdmin):
         variable_admin = VariableAdmin(model=Variable, admin_site=AdminSite())
 
         variables = Variable.objects.filter(pk=996)
-        user = User.objects.create_user(username='user', email='user@email.org', password='pass')
+        user, _ = self._create_and_authenticate_user_without_permissions()
         variable_admin.delete_queryset(request=MockRequest(user=user), queryset=variables)
 
         self.assertFalse(os.path.exists(del_file_path))

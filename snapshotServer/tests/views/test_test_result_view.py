@@ -8,7 +8,7 @@ import json
 
 from snapshotServer.models import StepResult, Snapshot, TestSession, \
     TestCaseInSession, Error
-from snapshotServer.tests import SnapshotTestCase, authenticate_test_client_for_web_view_with_permissions
+from snapshotServer.tests import SnapshotTestCase
 
 from django.conf import settings
 from django.urls.base import reverse
@@ -27,7 +27,6 @@ class TestTestResultView(SnapshotTestCase):
 
     def setUp(self):
         super().setUp()
-        self.client = Client()
 
         # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
@@ -39,7 +38,7 @@ class TestTestResultView(SnapshotTestCase):
         """
         Check that with security enabled, we cannot access view without authentication
         """
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = Client().get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
 
         # check we are redirected to login
         self.assertEqual(302, response.status_code)
@@ -53,9 +52,9 @@ class TestTestResultView(SnapshotTestCase):
         We cannot view result => error page displayed
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp2')))
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -69,9 +68,9 @@ class TestTestResultView(SnapshotTestCase):
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -85,9 +84,9 @@ class TestTestResultView(SnapshotTestCase):
         We can view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_environment_DEV')))
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -101,9 +100,9 @@ class TestTestResultView(SnapshotTestCase):
         We cannot view result
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_environment_PROD')))
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -117,9 +116,9 @@ class TestTestResultView(SnapshotTestCase):
         We get 404 page
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 909}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 909}))
 
         # check we have no permission to view the report
         self.assertEqual(404, response.status_code)
@@ -130,10 +129,10 @@ class TestTestResultView(SnapshotTestCase):
         Test that step results are returned for our test
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         self.assertEqual(len(response.context['object_list']), 4)
 
         # check order of steps
@@ -211,10 +210,10 @@ class TestTestResultView(SnapshotTestCase):
         . reference picture is displayed
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         self.assertEqual(len(response.context['object_list']), 4)
         self.assertEqual(response.context['status'], "FAILURE")
 
@@ -253,10 +252,10 @@ class TestTestResultView(SnapshotTestCase):
         Check errors / messages / assertions are encoded
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         self.assertEqual(len(response.context['object_list']), 4)
         self.assertEqual(response.context['status'], "FAILURE")
 
@@ -288,7 +287,7 @@ class TestTestResultView(SnapshotTestCase):
         . an additional step giving snapshot comparison result should be present
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=2)
@@ -300,7 +299,7 @@ class TestTestResultView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
         session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         self.assertEqual(response.context['status'], "SUCCESS")
 
         html = self.remove_spaces(response.rendered_content)
@@ -319,7 +318,7 @@ class TestTestResultView(SnapshotTestCase):
         Even if comparison is KO, result should not be modified
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=3)
@@ -331,7 +330,7 @@ class TestTestResultView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
         session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         self.assertEqual(response.context['status'], "SUCCESS")
 
         html = self.remove_spaces(response.rendered_content)
@@ -351,7 +350,7 @@ class TestTestResultView(SnapshotTestCase):
         Comparison is KO, result should be modified
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=3)
@@ -363,7 +362,7 @@ class TestTestResultView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
         session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         self.assertEqual(response.context['status'], "FAILURE")
 
         html = self.remove_spaces(response.rendered_content)
@@ -378,7 +377,7 @@ class TestTestResultView(SnapshotTestCase):
         Comparison is in error, result should not be modified
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=4)
@@ -390,7 +389,7 @@ class TestTestResultView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
         session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         self.assertEqual(response.context['status'], "SUCCESS")
 
         html = self.remove_spaces(response.rendered_content)
@@ -403,14 +402,14 @@ class TestTestResultView(SnapshotTestCase):
         Check that when grid node information is available, it's displayed
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         test_case_in_session = TestCaseInSession.objects.get(pk=1)
         test_case_in_session.gridNode = "mynode.domain.com"
         test_case_in_session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         html = self.remove_spaces(response.rendered_content)
 
         # details table
@@ -423,14 +422,14 @@ class TestTestResultView(SnapshotTestCase):
         Check that if a step is in warning, it has the right color
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         test_case_in_session = TestCaseInSession.objects.get(pk=11)
         test_case_in_session.testSteps.set([11, 12, 15, 14])
         test_case_in_session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         html = self.remove_spaces(response.rendered_content)
         print(html)
         self.assertTrue(
@@ -442,7 +441,7 @@ class TestTestResultView(SnapshotTestCase):
         Check error cause is displayed with friendly message and analysis error
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         error = Error(stepResult=StepResult.objects.get(pk=13),
@@ -456,7 +455,7 @@ class TestTestResultView(SnapshotTestCase):
                       causeAnalysisErrors="some error in analysis")
         error.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         html = self.remove_spaces(response.rendered_content)
         self.assertTrue('<th>caused details_0</th>'
                         '<td><span style="width: 95%; display: inline-block" class="error-cause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
@@ -469,7 +468,7 @@ class TestTestResultView(SnapshotTestCase):
         Check error cause is displayed with friendly message
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         error = Error(stepResult=StepResult.objects.get(pk=13),
@@ -482,7 +481,7 @@ class TestTestResultView(SnapshotTestCase):
                       causeDetails="error")
         error.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         html = self.remove_spaces(response.rendered_content)
         self.assertTrue('<th>caused details_0</th>'
                         '<td><span style="width: 95%; display: inline-block" class="error-cause">Assertion on step &#x27;getErrorMessage&lt;&gt;&#x27;: error</span>'
@@ -495,7 +494,7 @@ class TestTestResultView(SnapshotTestCase):
         Check test description is displayed, and special characters are escaped
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         test_case_in_session = TestCaseInSession.objects.get(pk=1)
@@ -504,7 +503,7 @@ class TestTestResultView(SnapshotTestCase):
     ;&nbsp;"""
         test_case_in_session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         html = self.remove_spaces(response.rendered_content)
 
         self.assertTrue("""<th>Description</th><td>Some extra test""" in html)
@@ -517,14 +516,14 @@ class TestTestResultView(SnapshotTestCase):
         Check "started by" is displayed
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
         test_case_in_session = TestCaseInSession.objects.get(pk=1)
         test_case_in_session.session.startedBy = """http://myTestLauncher/foo/bar?test=test1&param=1"""
         test_case_in_session.session.save()
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         html = self.remove_spaces(response.rendered_content)
 
         self.assertTrue(
@@ -536,10 +535,10 @@ class TestTestResultView(SnapshotTestCase):
         Check style of message is set (success, error, warning, ...)
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         self.assertEqual(len(response.context['object_list']), 4)
         self.assertEqual(response.context['status'], "FAILURE")
 
@@ -561,10 +560,10 @@ class TestTestResultView(SnapshotTestCase):
         Test that step results are returned for our test
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
             Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 11}))
         self.assertEqual(len(response.context['object_list']), 4)
         self.assertEqual(len(response.context['stacktrace']), 2)
         self.assertTrue('line1' in response.context['stacktrace'][0])

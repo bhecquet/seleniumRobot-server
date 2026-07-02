@@ -6,7 +6,7 @@ from django import forms
 from django.contrib import admin
 from variableServer.models import Variable, Application, TestCase
 from seleniumRobotServer.permissions.permissions import APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX
-from variableServer.admin_site.base_model_admin import bypass_context_permissions
+from commonsServer.admin_site.base_model_admin import bypass_context_permissions
 
 class ApplicationFilter(admin.SimpleListFilter):
     """

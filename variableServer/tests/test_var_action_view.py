@@ -6,16 +6,16 @@ from django.db.models import Q
 from django.test import override_settings
 from django.urls.base import reverse
 
+from commonsServer.tests.test_parent import TestWebAndAdmin
 from variableServer.models import Variable, Application, TestEnvironment
-from variableServer.tests.test_admin import TestAdmin
 
 
-class TestVarActionView(TestAdmin):
+class TestVarActionView(TestWebAndAdmin):
 
     fixtures = ['varServer']
 
     def setUp(self)->None:
-        TestAdmin.setUp(self)
+        super().setUp()
 
         # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()

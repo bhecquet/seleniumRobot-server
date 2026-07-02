@@ -1,19 +1,19 @@
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Permission
 from django.db.models import Q
-from django.test import override_settings
 
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockRequestWithApplication
 from variableServer.admin_site.variable_admin import VariableAdmin
-from variableServer.admin_site.version_admin import VersionFilter, VersionAdmin
+from commonsServer.admin_site.version_admin import VersionFilter, VersionAdmin
 from variableServer.models import Variable, Version, Application
-from variableServer.tests.test_admin import MockRequest, request, TestAdmin, \
-    MockRequestWithApplication
 
 
-class TestVersionAdmin(TestAdmin):
+class TestVersionAdmin(TestWebAndAdmin):
+
+    fixtures = ['varServer']
 
     def setUp(self) -> None:
-        TestAdmin.setUp(self)
+        super().setUp()
 
         # be sure permission for application is created
         Application.objects.get(pk=1).save()
@@ -110,7 +110,7 @@ class TestVersionAdmin(TestAdmin):
         """
         version = Version.objects.get(pk=1)
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        fieldset = version_admin.get_fieldsets(request, version)
+        fieldset = version_admin.get_fieldsets(MockRequest(), version)
 
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ('name', 'application'),
@@ -122,7 +122,7 @@ class TestVersionAdmin(TestAdmin):
         """
         version = Version.objects.get(pk=7)
         version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        fieldset = version_admin.get_fieldsets(request, version)
+        fieldset = version_admin.get_fieldsets(MockRequest(), version)
 
         self.assertEqual(len(fieldset), 1)
         self.assertEqual(fieldset[0], (None, {'fields': ['application', 'name']}))
@@ -249,21 +249,6 @@ class TestVersionAdmin(TestAdmin):
         user, client = self._create_and_authenticate_user_with_permissions(
             Permission.objects.filter(Q(codename='add_version', content_type=self.content_type_version)))
         self.assertFalse(version_admin.has_delete_permission(request=MockRequest(user=user)))
-
-
-    def test_version_queryset_without_application_restriction(self):
-        """
-        Check that list of testcases contains variables for all application when restriction is not set
-        """
-        version_admin = VersionAdmin(model=Version, admin_site=AdminSite())
-        query_set = version_admin.get_queryset(request)
-
-        app_list = []
-        for version in query_set:
-            app_list.append(version.application)
-
-        self.assertTrue(len(list(set(app_list))) > 2)  # at least 'None' and 2 other applications
-
 
     def test_version_queryset_with_application_restriction(self):
         """

@@ -5,7 +5,6 @@ Created on 12 déc. 2024
 import magic
 from auditlog.mixins import AuditlogHistoryAdminMixin
 from django import forms
-from django.conf import settings
 from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
@@ -13,10 +12,10 @@ from django.shortcuts import render
 from django.template.context_processors import csrf
 
 from commonsServer import preferences
-from variableServer.admin_site.application_admin import ApplicationFilter
-from variableServer.admin_site.base_model_admin import BaseServerModelAdmin
-from variableServer.admin_site.environment_admin import EnvironmentFilter
-from variableServer.admin_site.version_admin import VersionFilter
+from commonsServer.admin_site.application_admin import ApplicationFilter
+from commonsServer.admin_site.base_model_admin import BaseServerModelAdmin
+from commonsServer.admin_site.environment_admin import EnvironmentFilter
+from commonsServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
 

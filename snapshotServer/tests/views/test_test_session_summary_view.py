@@ -1,6 +1,5 @@
 from snapshotServer.controllers.error_cause import Cause, Reason
-from snapshotServer.tests import SnapshotTestCase,\
-    authenticate_test_client_for_web_view_with_permissions
+from snapshotServer.tests import SnapshotTestCase
 from django.conf import settings
 import os
 from django.test.client import Client
@@ -29,7 +28,6 @@ class TestTestSessionSummaryView(SnapshotTestCase):
     
     def setUp(self):
         super().setUp()
-        self.client = Client()
         
         # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
@@ -41,7 +39,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         Check that with security enabled, we cannot access view without authentication
         """
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        response = Client().get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
         
         # check we are redirected to login
         self.assertEqual(302, response.status_code)
@@ -49,13 +47,12 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         
     def test_summary_report_security_authenticated_no_permission_on_application(self):
         """
-        Check that with 
-        - security enabled
+        Check that with
         - no permission on requested application
         We cannot view result => error page displayed
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(403, response.status_code)
@@ -63,13 +60,12 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         
     def test_summary_report_security_authenticated_with_permission_on_application(self):
         """
-        Check that with 
-        - security enabled
+        Check that with
         - permission on requested application
         We can view result
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
 
         # check we have no permission to view the report
         self.assertEqual(200, response.status_code)
@@ -77,37 +73,34 @@ class TestTestSessionSummaryView(SnapshotTestCase):
     def test_summary_report_security_authenticated_with_environment_permission(self):
         """
         Check that with
-        - security enabled
         - permission on requested environment
         We can view result if session is attached to this environment
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
 
         self.assertEqual(200, response.status_code)
 
     def test_summary_report_security_authenticated_with_other_environment_permission(self):
         """
         Check that with
-        - security enabled
         - permission on requested environment
         We cannot view result if session is attached to another environment
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
 
         self.assertEqual(403, response.status_code)
             
             
     def test_summary_report_security_authenticated_with_permission_object_not_found(self):
         """
-        Check that with 
-        - security enabled
+        Check that with
         - permission on requested application
         We get 404 error
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 123}))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 123}))
 
         # check we have no permission to view the report
         self.assertEqual(404, response.status_code)
@@ -119,9 +112,9 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - link to individual test is ok
         - no badge or related error is displayed
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -158,15 +151,15 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         Check that multiple tests can be displayed in the report
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
-        # add an other result is Session 1
+        # add another result is Session 1
         tcis = TestCaseInSession.objects.get(pk=11)
         session = TestSession.objects.get(pk=1)
         tcis.session = session
         tcis.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
         self.assertEqual(2, len(response.context['object_list']))
 
         self.assertEqual(1, response.context['testSession'].id)
@@ -200,7 +193,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         Check that the icon for snapshot comparison is present
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=2)
         step_snapshot.stepResult = StepResult.objects.get(pk=2)
@@ -211,7 +204,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
         session.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check content
@@ -225,7 +218,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         Check that the icon for snapshot comparison is present and red
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         step_snapshot = Snapshot.objects.get(pk=2)
         step_snapshot.stepResult = StepResult.objects.get(pk=2)
@@ -237,7 +230,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
         session.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
         self.assertEqual(1, len(response.context['object_list']))
 
         test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
@@ -261,9 +254,9 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - no badge as no error instance is recorded for this test (this may happen when test fails immediately without executing any step
         """
 
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -296,7 +289,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         """
         If multiple steps are KO, only the first one is returned
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         # add a seconde failed step
         step_result12 = StepResult.objects.get(id=12)
@@ -316,7 +309,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         error.save()
 
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -332,7 +325,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - a badge is present for the failed test
         - no related error is displayed
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         error = Error(stepResult=StepResult.objects.get(id=13),
                       action="getErrorMessage<> >getText on HtmlElement error message",
@@ -340,7 +333,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
                       errorMessage="WebDriverException in search")
         error.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -384,7 +377,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - no related error is displayed
         - error cause analysis displayed
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         error = Error(stepResult=StepResult.objects.get(id=13),
                       action="getErrorMessage<> >getText on HtmlElement error message",
@@ -395,7 +388,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
                     )
         error.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -435,7 +428,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - a badge is present for the failed test
         - number of related error is displayed and canvas is accessible
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         # record error for test_case_in_session=11
         error = Error(stepResult=StepResult.objects.get(id=13),
@@ -452,7 +445,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         error110.save()
         error110.relatedErrors.set([error])
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 110}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 110}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
@@ -494,7 +487,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - a badge is present for the failed test, badge is the same for the 2 tests
         - number of related error is displayed and canvas is accessible
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         # add an other result is Session 1
         tcis = TestCaseInSession.objects.get(pk=110)
@@ -517,7 +510,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         error110.save()
         error110.relatedErrors.set([error])
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(2, len(response.context['object_list']))
 
         # check content of tests
@@ -555,7 +548,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         Check
         - a badge is present for the failed test, badge is different for each test
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
         # add an other result is Session 1
         tcis = TestCaseInSession.objects.get(pk=110)
@@ -577,7 +570,7 @@ class TestTestSessionSummaryView(SnapshotTestCase):
                       errorMessage="WebDriverException in search")
         error110.save()
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 11}))
         self.assertEqual(2, len(response.context['object_list']))
 
         # check content of tests
@@ -605,9 +598,9 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         - link to individual test is ok
         - number of failed steps is ok
         """
-        authenticate_test_client_for_web_view_with_permissions(self.client, Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
 
-        response = self.client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 111}))
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 111}))
         self.assertEqual(1, len(response.context['object_list']))
 
         # check order of steps
