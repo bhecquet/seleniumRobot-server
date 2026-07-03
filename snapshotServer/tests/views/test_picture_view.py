@@ -3,7 +3,6 @@ Created on 26 juil. 2017
 
 @author: worm
 '''
-
 from django.core.files.images import ImageFile
 from django.urls.base import reverse
 from django.contrib.auth.models import Permission
@@ -11,11 +10,42 @@ from django.db.models import Q
 from django.test.client import Client
 
 from snapshotServer.controllers.diff_computer import DiffComputer
-from snapshotServer.models import Snapshot, ExcludeZone
-from snapshotServer.tests.views.test_views import TestViews
+from snapshotServer.models import Snapshot, ExcludeZone, TestCase, TestStep, TestSession, TestCaseInSession, StepResult
+from snapshotServer.tests import SnapshotTestCase
+from variableServer.models import Application, TestEnvironment as TestEnvironmentV
 
 
-class TestPictureView(TestViews):
+class TestPictureView(SnapshotTestCase):
+
+
+    fixtures = ['test_picture_view.yaml']
+
+
+    def setUp(self):
+
+        # be sure permission for application / environment is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        TestEnvironmentV.objects.get(pk=1).save()
+        TestEnvironmentV.objects.get(pk=2).save()
+
+        # prepare data
+        self.testCase = TestCase.objects.get(id=1)
+        self.initialRefSnapshot = Snapshot.objects.get(id=1)
+
+        # session1 and its test case / step result (same version / environment / browser as the initial reference)
+        self.session1 = TestSession.objects.get(pk=20)
+        self.tcs1 = TestCaseInSession.objects.get(pk=20)
+        self.sr1 = StepResult.objects.get(pk=20)
+
+        # an other session sharing the same characteristics as session1
+        self.session_same_env = TestSession.objects.get(pk=21)
+        self.tcs_same_env = TestCaseInSession.objects.get(pk=21)
+        self.step_result_same_env = StepResult.objects.get(pk=21)
+
+        # session with other env (AUT instead of DEV), other characteristics remain the same as session1
+        self.step_result_other_env = StepResult.objects.get(pk=11)
+
 
     def test_pictures_security_not_authenticated(self):
         """

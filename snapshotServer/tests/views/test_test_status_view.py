@@ -1,24 +1,36 @@
+import datetime
 import json
 import pickle
 
+import pytz
 from django.urls.base import reverse
 from django.db.models import Q
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
 from django.test.client import Client
 
-from snapshotServer.tests.views.test_views import TestViews
+from snapshotServer.tests import SnapshotTestCase
 from snapshotServer.models import Snapshot
 from snapshotServer.controllers.picture_comparator import Pixel
-from variableServer.models import Application, TestEnvironment
+from variableServer.models import Application, TestEnvironment as TestEnvironmentV
 import variableServer
 
 
-class TestTestStatusView(TestViews):
-    
+class TestTestStatusView(SnapshotTestCase):
+
+
+    fixtures = ['test_test_status_view.yaml']
+
+
     def setUp(self):
         super().setUp()
-        
+
+        # be sure permission for application / environment is created
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        TestEnvironmentV.objects.get(pk=1).save()
+        TestEnvironmentV.objects.get(pk=2).save()
+
         self.content_type_application = ContentType.objects.get_for_model(variableServer.models.Application, for_concrete_model=False)        
         self.content_type_environment = ContentType.objects.get_for_model(variableServer.models.TestEnvironment, for_concrete_model=False)
         

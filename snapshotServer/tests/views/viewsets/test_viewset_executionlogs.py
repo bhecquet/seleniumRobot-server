@@ -12,7 +12,7 @@ from django.contrib.auth.models import Permission
 from commonsServer.tests.test_api import TestApi
 
 class TestViewsetExecutionLogs(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_executionlogs.yaml']
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
 
     def setUp(self):

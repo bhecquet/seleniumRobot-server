@@ -14,7 +14,7 @@ from variableServer.models import Application, TestEnvironment
 
 class TestStepReferenceAdmin(TestWebAndAdmin):
     
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_stepreference_admin.yaml']
 
     def setUp(self):
         super().setUp()

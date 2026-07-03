@@ -1,5 +1,4 @@
 from rest_framework.test import APITransactionTestCase
-from django.contrib.auth.models import User, Group
 
 from commonsServer.tests.test_parent import TestParent
 from hashed_auth.models import Token

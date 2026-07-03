@@ -1,0 +1,92 @@
+# Minimal dataset for TestTestCases (snapshotServer.models tests)
+# The tests read objects by pk and check TestCaseInSession.isOkWithResult / isOkWithSnapshots / computed.
+# Objects read by tests:
+#   - TestCaseInSession 5  (steps 2/3/4) -> StepResults 5/6/7 -> Snapshots 5/6/7
+#   - TestCaseInSession 10 (step 1)      -> StepResults 12/13 (no snapshot)
+#   - TestStep 2 (Login), 3 (Logged)
+#   - Snapshot 1 : used only as an initial reference snapshot (attached to StepResult 1)
+# isOkWithResult iterates StepResults of the TCIS, isOkWithSnapshots / computed iterate their Snapshots.
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: {name: Step 1}
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: {name: Login}
+-   model: snapshotServer.teststep
+    pk: 3
+    fields: {name: Logged}
+-   model: snapshotServer.teststep
+    pk: 4
+    fields: {name: Logged out}
+
+-   model: snapshotServer.testcase
+    pk: 1
+    fields: {name: test1, application: 1}
+-   model: snapshotServer.testcase
+    pk: 4
+    fields: {name: test login, application: 1}
+
+-   model: snapshotServer.testsession
+    pk: 1
+    fields: {sessionId: '1234', version: 1, date: '2017-05-05T11:16:09+00:00', browser: firefox, environment: 1, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 6
+    fields: {sessionId: '1250', version: 1, date: '2017-05-05T11:16:09+00:00', browser: firefox, environment: 1, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 11
+    fields: {sessionId: '1254', version: 1, date: '2017-05-05T11:16:09+00:00', browser: firefox, environment: 1, ttl: '0'}
+
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields: {testCase: 1, session: 1}
+-   model: snapshotServer.testcaseinsession
+    pk: 5
+    fields: {testCase: 4, session: 6}
+-   model: snapshotServer.testcaseinsession
+    pk: 10
+    fields: {testCase: 1, session: 11}
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: {step: 1, testCase: 1, result: true}
+-   model: snapshotServer.stepresult
+    pk: 5
+    fields: {step: 2, testCase: 5, result: true}
+-   model: snapshotServer.stepresult
+    pk: 6
+    fields: {step: 3, testCase: 5, result: true}
+-   model: snapshotServer.stepresult
+    pk: 7
+    fields: {step: 4, testCase: 5, result: true}
+-   model: snapshotServer.stepresult
+    pk: 12
+    fields: {step: 1, testCase: 10, result: true}
+-   model: snapshotServer.stepresult
+    pk: 13
+    fields: {step: 2, testCase: 10, result: true}
+
+-   model: snapshotServer.snapshot
+    pk: 1
+    fields: {stepResult: 1, image: documents/test_Image1.png}
+-   model: snapshotServer.snapshot
+    pk: 5
+    fields: {stepResult: 5, image: documents/test_Image1.png}
+-   model: snapshotServer.snapshot
+    pk: 6
+    fields: {stepResult: 6, image: documents/test_Image1.png}
+-   model: snapshotServer.snapshot
+    pk: 7
+    fields: {stepResult: 7, image: documents/test_Image1.png}

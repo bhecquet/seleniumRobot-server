@@ -17,7 +17,7 @@ from variableServer.models import Application, TestEnvironment
 
 class TestErrorAnalysisView(TestApi):
 
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_error_analysis_view.yaml']
 
     def setUp(self):
         # ensure application-specific permissions are created

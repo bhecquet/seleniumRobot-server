@@ -12,7 +12,7 @@ from variableServer.models import Variable, Application, TestEnvironment
 
 class TestVarActionView(TestWebAndAdmin):
 
-    fixtures = ['varServer']
+    fixtures = ['test_var_action_view.yaml']
 
     def setUp(self)->None:
         super().setUp()

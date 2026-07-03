@@ -6,14 +6,14 @@ from django.db.models import Q
 import commonsServer
 import variableServer
 from commonsServer.admin_site.test_case_admin import TestCaseAdmin
-from commonsServer.tests.test_parent import MockRequest, MockSuperUser, MockRequestWithApplication
+from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockSuperUser, MockRequestWithApplication
 from variableServer.models import Application
 from variableServer.models import TestCase
 
 
-class TestTestCaseAdmin(TestCaseAdmin):
+class TestTestCaseAdmin(TestWebAndAdmin):
 
-    fixtures = ['varServer']
+    fixtures = ['test_testcase_admin.yaml']
 
     def setUp(self):
         super().setUp()

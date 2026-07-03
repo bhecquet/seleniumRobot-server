@@ -21,7 +21,7 @@ class TestApiView(TestApi):
     Using APITestCase as we call the REST Framework API
     Client handles patch / put cases
     '''
-    fixtures = ['varServer.yaml']
+    fixtures = ['test_api_view.yaml']
 
     # tests for permissions on API
     # - API

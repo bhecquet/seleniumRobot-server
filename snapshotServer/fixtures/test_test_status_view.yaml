@@ -1,0 +1,121 @@
+# Minimal dataset for TestTestStatusView (test_test_status_view.py)
+#
+# TestStatusView returns, for a TestCaseInSession (URL param 'testCaseId'), a dict
+# {snapshotId: hasNoDiff}. A snapshot with no refSnapshot is always True; otherwise the
+# result depends on its 'pixelsDiff'.
+#
+# The tests use a single multi-step test case (TestCase 4, steps Login/Logged/Logged out)
+# run in two sessions:
+#   - TestCaseInSession 5 (session 6) -> StepResult 5/6/7 -> Snapshot 5/6/7 (all references)
+#       used by test_session_status_ok_on_reference (testCaseId=5) and test_step_status (testStepId=2 -> Snapshot 5)
+#   - TestCaseInSession 6 (session 7) -> StepResult 8/9/10 -> Snapshot 8/9/10 (each referencing 5/6/7)
+#       used by test_session_status_ok_on_non_reference / test_session_status_ko (testCaseId=6),
+#       which set 'pixelsDiff' on Snapshot 8/9/10 at runtime.
+#
+# Applications 1 (myapp) / 2 (myapp2) and TestEnvironment 1 (DEV) / 2 (PROD) are required so
+# their 'can_view_application_*' / 'can_view_environment_*' permissions can be generated in setUp.
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+-   model: snapshotServer.application
+    pk: 2
+    fields: {name: myapp2}
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.testenvironment
+    pk: 2
+    fields: {name: PROD}
+
+-   model: snapshotServer.testcase
+    pk: 4
+    fields: {name: test login, application: 1}
+
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: {name: Login}
+-   model: snapshotServer.teststep
+    pk: 3
+    fields: {name: Logged}
+-   model: snapshotServer.teststep
+    pk: 4
+    fields: {name: Logged out}
+
+-   model: snapshotServer.testsession
+    pk: 6
+    fields:
+        sessionId: '1250'
+        version: 1
+        date: '2017-05-05T16:16:09.184106+01:00'
+        browser: firefox
+        environment: 1
+        compareSnapshot: true
+        name: session1
+        ttl: '0'
+-   model: snapshotServer.testsession
+    pk: 7
+    fields:
+        sessionId: '1251'
+        version: 1
+        date: '2017-05-06T17:16:09.184106+01:00'
+        browser: firefox
+        environment: 1
+        compareSnapshot: true
+        name: session1
+        ttl: '0'
+
+# TestCaseInSession 5 : the reference run (snapshots 5/6/7 have no refSnapshot)
+-   model: snapshotServer.testcaseinsession
+    pk: 5
+    fields:
+        testCase: 4
+        session: 6
+        testSteps: [2, 3, 4]
+-   model: snapshotServer.stepresult
+    pk: 5
+    fields: {step: 2, testCase: 5, result: true}
+-   model: snapshotServer.snapshot
+    pk: 5
+    fields: {stepResult: 5, image: documents/test_Image1.png}
+-   model: snapshotServer.stepresult
+    pk: 6
+    fields: {step: 3, testCase: 5, result: true}
+-   model: snapshotServer.snapshot
+    pk: 6
+    fields: {stepResult: 6, image: documents/test_Image1.png}
+-   model: snapshotServer.stepresult
+    pk: 7
+    fields: {step: 4, testCase: 5, result: true}
+-   model: snapshotServer.snapshot
+    pk: 7
+    fields: {stepResult: 7, image: documents/test_Image1.png}
+
+# TestCaseInSession 6 : the compared run (snapshots 8/9/10 reference 5/6/7)
+-   model: snapshotServer.testcaseinsession
+    pk: 6
+    fields:
+        testCase: 4
+        session: 7
+        testSteps: [2, 3, 4]
+-   model: snapshotServer.stepresult
+    pk: 8
+    fields: {step: 2, testCase: 6, result: true}
+-   model: snapshotServer.snapshot
+    pk: 8
+    fields: {stepResult: 8, image: documents/test_Image1Mod.png, refSnapshot: 5}
+-   model: snapshotServer.stepresult
+    pk: 9
+    fields: {step: 3, testCase: 6, result: true}
+-   model: snapshotServer.snapshot
+    pk: 9
+    fields: {stepResult: 9, image: documents/test_Image1Mod.png, refSnapshot: 6}
+-   model: snapshotServer.stepresult
+    pk: 10
+    fields: {step: 4, testCase: 6, result: true}
+-   model: snapshotServer.snapshot
+    pk: 10
+    fields: {stepResult: 10, image: documents/test_Image1Mod.png, refSnapshot: 7}

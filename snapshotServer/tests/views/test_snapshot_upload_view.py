@@ -24,52 +24,32 @@ from variableServer.models import Application, TestEnvironment as TestEnvironmen
 
 
 class TestFileUploadView(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_snapshot_upload_view.yaml']
     
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         
-        # test in a version
-        self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))
-        self.testCase.save()
-        self.step1 = TestStep.objects.get(id=1)
+        self.testCase = TestCase.objects.get(pk=1)
         
-        self.session1 = TestSession(sessionId="8888", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session1.save()
-        self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
-        self.tcs1.save()
-        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
-        self.sr1.save()
+        # session1 (BROWSER:FIREFOX / DEV) and its test case / step result
+        self.tcs1 = TestCaseInSession.objects.get(pk=1)
+        self.sr1 = StepResult.objects.get(pk=1)
         
-        self.session_same_env = TestSession(sessionId="8889", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session_same_env.save()
-        self.tcs_same_env = TestCaseInSession(testCase=self.testCase, session=self.session_same_env)
-        self.tcs_same_env.save()
-        self.step_result_same_env = StepResult(step=self.step1, testCase=self.tcs_same_env, result=True)
-        self.step_result_same_env.save()
+        # an other session with the same environment / browser as session1
+        self.tcs_same_env = TestCaseInSession.objects.get(pk=2)
+        self.step_result_same_env = StepResult.objects.get(pk=2)
         
-        self.session_other_env = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:FIREFOX", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=2), ttl=datetime.timedelta(0))
-        self.session_other_env.save()
-        self.tcs_other_env = TestCaseInSession(testCase=self.testCase, session=self.session_other_env)
-        self.tcs_other_env.save()
-        self.step_result_other_env = StepResult(step=self.step1, testCase=self.tcs_other_env, result=True)
-        self.step_result_other_env.save()
+        # session with an other environment (PROD)
+        self.tcs_other_env = TestCaseInSession.objects.get(pk=3)
+        self.step_result_other_env = StepResult.objects.get(pk=3)
         
-        self.session_other_browser = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="BROWSER:CHROME", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session_other_browser.save()
-        self.tcs_other_browser = TestCaseInSession(testCase=self.testCase, session=self.session_other_browser)
-        self.tcs_other_browser.save()
-        self.step_result_other_browser = StepResult(step=self.step1, testCase=self.tcs_other_browser, result=True)
-        self.step_result_other_browser.save()
+        # session with an other browser (chrome)
+        self.tcs_other_browser = TestCaseInSession.objects.get(pk=4)
+        self.step_result_other_browser = StepResult.objects.get(pk=4)
         
-        self.session_app_test = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="APP:myapp.apk", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session_app_test.save()
-        self.tcs_app_test = TestCaseInSession(testCase=self.testCase, session=self.session_app_test)
-        self.tcs_app_test.save()
-        self.step_result_app_test = StepResult(step=self.step1, testCase=self.tcs_app_test, result=True)
-        self.step_result_app_test.save()
-        
+        # session of a mobile application test
+        self.step_result_app_test = StepResult.objects.get(pk=5)
         
         # be sure permission for application is created
         Application.objects.get(pk=1).save()

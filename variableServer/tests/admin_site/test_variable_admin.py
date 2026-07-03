@@ -19,6 +19,8 @@ from variableServer.models import Variable, Application, Version, TestEnvironmen
 
 class TestVariableAdmin(TestWebAndAdmin):
 
+    fixtures = ['test_variable_admin.yaml']
+
     def setUp(self) -> None:
         super().setUp()
 

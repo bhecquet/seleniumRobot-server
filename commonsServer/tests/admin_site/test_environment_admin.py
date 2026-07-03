@@ -11,7 +11,7 @@ from django.db.models import Q
 
 class TestEnvironmentAdmin(TestWebAndAdmin):
 
-    fixtures = ['varServer']
+    fixtures = ['test_environment_admin.yaml']
     
     def test_environment_filter_lookup_without_application(self):
         """

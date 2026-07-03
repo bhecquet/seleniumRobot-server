@@ -10,7 +10,7 @@ from variableServer.models import Application, TestEnvironment
     
 class TestTestSessionAdmin(TestWebAndAdmin):
     
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_testsession_admin.yaml']
 
     def setUp(self):
         # add permissions for application and environment

@@ -13,7 +13,7 @@ from variableServer.models import Variable
 
 class TestApplicationAdmin(TestWebAndAdmin):
     
-    fixtures = ['varServer']
+    fixtures = ['test_application_admin.yaml']
     
     def setUp(self):
         super().setUp()

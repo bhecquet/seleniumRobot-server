@@ -1,0 +1,87 @@
+# Minimal dataset for TestFileUploadView (snapshot upload)
+# The test uploads snapshots (created through the API) against StepResult objects provided here.
+# Reference resolution depends on version / environment / browser, so a set of sessions covering
+# these variations is provided:
+#   - TestCase 1 ('test upload', application 1)
+#   - session/tcis/stepresult 1 : BROWSER:FIREFOX, env DEV      (sr1 / tcs1)
+#   - session/tcis/stepresult 2 : BROWSER:FIREFOX, env DEV      (same env as 1)
+#   - session/tcis/stepresult 3 : BROWSER:FIREFOX, env PROD     (other env)
+#   - session/tcis/stepresult 4 : BROWSER:CHROME,  env DEV      (other browser)
+#   - session/tcis/stepresult 5 : APP:myapp.apk,   env DEV      (mobile app)
+#   - Version 1 and 2 (both on application 1) - version 2 is used to build an other-version session in a test
+#   - Environments 1 (DEV) and 2 (PROD)
+# Applications 1/2 and environments 1/2 are required so their 'can_view_*' permissions can be generated.
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+-   model: snapshotServer.application
+    pk: 2
+    fields: {name: myapp2}
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+-   model: snapshotServer.version
+    pk: 2
+    fields: {application: 1, name: '2.5'}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.testenvironment
+    pk: 2
+    fields: {name: PROD}
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: {name: Step 1}
+-   model: snapshotServer.testcase
+    pk: 1
+    fields: {name: test upload, application: 1}
+
+-   model: snapshotServer.testsession
+    pk: 1
+    fields: {sessionId: '8888', date: '2017-05-07T00:00:00+00:00', browser: 'BROWSER:FIREFOX', version: 1, environment: 1, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 2
+    fields: {sessionId: '8889', date: '2017-05-07T00:00:00+00:00', browser: 'BROWSER:FIREFOX', version: 1, environment: 1, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 3
+    fields: {sessionId: '8890', date: '2017-05-07T00:00:00+00:00', browser: 'BROWSER:FIREFOX', version: 1, environment: 2, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 4
+    fields: {sessionId: '8891', date: '2017-05-07T00:00:00+00:00', browser: 'BROWSER:CHROME', version: 1, environment: 1, ttl: '0'}
+-   model: snapshotServer.testsession
+    pk: 5
+    fields: {sessionId: '8891', date: '2017-05-07T00:00:00+00:00', browser: 'APP:myapp.apk', version: 1, environment: 1, ttl: '0'}
+
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields: {testCase: 1, session: 1}
+-   model: snapshotServer.testcaseinsession
+    pk: 2
+    fields: {testCase: 1, session: 2}
+-   model: snapshotServer.testcaseinsession
+    pk: 3
+    fields: {testCase: 1, session: 3}
+-   model: snapshotServer.testcaseinsession
+    pk: 4
+    fields: {testCase: 1, session: 4}
+-   model: snapshotServer.testcaseinsession
+    pk: 5
+    fields: {testCase: 1, session: 5}
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: {step: 1, testCase: 1, result: true}
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields: {step: 1, testCase: 2, result: true}
+-   model: snapshotServer.stepresult
+    pk: 3
+    fields: {step: 1, testCase: 3, result: true}
+-   model: snapshotServer.stepresult
+    pk: 4
+    fields: {step: 1, testCase: 4, result: true}
+-   model: snapshotServer.stepresult
+    pk: 5
+    fields: {step: 1, testCase: 5, result: true}
+

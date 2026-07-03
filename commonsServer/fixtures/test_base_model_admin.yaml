@@ -1,0 +1,40 @@
+# Minimal fixture for commonsServer.tests.admin_site.test_base_model_admin.
+# Contains only applications needed for generated context permissions and variables asserted by pk.
+- model: variableServer.application
+  pk: 1
+  fields: { name: app1 }
+- model: variableServer.application
+  pk: 2
+  fields: { name: app2 }
+
+# global variable
+- fields:
+    name: proxyAddress
+    value: proxy.fr
+    application: null
+    version: null
+    environment: null
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 1
+
+# variable specific to an application (any version)
+- fields:
+    name: appName
+    value: myApp
+    application: 1
+    version: null
+    environment: null
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 3

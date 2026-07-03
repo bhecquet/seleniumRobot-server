@@ -7,7 +7,7 @@ from commonsServer.tests.test_api import TestApi
 
 
 class TestViewsetTestCaseInSession(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_testcaseinsession.yaml']
 
     def setUp(self):
         # be sure permission for application / environment is created

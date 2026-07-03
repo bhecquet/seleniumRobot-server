@@ -4,9 +4,7 @@ Created on 26 juil. 2017
 @author: worm
 '''
 
-import pytz
 import os
-import datetime
 
 from django.urls.base import reverse
 from django.conf import settings
@@ -15,8 +13,6 @@ from django.contrib.auth.models import Permission
 
 from commonsServer.tests.test_api import TestApi
 from snapshotServer.controllers.diff_computer import DiffComputer
-from snapshotServer.models import TestSession, TestStep, Snapshot,\
-    TestCaseInSession, StepResult, Version, TestEnvironment, TestCase
 from django.contrib.contenttypes.models import ContentType
 
 from variableServer.models import Application, TestEnvironment as TestEnvironmentV
@@ -24,46 +20,17 @@ from variableServer.models import Application, TestEnvironment as TestEnvironmen
 
 class TestRecomputeDiffView(TestApi):
     
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_recompute_diff_view.yaml']
     dataDir = 'snapshotServer/tests/data/'
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         
-        # be sure permission for application is created
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
         TestEnvironmentV.objects.get(pk=1).save()
         TestEnvironmentV.objects.get(pk=2).save()
-        
-        # prepare data
-        self.testCase = TestCase.objects.get(id=1)
-        self.initialRefSnapshot = Snapshot.objects.get(id=1)
-        self.step1 = TestStep.objects.get(id=1)
-        
-        self.session1 = TestSession(sessionId="1237", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session1.save()
-        self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
-        self.tcs1.save()
-        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
-        self.sr1.save()
-        
-        self.session_same_env = TestSession(sessionId="1238", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=1), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session_same_env.save()
-        self.tcs_same_env = TestCaseInSession(testCase=self.testCase, session=self.session_same_env)
-        self.tcs_same_env.save()
-        self.step_result_same_env = StepResult(step=self.step1, testCase=self.tcs_same_env, result=True)
-        self.step_result_same_env.save()
-        
-        # session with other env (AUT instead of DEV), other characteristics remain the same as session1
-        self.session_other_env = TestSession.objects.get(pk=10)
-        self.tcs_other_env = TestCaseInSession.objects.get(pk=9)
-        self.step_result_other_env = StepResult.objects.get(pk=11)
-        
-        # session with other browser (chrome instead of firefox), other characteristics remain the same as session1
-        self.session_other_browser = TestSession.objects.get(pk=11)
-        self.tcs_other_browser = TestCaseInSession.objects.get(pk=10)
-        self.step_result_other_browser = StepResult.objects.get(pk=12)
         
         self.content_type_application = ContentType.objects.get_for_model(Application, for_concrete_model=False)
         self.content_type_environment = ContentType.objects.get_for_model(TestEnvironmentV, for_concrete_model=False)

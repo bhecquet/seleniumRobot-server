@@ -8,7 +8,7 @@ from commonsServer.tests.test_api import TestApi
 
 
 class TestViewsetExcludeZone(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_excludezone.yaml']
 
     def setUp(self):
         # be sure permission for application / environment is created

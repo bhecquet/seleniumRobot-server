@@ -1,0 +1,44 @@
+# Minimal dataset for TestTestStep (snapshotServer.models tests)
+# The tests check TestStep.isOkWithSnapshots(test_case) which filters snapshots / step results
+# by test case (TCIS 5) and step (TestStep 2).
+# Provided:
+#   - TestCaseInSession 5
+#   - TestStep 2 (Login)
+#   - StepResult 5 (step 2 / TCIS 5, result OK) and its Snapshot 5 (no pixelsDiff)
+# The other step results / snapshots are created dynamically in the tests.
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: {name: Login}
+
+-   model: snapshotServer.testcase
+    pk: 4
+    fields: {name: test login, application: 1}
+
+-   model: snapshotServer.testsession
+    pk: 6
+    fields: {sessionId: '1250', version: 1, date: '2017-05-05T11:16:09+00:00', browser: firefox, environment: 1, ttl: '0'}
+
+-   model: snapshotServer.testcaseinsession
+    pk: 5
+    fields: {testCase: 4, session: 6}
+
+-   model: snapshotServer.stepresult
+    pk: 5
+    fields: {step: 2, testCase: 5, result: true}
+
+-   model: snapshotServer.snapshot
+    pk: 5
+    fields: {stepResult: 5, image: documents/test_Image1.png}

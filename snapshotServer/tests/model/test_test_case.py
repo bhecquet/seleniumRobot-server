@@ -11,7 +11,7 @@ from snapshotServer.tests import SnapshotTestCase
 
 class TestTestCases(SnapshotTestCase):
 
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_test_case.yaml']
 
     def test_is_ok_with_all_step_result_ok(self):
         tcs = TestCaseInSession.objects.get(pk=5)

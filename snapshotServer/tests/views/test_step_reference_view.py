@@ -4,11 +4,9 @@ Created on 15 mai 2017
 @author: behe
 '''
 
-import datetime
 import io
 import os
 import time
-import pytz
 
 from django.conf import settings
 from django.urls.base import reverse
@@ -16,8 +14,7 @@ from django.db.models import Q
 
 from pathlib import Path
 
-from snapshotServer.models import TestCase, TestStep, TestSession, \
-    TestEnvironment, Version, TestCaseInSession, \
+from snapshotServer.models import TestCase, TestEnvironment, Version, TestCaseInSession, \
     StepResult, StepReference
 from snapshotServer.views.step_reference_view import StepReferenceView
 from commonsServer.tests.test_api import TestApi
@@ -30,66 +27,31 @@ from variableServer.models import Application
 
 
 class TestStepReferenceView(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_step_reference_view.yaml']
 
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     reference_dir = os.path.join(media_dir, 'references', 'myapp', 'test upload')
 
     def setUp(self):
 
-        # test in a version
-        self.testCase = TestCase(name='test upload', application=Application.objects.get(id=1))
-        self.testCase.save()
-        self.step1 = TestStep.objects.get(id=1)
+        self.testCase = TestCase.objects.get(pk=1)
 
-        self.session1 = TestSession(sessionId="8888", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC),
-                                    browser="firefox", version=Version.objects.get(pk=1),
-                                    environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session1.save()
-        self.tcs1 = TestCaseInSession(testCase=self.testCase, session=self.session1)
-        self.tcs1.save()
-        self.sr1 = StepResult(step=self.step1, testCase=self.tcs1, result=True)
-        self.sr1.save()
-        self.sr_ko = StepResult(step=self.step1, testCase=self.tcs1, result=False)
-        self.sr_ko.save()
+        # session1 (firefox / DEV / v1) and its test case, with an OK and a KO step result
+        self.tcs1 = TestCaseInSession.objects.get(pk=1)
+        self.sr1 = StepResult.objects.get(pk=1)
+        self.sr_ko = StepResult.objects.get(pk=2)
 
-        self.session_same_env = TestSession(sessionId="8889", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC),
-                                            browser="firefox", version=Version.objects.get(pk=1),
-                                            environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
-        self.session_same_env.save()
-        self.tcs_same_env = TestCaseInSession(testCase=self.testCase, session=self.session_same_env)
-        self.tcs_same_env.save()
-        self.step_result_same_env = StepResult(step=self.step1, testCase=self.tcs_same_env, result=True)
-        self.step_result_same_env.save()
+        # an other session with the same environment / browser / version as session1
+        self.tcs_same_env = TestCaseInSession.objects.get(pk=2)
+        self.step_result_same_env = StepResult.objects.get(pk=3)
 
-        self.session_other_env = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC),
-                                             browser="firefox", version=Version.objects.get(pk=1),
-                                             environment=TestEnvironment.objects.get(id=2), ttl=datetime.timedelta(0))
-        self.session_other_env.save()
-        self.tcs_other_env = TestCaseInSession(testCase=self.testCase, session=self.session_other_env)
-        self.tcs_other_env.save()
-        self.step_result_other_env = StepResult(step=self.step1, testCase=self.tcs_other_env, result=True)
-        self.step_result_other_env.save()
+        # session with an other environment (PROD)
+        self.tcs_other_env = TestCaseInSession.objects.get(pk=3)
+        self.step_result_other_env = StepResult.objects.get(pk=4)
 
-        self.session_other_browser = TestSession(sessionId="8891", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC),
-                                                 browser="chrome", version=Version.objects.get(pk=1),
-                                                 environment=TestEnvironment.objects.get(id=1),
-                                                 ttl=datetime.timedelta(0))
-        self.session_other_browser.save()
-        self.tcs_other_browser = TestCaseInSession(testCase=self.testCase, session=self.session_other_browser)
-        self.tcs_other_browser.save()
-        self.step_result_other_browser = StepResult(step=self.step1, testCase=self.tcs_other_browser, result=True)
-        self.step_result_other_browser.save()
-
-        self.session_other_version = TestSession(sessionId="8892", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC),
-                                                 browser="firefox", version=Version.objects.get(pk=2),
-                                                 environment=TestEnvironment.objects.get(id=1),
-                                                 ttl=datetime.timedelta(0))
-        self.session_other_version.save()
-        self.tcs_other_version = TestCaseInSession(testCase=self.testCase, session=self.session_other_version)
-        self.tcs_other_version.save()
-        self.step_result_other_version = StepResult(step=self.step1, testCase=self.tcs_other_version, result=True)
-        self.step_result_other_version.save()
+        # session with an other version (2.5)
+        self.tcs_other_version = TestCaseInSession.objects.get(pk=4)
+        self.step_result_other_version = StepResult.objects.get(pk=5)
 
         # set OVERWRITE_REFERENCE_AFTER_SECONDS so that reference is always updated in tests
         StepReferenceView.OVERWRITE_REFERENCE_AFTER_SECONDS = 0

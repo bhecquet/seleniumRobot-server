@@ -1,0 +1,22 @@
+# Minimal fixture for commonsServer.tests.admin_site.test_testcase_admin.
+- model: variableServer.application
+  pk: 1
+  fields: { name: app1 }
+- model: variableServer.application
+  pk: 5
+  fields: { name: app5NoVar }
+- model: variableServer.testcase
+  pk: 1
+  fields:
+    name: test1 with some spaces
+    application: 1
+- model: variableServer.testcase
+  pk: 2
+  fields:
+    name: test2 with some spaces
+    application: 1
+- model: variableServer.testcase
+  pk: 3
+  fields:
+    name: test3 with some spaces
+    application: 5

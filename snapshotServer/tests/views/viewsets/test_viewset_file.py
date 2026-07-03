@@ -17,7 +17,7 @@ from io import BytesIO
 
 
 class TestViewsetFile(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_file.yaml']
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     data_dir = getTestDirectory()
 

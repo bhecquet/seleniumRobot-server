@@ -7,7 +7,7 @@ from django.contrib.auth.models import Permission
 from commonsServer.tests.test_api import TestApi
 
 class TestViewsetTestInfo(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_testinfo.yaml']
 
     def setUp(self):
 

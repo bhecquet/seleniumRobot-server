@@ -10,7 +10,7 @@ from variableServer.models import Variable, Version, Application
 
 class TestVersionAdmin(TestWebAndAdmin):
 
-    fixtures = ['varServer']
+    fixtures = ['test_version_admin.yaml']
 
     def setUp(self) -> None:
         super().setUp()

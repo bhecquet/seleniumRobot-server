@@ -1,3 +1,4 @@
+import logging
 import time
 from datetime import timedelta
 from unittest import mock
@@ -17,7 +18,8 @@ from commonsServer.tests.test_api import TestApi
 
 
 class TestViewsetStepResult(TestApi):
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['viewsets/test_viewset_stepresult.yaml']
+    logger = logging.getLogger(__name__)
 
     def setUp(self):
         # be sure permission for application / environment is created
@@ -1236,7 +1238,7 @@ class TestViewsetStepResult(TestApi):
 
         def delay_execution():
             time.sleep(2)
-            print("computing ...")
+            self.logger.info("computing ...")
             return ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])
 
         with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__',
@@ -1255,10 +1257,12 @@ class TestViewsetStepResult(TestApi):
             test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5),
                                               result=False, stacktrace="")
             test_end_step_result.save()
+            self.logger.info("submitting first task")
             response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
                                          data={'stacktrace': self.failed_test_end_stacktrace})
             self.assertEqual(200, response.status_code)
 
+            self.logger.info("submitting second task")
             response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
                                          data={'stacktrace': self.failed_test_end_stacktrace})
             self.assertEqual(200, response.status_code)
@@ -1268,6 +1272,7 @@ class TestViewsetStepResult(TestApi):
             self.assertEqual(1, error_cause_finder_instance.detect_cause.call_count)
             time.sleep(4)
             self.assertEqual(2, error_cause_finder_instance.detect_cause.call_count)
+            self.logger.info('finished')
 
 
     def test_stepresult_analyze_test_run_result_ko_on_update_with_error(self):
