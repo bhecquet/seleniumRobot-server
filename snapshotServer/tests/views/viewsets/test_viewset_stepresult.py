@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from commonsServer import preferences
 from snapshotServer.controllers.error_cause import Cause, Reason
-from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause
+from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCause, ErrorCauseFinderExecutor
 from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -1235,44 +1235,48 @@ class TestViewsetStepResult(TestApi):
         """
         Check threading is used when submitting multiple requests
         """
+        ErrorCauseFinderExecutor.reset_instance()
 
         def delay_execution():
             time.sleep(2)
             self.logger.info("computing ...")
             return ErrorCause(Cause.SCRIPT, Reason.UNKNOWN, None, [])
 
-        with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__',
-                   autospec=True) as mock_error_cause_finder:
-            error_cause_finder_instance = mock.MagicMock()
-            mock_error_cause_finder.return_value = error_cause_finder_instance
-            error_cause_finder_instance.detect_cause.side_effect = delay_execution
+        try:
+            with patch('snapshotServer.controllers.error_cause.error_cause_finder.ErrorCauseFinder.__new__',
+                       autospec=True) as mock_error_cause_finder:
+                error_cause_finder_instance = mock.MagicMock()
+                mock_error_cause_finder.return_value = error_cause_finder_instance
+                error_cause_finder_instance.detect_cause.side_effect = delay_execution
 
-            preferences.set_preference('OPEN_WEBUI_WORKERS', '1')
-            self._create_and_authenticate_user_with_permissions(
-                Permission.objects.filter(Q(codename='can_view_application_myapp')))
-            failed_step_result = StepResult.objects.get(pk=5)
-            failed_step_result.result = False
-            failed_step_result.save()
+                preferences.set_preference('OPEN_WEBUI_WORKERS', '1')
+                self._create_and_authenticate_user_with_permissions(
+                    Permission.objects.filter(Q(codename='can_view_application_myapp')))
+                failed_step_result = StepResult.objects.get(pk=5)
+                failed_step_result.result = False
+                failed_step_result.save()
 
-            test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5),
-                                              result=False, stacktrace="")
-            test_end_step_result.save()
-            self.logger.info("submitting first task")
-            response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
-                                         data={'stacktrace': self.failed_test_end_stacktrace})
-            self.assertEqual(200, response.status_code)
+                test_end_step_result = StepResult(step=TestStep.objects.get(pk=5), testCase=TestCaseInSession.objects.get(pk=5),
+                                                  result=False, stacktrace="")
+                test_end_step_result.save()
+                self.logger.info("submitting first task")
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
+                                             data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
 
-            self.logger.info("submitting second task")
-            response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
-                                         data={'stacktrace': self.failed_test_end_stacktrace})
-            self.assertEqual(200, response.status_code)
-            time.sleep(1)
+                self.logger.info("submitting second task")
+                response = self.client.patch(f'/snapshot/api/stepresult/{test_end_step_result.id}/',
+                                             data={'stacktrace': self.failed_test_end_stacktrace})
+                self.assertEqual(200, response.status_code)
+                time.sleep(1)
 
-            # check tasks has been processed
-            self.assertEqual(1, error_cause_finder_instance.detect_cause.call_count)
-            time.sleep(4)
-            self.assertEqual(2, error_cause_finder_instance.detect_cause.call_count)
-            self.logger.info('finished')
+                # check tasks has been processed
+                self.assertEqual(1, error_cause_finder_instance.detect_cause.call_count)
+                time.sleep(4)
+                self.assertEqual(2, error_cause_finder_instance.detect_cause.call_count)
+                self.logger.info('finished')
+        finally:
+            ErrorCauseFinderExecutor.reset_instance()
 
 
     def test_stepresult_analyze_test_run_result_ko_on_update_with_error(self):

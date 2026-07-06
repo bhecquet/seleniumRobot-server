@@ -28,6 +28,13 @@ class ErrorCauseFinderExecutor:
 
         return cls.executor
 
+    @classmethod
+    def reset_instance(cls):
+        """
+        to be used in tests only
+        """
+        cls.executor = None
+
     @staticmethod
     def _get_errors(test_case_in_session):
         return sum([list(step_result.errors.all()) for step_result in StepResult.objects.filter(testCase=test_case_in_session, result=False).order_by('-pk')], [])
