@@ -5,6 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.db.models.signals import pre_save, post_delete
 
 from auditlog.registry import auditlog
@@ -107,12 +109,24 @@ class Variable(models.Model):
             return self.value
     valueProtected.short_description = 'Value'
 
-    def uploadFileReforged(self):
+    @admin.display(ordering='pk')
+    def link(self):
+        """
+        Format a link for display in admin list
+        """
+        return format_html('<a href="{}?format=json">{}</a>', self.get_api_url(), self.upload_file_path())
+
+    def get_api_url(self):
+        """
+        Returns the URL of the file, pointing to 'download_variable' API
+        """
+        return reverse('download_variable', args=[self.pk])
+
+    def upload_file_path(self):
         if "/" in str(self.uploadFile):
             return str(self.uploadFile).split("/")[-1]
         else:
             return str(self.uploadFile)
-    uploadFileReforged.short_description = "uploadFile"
 
     def get_file_path(self):
         filename = self.uploadFile.name.split("/")[-1]

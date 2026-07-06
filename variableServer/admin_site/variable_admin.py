@@ -5,11 +5,14 @@ Created on 12 déc. 2024
 import magic
 from auditlog.mixins import AuditlogHistoryAdminMixin
 from django import forms
+from django.db import models
 from django.contrib import admin, messages
 from django.contrib.admin.actions import delete_selected as django_delete_selected
 from django.contrib.admin.helpers import ACTION_CHECKBOX_NAME
 from django.shortcuts import render
 from django.template.context_processors import csrf
+from django.forms.widgets import ClearableFileInput
+from django.utils.translation import gettext_lazy
 
 from commonsServer import preferences
 from commonsServer.admin_site.application_admin import ApplicationFilter
@@ -18,6 +21,9 @@ from commonsServer.admin_site.environment_admin import EnvironmentFilter
 from commonsServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
+class ClearableFileVariableInput(ClearableFileInput):
+    initial_text = gettext_lazy("Current value")
+    template_name = "variableServer/admin/clearable_file_input.html"
 
 class VariableForm(forms.ModelForm):
 
@@ -113,12 +119,15 @@ class VariableForm2(forms.ModelForm):
 
     
 class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
-    list_display = ('nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
+    list_display = ('nameWithApp', 'value', 'link', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
     list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
     search_fields = ['name', 'value', 'description']
     form = VariableForm
     actions = ['delete_selected', 'copy_to', 'change_values_at_once', 'unreserve_variable']
     show_auditlog_history_link = True
+    formfield_overrides = {
+        models.FileField: {"widget": ClearableFileVariableInput},
+    }
 
     def get_queryset(self, request):
         """

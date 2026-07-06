@@ -37,7 +37,7 @@ class TestVariableAdmin(TestWebAndAdmin):
 
         super_user = User.objects.create_superuser(username='super', email='super@email.org', password='pass')
         self.assertEqual(variable_admin.get_list_display(request=MockRequest(user=super_user)),
-                         ['nameWithApp', 'value', 'uploadFileReforged', 'application', 'environment', 'version',
+                         ['nameWithApp', 'value', 'link', 'application', 'environment', 'version',
                           'allTests', 'reservable', 'releaseDate', 'creationDate', 'auditlog_link'])
 
     def test_variable_queryset_with_application_restriction(self):
@@ -332,6 +332,35 @@ class TestVariableAdmin(TestWebAndAdmin):
         self.assertEqual(Variable.objects.get(pk=102).value, 'azerty')
         self.assertFalse(Variable.objects.get(pk=102).protected)
 
+    def test_variable_change_template(self):
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='view_variable') | Q(codename='change_variable')))
+        change_url = reverse('admin:variableServer_variable_change', args=(3,))
+        response = client.get(change_url)
+        self.assertTrue(b'<input type="file" name="uploadFile" id="id_uploadFile">' in response.content)
+
+    def test_variable_change_template_with_file(self):
+        """
+        Check file path point to file API
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='view_variable') | Q(codename='change_variable')))
+        change_url = reverse('admin:variableServer_variable_change', args=(999,))
+        response = client.get(change_url)
+        self.assertTrue(b'Current value: <a href="/variable/api/variable/999/file">http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx</a>' in response.content)
+
+    def test_variable_changelist_template_with_file(self):
+        """
+        Check file path point to file API in change list view
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='view_variable')))
+        change_url = reverse('admin:variableServer_variable_changelist')
+        response = client.get(change_url)
+        self.assertTrue(b'<th class="field-nameWithApp"><a href="/admin/variableServer/variable/999/change/">appFileVar.user</a></th><td class="field-value">file</td><td class="field-link"><a href="/variable/api/variable/999/file?format=json">fauxfile.xlsx</a></td>' in response.content)
 
     def test_variable_copy_to_no_variables(self):
         """
