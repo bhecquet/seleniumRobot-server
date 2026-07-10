@@ -28,8 +28,9 @@ class EnvironmentFilter(SimpleListFilter):
 
         if 'application' in request.GET:
             app_id = request.GET['application']
-            environments = {c.environment for c in model_admin.model.objects.all().filter(application=app_id)}
+            environments = {c.environment for c in model_admin.model.objects.filter(application=app_id).order_by('name')}
         else:
+            # it could be possible to filter environment to only display environments that are present in model instances, but it would make requests heavier on global change list
             environments = set(TestEnvironment.objects.all().order_by('name'))
 
         environments = [e for e in environments if e is not None]
