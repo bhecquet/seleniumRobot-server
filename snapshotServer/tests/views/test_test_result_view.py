@@ -239,6 +239,9 @@ class TestTestResultView(SnapshotTestCase):
         ## error message on step
         self.assertTrue(
             """<div class="message-error message-conf"><span class="stepTimestamp mr-1"></span>!!!FAILURE ALERT!!! - Assertion Failure: expected [false] but found [true]""" in html)
+        ## assertion check displayed
+        self.assertTrue(
+            """<div class="message-error message-conf"><span class="stepTimestamp mr-1"></span>Check: verification of value</div>""" in html)
 
         # reference snapshot
         self.assertTrue(

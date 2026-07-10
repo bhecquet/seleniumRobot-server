@@ -259,6 +259,12 @@
                     },
                     {
                         "messageType": "ERROR",
+                        "name": "Check: verification of value",
+                        "failed": true,
+                        "type": "check"
+                    },
+                    {
+                        "messageType": "ERROR",
                         "name": "!!!FAILURE ALERT!!! - Assertion Failure: expected [false] but found [true]",
                         "type": "message"
                     }
