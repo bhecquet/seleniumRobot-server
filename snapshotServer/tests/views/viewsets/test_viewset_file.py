@@ -7,7 +7,7 @@ from snapshotServer.utils.utils import getTestDirectory
 from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
-from snapshotServer.models import File
+from snapshotServer.models import File, StepResult
 from django.contrib.auth.models import Permission
 from django.conf import settings
 from commonsServer.tests.test_api import TestApi
@@ -50,10 +50,10 @@ class TestViewsetFile(TestApi):
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
         with open('snapshotServer/tests/data/engie.png', 'rb') as fp:
-            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 3, 'file': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-            file = File.objects.filter(stepResult__id=1).last()
+            file = File.objects.filter(stepResult__id=3).last()
             self.assertTrue(file.file.name.endswith(".png"))
             self.assertTrue(Path(file.file.path).exists())
 
@@ -79,10 +79,10 @@ class TestViewsetFile(TestApi):
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
         with open('snapshotServer/tests/data/test.html', 'rb') as fp:
-            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 3, 'file': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-            file = File.objects.filter(stepResult__id=1).last()
+            file = File.objects.filter(stepResult__id=3).last()
             self.assertTrue(file.file.name.endswith(".zip"))
             self.assertTrue(Path(file.file.path).exists())
 
@@ -95,17 +95,28 @@ class TestViewsetFile(TestApi):
         Check file is uploaded and zipped at the same time
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
-        with open('snapshotServer/tests/data/test.har', 'rb') as fp:
-            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+        with open('snapshotServer/tests/data/test_average_time.har', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 3, 'file': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-            file = File.objects.filter(stepResult__id=1).last()
+            file = File.objects.filter(stepResult__id=3).last()
             self.assertTrue(file.file.name.endswith(".zip"))
             self.assertTrue(Path(file.file.path).exists())
 
+            step_1 = StepResult.objects.get(pk=1)
+            self.assertEquals(step_1.meanHtmlLoadTimes, 500)
+            self.assertEquals(step_1.meanJsLoadTimes, 55)
+            self.assertEquals(step_1.meanXhrLoadTimes, 150)
+            self.assertEquals(step_1.meanImageLoadTimes, 30)
+
+            step_2 = StepResult.objects.get(pk=2)
+            self.assertEquals(step_2.meanImageLoadTimes, 40)
+            self.assertEquals(step_2.meanXhrLoadTimes, 300)
+            self.assertEquals(step_2.meanHtmlLoadTimes, -1.0)
+
             with zipfile.ZipFile(file.file.path) as zip:
-                with zip.open('test.har', 'r') as myfile:
-                    self.assertTrue('har' in myfile.read().decode('utf-8'))
+                with zip.open('test_average_time.har', 'r') as myfile:
+                    self.assertTrue('X-Requested-With' in myfile.read().decode('utf-8'))
 
     def test_upload_video_file(self):
         """
@@ -113,16 +124,16 @@ class TestViewsetFile(TestApi):
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
         with open('snapshotServer/tests/data/test.mp4', 'rb') as fp:
-            response = self.client.post('/snapshot/api/file/', data={'stepResult': 1, 'file': fp})
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 2, 'file': fp})
             self.assertEqual(response.status_code, 201, 'status code should be 201')
 
-            file = File.objects.filter(stepResult__id=1).last()
+            file = File.objects.filter(stepResult__id=2).last()
             self.assertTrue(file.file.name.endswith(".mp4"))
             self.assertTrue(Path(file.file.path).exists())
 
     def test_upload_html_file_in_error(self):
         """
-        Check file is uploaded and zipped at the same time
+        Error raised if file in not provided
         """
 
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))

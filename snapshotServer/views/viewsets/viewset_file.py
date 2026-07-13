@@ -11,6 +11,7 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import StepResult, File
+from snapshotServer.utils.har_analyzer import get_average_request_time_per_page
 from snapshotServer.viewsets import ResultRecordingViewSet
 
 
@@ -112,6 +113,26 @@ class FileViewSet(ResultRecordingViewSet): # post
         """
 
         try:
+
+            file_step_result = StepResult.objects.get(pk=int(request.data['stepResult']))
+
+            # we assume that HAR file is sent AFTER all step results have been recorded
+            if request.FILES['file'].name.lower().endswith('.har'):
+                request_time_per_page = get_average_request_time_per_page(request.FILES['file'].file.getvalue())
+
+                for page_name, mean_times in request_time_per_page.items():
+                    step_result = StepResult.objects.filter(fullName=page_name, testCase=file_step_result.testCase).first()
+                    if not step_result:
+                        continue
+
+                    for category, mean_time in mean_times.items():
+                        if category == 'js': step_result.meanJsLoadTimes = mean_time
+                        elif category == 'xhr': step_result.meanXhrLoadTimes = mean_time
+                        elif category == 'image': step_result.meanImageLoadTimes = mean_time
+                        elif category == 'html': step_result.meanHtmlLoadTimes = mean_time
+
+                    step_result.save()
+
             if request.FILES['file'].name.lower().endswith('.html') or request.FILES['file'].name.lower().endswith('.har'):
 
                 with io.BytesIO() as zip_buffer:
@@ -120,7 +141,7 @@ class FileViewSet(ResultRecordingViewSet): # post
                         zip.writestr(request.data['file'].name, request.FILES['file'].file.getvalue(), compress_type=zipfile.ZIP_DEFLATED)
 
                     in_memory_uploaded_file = InMemoryUploadedFile(zip_buffer, 'file', request.data['file'].name + '.zip', 'application/zip', zip_buffer.tell(), None)
-                    file = File(stepResult=StepResult.objects.get(pk=int(request.data['stepResult'])), file=in_memory_uploaded_file)
+                    file = File(stepResult=file_step_result, file=in_memory_uploaded_file)
                     file.save()
                     response = HttpResponse(json.dumps({'id': file.id}), status=201)
                     return response
