@@ -10,7 +10,7 @@ from snapshotServer.tests import SnapshotTestCase
 
 class TestTestStep(SnapshotTestCase):
 
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_test_step.yaml']
 
     def test_is_ok_with_all_snapshots_ok_and_result_ok(self):
         """

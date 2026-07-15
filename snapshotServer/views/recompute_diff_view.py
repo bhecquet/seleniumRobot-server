@@ -7,20 +7,32 @@ from django.http.response import HttpResponse
 
 from snapshotServer.controllers.diff_computer import DiffComputer
 from snapshotServer.models import Snapshot
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultConsultation
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultConsultation
 from rest_framework.generics import get_object_or_404, CreateAPIView
 
-class RecomputeDiffPermission(ApplicationSpecificPermissionsResultConsultation):
-    
+class RecomputeDiffPermission(ContextSpecificPermissionsResultConsultation):
+
     def get_object_application(self, snapshot):
         if snapshot:
             return snapshot.stepResult.testCase.session.version.application
+        else:
+            return ''
+
+    def get_object_environment(self, snapshot):
+        if snapshot:
+            return snapshot.stepResult.testCase.session.environment
         else:
             return ''
         
     def get_application(self, request, view):
         if view.kwargs.get('snapshot_id', ''): # POST
             return self.get_object_application(Snapshot.objects.get(pk=view.kwargs['snapshot_id']))
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if view.kwargs.get('snapshot_id', ''): # POST
+            return self.get_object_environment(Snapshot.objects.get(pk=view.kwargs['snapshot_id']))
         else:
             return ''
 

@@ -19,7 +19,7 @@ import shutil
 
 class TestDiffComputer(SnapshotTestCase):
     
-    fixtures = ['snapshotServer.yaml']
+    fixtures = ['test_diff_computer.yaml']
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
  
     def tearDown(self):

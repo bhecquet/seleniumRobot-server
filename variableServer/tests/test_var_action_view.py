@@ -6,21 +6,22 @@ from django.db.models import Q
 from django.test import override_settings
 from django.urls.base import reverse
 
-from variableServer.models import Variable, Application
-from variableServer.tests.test_admin import TestAdmin
+from commonsServer.tests.test_parent import TestWebAndAdmin
+from variableServer.models import Variable, Application, TestEnvironment
 
 
-@override_settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=False)
-class TestVarActionView(TestAdmin):
+class TestVarActionView(TestWebAndAdmin):
 
-    fixtures = ['varServer']
+    fixtures = ['test_var_action_view.yaml']
 
     def setUp(self)->None:
-        TestAdmin.setUp(self)
+        super().setUp()
 
-        # be sure permission for application is created
+        # be sure permission for application / environment is created
         Application.objects.get(pk=1).save()
         Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
 
     def _test_copy_variable(self, permissions, post_data, number_of_created_variables):
 
@@ -53,15 +54,6 @@ class TestVarActionView(TestAdmin):
                                  {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  1)
 
-    def test_copy_variables_ko_application_permission(self):
-        """
-        Nominal case, can NOT copy variable when user has application specific permission and restriction on applications are not set
-        applications specific permissions are disabled
-        """
-        response = self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                            {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                            0)
-
     def test_copy_variables_ok_application_permission_and_application_restriction(self):
         """
         User:
@@ -71,10 +63,10 @@ class TestVarActionView(TestAdmin):
 
         User can copy variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                     {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                     1)
+        
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                 {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 1)
 
     def test_copy_variables_ko_application_permission_and_application_restriction_copy_to_no_app(self):
         """
@@ -86,10 +78,10 @@ class TestVarActionView(TestAdmin):
 
         User can NOT copy variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                     {'ids': '3', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                     0)
+
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                 {'ids': '3', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 0)
 
     def test_copy_variables_ok_global_permission_and_application_restriction(self):
         """
@@ -100,10 +92,10 @@ class TestVarActionView(TestAdmin):
 
         User can copy variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_copy_variable(Permission.objects.filter(Q(codename='add_variable')),
-                                     {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                     1)
+
+        self._test_copy_variable(Permission.objects.filter(Q(codename='add_variable')),
+                                 {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 1)
 
     def test_copy_variables_ko_change_global_permission_and_application_restriction(self):
         """
@@ -114,10 +106,10 @@ class TestVarActionView(TestAdmin):
 
         User can NOT copy variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_copy_variable(Permission.objects.filter(Q(codename='change_variable')),
-                                     {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                     0)
+
+        self._test_copy_variable(Permission.objects.filter(Q(codename='change_variable')),
+                                 {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 0)
 
     def test_copy_variables_ko_wrong_application_and_application_restriction(self):
         """
@@ -128,14 +120,14 @@ class TestVarActionView(TestAdmin):
 
         User can NOT copy variable has it has no permission on app2 (destination application)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            existing_variables = len(Variable.objects.filter(application__id=2))
-            self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                     {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'},
-                                     0)
 
-            # no new variable created
-            self.assertEqual(existing_variables, len(Variable.objects.filter(application__id=2)))
+        existing_variables = len(Variable.objects.filter(application__id=2))
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                 {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 0)
+
+        # no new variable created
+        self.assertEqual(existing_variables, len(Variable.objects.filter(application__id=2)))
 
 
     def test_copy_variables_ko_wrong_application_and_application_restriction2(self):
@@ -147,17 +139,17 @@ class TestVarActionView(TestAdmin):
 
         User can NOT copy variable has it has no permission on app2 (destination application)
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
+        
 
-            var1 = Variable.objects.get(id=301)
-            existing_variables = len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1))
+        var1 = Variable.objects.get(id=301)
+        existing_variables = len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1))
 
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            response = client.post(reverse('copy_variables'), data={'ids': '301', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            self.assertEqual(response.status_code, 302, "server did not reply as expected")
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        response = client.post(reverse('copy_variables'), data={'ids': '301', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        self.assertEqual(response.status_code, 302, "server did not reply as expected")
 
-            # check new variable creation
-            self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables)
+        # check new variable creation
+        self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables)
 
     def test_copy_variables_ko_no_application_for_variable_and_application_restriction2(self):
         """
@@ -169,17 +161,17 @@ class TestVarActionView(TestAdmin):
 
         User can NOT copy variable has it has no permission on initial variable
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
 
-            var1 = Variable.objects.get(id=1)
-            existing_variables = len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1))
 
-            user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
-            response = client.post(reverse('copy_variables'), data={'ids': '1', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            self.assertEqual(response.status_code, 302, "server did not reply as expected")
+        var1 = Variable.objects.get(id=1)
+        existing_variables = len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1))
 
-            # check new variable creation
-            self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables)
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        response = client.post(reverse('copy_variables'), data={'ids': '1', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        self.assertEqual(response.status_code, 302, "server did not reply as expected")
+
+        # check new variable creation
+        self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables)
 
     def test_copy_variables_ok_with_tests(self):
         """
@@ -266,19 +258,6 @@ class TestVarActionView(TestAdmin):
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app2", "application for variable should have been moved to 'app2'")
 
-    def test_change_variables_application_permission(self):
-        """
-        User:
-        - has NOT change permission
-        - has app1 / app2 permission
-        applications specific permissions are disabled
-
-        change NOT allowed
-        """
-        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='can_view_application_app2')), {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
-        var1 = Variable.objects.get(id=3)
-        self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
-
     def test_change_variables_global_change_permission_and_permission_restrictions(self):
         """
         User:
@@ -288,10 +267,10 @@ class TestVarActionView(TestAdmin):
 
         change allowed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='change_variable')), {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=3)
-            self.assertEqual(var1.application.name, "app2", "application for variable should have been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='change_variable')), {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app2", "application for variable should have been moved to 'app2'")
 
     def test_change_variables_application_permission_and_permission_restrictions(self):
         """
@@ -302,11 +281,11 @@ class TestVarActionView(TestAdmin):
 
         change allowed
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='can_view_application_app2')),
-                                        {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=3)
-            self.assertEqual(var1.application.name, "app2", "application for variable should have not been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1') | Q(codename='can_view_application_app2')),
+                                    {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app2", "application for variable should have not been moved to 'app2'")
 
     def test_change_variables_application1_permission_and_permission_restrictions(self):
         """
@@ -318,11 +297,11 @@ class TestVarActionView(TestAdmin):
 
         change NOT allowed because user has no right on destination application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                        {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=3)
-            self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                    {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
     def test_change_variables_application2_permission_and_permission_restrictions(self):
         """
@@ -334,11 +313,11 @@ class TestVarActionView(TestAdmin):
 
         change NOT allowed because user has no right on source application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app2')),
-                                        {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=3)
-            self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app2')),
+                                    {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
     def test_change_variables_application1_permission_and_permission_restrictions_destination_None(self):
         """
@@ -352,11 +331,11 @@ class TestVarActionView(TestAdmin):
 
         change NOT allowed because user has no right on variables not linked to applications
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                        {'ids': '3', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=3)
-            self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                    {'ids': '3', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
     def test_change_variables_application1_permission_and_permission_restrictions_no_app_in_variable(self):
         """
@@ -369,11 +348,11 @@ class TestVarActionView(TestAdmin):
 
         change NOT allowed because user has no right on destination application
         """
-        with self.settings(RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN=True):
-            self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
-                                        {'ids': '1', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
-            var1 = Variable.objects.get(id=1)
-            self.assertIsNone(var1.application, "application for variable should have not been moved to 'app2'")
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                    {'ids': '1', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=1)
+        self.assertIsNone(var1.application, "application for variable should have not been moved to 'app2'")
 
 
     def test_change_variables_ok(self):

@@ -10,6 +10,9 @@
 -   model: snapshotServer.testenvironment
     pk: 1
     fields: {name: DEV}
+-   model: snapshotServer.testenvironment
+    pk: 2
+    fields: {name: PROD}
   
 -   model: snapshotServer.testcase
     pk: 1

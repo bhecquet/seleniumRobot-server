@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import Version, TestSession, TestEnvironment
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -15,14 +15,17 @@ class TestSessionSerializer(serializers.ModelSerializer):
         fields = ('id', 'sessionId', 'date', 'browser', 'environment', 'version', 'compareSnapshot', 'compareSnapshotBehaviour', 'name', 'ttl', 'startedBy')
 
 
-class TestSessionPermission(ApplicationSpecificPermissionsResultRecording):
-    """
-    Redefine permission class so that it's possible to get application from data
-    """
+class TestSessionPermission(ContextSpecificPermissionsResultRecording):
 
     def get_application(self, request, view):
         if request.POST.get('version', ''): # POST
             return Version.objects.get(pk=request.data['version']).application
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('environment', ''): # POST
+            return TestEnvironment.objects.get(name=request.data['environment'])
         else:
             return ''
 

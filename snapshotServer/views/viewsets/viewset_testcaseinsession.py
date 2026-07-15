@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import TestCaseInSession, TestSession, TestStepsThroughTestCaseInSession, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -44,10 +44,17 @@ class TestCaseInSessionSerializer(serializers.ModelSerializer):
 
 
 
-class TestCaseInSessionPermission(ApplicationSpecificPermissionsResultRecording):
+class TestCaseInSessionPermission(ContextSpecificPermissionsResultRecording):
     """
     Redefine permission class so that it's possible to get application from data
     """
+    def get_application(self, request, view):
+        if request.POST.get('session', ''): # POST
+            return TestSession.objects.get(pk=request.data['session']).version.application
+        elif view.kwargs.get('pk', ''): # PATCH / GET, needed so that we can refuse access if object is unknown
+            return self.get_object_application(TestCaseInSession.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
 
     def get_object_application(self, test_case_in_session):
         if test_case_in_session:
@@ -55,11 +62,18 @@ class TestCaseInSessionPermission(ApplicationSpecificPermissionsResultRecording)
         else:
             return ''
 
-    def get_application(self, request, view):
+
+    def get_environment(self, request, view):
         if request.POST.get('session', ''): # POST
-            return TestSession.objects.get(pk=request.data['session']).version.application
+            return TestSession.objects.get(pk=request.data['session']).environment
         elif view.kwargs.get('pk', ''): # PATCH / GET, needed so that we can refuse access if object is unknown
-            return self.get_object_application(TestCaseInSession.objects.get(pk=view.kwargs['pk']))
+            return self.get_object_environment(TestCaseInSession.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
+
+    def get_object_environment(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.environment
         else:
             return ''
 

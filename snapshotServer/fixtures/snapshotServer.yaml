@@ -18,7 +18,7 @@
     fields: {name: DEV}
 -   model: snapshotServer.testenvironment
     pk: 2
-    fields: {name: AUT}
+    fields: {name: PROD}
     
 # Base model for testing model classes
 -   model: snapshotServer.testcase

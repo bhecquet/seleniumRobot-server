@@ -1,0 +1,72 @@
+# Minimal fixture for commonsServer.tests.admin_site.test_environment_admin.
+- model: variableServer.application
+  pk: 1
+  fields: { name: app1 }
+- model: variableServer.version
+  pk: 1
+  fields: { application: 1, name: '2.4' }
+- model: variableServer.version
+  pk: 2
+  fields: { application: 1, name: '2.5' }
+
+- model: variableServer.testenvironment
+  pk: 1
+  fields: { name: DEV }
+- model: variableServer.testenvironment
+  pk: 2
+  fields: { name: ASS }
+- model: variableServer.testenvironment
+  pk: 3
+  fields:
+    name: DEV1
+    genericEnvironment: 1
+- model: variableServer.testenvironment
+  pk: 4
+  fields:
+    name: DEV2
+    genericEnvironment: 3
+
+# app1 variables covering DEV, ASS and DEV1 for EnvironmentFilter lookups.
+- fields:
+    name: url
+    value: http://myapp-staging1.company.com
+    application: 1
+    version: 2
+    environment: 3
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 5
+- fields:
+    name: url
+    value: http://myapp-staging2.company.com
+    application: 1
+    version: 2
+    environment: 2
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 6
+- fields:
+    name: varApp1AndEnvDev
+    value: ''
+    uploadFile: null
+    application: 1
+    version: 1
+    environment: 1
+    test: [ ]
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 21

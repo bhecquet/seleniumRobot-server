@@ -13,7 +13,7 @@ from rest_framework.permissions import AllowAny
 from django.views.generic import TemplateView
 
 from commonsServer.views.viewsets import perform_create
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import TestSession
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
@@ -38,7 +38,7 @@ class ResultRecordingViewSet(ViewSet,
                              UpdateAPIView, # PATCH
                              DestroyAPIView # DELETE
                              ):
-    permission_classes = [ApplicationSpecificPermissionsResultRecording]
+    permission_classes = [ContextSpecificPermissionsResultRecording]
     recreate_existing_instance = True 
     
     def perform_create(self, serializer):

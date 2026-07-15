@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import ExecutionLogs, TestCaseInSession
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -10,11 +10,17 @@ class ExecutionLogsSerializer(serializers.ModelSerializer):
         model = ExecutionLogs
         fields = ('id', 'testCase', 'file')
 
-class ExecutionLogsPermission(ApplicationSpecificPermissionsResultRecording):
+class ExecutionLogsPermission(ContextSpecificPermissionsResultRecording):
 
     def get_application(self, request, view):
         if request.POST.get('testCase', ''): # POST
             return TestCaseInSession.objects.get(pk=request.data['testCase']).session.version.application
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('testCase', ''): # POST
+            return TestCaseInSession.objects.get(pk=request.data['testCase']).session.environment
         else:
             return ''
 

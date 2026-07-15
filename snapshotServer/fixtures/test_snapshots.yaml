@@ -1,0 +1,105 @@
+# Minimal dataset for TestSnapshots (tests/model/test_snapshots.py)
+#
+# This model test only manipulates Snapshot objects (created in each test body) attached to
+# four StepResult objects. The reference-resolution logic (snapshotsUntilNextRef / deletion)
+# relies on the chain StepResult -> TestCaseInSession -> (TestCase name + TestSession version),
+# so the whole chain is provided here.
+#
+#   - Application "test" / TestCase "case1" / TestStep "step1"
+#   - Version 1 ('1.0') and Version 2 ('2.0') of that application
+#   - tsr1 (StepResult 1) / tsr2 (StepResult 2) -> version 1.0
+#   - tsr3 (StepResult 3) / tsr4 (StepResult 4) -> version 2.0
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: test}
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '1.0'}
+-   model: snapshotServer.version
+    pk: 2
+    fields: {application: 1, name: '2.0'}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: {name: step1}
+-   model: snapshotServer.testcase
+    pk: 1
+    fields: {name: case1, application: 1}
+
+# session1 / session_same_env : version 1.0
+-   model: snapshotServer.testsession
+    pk: 1
+    fields:
+        sessionId: '1234'
+        version: 1
+        date: '2017-05-07T00:00:00+00:00'
+        browser: firefox
+        environment: 1
+        ttl: '0'
+-   model: snapshotServer.testsession
+    pk: 2
+    fields:
+        sessionId: '1235'
+        version: 1
+        date: '2017-05-07T00:00:00+00:00'
+        browser: firefox
+        environment: 1
+        ttl: '0'
+# session3 / session4 : version 2.0
+-   model: snapshotServer.testsession
+    pk: 3
+    fields:
+        sessionId: '1236'
+        version: 2
+        date: '2017-05-07T00:00:00+00:00'
+        browser: firefox
+        environment: 1
+        ttl: '0'
+-   model: snapshotServer.testsession
+    pk: 4
+    fields:
+        sessionId: '1237'
+        version: 2
+        date: '2017-05-07T00:00:00+00:00'
+        browser: firefox
+        environment: 1
+        ttl: '0'
+
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields:
+        testCase: 1
+        session: 1
+        testSteps: [1]
+-   model: snapshotServer.testcaseinsession
+    pk: 2
+    fields:
+        testCase: 1
+        session: 2
+        testSteps: [1]
+-   model: snapshotServer.testcaseinsession
+    pk: 3
+    fields:
+        testCase: 1
+        session: 3
+-   model: snapshotServer.testcaseinsession
+    pk: 4
+    fields:
+        testCase: 1
+        session: 4
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: {step: 1, testCase: 1, result: true}
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields: {step: 1, testCase: 2, result: true}
+-   model: snapshotServer.stepresult
+    pk: 3
+    fields: {step: 1, testCase: 3, result: true}
+-   model: snapshotServer.stepresult
+    pk: 4
+    fields: {step: 1, testCase: 4, result: true}

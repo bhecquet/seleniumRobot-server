@@ -289,19 +289,12 @@ OPEN_WEBUI_MODEL = 'ministral-3:8b' # may be an other vision capable model, but 
 
 ## Security aspects ##
 
-Before version 3.1, only variable server was secured, other accesses were open.
-Now, you can enable/disable security on API / Web views through `SECURITY_API_ENABLED` and `SECURITY_WEB_ENABLED`
-parameter in settings.py.
-Set it to `True` to restrict access to API / GUI
+Every API / WEB access is secured through authentication and permissions check
 
 ### Access with security enabled ###
 
-As setting `SECURITY_WEB_ENABLED` and `SECURITY_API_ENABLED` to `True` will restrict all accesses, you must grant some
-users to access the server.
-
-- execute `python manage.py fix_permissions` to create `Variable Users` and `Snapshot Users` groups
-- If using AD/LDAP authentication or OpenID, authenticated users will automatically be added to the above groups
-- Else, add them manually
+- execute `python manage.py fix_permissions` to create application and environment groups
+- Add user to some of the above groups
 - Add, as administrator an auth token to the user
 
 ![](doc/images/add_token.png)
@@ -321,14 +314,14 @@ Allow a user to view / add / edit snapshot comparisons
 
 ### Restrict access to a specific application ###
 
-Setting `RESTRICT_ACCESS_TO_APPLICATION_IN_ADMIN` to `'True'` allow to restrict variable / result access to a specific
-application
-In this case, one needs to grant permission on application basis.
+Restriction can be done on environment or application level.
 
-There are 2 permission sets
+There are 4 permission sets
 
 - permissions related to variables and result recording: 'can view application and related variable and version for xxx'
-- permissions related to result viewing: 'can view results for xxx'
+- permissions related to result viewing: 'can view results for application xxx'
+- permissions related to variables and result recording: 'can view environment and related variable and version for xxx'
+- permissions related to result viewing: 'can view results for environment xxx'
 
 ## User interface ##
 

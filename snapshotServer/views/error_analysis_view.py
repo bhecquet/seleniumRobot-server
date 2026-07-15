@@ -11,16 +11,22 @@ from rest_framework.generics import CreateAPIView
 
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinderExecutor
 from snapshotServer.models import TestCaseInSession
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultConsultation
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultConsultation
 
 logger = logging.getLogger(__name__)
 
 
-class ErrorAnalysisPermission(ApplicationSpecificPermissionsResultConsultation):
+class ErrorAnalysisPermission(ContextSpecificPermissionsResultConsultation):
 
     def get_object_application(self, test_case_in_session):
         if test_case_in_session:
             return test_case_in_session.session.version.application
+        else:
+            return ''
+
+    def get_object_environment(self, test_case_in_session):
+        if test_case_in_session:
+            return test_case_in_session.session.environment
         else:
             return ''
 
@@ -29,6 +35,15 @@ class ErrorAnalysisPermission(ApplicationSpecificPermissionsResultConsultation):
         if test_case_in_session_id:
             try:
                 return self.get_object_application(TestCaseInSession.objects.get(pk=test_case_in_session_id))
+            except TestCaseInSession.DoesNotExist:
+                return ''
+        return ''
+
+    def get_environment(self, request, view):
+        test_case_in_session_id = view.kwargs.get('test_case_in_session_id', '')
+        if test_case_in_session_id:
+            try:
+                return self.get_object_environment(TestCaseInSession.objects.get(pk=test_case_in_session_id))
             except TestCaseInSession.DoesNotExist:
                 return ''
         return ''

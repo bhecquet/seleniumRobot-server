@@ -1,0 +1,495 @@
+# Dedicated fixture for variableServer.tests.test_api_view;
+- model: variableServer.application
+  pk: 1
+  fields:
+    name: app1
+- model: variableServer.application
+  pk: 2
+  fields:
+    name: app2
+- model: variableServer.application
+  pk: 3
+  fields:
+    name: app3
+- model: variableServer.application
+  pk: 4
+  fields:
+    name: app4
+    linkedApplication:
+    - 41
+- model: variableServer.application
+  pk: 41
+  fields:
+    name: linkedApp4
+- model: variableServer.application
+  pk: 777
+  fields:
+    name: appFileVar
+- model: variableServer.version
+  pk: 1
+  fields:
+    application: 1
+    name: '2.4'
+- model: variableServer.version
+  pk: 2
+  fields:
+    application: 1
+    name: '2.5'
+- model: variableServer.version
+  pk: 3
+  fields:
+    application: 2
+    name: '1.0'
+- model: variableServer.version
+  pk: 4
+  fields:
+    application: 3
+    name: '1.0'
+- model: variableServer.version
+  pk: 5
+  fields:
+    application: 4
+    name: '1.0'
+- model: variableServer.version
+  pk: 6
+  fields:
+    application: 41
+    name: '1.0'
+- model: variableServer.testenvironment
+  pk: 1
+  fields:
+    name: DEV
+- model: variableServer.testenvironment
+  pk: 2
+  fields:
+    name: ASS
+- model: variableServer.testenvironment
+  pk: 3
+  fields:
+    name: DEV1
+    genericEnvironment: 1
+- model: variableServer.testenvironment
+  pk: 4
+  fields:
+    name: DEV2
+    genericEnvironment: 3
+- model: variableServer.testcase
+  pk: 1
+  fields:
+    name: test1 with some spaces
+    application: 1
+- fields:
+    name: proxyAddress
+    value: proxy.fr
+    application: null
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 1
+- fields:
+    name: proxyPassword
+    value: azerty
+    application: null
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 101
+- fields:
+    name: proxyPassword2
+    value: azertyuiop
+    application: null
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: true
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 102
+- fields:
+    name: logs
+    value: logs_dev
+    application: null
+    version: null
+    environment: 1
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 2
+- fields:
+    name: proxyPassword
+    value: devPassword
+    application: null
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 201
+- fields:
+    name: logs
+    value: logs_ass
+    application: null
+    version: null
+    environment: 2
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 202
+- fields:
+    name: appName
+    value: myApp
+    application: 1
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 3
+- fields:
+    name: appName
+    value: myOtherApp
+    application: 2
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 301
+- fields:
+    name: version
+    value: v1
+    application: 1
+    version: 2
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 4
+- fields:
+    name: version
+    value: v0
+    application: 1
+    version: 1
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 401
+- fields:
+    name: url
+    value: http://myapp-staging1.company.com
+    application: 1
+    version: 2
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 5
+- fields:
+    name: url
+    value: http://myapp-staging2.company.com
+    application: 1
+    version: 2
+    environment: 2
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 6
+- fields:
+    name: login
+    value: myAccount
+    application: 1
+    version: 2
+    environment: 3
+    test:
+    - 1
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    reservable: true
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 7
+- fields:
+    name: user
+    value: appUserDev
+    application: 1
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 8
+- fields:
+    name: user
+    value: appUserDev
+    application: null
+    version: null
+    environment: null
+    test:
+    - 1
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 9
+- fields:
+    name: dupVariable
+    value: value1
+    application: 3
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 10
+- fields:
+    name: dupVariable
+    value: value2
+    application: 3
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 11
+- fields:
+    name: login
+    value: user1
+    application: 3
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    reservable: true
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 12
+- fields:
+    name: login
+    value: user2
+    application: 3
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    reservable: true
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 13
+- fields:
+    name: varApp4
+    value: v1
+    application: 4
+    version: 5
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 14
+- fields:
+    name: varApp4Env
+    value: v2
+    application: 4
+    version: 5
+    environment: 1
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 15
+- fields:
+    name: varApp4Linked
+    value: v1
+    application: 41
+    version: null
+    environment: null
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 16
+- fields:
+    name: varApp4EnvLinked
+    value: v2
+    application: 41
+    version: null
+    environment: 1
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 17
+- fields:
+    name: varApp4EnvLinked2
+    value: v2
+    application: 41
+    version: 6
+    environment: 1
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 18
+- fields:
+    name: varApp4EnvLinkedReservable
+    value: v2
+    application: 41
+    version: null
+    environment: 1
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    reservable: true
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 19
+- fields:
+    name: varApp4EnvLinkedProtected
+    value: v3
+    application: 41
+    version: null
+    environment: 1
+    test: []
+    internal: false
+    protected: true
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 20
+- fields:
+    name: varApp1AndEnvDev
+    value: ''
+    uploadFile: null
+    application: 1
+    version: 1
+    environment: 1
+    test: []
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 21
+- fields:
+    name: user
+    value: ''
+    uploadFile: http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx
+    application: 777
+    version: null
+    environment: 3
+    test: []
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 666
+- fields:
+    name: todel
+    value: ''
+    uploadFile: http://127.0.0.1:8000/media/appFileVar/tobedeleted.csv
+    application: 777
+    version: 1
+    environment: 3
+    test: []
+    internal: true
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: '2018-07-10 13:01:56.784734+00:00'
+  model: variableServer.variable
+  pk: 996

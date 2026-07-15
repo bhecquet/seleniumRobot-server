@@ -5,7 +5,9 @@ from snapshotServer.tests import SnapshotTestCase
 
 class TestError(SnapshotTestCase):
 
-    fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
+    fixtures = ['error_cause_finder/error_cause_finder_commons.yaml',
+                'error_cause_finder/error_cause_finder_test_ok.yaml',
+                'error_cause_finder/error_cause_finder_test_ko.yaml']
 
     def setUp(self):
         self.step_result = StepResult.objects.get(pk=11)

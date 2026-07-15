@@ -16,8 +16,7 @@ from django.db.models.aggregates import Count
 
 from commonsServer.views.serializers import ApplicationSerializer,\
     VersionSerializer, TestEnvironmentSerializer, TestCaseSerializer
-from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX,\
-    ApplicationSpecificPermissionsVariables
+from seleniumRobotServer.permissions.permissions import ContextPermissionChecker, ContextSpecificPermissionsVariables
 
 def perform_create(viewset_type, view, serializer):
     """
@@ -78,15 +77,15 @@ class ApplicationSpecificFilter(filters.BaseFilterBackend):
     
     def filter_queryset(self, request, queryset, view):
         
-        if view.bypass_application_permissions():
+        if view.bypass_context_permissions():
             return queryset
         
-        allowed_aplications = ApplicationPermissionChecker.get_allowed_applications(request)
+        allowed_aplications = ContextPermissionChecker.get_allowed_applications(request)
         
         return queryset.filter(application__name__in=allowed_aplications)
     
 class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView):
-    permission_classes = [ApplicationSpecificPermissionsVariables]
+    permission_classes = [ContextSpecificPermissionsVariables]
     filter_backends = [ApplicationSpecificFilter]
 
     def perform_create(self, serializer):
@@ -101,11 +100,10 @@ class RetrieveByNameViewSet(CreateAPIView, RetrieveAPIView):
             raise ValidationError("name parameter is mandatory")
         
         obj = get_object_or_404(model, name=name)
-#        self.check_object_permissions(self.request, obj)
         
         return obj
 
-class ApplicationPermission(ApplicationSpecificPermissionsVariables):
+class ApplicationPermission(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         try:
@@ -122,7 +120,7 @@ class ApplicationViewSet(RetrieveByNameViewSet):
     def get_object(self):
         return super().get_object(Application)
 
-class VersionPermission(ApplicationSpecificPermissionsVariables):
+class VersionPermission(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         try:
@@ -136,7 +134,7 @@ class VersionViewSet(RetrieveByNameViewSet):
     permission_classes = [VersionPermission]
     http_method_names = ['post']
 
-class EnvironmentPermission(ApplicationSpecificPermissionsVariables):
+class EnvironmentPermission(ContextSpecificPermissionsVariables):
     """
     Allow any user that has right on at least an application, to get environment
     Create environment is only allowed to user having "add_testenvironment" permission
@@ -144,9 +142,19 @@ class EnvironmentPermission(ApplicationSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         if request.method == 'GET':
-            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.app_prefix)
             if allowed_applications:
                 return Application.objects.get(name=allowed_applications[0])
+            else:
+                return ''
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.method == 'GET':
+            allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.env_prefix)
+            if allowed_environments:
+                return TestEnvironment.objects.get(name=allowed_environments[0])
             else:
                 return ''
         else:
@@ -161,7 +169,7 @@ class TestEnvironmentViewSet(RetrieveByNameViewSet):
     def get_object(self):
         return super().get_object(TestEnvironment)
 
-class TestCasePermission(ApplicationSpecificPermissionsVariables):
+class TestCasePermission(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         try:
@@ -170,6 +178,16 @@ class TestCasePermission(ApplicationSpecificPermissionsVariables):
             else:
                 return Application.objects.get(pk=request.query_params.get('application', ''))
         except:
+            return ''
+
+    def get_environment(self, request, view):
+        """
+        If user has rights on at least one environment, it can add a test case
+        """
+        allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.env_prefix)
+        if allowed_environments:
+            return TestEnvironment.objects.get(name=allowed_environments[0])
+        else:
             return ''
 
 class TestCaseViewSet(RetrieveByNameViewSet):

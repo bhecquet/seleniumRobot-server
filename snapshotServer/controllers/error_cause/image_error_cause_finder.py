@@ -2,6 +2,7 @@ import json
 import os
 from typing import Optional
 
+from commonsServer import preferences
 from snapshotServer.controllers.llm_connector import LlmConnector
 from snapshotServer.models import TestStep, File, StepResult, StepReference, Error
 from django.conf import settings
@@ -107,7 +108,7 @@ class ImageErrorCauseFinder:
         if not os.path.isfile(page_to_compare):
             return SamePageAnalysisDetails(same_page, f"Page to compare file {page_to_compare} does not exist")
 
-        chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON, [reference_page, page_to_compare], 50)
+        chat_json_response = self.llm_connector.chat_and_expect_json_response(preferences.get_preference('OPEN_WEBUI_PROMPT_WEBPAGE_COMPARISON'), [reference_page, page_to_compare], 50)
 
         if chat_json_response.error:
             return SamePageAnalysisDetails(same_page, chat_json_response.error)
@@ -164,7 +165,7 @@ class ImageErrorCauseFinder:
         if not os.path.isfile(image_path):
             return AnalysisDetails(error_messages, f"File {image_path} does not exist")
         else:
-            chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE, [image_path])
+            chat_json_response = self.llm_connector.chat_and_expect_json_response(preferences.get_preference('OPEN_WEBUI_PROMPT_FIND_ERROR_MESSAGE'), [image_path])
 
             if chat_json_response.error:
                 return AnalysisDetails(error_messages, chat_json_response.error)
@@ -237,7 +238,7 @@ class ImageErrorCauseFinder:
         elif not element_description:
             return ElementPresentAnalysisDetails(element_present, "No description for element")
         else:
-            chat_json_response = self.llm_connector.chat_and_expect_json_response(settings.OPEN_WEBUI_PROMPT_FIND_ELEMENT % element_description, [image_path])
+            chat_json_response = self.llm_connector.chat_and_expect_json_response(preferences.get_preference('OPEN_WEBUI_PROMPT_FIND_ELEMENT') % element_description, [image_path])
 
             if chat_json_response.error:
                 return ElementPresentAnalysisDetails(element_present, chat_json_response.error)

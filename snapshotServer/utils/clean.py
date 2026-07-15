@@ -1,4 +1,6 @@
 import logging
+
+from commonsServer import preferences
 from snapshotServer.models import StepReference, Snapshot, TestSession,\
     TestCaseInSession, File
 from django.utils import timezone
@@ -28,7 +30,7 @@ def clean_old_references():
     Files in "detect" folder won't be deleted this way but it's not a problem, as FieldDetector has it's own cleaning method which already deletes old files
     """
     logger.info('deleting old references')
-    StepReference.objects.filter(date__lt=timezone.now() - timedelta(seconds=60 * 60 * 24 * settings.DELETE_STEP_REFERENCE_AFTER_DAYS)).delete()
+    StepReference.objects.filter(date__lt=timezone.now() - timedelta(seconds=60 * 60 * 24 * int(preferences.get_preference("DELETE_STEP_REFERENCE_AFTER_DAYS")))).delete()
 
 def clean_old_sessions():
     """
@@ -51,10 +53,10 @@ def compress_images():
     logger.info("compressing images")
     
     # get test cases older than N days which are not optimized
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=IMAGES_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=IMAGES_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("COMPRESS_IMAGE_FOR_SUCCESS_AFTER_DAYS")))):
         _compress_image_files(test_case_in_session)
         
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=IMAGES_OPTIMIZED, status='FAILURE', session__date__lt=timezone.now() - timedelta(days=settings.COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=IMAGES_OPTIMIZED, status='FAILURE', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("COMPRESS_IMAGE_FOR_FAILURE_AFTER_DAYS")))):
         _compress_image_files(test_case_in_session)
 
     
@@ -79,10 +81,10 @@ def replace_html():
     logger.info("deleting old HTML")
         
     # get test cases older than N days which are not optimized
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HTML_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_HTML_FOR_SUCCESS_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HTML_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("DELETE_HTML_FOR_SUCCESS_AFTER_DAYS")))):
         _replace_html_files(test_case_in_session)
         
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HTML_OPTIMIZED, status='FAILURE', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_HTML_FOR_FAILURE_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HTML_OPTIMIZED, status='FAILURE', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("DELETE_HTML_FOR_FAILURE_AFTER_DAYS")))):
         _replace_html_files(test_case_in_session)
 
         
@@ -112,7 +114,7 @@ def replace_har():
     logger.info("deleting old HAR")
     
     # get test cases older than N days which are not optimized
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HAR_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_HAR_FOR_SUCCESS_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=HAR_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("DELETE_HAR_FOR_SUCCESS_AFTER_DAYS")))):
         for file in File.objects.filter(stepResult__testCase=test_case_in_session):
             if file.name.lower().endswith('.har'):
                 try:
@@ -137,7 +139,7 @@ def replace_video():
     logger.info("deleting old videos")
 
     # get test cases older than N days which are not optimized
-    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=VIDEO_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=settings.DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS)):
+    for test_case_in_session in TestCaseInSession.objects.filter(optimized__lt=VIDEO_OPTIMIZED, status='SUCCESS', session__date__lt=timezone.now() - timedelta(days=int(preferences.get_preference("DELETE_VIDEO_FOR_SUCCESS_AFTER_DAYS")))):
         for file in File.objects.filter(stepResult__testCase=test_case_in_session):
             if file.name.lower().endswith('.avi') or file.name.lower().endswith('.mp4'):
                 try:

@@ -21,6 +21,10 @@ class ExclusionZoneListView(LoginRequiredMixinConditional, ListView):
     def get_target_application(self):
         snapshot = Snapshot.objects.get(id=self.kwargs['step_snapshot_id'])
         return snapshot.stepResult.testCase.session.version.application
+
+    def get_target_environment(self):
+        snapshot = Snapshot.objects.get(id=self.kwargs['step_snapshot_id'])
+        return snapshot.stepResult.testCase.session.environment
     
     def get_queryset(self):
         

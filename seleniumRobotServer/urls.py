@@ -27,6 +27,7 @@ urlpatterns = [
     re_path(r'^variable/', include('variableServer.urls')),
     re_path(r'^elementinfo/', include('elementInfoServer.urls')),
     re_path(r'^commons/', include('commonsServer.urls')),
+    re_path(r'^pdf/', include('pdf.urls')),
     re_path(r'^oidc/', include('mozilla_django_oidc.urls')),
     
     path('accounts/login/', csrf_exempt(ensure_csrf_cookie(xframe_options_exempt(views.LoginView.as_view()))), name='login'),

@@ -1,0 +1,18 @@
+# Minimal dataset for TestViewsetTestStep
+# TestStep creation only checks that the user has rights on at least one application or environment.
+# No TestStep row is required (the '405' tests never reach the database).
+# Applications 1/2 and environments 1/2 are required so their 'can_view_*' permissions can be generated
+# and resolved by name (Application.objects.get(name=...)).
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+-   model: snapshotServer.application
+    pk: 2
+    fields: {name: myapp2}
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+-   model: snapshotServer.testenvironment
+    pk: 2
+    fields: {name: PROD}

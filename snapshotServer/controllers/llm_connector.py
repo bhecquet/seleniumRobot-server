@@ -10,6 +10,8 @@ from PIL import Image
 from django.conf import settings
 from openwebui_chat_client import OpenWebUIClient
 
+from commonsServer import preferences
+
 ChatJsonResponse = namedtuple('ChatJsonResponse', ['response', 'error'])
 
 logger = logging.getLogger(__name__)
@@ -20,11 +22,11 @@ class LlmConnector:
 
     def __init__(self):
 
-        if settings.OPEN_WEBUI_URL and settings.OPEN_WEBUI_TOKEN and settings.OPEN_WEBUI_MODEL:
+        if settings.OPEN_WEBUI_URL and settings.OPEN_WEBUI_TOKEN and preferences.get_preference('OPEN_WEBUI_MODEL'):
             self.open_web_ui_client = OpenWebUIClient(
                 base_url=settings.OPEN_WEBUI_URL,
                 token=settings.OPEN_WEBUI_TOKEN,
-                default_model_id=settings.OPEN_WEBUI_MODEL
+                default_model_id=preferences.get_preference('OPEN_WEBUI_MODEL')
             )
 
     def chat_and_expect_json_response(self, prompt: str, image_paths: list, resize_factor: int =100) -> ChatJsonResponse:
@@ -72,7 +74,7 @@ class LlmConnector:
                 'Content-Type': 'application/json'
             }
             data = {
-                "model": settings.OPEN_WEBUI_MODEL,
+                "model": preferences.get_preference('OPEN_WEBUI_MODEL'),
                 "stream": False,
                 "messages": [
                     {

@@ -150,3 +150,29 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
             id=self.kwargs['test_case_in_session_id']
         )
         return test_case_in_session.session.version.application
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.version.application
+
+    def get_target_environment(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.environment
+
+        
+    
+# Tests
+# - Standard test OK
+#     . look and feel: steps must have the right color
+#     . pictures displayed
+#     . files downloadable
+#     . timestamps present
+#     . video timestamp present
+#     . substeps present
+# - Standart test KO
+#     . last step in red
+#     . failed step in red
+#     . error message displayed
+# - Test with snapshot comparison => info only
+#     . picture for comparison displayed
+# - Test OK with snapshot comparison KO => change result
+#     . picture for comparison displayed
+#     . result has been changed

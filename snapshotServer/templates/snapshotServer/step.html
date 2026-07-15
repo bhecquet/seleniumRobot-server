@@ -28,7 +28,7 @@
                     {{ action.name }}
                 </div>
             </li>
-        {% elif action.type == 'message' %}
+        {% elif action.type == 'message' or action.type == 'check' %}
             <div class="message-{{ action.messageType|lower }} message-conf">
                 <span class="stepTimestamp mr-1">
                     {{ action.timestamp|timestamp_to_time }}
