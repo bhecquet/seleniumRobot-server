@@ -8,6 +8,7 @@ from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
 from snapshotServer.views.test_result_view import TestResultView
+from snapshotServer.views.error_cause_view import save_error_cause
 
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
@@ -21,6 +22,7 @@ from snapshotServer.views.viewsets.viewset_testcaseinsession import TestCaseInSe
 from snapshotServer.views.viewsets.viewset_testinfo import TestInfoSessionViewSet
 from snapshotServer.views.viewsets.viewset_testsession import TestSessionViewSet
 from snapshotServer.views.viewsets.viewset_teststep import TestStepViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r'testcaseinsession', TestCaseInSessionViewSet)
@@ -60,5 +62,7 @@ urlpatterns = [
     # re-trigger error cause analysis for a test case
     re_path(r'^errorAnalysis/(?P<test_case_in_session_id>[0-9]+)/$', ErrorAnalysisView.as_view(), name="errorAnalysisView"),
 
+    #
+    path('api/save-error-cause/', save_error_cause, name='saveErrorCause'),
     
 ]

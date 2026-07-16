@@ -11,6 +11,8 @@ from django.shortcuts import get_object_or_404
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot, Error, TestInfo
 import json
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from snapshotServer.controllers.error_cause.knowledge_base_analyzer import find_probable_cause
+
 
 @method_decorator(xframe_options_exempt, name='dispatch')
 class TestResultView(LoginRequiredMixinConditional, ListView):
@@ -34,7 +36,26 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
                 except:
                     details = {}
                 step_result.details = details
-                
+                                # Exploitation de la base de connaissance
+                step_result.details["suggestedCause"] = None
+
+                if "exception" in step_result.details:
+                    try:
+                        result = find_probable_cause(
+                            exception=step_result.details.get("exception"),
+                            testCase=step_result.testCase.testCase,
+                            testStep=step_result.step
+                        )
+
+                        if result:
+                            step_result.details["suggestedCause"] = result["cause"]
+                            step_result.details["confidence"] = int(
+                                (result["count"] / result["total"]) * 100
+                            )
+
+                    except Exception as exception:
+                        print("ERROR in find_probable_cause:", exception)
+
                 try:
                     step_snapshots[step_result] = list(Snapshot.objects.filter(stepResult = step_result))
                 except:

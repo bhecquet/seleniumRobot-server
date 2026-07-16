@@ -106,9 +106,110 @@
 								{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
 
 								{% if stepResult.details.exception %}
-									<div class="message-error">
-										{{ stepResult.details.exceptionMessage }}
+								<div class="message-error">
+									{{ stepResult.details.exceptionMessage }}
+								</div>
+
+								{% if stepResult.details.suggestedCause %}
+								<div style="margin-top: 10px; background: #e8f0fe; padding: 6px;">
+									Cause probable : {{ stepResult.details.suggestedCause }}
+								</div>
+								{% endif %}
+
+								<div style="margin-top: 10px;">
+									<button type="button"
+											class="btn btn-sm btn-outline-primary collapsed"
+											data-bs-toggle="collapse"
+											data-bs-target="#form-{{ stepResult.id }}"
+											aria-expanded="false"
+											aria-controls="form-{{ stepResult.id }}">
+										Déclarer une cause
+									</button>
+								</div>
+
+								<div id="form-{{ stepResult.id }}" class="collapse">
+									<div style="margin-top: 12px;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    background: #f8f9fa;
+                    max-width: 460px;">
+
+										/snapshot/api/save-error-cause/
+										{% csrf_token %}
+
+										<div style="font-weight: bold; margin-bottom: 10px;">
+											Ajouter un diagnostic
+										</div>
+
+										<div style="margin-bottom: 10px;">
+											<label style="font-size: 13px; color: #555;">
+												Type
+											</label>
+											<br>
+
+											<select name="cause"
+													class="cause-type"
+													style="width: 100%; padding: 5px;">
+												<option value="Application">Application</option>
+												<option value="Configuration">Configuration</option>
+												<option value="Script">Script</option>
+												<option value="Environment">Environment</option>
+											</select>
+										</div>
+
+										<div style="margin-bottom: 10px;">
+											<label style="font-size: 13px; color: #555;">
+												Commentaire
+											</label>
+											<br>
+
+											<textarea name="commentaire"
+													  class="commentaire-cause"
+													  rows="3"
+													  maxlength="180"
+													  required
+													  style="width: 100%; padding: 6px;"
+													  placeholder="Décrire la cause probable"></textarea>
+
+											<small style="display: block;
+                                  margin-top: 6px;
+                                  color: #666;
+                                  font-size: 12px;">
+												Décrire la cause probable en une phrase courte.
+												Ne pas répéter l’exception technique.
+											</small>
+										</div>
+
+										<input type="hidden"
+											   name="exception"
+											   value="{{ stepResult.details.exception }}">
+
+										<input type="hidden"
+											   name="errorMessage"
+											   value="{{ stepResult.details.exceptionMessage }}">
+
+										<input type="hidden"
+											   name="stepName"
+											   value="{{ stepResult.details.name }}">
+
+										<input type="hidden"
+											   name="testCaseId"
+											   value="{{ currentTest.testCase.id }}">
+
+										<input type="hidden"
+											   name="testStepId"
+											   value="{{ stepResult.step.id }}">
+
+										<div style="text-align: right;">
+											<button type="submit"
+													class="btn btn-primary btn-sm">
+												Enregistrer
+											</button>
+										</div>
+										</form>
 									</div>
+								</div>
 								{% endif %}
 
 								<div class="row">
