@@ -1,73 +1,14 @@
-from django.contrib.auth.models import User, Group, Permission
-from django.contrib.contenttypes.models import ContentType
-from django.db.models import Q
-import snapshotServer
-import django.test
-
-from hashed_auth.models import Token
+from commonsServer.tests.test_parent import TestWebAndAdmin
 from snapshotServer.controllers.diff_computer import DiffComputer
+from django.conf import settings
 import logging
 import re
+import os
 
-def _create_allowed_user_and_group(permissions=[]):
-    
-    try:
-        user = User.objects.get(username='user')
-    except User.DoesNotExist as e:
-        user = User.objects.create_user(username='user', password='pwd')
-    group, created = Group.objects.get_or_create(name='Snapshot Users')
-    ct = ContentType.objects.get_for_model(snapshotServer.models.ExcludeZone)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_excludezone') | Q(codename='change_excludezone') | Q(codename='delete_excludezone') , content_type=ct))
-    ct = ContentType.objects.get_for_model(snapshotServer.models.Snapshot)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_snapshot') | Q(codename='change_snapshot') | Q(codename='view_snapshot') | Q(codename='delete_snapshot') , content_type=ct))
-    ct = ContentType.objects.get_for_model(snapshotServer.models.StepResult)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_stepresult') | Q(codename='change_stepresult') | Q(codename='view_stepresult') , content_type=ct))
-    
-    ct = ContentType.objects.get_for_model(snapshotServer.models.TestCaseInSession)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_testcaseinsession') | Q(codename='change_testcaseinsession') , content_type=ct))
-    ct = ContentType.objects.get_for_model(snapshotServer.models.Application)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_application') | Q(codename='change_application') , content_type=ct))
-    ct = ContentType.objects.get_for_model(snapshotServer.models.File)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_file') | Q(codename='change_file') , content_type=ct))
-    ct = ContentType.objects.get_for_model(snapshotServer.models.ExecutionLogs)
-    group.permissions.add(*Permission.objects.filter(Q(codename='add_executionlogs') | Q(codename='change_executionlogs') , content_type=ct))
-    
-    group.permissions.add(*permissions)
-    
-    group.user_set.add(user)
-    
-    return user, group
+class SnapshotTestCase(TestWebAndAdmin):
 
-def authenticate_test_client_for_api(client):
-    """
-    from client of django rest_framework, creates a user / group and add HTTP_AUTHORIZATION header to request
-    @param client: DRF client
-    """
-    user, group = _create_allowed_user_and_group()
-    
-    token = Token.objects.get_or_create(user=user)[0]
-    client.credentials(HTTP_AUTHORIZATION='Token ' + token.raw_key)
-
-def authenticate_test_client_for_web_view(client):
-    """
-    from client of django web views, creates a user / group and login
-    @param client: django client
-    """
-    user, group = _create_allowed_user_and_group()
-    client.login(username='user', password='pwd')
-    
-    
-def authenticate_test_client_for_web_view_with_permissions(client, permissions):
-    """
-    from client of django web views, creates a user / group and login, plus permissions
-    @param client: django client
-    @param permissions: permissions to add to group
-    """
-    user, group = _create_allowed_user_and_group(permissions)
-    client.login(username='user', password='pwd')
-    
-    
-class SnapshotTestCase(django.test.TestCase):
+    dataDir = 'snapshotServer/tests/data/'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):
         logging.error(str(self))
@@ -77,11 +18,14 @@ class SnapshotTestCase(django.test.TestCase):
         DiffComputer.stopThread()
         logging.error("Stop threads")
         super().tearDown()
-        
+
+        for f in os.listdir(self.media_dir):
+            if f.startswith('img_'):
+                os.remove(self.media_dir + os.sep + f)
             
     def remove_spaces(self, html_code):
         new_html = html_code.replace("\n", "").replace("\r",  "")
-        new_html = re.sub(">\\s+<", "><", new_html);
-        new_html = re.sub("\\s+<", "<", new_html);
-        new_html = re.sub(">\\s+", ">", new_html);
+        new_html = re.sub(">\\s+<", "><", new_html)
+        new_html = re.sub("\\s+<", "<", new_html)
+        new_html = re.sub(">\\s+", ">", new_html)
         return new_html

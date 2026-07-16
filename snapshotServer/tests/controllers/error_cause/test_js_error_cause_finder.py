@@ -10,7 +10,9 @@ from snapshotServer.models import TestCaseInSession, StepResult, File, TestSessi
 
 class TestJsErrorCauseFinder(TestCase):
 
-    fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
+    fixtures = ['error_cause_finder/error_cause_finder_commons.yaml',
+                'error_cause_finder/error_cause_finder_test_ok.yaml',
+                'error_cause_finder/error_cause_finder_test_ko.yaml']
 
     def setUp(self):
         with open(settings.MEDIA_ROOT + "/documents/browser_logs.txt", "w") as logs:

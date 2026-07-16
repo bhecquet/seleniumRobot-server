@@ -5,7 +5,7 @@ from datetime import timedelta
 from django.utils import timezone
 from rest_framework import serializers
 
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.controllers.error_cause.error_cause_finder import ErrorCauseFinderExecutor
 from snapshotServer.models import StepResult, TestCaseInSession, Error, TestStep
 from snapshotServer.viewsets import ResultRecordingViewSet
@@ -17,11 +17,17 @@ class StepResultSerializer(serializers.ModelSerializer):
         model = StepResult
         fields = ('id', 'step', 'testCase', 'result', 'duration', 'stacktrace')
 
-class StepResultPermission(ApplicationSpecificPermissionsResultRecording):
+class StepResultPermission(ContextSpecificPermissionsResultRecording):
 
     def get_object_application(self, step_result):
         if step_result:
             return step_result.testCase.session.version.application
+        else:
+            return ''
+
+    def get_object_environment(self, step_result):
+        if step_result:
+            return step_result.testCase.session.environment
         else:
             return ''
 
@@ -30,6 +36,14 @@ class StepResultPermission(ApplicationSpecificPermissionsResultRecording):
             return TestCaseInSession.objects.get(pk=request.data['testCase']).session.version.application
         elif view.kwargs.get('pk', ''): # PATCH needed so that we can refuse access if object is unknown
             return self.get_object_application(StepResult.objects.get(pk=view.kwargs['pk']))
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('testCase', ''): # POST
+            return TestCaseInSession.objects.get(pk=request.data['testCase']).session.environment
+        elif view.kwargs.get('pk', ''): # PATCH needed so that we can refuse access if object is unknown
+            return self.get_object_environment(StepResult.objects.get(pk=view.kwargs['pk']))
         else:
             return ''
 

@@ -66,7 +66,9 @@ class TestImageErrorCauseFinder(TestCase):
         }
       }
     }'''
-    fixtures = ['error_cause_finder_commons.yaml', 'error_cause_finder_test_ok.yaml', 'error_cause_finder_test_ko.yaml']
+    fixtures = ['error_cause_finder/error_cause_finder_commons.yaml',
+                'error_cause_finder/error_cause_finder_test_ok.yaml',
+                'error_cause_finder/error_cause_finder_test_ko.yaml']
 
 
 
@@ -603,7 +605,7 @@ class TestImageErrorCauseFinder(TestCase):
         tcis.save()
         self._is_step_on_same_page([Response(200, self.openwebui_message_template % "```json\\n{\\n  \\\"explanation\\\": \\\"\\n    Some explanation\\n  \\\",\\n  \\\"similarity\\\": 71\\n}\\n```")],
                                    True,
-                                   "No reference image for step 'getErrorMessage' in test case 'loginInvalid'")
+                                   "No reference image for step 'getErrorMessage' in test case 'loginValid'")
     
     @override_settings(OPEN_WEBUI_URL='')
     def test_is_step_on_same_page_no_image_for_step_reference_mocked(self):

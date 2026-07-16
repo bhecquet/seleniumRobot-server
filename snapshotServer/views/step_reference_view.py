@@ -10,7 +10,7 @@ from django.utils import timezone
 from rest_framework.parsers import MultiPartParser
 
 from snapshotServer.models import StepResult, StepReference
-from seleniumRobotServer.permissions.permissions import ApplicationSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from rest_framework.generics import get_object_or_404, RetrieveAPIView, CreateAPIView
 from rest_framework import serializers
 
@@ -66,11 +66,17 @@ class StepReferenceSerializer(serializers.ModelSerializer):
         else:
             raise NoStepReferenceToCreate()
         
-class StepReferencePermission(ApplicationSpecificPermissionsResultRecording):
-    
+class StepReferencePermission(ContextSpecificPermissionsResultRecording):
+
     def get_object_application(self, step_result):
         if step_result:
             return step_result.testCase.session.version.application
+        else:
+            return ''
+
+    def get_object_environment(self, step_result):
+        if step_result:
+            return step_result.testCase.session.environment
         else:
             return ''
         
@@ -79,6 +85,14 @@ class StepReferencePermission(ApplicationSpecificPermissionsResultRecording):
             return self.get_object_application(StepResult.objects.get(pk=request.data['stepResult']))
         elif view.kwargs.get('step_result_id', ''): # GET
             return self.get_object_application(StepResult.objects.get(pk=view.kwargs['step_result_id']))
+        else:
+            return ''
+
+    def get_environment(self, request, view):
+        if request.POST.get('stepResult', ''): # POST
+            return self.get_object_environment(StepResult.objects.get(pk=request.data['stepResult']))
+        elif view.kwargs.get('step_result_id', ''): # GET
+            return self.get_object_environment(StepResult.objects.get(pk=view.kwargs['step_result_id']))
         else:
             return ''
 

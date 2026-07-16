@@ -1,19 +1,16 @@
-'''
-Created on 28 juin 2019
-
-@author: s047432
-'''
 from django.urls.base import reverse
 from rest_framework.test import APITestCase
+
+from commonsServer.tests.test_api import TestApi
 from elementInfoServer.models import ElementInfo
 from django.contrib.auth.models import User, Group, Permission
 from django.db.models import Q
 
-class TestApi(APITestCase):
-    '''
+class TestElementInfoApi(TestApi):
+    """
     Using APITestCase as we call the REST Framework API
     Client handles patch / put cases
-    '''
+    """
     fixtures = ['elementInfoServer.yaml']
     
     
@@ -21,13 +18,7 @@ class TestApi(APITestCase):
         """
         Set up token connection
         """
-        self.user = User.objects.create_user(username='userApi', password='pwd')
-        self.client.force_authenticate(user=self.user)
-        
-        users_group, created = Group.objects.get_or_create(name='Users')
-        
-        users_group.permissions.add(*Permission.objects.filter(Q(codename='view_elementinfo')))
-        users_group.user_set.add(self.user)
+        self.user, self.client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_elementinfo')))
 
     def test_elementinfo_deletion(self):
         """

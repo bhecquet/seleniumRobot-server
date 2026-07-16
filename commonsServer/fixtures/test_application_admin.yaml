@@ -1,0 +1,66 @@
+# Minimal fixture for commonsServer.tests.admin_site.test_application_admin.
+- model: variableServer.application
+  pk: 1
+  fields: { name: app1 }
+- model: variableServer.application
+  pk: 2
+  fields: { name: app2 }
+- model: variableServer.application
+  pk: 3
+  fields: { name: app3 }
+- model: variableServer.application
+  pk: 4
+  fields:
+    name: app4
+    linkedApplication: [ 41 ]
+- model: variableServer.application
+  pk: 41
+  fields:
+    name: linkedApp4
+- model: variableServer.application
+  pk: 5
+  fields: { name: app5NoVar }
+- model: variableServer.application
+  pk: 6
+  fields: { name: app6NoVarNoTest }
+- model: variableServer.application
+  pk: 777
+  fields: { name: appFileVar }
+
+- model: variableServer.testcase
+  pk: 3
+  fields:
+    name: test3 with some spaces
+    application: 5
+
+# variable specific to an application (any version)
+- fields:
+    name: appName
+    value: myApp
+    application: 1
+    version: null
+    environment: null
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 3
+
+# variable specific to an application (any version)
+- fields:
+    name: appName
+    value: myOtherApp
+    application: 2
+    version: null
+    environment: null
+    test: [ ]
+    internal: false
+    protected: false
+    releaseDate: null
+    description: null
+    creationDate: "2018-07-10 13:01:56.784734+00:00"
+  model: variableServer.variable
+  pk: 301

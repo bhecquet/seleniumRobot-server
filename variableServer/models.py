@@ -4,10 +4,16 @@ from django.dispatch import receiver
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.contrib import admin
+from django.urls import reverse
+from django.utils.html import format_html
 from django.db.models.signals import pre_save, post_delete
+
+from auditlog.registry import auditlog
 
 import commonsServer.models
 from commonsServer.utils.encryption import encrypt_data, decrypt_data
+
 
 
 class TestEnvironment(commonsServer.models.TestEnvironment):
@@ -84,7 +90,8 @@ class Variable(models.Model):
     
     def __str__(self):
         return self.name
-    
+
+    @admin.display(ordering='name')
     def nameWithApp(self):
         if self.application:
             return "%s.%s" % (self.application, self.name)
@@ -102,12 +109,24 @@ class Variable(models.Model):
             return self.value
     valueProtected.short_description = 'Value'
 
-    def uploadFileReforged(self):
+    @admin.display(ordering='pk')
+    def link(self):
+        """
+        Format a link for display in admin list
+        """
+        return format_html('<a href="{}?format=json">{}</a>', self.get_api_url(), self.upload_file_path())
+
+    def get_api_url(self):
+        """
+        Returns the URL of the file, pointing to 'download_variable' API
+        """
+        return reverse('download_variable', args=[self.pk])
+
+    def upload_file_path(self):
         if "/" in str(self.uploadFile):
             return str(self.uploadFile).split("/")[-1]
         else:
             return str(self.uploadFile)
-    uploadFileReforged.short_description = "uploadFile"
 
     def get_file_path(self):
         filename = self.uploadFile.name.split("/")[-1]
@@ -146,7 +165,8 @@ class Variable(models.Model):
             if list(var.test.all()) == list(self.test.all()):
                 var.reservable = self.reservable
                 var.save()
-    
+
+    @admin.display(ordering='test__name')
     def allTests(self):
         return ",".join([t.name for t in self.test.all()])
 
@@ -158,6 +178,7 @@ class Variable(models.Model):
     name = models.CharField(max_length=100)
     value = EncryptedField(max_length=3000, blank=True)
     uploadFile = models.FileField(blank=True, upload_to=get_upload_path)
+    description = models.CharField(max_length=500, default="", null=True)
     application = models.ForeignKey(Application, null=True, on_delete=models.CASCADE) 
     environment = models.ForeignKey(TestEnvironment, null=True, on_delete=models.CASCADE)
     version = models.ForeignKey(Version, null=True, on_delete=models.CASCADE)
@@ -166,7 +187,6 @@ class Variable(models.Model):
     reservable = models.BooleanField(default=False, help_text="tick it if this variable should be reserved when used to prevent other tests to use it at the same time. Default is false")
     internal = models.BooleanField(default=False, help_text="tick it if this variable has been created by a selenium test. Variable of such type should be prefixed with 'custom.test.variable'")
     protected = models.BooleanField(default=False)
-    description = models.CharField(max_length=500, default="", null=True)
     creationDate = models.DateTimeField(default=timezone.now)
     timeToLive = models.IntegerField(default=-1, help_text="number of days this variable will live before being destroyed. If < 0, this variable will live forever")
     # When adding a field, don't forget to add it in serializers.py
@@ -188,3 +208,8 @@ def delete_variable_file(sender, instance, **kwargs):
     """
     if instance.uploadFile:
         instance.delete_variable_file()
+
+def custom_mask(value: str) -> str:
+    return value[:2] + "****" + value[-1:]
+
+auditlog.register(Variable, mask_fields=['value'], mask_callable='variableServer.models.custom_mask')

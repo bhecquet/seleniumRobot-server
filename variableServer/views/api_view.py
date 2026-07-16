@@ -10,7 +10,6 @@ import random
 import time
 from builtins import ValueError
 
-from django.conf import settings
 from django.db import transaction
 from django.http.response import Http404, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -20,9 +19,9 @@ from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from commonsServer.views.viewsets import ApplicationSpecificFilter, ApplicationSpecificViewSet
-from seleniumRobotServer.permissions.permissions import ApplicationPermissionChecker, \
-    ApplicationSpecificPermissionsVariables
+from commonsServer.views.viewsets import ApplicationSpecificViewSet
+from seleniumRobotServer.permissions.permissions import ContextPermissionChecker, \
+    ContextSpecificPermissionsVariables
 from variableServer.exceptions.AllVariableAlreadyReservedException import AllVariableAlreadyReservedException
 from variableServer.models import Variable, TestEnvironment, Version, TestCase, Application
 from variableServer.utils.utils import updateVariables
@@ -69,7 +68,7 @@ class VariableQuerySet(list):
                     
         return new_list
     
-class VariableFilter(ApplicationSpecificFilter): 
+class VariableFilter:
     
     def _filter_get_queryset(self, request, queryset, view):
         """
@@ -170,17 +169,20 @@ class VariableFilter(ApplicationSpecificFilter):
         # in case name is provided, filter variables
         if variable_name:
             variables = variables.filter(name=variable_name)
-            
+
+        variable_list = list(variables)
+
         # in case value is provided, filter variables
         if variable_value:
-            variables = variables.filter(value=variable_value)
-            
-        variable_names = list(set([v.name for v in variables]))
-            
-        filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variables])
-        
+            variable_list = [v for v in variable_list if v.value == variable_value]
+
+        variable_names = list(set([v.name for v in variable_list]))
+
+
+        # see: https://github.com/bhecquet/seleniumRobot-server/issues/128
         with transaction.atomic():
-            
+
+            filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variable_list]).order_by('id')
             unique_variable_list = self._unique_variable(filtered_variables)
             
             # check we still have all variables after filtering. Else test may fail
@@ -190,11 +192,12 @@ class VariableFilter(ApplicationSpecificFilter):
             
             initial_list = []
             if reserve_reservable_variables:            
-                initial_list = [v for v in self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)]
+                initial_list = self._reserve_reservable_variables(unique_variable_list, application_name, version_name, environment_name, test_name, reservation_duration)
             else:
-                initial_list = [v for v in unique_variable_list]
-                
-        initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree)
+                initial_list = unique_variable_list
+
+        # for now, we get variables from linked application, but if any is reservable, it won't be reserved
+        initial_list += self._get_linked_application_variables(all_variables, version.application, environment_tree, variable_name, variable_value)
         
         return initial_list
     
@@ -218,12 +221,13 @@ class VariableFilter(ApplicationSpecificFilter):
             return queryset
 
         # return the whole list when permission are not restricted to some applications
-        if view.get_permissions()[0]._bypass_application_permissions(request, view):
+        if view.get_permissions()[0]._bypass_context_permissions(request, view):
             return VariableQuerySet(variable_list)
         
-        allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request)
+        allowed_applications = ContextPermissionChecker.get_allowed_applications(request)
+        allowed_environments = ContextPermissionChecker.get_allowed_environments(request)
         
-        filtered_variables = [v for v in variable_list if v.application and v.application.name in allowed_applications]
+        filtered_variables = [v for v in variable_list if (v.application and v.application.name in allowed_applications) or (v.environment and v.environment.name in allowed_environments)]
         return VariableQuerySet(filtered_variables)
     
     def _unique_variable(self, variable_query_set):
@@ -246,7 +250,7 @@ class VariableFilter(ApplicationSpecificFilter):
             if variable.name not in existing_variable_names:
                 unique_variable_list.append(variable)
                 existing_variable_names.append(variable.name)
-        return variable_query_set.filter(pk__in=[v.pk for v in unique_variable_list])
+        return unique_variable_list
 
     def _reserve_reservable_variables(self, variable_list, application, version, environment, test, reservation_duration):
         """
@@ -263,7 +267,7 @@ class VariableFilter(ApplicationSpecificFilter):
                 
         return variable_list
     
-    def _get_linked_application_variables(self, all_variables, application, environment_tree):
+    def _get_linked_application_variables(self, all_variables, application, environment_tree, variable_name, variable_value):
         """
         Get all variables of the applications linked to the requested application
         """
@@ -275,30 +279,50 @@ class VariableFilter(ApplicationSpecificFilter):
             
                 for env in environment_tree:
                     linked_application_variables = updateVariables(linked_application_variables, all_variables.filter(application=linked_application, version=None, environment=env, test=None, reservable=False))
- 
+
+        # in case name is provided, filter variables
+        if variable_name:
+            linked_application_variables = linked_application_variables.filter(name=variable_name)
+
+        linked_application_variable_list = list(linked_application_variables)
+
+        # in case value is provided, filter variables
+        if variable_value:
+            linked_application_variable_list = [v for v in linked_application_variable_list if v.value == variable_value]
+
         updated_linked_application_variables = []
-        for var in linked_application_variables:
+        for var in linked_application_variable_list:
             updated_linked_application_variables.append(Variable(id=var.id, name=var.nameWithApp, value=var.value, application=var.application, version=var.version, environment=var.environment))
  
         return updated_linked_application_variables
     
-class VariablesPermissions(ApplicationSpecificPermissionsVariables):
+class VariablesPermissions(ContextSpecificPermissionsVariables):
     """
     We get variables by various parameters: "name", "environment", "application", ...
     Search criteria cannot always help associating an application.
-    So, in case of GET request, let user go on as filtering in VariableFilter.filter_queryset where only variable
+    So, in case of GET request, let user go on as filtering is in VariableFilter.filter_queryset where only variable
     that can be seen by user will be returned
     """
 
     def get_application(self, request, view):
         if request.method == 'GET':
-            allowed_applications = ApplicationPermissionChecker.get_allowed_applications(request, self.prefix)
+            allowed_applications = ContextPermissionChecker.get_allowed_applications(request, self.app_prefix)
             if allowed_applications:
                 return Application.objects.get(name=allowed_applications[0])
             else:
                 return ''
         else:
             return super().get_application(request, view)
+
+    def get_environment(self, request, view):
+        if request.method == 'GET':
+            allowed_environments = ContextPermissionChecker.get_allowed_environments(request, self.env_prefix)
+            if allowed_environments:
+                return TestEnvironment.objects.get(name=allowed_environments[0])
+            else:
+                return ''
+        else:
+            return super().get_environment(request, view)
 
 
 class VariableList(ApplicationSpecificViewSet):
@@ -309,10 +333,10 @@ class VariableList(ApplicationSpecificViewSet):
     queryset = Variable.objects.none()
     
     def _reset_past_release_dates(self):
-        for var in Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')):
-            var.releaseDate = None
-            var.save()
-            logger.info("unreserve variable [%d] automatically %s=%s " % (var.id, var.name, var.value))
+
+        updated = Variable.objects.filter(releaseDate__lte=time.strftime('%Y-%m-%d %H:%M:%S%z')).update(releaseDate=None)
+        if updated:
+            logger.info("unreserved %d variables automatically" % updated)
         
     def _delete_old_variables(self):
         """
@@ -358,7 +382,7 @@ class VariableList(ApplicationSpecificViewSet):
         
         return self.partial_update(request, *args, **kwargs)
 
-class VariableDownloadPermissions(ApplicationSpecificPermissionsVariables):
+class VariableDownloadPermissions(ContextSpecificPermissionsVariables):
 
     def get_application(self, request, view):
         if request.method == 'GET':

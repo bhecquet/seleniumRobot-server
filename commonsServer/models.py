@@ -3,7 +3,8 @@ from looseversion import LooseVersion
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 from django.contrib.auth.models import Permission
-
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 class TruncatingCharField(models.CharField):
     def get_prep_value(self, value):
@@ -13,7 +14,12 @@ class TruncatingCharField(models.CharField):
         return value
 
 class Application(models.Model):
-    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_name')
+        ]
+
     app_variable_permission_code = 'can_view_application_'
     app_result_permission_code = 'can_view_results_application_'
 
@@ -33,9 +39,8 @@ class Application(models.Model):
     
     def __str__(self):
         return self.name
-     
-    def save(self, *args, **kwargs):
-        super(Application, self).save(*args, **kwargs)
+
+    def add_application_permission(self):
         content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
 
         # permissions for handling application variables / recording
@@ -43,26 +48,37 @@ class Application(models.Model):
             codename=Application.app_variable_permission_code + self.name,
             name='Can view application and related variables and versions for ' + self.name,
             content_type=content_type,
-            )
+        )
 
         Permission.objects.get_or_create(
             codename=Application.app_result_permission_code + self.name,
             name='Can view results for ' + self.name,
             content_type=content_type,
         )
+     
+    def save(self, *args, **kwargs):
+        super(Application, self).save(*args, **kwargs)
+        self.add_application_permission()
+
         
     def delete(self, *args, **kwargs):
         super(Application, self).delete(*args, **kwargs)
         Permission.objects.get(codename=Application.app_variable_permission_code + self.name).delete()
     
 class Version(models.Model):
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'application'], name='unique_name_for_application')
+        ]
+
     application = models.ForeignKey(Application, related_name='version', on_delete=models.CASCADE)
     name = models.CharField(max_length=50)
     
     def __str__(self):
         return self.application.name + '-' + self.name
     
-    def previousVersions(self):
+    def previous_versions(self):
         """
         Get all versions for the same application, previous to this one
         """
@@ -70,7 +86,7 @@ class Version(models.Model):
         versions.sort(key=lambda v: LooseVersion(v.name), reverse=False)
         return versions
     
-    def nextVersions(self):
+    def next_versions(self):
         """
         Get all versions for the same application, previous to this one
         """
@@ -83,7 +99,15 @@ class TestEnvironment(models.Model):
     An environment can be linked to an other one
     For example, NonReg1 is a NonReg environment from which it will get all variables
     """
-    
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name'], name='unique_environment')
+        ]
+
+    env_variable_permission_code = 'can_view_environment_'
+    env_result_permission_code = 'can_view_results_environment_'
+
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=20)
     
@@ -101,10 +125,64 @@ class TestEnvironment(models.Model):
     genericEnvironment = models.ForeignKey('self', null=True, on_delete=models.CASCADE)
     genericEnvironment.short_description = 'generic environnement'
 
+    def add_environment_permission(self):
+        content_type = ContentType.objects.get_for_model(type(self), for_concrete_model=False)
+
+        # permissions for handling environment variables / recording
+        Permission.objects.get_or_create(
+            codename=TestEnvironment.env_variable_permission_code + self.name,
+            name='Can view environment and related variables for ' + self.name,
+            content_type=content_type,
+        )
+
+        Permission.objects.get_or_create(
+            codename=TestEnvironment.env_result_permission_code + self.name,
+            name='Can view results for environment ' + self.name,
+            content_type=content_type,
+        )
+
+    def save(self, *args, **kwargs):
+        super(TestEnvironment, self).save(*args, **kwargs)
+        self.add_environment_permission()
+
 class TestCase(models.Model):
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['name', 'application'], name='unique_test_for_application')
+        ]
+
     __test__= False  # avoid detecting it as a test class
     name = models.CharField(max_length=150)
     application = models.ForeignKey(Application, related_name='testCase', on_delete=models.CASCADE)
     
     def __str__(self):
         return "%s - %s" % (self.name, self.application.name)
+
+class AppPreference(models.Model):
+    key = models.CharField(max_length=128, unique=True)
+    value = models.TextField(blank=True, default="")
+    initialValue = models.TextField(blank=True, default="") # value that user should not change, juste here for information
+    description = models.TextField(blank=True, default="")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Application preference"
+        verbose_name_plural = "Application preferences"
+        ordering = ("key",)
+
+    def __str__(self):
+        return self.key
+
+@receiver(post_save, sender=AppPreference)
+def preference_saved(sender, instance, **kwargs):
+
+    from commonsServer.preferences import invalidate_pref_cache
+    invalidate_pref_cache(instance.key)
+
+
+@receiver(post_delete, sender=AppPreference)
+def preference_deleted(sender, instance, **kwargs):
+
+    from commonsServer.preferences import invalidate_pref_cache
+    invalidate_pref_cache(instance.key)

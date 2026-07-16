@@ -1,6 +1,8 @@
 
 from django.db import models
 from django.db.models import Q
+from django.contrib import admin
+from django.utils.html import format_html
 
 from snapshotServer.controllers.error_cause import Cause, Reason
 from snapshotServer.controllers.picture_comparator import Rectangle
@@ -8,6 +10,7 @@ import pickle
 import commonsServer.models
 from django.dispatch.dispatcher import receiver
 from django.db.models.signals import  pre_delete
+from django.urls import reverse
 import datetime
 from commonsServer.models import TruncatingCharField
 from django.utils.safestring import mark_safe
@@ -204,6 +207,15 @@ class TestSession(models.Model):
         else:
             return "Session %s with %s" % (self.sessionId, self.browser)
 
+    @admin.display(ordering='pk')
+    def link(self):
+        url = reverse('testSessionSummaryView', args=[self.pk])
+        return format_html('<a href="{}">session {}</a>', url, self.pk)
+
+    @admin.display(ordering='test__name')
+    def allTests(self):
+        return ",".join([t.testCase.name for t in self.testcaseinsession_set.all()])
+
      
 def upload_path(instance, filename):
     return 'documents/references/%s/%s/%s' % (instance.testCase.application, instance.testCase.name, filename)
@@ -236,7 +248,7 @@ class StepReference(models.Model):
     image_tag.short_description = 'Image'
     
     def step_name(self):
-        return self.stepResult.step.name
+        return self.testStep.name
     
     # we could also add: signature, text, fields, for comparison
 
@@ -315,11 +327,11 @@ class Snapshot(models.Model):
         """
         
         # get list of all snapshots following ourself, sharing 'refSnapshot'
-        next_snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step, 
-                                            stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name, 
-                                            stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.nextVersions(),
-                                            refSnapshot=ref_snapshot,
-                                            id__gt=self.id) \
+        next_snapshots = Snapshot.objects.filter(stepResult__step=self.stepResult.step,
+                                                 stepResult__testCase__testCase__name=self.stepResult.testCase.testCase.name,
+                                                 stepResult__testCase__session__version__in=self.stepResult.testCase.session.version.next_versions(),
+                                                 refSnapshot=ref_snapshot,
+                                                 id__gt=self.id) \
                                         .order_by('id')
         
         snapshots = []

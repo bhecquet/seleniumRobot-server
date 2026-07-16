@@ -5,58 +5,25 @@ Created on 11 mai 2017
 '''
 import django.test
 
-from snapshotServer.models import Snapshot, Application, Version, TestStep, \
-    TestSession, TestEnvironment, TestCase, TestCaseInSession, StepResult
-import datetime
-import pytz
+from snapshotServer.models import Snapshot, Version, TestStep, TestCase, StepResult
 from django.db.utils import IntegrityError
 from snapshotServer.tests import SnapshotTestCase
 
 
 class TestSnapshots(SnapshotTestCase):
-    
+
+    fixtures = ['test_snapshots.yaml']
+
     def setUp(self):
         super().setUp()
-        self.app = Application(name="test")
-        self.app.save()
-        self.v1 = Version(application=self.app, name='1.0')
-        self.v1.save()
-        self.v2 = Version(application=self.app, name='2.0')
-        self.v2.save()
-        env = TestEnvironment(name='DEV')
-        env.save()
-        self.session1 = TestSession(sessionId="1234", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", environment=env, version=self.v1, ttl=datetime.timedelta(0))
-        self.session1.save()
-        self.session_same_env = TestSession(sessionId="1235", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", environment=env, version=self.v1, ttl=datetime.timedelta(0))
-        self.session_same_env.save()
-        self.session3 = TestSession(sessionId="1236", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", environment=env, version=self.v2, ttl=datetime.timedelta(0))
-        self.session3.save()
-        self.session4 = TestSession(sessionId="1237", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", environment=env, version=self.v2, ttl=datetime.timedelta(0))
-        self.session4.save()
-        self.step = TestStep(name="step1")
-        self.step.save()
-        self.tc1 = TestCase(name="case1", application=self.app)
-        self.tc1.save()
-        self.tcs1 = TestCaseInSession(testCase=self.tc1, session=self.session1)
-        self.tcs1.save()
-        self.tcs_same_env = TestCaseInSession(testCase=self.tc1, session=self.session_same_env)
-        self.tcs_same_env.save()
-        self.tcs3 = TestCaseInSession(testCase=self.tc1, session=self.session3)
-        self.tcs3.save()
-        self.tcs4 = TestCaseInSession(testCase=self.tc1, session=self.session4)
-        self.tcs4.save()
-        self.tcs1.testSteps.set([self.step])
-        self.tcs1.save()
-        self.tcs_same_env.testSteps.set([self.step])
-        self.tcs_same_env.save()
-        self.tsr1 = StepResult(step=self.step, testCase=self.tcs1, result=True)
-        self.tsr1.save()
-        self.tsr2 = StepResult(step=self.step, testCase=self.tcs_same_env, result=True)
-        self.tsr2.save()
-        self.tsr3 = StepResult(step=self.step, testCase=self.tcs3, result=True)
-        self.tsr3.save()
-        self.tsr4 = StepResult(step=self.step, testCase=self.tcs4, result=True)
-        self.tsr4.save()
+        self.v1 = Version.objects.get(pk=1)
+        self.v2 = Version.objects.get(pk=2)
+        self.step = TestStep.objects.get(pk=1)
+        self.tc1 = TestCase.objects.get(pk=1)
+        self.tsr1 = StepResult.objects.get(pk=1)
+        self.tsr2 = StepResult.objects.get(pk=2)
+        self.tsr3 = StepResult.objects.get(pk=3)
+        self.tsr4 = StepResult.objects.get(pk=4)
     
     def test_no_next_snapshots(self):
         """

@@ -3,15 +3,24 @@ Created on 3 déc. 2024
 
 @author: S047432
 '''
-from typing import List, Optional
+import json
+from typing import Optional
 
-from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
+from django.shortcuts import get_object_or_404
+from django.utils import timezone
+from django.utils.decorators import method_decorator
+from django.views.decorators.clickjacking import xframe_options_exempt
 from django.views.generic.list import ListView
+
 from snapshotServer.models import TestSession, TestCaseInSession, StepResult, Error
 import json
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
+from seleniumRobotServer.permissions.permissions import ENV_SPECIFIC_RESULT_VIEW_PERMISSION_PREFIX
+from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
+
+@method_decorator(xframe_options_exempt, name='dispatch')
 class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
     """
     View displaying a summary of tests executed during a test session
@@ -35,7 +44,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
         for test_case_in_session in TestCaseInSession.objects.filter(session = session_id).order_by("date"):
             step_results = test_case_in_session.stepresult.all()
 
-            error = self.get_error_in_test(test_case_in_session.stepresult.all())
+            error = self.get_error_in_test(test_case_in_session.stepresult.all().order_by("id"))
             error_str = None
             
             if error:
@@ -86,7 +95,11 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
     def get_target_application(self):
         test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
         return test_session.version.application
-            
+
+    def get_target_environment(self):
+        test_session = TestSession.objects.get(id=self.kwargs['sessionId'])
+        return test_session.environment
+
     def get_context_data(self, **kwargs):
         
         context = super(TestSessionSummaryView, self).get_context_data(**kwargs)

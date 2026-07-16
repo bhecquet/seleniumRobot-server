@@ -1,0 +1,38 @@
+# Minimal dataset for TestDiffComputer
+# The tests only need two StepResult objects (id 1 and 2) to which they attach snapshots dynamically.
+# Everything else (snapshots, images, exclude zones) is created in the tests themselves.
+
+-   model: snapshotServer.application
+    pk: 1
+    fields: {name: myapp}
+
+-   model: snapshotServer.version
+    pk: 1
+    fields: {application: 1, name: '2.4'}
+
+-   model: snapshotServer.testenvironment
+    pk: 1
+    fields: {name: DEV}
+
+-   model: snapshotServer.teststep
+    pk: 1
+    fields: {name: Step 1}
+
+-   model: snapshotServer.testcase
+    pk: 1
+    fields: {name: test1, application: 1}
+
+-   model: snapshotServer.testsession
+    pk: 1
+    fields: {sessionId: '1234', version: 1, date: '2017-05-05T11:16:09+00:00', browser: firefox, environment: 1, ttl: '0'}
+
+-   model: snapshotServer.testcaseinsession
+    pk: 1
+    fields: {testCase: 1, session: 1}
+
+-   model: snapshotServer.stepresult
+    pk: 1
+    fields: {step: 1, testCase: 1, result: true}
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields: {step: 1, testCase: 1, result: true}

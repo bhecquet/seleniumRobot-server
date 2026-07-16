@@ -72,9 +72,7 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
         # create the StepResult object from provided data
         version = Version.objects.get(id=self.cleaned_data['versionId'])
         environment = TestEnvironment.objects.get(id=self.cleaned_data['environmentId'])
-        test_case = TestCase(name=self.cleaned_data['testCaseName'], 
-                            application=version.application)
-        test_case.save() # should be deleted later / save it due to django 5 change
+        test_case = TestCase.objects.get_or_create(name=self.cleaned_data['testCaseName'], application=version.application)[0]
         test_session = TestSession(sessionId='123',
                                   version=version,
                                   browser=self.cleaned_data['browser'],

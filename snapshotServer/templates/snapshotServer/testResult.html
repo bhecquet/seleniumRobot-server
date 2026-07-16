@@ -4,29 +4,16 @@
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot_solo.css' %}">
-
+ 
     <script type="text/javascript" src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
-	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
+	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>	
 	<script type="text/javascript" src="{% static 'js/testResult.js' %}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
 
 {% endblock %}
 
 {% block body %}
 
 <header class="{% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
-
-    <div class="container mt-3">
-        {% if messages %}
-            {% for message in messages %}
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    {{ message }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            {% endfor %}
-        {% endif %}
-    </div>
 	<div class="row">
 
 		<div class="col back-link">
@@ -87,190 +74,216 @@
 	                    <tr>
 	                        <th>Grid node</th>
 	                        <td>{{ currentTest.gridNode }}</td>
-	                    </tr>
-
+	                    </tr>                                                                                                
+	                    
 	                    {% for info_name, info in infos.items %}
 	                    <tr>
 	                        <th>{{ info_name }}</th>
-                            {% include "snapshotServer/info.html" with info=info %}
-                        </tr>
-                        {% endfor %}
+                            {% include "snapshotServer/info.html" with info=info %}  
+                        </tr>  
+                        {% endfor %}                                                                                               
                     </table>
 
 		      		{% for stepResult, snapshotsCompared in object_list.items %}
-                        <div class="box collapsed-box {% if stepResult.details.failed %}failed{% else %}success{% endif %}">
+		      			<div class="box {% if stepResult.details.status == 'SUCCESS' %}success{% elif stepResult.details.status == 'FAILED' %}failed{% elif stepResult.details.status == 'WARNING' %}warning{% else %}skipped{% endif %}">
 						<!-- Step result {{stepResult.id}} -->
 							<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse">
-								<i class="fa fa-plus"></i>
-							</button>
-							<span class="step-title"> {{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs</span>
-							{% if stepResult.details.videoTimeStamp %}
-                            	<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
-                            	   {% for snapshotCompared in snapshotsCompared %}
-                            	       <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
-                            	   {% endfor %}
-                            	</span>
-                            {% endif %}
-						</div>
-						<div class="box-body">
-							{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
+								<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-{{ stepResult.step.id }}" aria-expanded="false" aria-controls="box-body-{{ stepResult.step.id }}">
+									<i class="fa-solid fa-angle-right collapse-icon"></i>
+								</button>
+								<span class="step-title">
+									{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
+								</span>
+								{% if stepResult.details.videoTimeStamp %}
+									<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
+									   {% for snapshotCompared in snapshotsCompared %}
+										   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
+									   {% endfor %}
+									</span>
+								{% endif %}
+							</div>
+							<div class="box-body collapse" id="box-body-{{ stepResult.step.id }}">
+								{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
 
-							{% if stepResult.details.exception %}
+								{% if stepResult.details.exception %}
 								<div class="message-error">
-                                    {{ stepResult.details.exceptionMessage }}
-                                </div>
-                                <!-- suggestedCause -->
-                                {% if stepResult.details.suggestedCause %}
-                                    <div style="margin-top:10px; background:#e8f0fe; padding:6px;">
-                                         Cause probable : {{ stepResult.details.suggestedCause }}
-                                    <!--({{ stepResult.details.confidence }}%)-->
+									{{ stepResult.details.exceptionMessage }}
+								</div>
 
-                                    </div>
+								{% if stepResult.details.suggestedCause %}
+								<div style="margin-top: 10px; background: #e8f0fe; padding: 6px;">
+									Cause probable : {{ stepResult.details.suggestedCause }}
+								</div>
+								{% endif %}
 
-                                {% endif %}
+								<div style="margin-top: 10px;">
+									<button type="button"
+											class="btn btn-sm btn-outline-primary collapsed"
+											data-bs-toggle="collapse"
+											data-bs-target="#form-{{ stepResult.id }}"
+											aria-expanded="false"
+											aria-controls="form-{{ stepResult.id }}">
+										Déclarer une cause
+									</button>
+								</div>
 
+								<div id="form-{{ stepResult.id }}" class="collapse">
+									<div style="margin-top: 12px;
+                    padding: 15px;
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    background: #f8f9fa;
+                    max-width: 460px;">
 
-                                <!-- formulaire base de connaisance  -->
+										/snapshot/api/save-error-cause/
+										{% csrf_token %}
 
-                                <!-- bouton -->
-                                <div style="margin-top:10px;">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#form-{{ stepResult.id }}">
-                                         Déclarer une cause
-                                    </button>
-                                </div>
-
-                                <!-- formulaire -->
-                                <div id="form-{{ stepResult.id }}" class="collapse">
-
-                                <div style="margin-top:12px; padding:15px; border:1px solid #ddd; border-radius:8px; background:#f8f9fa; max-width:460px;">
-                                    <form method="post" action="/snapshot/api/save-error-cause/">
-
-                                    <div style=" font-weight:bold; margin-bottom:10px;">
-                                         Ajouter un diagnostic
-                                    </div>
-
-                                    <!-- Type -->
-                                    <div style="margin-bottom:10px;">
-                                        <label style="font-size:13px; color:#555;" >Type</label><br/>
-                                        <select name="cause" class="cause-type"  style="width:100%; padding:5px;">
-                                            <option value="Application">Application</option>
-                                            <option value="Configuration">Configuration</option>
-                                            <option value="Script">Script</option>
-                                            <option value="Environment">Environment</option>
-                                        </select>
-                                    </div>
-
-                                    <!-- Détail -->
-                                    <div style="margin-bottom:10px;">
-                                        <label style="font-size:13px; color:#555;">Commentaire</label><br/>
-
-                                        <textarea type="text"
-                                                name="commentaire"
-                                                class="commentaire-cause"
-                                                rows="3"
-                                                maxlength="180"
-                                                style="width:100%; padding:6px;"
-                                                placeholder="Ex : Le bouton Ok n’est pas affiché car l’application ne retourne pas les données attendues">
-</textarea>
-
-                                        <small class="commentaire-help" style="display:block; margin-top:6px; color:#666; font-size:12px;">
-                                            Décrire la cause probable en une phrase courte.
-                                            Ne pas répéter l’exception technique.
-                                        </small>
-                                    </div>
-
-                                    <!-- Hidden -->
-                                    <input type="hidden" name="exception" value="{{ stepResult.details.exception }}">
-                                        <input type="hidden" name="errorMessage" value="{{ stepResult.details.exceptionMessage }}">
-                                    <input type="hidden" name="stepName" value="{{ stepResult.details.name }}">
-                                        <input type="hidden" name="testCaseId" value="{{ currentTest.testCase.id }}">
-                                        <input type="hidden" name="testStepId" value="{{ stepResult.step.id }}">
-                                    <!-- Button -->
-                                    <div style="text-align:right;">
-                                        <button type="submit" class="btn btn-primary btn-sm">
-                                            Enregistrer
-                                        </button>
-                                    </div>
-                                    </form>
-                                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                                </div>
-                                </div>
-
-
-                            {% endif %}
-
-							<div class="row">
-						        {% for snapshot in stepResult.details.snapshots %}
-						        	{% if snapshot.displayInReport and snapshot.idImage %}
-						        		<div class="message-snapshot col">
-							        		<div class="message-snapshot col">
-								        		<div class="text-center">
-							        			      <a href="#" onclick="$('#imagepreview').attr('src', $('#{{ snapshot.idImage }}').attr('src'));$('#imagemodal').modal('show');">
-							        			          <img id="{{ snapshot.idImage }}" src="{% url "file-download" snapshot.idImage %}" style="width: 300px">
-							        			      </a>
-							        			</div>
-											</div>
-											{% if snapshot.title %}
-												<div class="text-center">{{snapshot.name}}:{{ snapshot.title }}</div>
-											{% else %}
-												<div class="text-center">{{snapshot.name}}</div>
-											{% endif %}
-											<div class="text-center font-weight-lighter">
-											{% if snapshot.url %}<a href="{{ snapshot.url }}" target=url>URL</a>{% endif %}
-											{% if snapshot.idHtml %}| <a href="{% url "file-download" snapshot.idHtml %}" target=html>HTML Source</a>{% endif %}
-											</div>
+										<div style="font-weight: bold; margin-bottom: 10px;">
+											Ajouter un diagnostic
 										</div>
-						        	{% endif %}
-						        {% endfor %}
-						    </div>
-						    <div id="step_{{ stepResult.step.id }}">
-							</div>
 
-						    <script>
-								updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
-							</script>
+										<div style="margin-bottom: 10px;">
+											<label style="font-size: 13px; color: #555;">
+												Type
+											</label>
+											<br>
 
-							<!-- Files -->
-							{% for file in stepResult.details.files %}
-								<div class="message-snapshot">
-									{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
+											<select name="cause"
+													class="cause-type"
+													style="width: 100%; padding: 5px;">
+												<option value="Application">Application</option>
+												<option value="Configuration">Configuration</option>
+												<option value="Script">Script</option>
+												<option value="Environment">Environment</option>
+											</select>
+										</div>
+
+										<div style="margin-bottom: 10px;">
+											<label style="font-size: 13px; color: #555;">
+												Commentaire
+											</label>
+											<br>
+
+											<textarea name="commentaire"
+													  class="commentaire-cause"
+													  rows="3"
+													  maxlength="180"
+													  required
+													  style="width: 100%; padding: 6px;"
+													  placeholder="Décrire la cause probable"></textarea>
+
+											<small style="display: block;
+                                  margin-top: 6px;
+                                  color: #666;
+                                  font-size: 12px;">
+												Décrire la cause probable en une phrase courte.
+												Ne pas répéter l’exception technique.
+											</small>
+										</div>
+
+										<input type="hidden"
+											   name="exception"
+											   value="{{ stepResult.details.exception }}">
+
+										<input type="hidden"
+											   name="errorMessage"
+											   value="{{ stepResult.details.exceptionMessage }}">
+
+										<input type="hidden"
+											   name="stepName"
+											   value="{{ stepResult.details.name }}">
+
+										<input type="hidden"
+											   name="testCaseId"
+											   value="{{ currentTest.testCase.id }}">
+
+										<input type="hidden"
+											   name="testStepId"
+											   value="{{ stepResult.step.id }}">
+
+										<div style="text-align: right;">
+											<button type="submit"
+													class="btn btn-primary btn-sm">
+												Enregistrer
+											</button>
+										</div>
+										</form>
+									</div>
 								</div>
-							{% endfor %}
-							{% for har in stepResult.details.harCaptures %}
-								<div class="message-har">
-									Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
+								{% endif %}
+
+								<div class="row">
+									{% for snapshot in stepResult.details.snapshots %}
+										{% if snapshot.displayInReport and snapshot.idImage %}
+											<div class="message-snapshot col">
+												<div class="message-snapshot col">
+													<div class="text-center">
+														  <a href="#" onclick="$('#imagepreview').attr('src', $('#{{ snapshot.idImage }}').attr('src'));$('#imagemodal').modal('show');">
+															  <img id="{{ snapshot.idImage }}" src="{% url "file-download" snapshot.idImage %}" style="width: 300px">
+														  </a>
+													</div>
+												</div>
+												{% if snapshot.title %}
+													<div class="text-center">{{snapshot.name}}:{{ snapshot.title }}</div>
+												{% else %}
+													<div class="text-center">{{snapshot.name}}</div>
+												{% endif %}
+												<div class="text-center font-weight-lighter">
+												{% if snapshot.url %}<a href="{{ snapshot.url }}" target=url>URL</a>{% endif %}
+												{% if snapshot.idHtml %}| <a href="{% url "file-download" snapshot.idHtml %}" target=html>HTML Source</a>{% endif %}
+												</div>
+											</div>
+										{% endif %}
+									{% endfor %}
 								</div>
-							{% endfor %}
+								<div id="step_{{ stepResult.step.id }}">
+								</div>
+								<!-- snapshot comparison part -->
+								<script>
+									updatePanel("{% url "pictureViewNoHeader" testCaseId stepResult.step.id %}", "step_{{ stepResult.step.id }}")
+								</script>
+
+								<!-- Files -->
+								{% for file in stepResult.details.files %}
+									<div class="message-snapshot">
+										{{ file.name }}: <a href="{% url "file-download" file.id %}">file</a>
+									</div>
+								{% endfor %}
+								{% for har in stepResult.details.harCaptures %}
+									<div class="message-har">
+										Network capture "{{ har.name }}" browser: <a href="{% url "file-download" har.id %}">HAR file</a>
+									</div>
+								{% endfor %}
+
+								<!-- TODO
+								Cause de l'erreur (dans le header)
+								Possibilité d'enregistrer la cause de l'étape KO
+								Autres infos (comme le n° de jira)
+								-->
 
 
-
-
+								</div>
 							</div>
-						</div>
-
+		      	
 		      		{% endfor %}
-
-
+		      		
+		      		<!-- step for displaying if snapshot comparison is OK or KO -->
 		      		{% if currentTest.session.compareSnapshot %}
-		      		<div class="box collapsed-box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
+		      		<div class="box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Snapshot comparison
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-snapshot-comparison" aria-expanded="false" aria-controls="box-body-snapshot-comparison"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Snapshot comparison
 						</div>
-						<div class="box-body">
+						<div class="box-body collapse" id="box-body-snapshot-comparison">
 							Snapshot comparison {% if snasphotComparisonResult %}OK{% else %}KO{% endif %}
 						</div>
 					</div>
 		      		{% endif %}
-
-					<div class="box collapsed-box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
+		
+					<div class="box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
 						<div class="box-header with-border">
-							<button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-plus"></i></button> Execution logs
+							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-exec-logs" aria-expanded="false" aria-controls="box-body-exec-logs"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Execution logs
 						</div>
-						<div class="box-body logs">
+						<div class="box-body logs collapse" id="box-body-exec-logs">
 							{% if stacktrace %}
 								<div class="message-error">
 									{% for line in stacktrace %}
@@ -286,18 +299,17 @@
 							{% for line in logs %}
 								<div>{{ line }}</div>
 							{% endfor %}
-
+							
 						</div>
-					</div>
+					</div>				
 				</div>
 			</div>
 		</section>
-	</div>
+	</div>		
 </div>
 <script>
-
     var elements = document.getElementsByClassName("stepTimestamp");
-
+    
     function toggleTimestamps() {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
@@ -308,44 +320,16 @@
             }
         }
     }
-    document.querySelectorAll('[data-bs-toggle="collapse"]').forEach(button => {
-        button.addEventListener('click', function () {
-            const targetId = this.getAttribute('data-bs-target');
-            const target = document.querySelector(targetId);
-
-            if (target.classList.contains('show')) {
-                target.classList.remove('show');
-            } else {
-                target.classList.add('show');
-            }
-        });
-    });
+    
     document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
+
+
 
 	var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'))
 	var popoverList = popoverTriggerList.map(function (popoverTriggerEl) {
 	  return new bootstrap.Popover(popoverTriggerEl)
 	})
 	console.log(popoverList);
-
-    const placeholdersCause = {
-        "Application": "Ex : Le bouton Ok n’est pas affiché car l’application ne retourne pas les données attendues",
-        "Configuration": "Ex : La variable URL ou une configuration obligatoire est absente dans l’environnement",
-        "Script": "Ex : Le locator du bouton est obsolète ou le scénario ne correspond plus à l’IHM",
-        "Environment": "Ex : Le service backend est indisponible ou l’environnement de test ne répond pas"
-    };
-
-    document.querySelectorAll(".cause-type").forEach(function(selectElement) {
-        selectElement.addEventListener("change", function() {
-            const form = selectElement.closest("form");
-            const commentaireField = form.querySelector(".commentaire-cause");
-
-            commentaireField.placeholder =
-                placeholdersCause[selectElement.value] || "Décrire la cause profonde probable";
-        });
-    });
-
-
 
 
 </script>
