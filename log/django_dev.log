@@ -1,0 +1,971 @@
+[2026-07-15 18:19:18] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:28:03] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:33:05] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_session_summary_view.py changed, reloading.
+[2026-07-15 18:33:07] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:35:10] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\seleniumRobotServer\settings_dev_mma.py changed, reloading.
+[2026-07-15 18:35:11] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:36:07] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:36:11] WARNING [django.request.log_response:253] Not Found: /
+[2026-07-15 18:36:11] WARNING [django.server.log_message:213] "GET / HTTP/1.1" 404 3746
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 42167
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3428
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-15 18:36:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-15 18:36:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-15 18:36:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-15 18:36:28] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\controllers\error_cause\error_cause_finder.py changed, reloading.
+[2026-07-15 18:36:30] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:36:50] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:37:02] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:37:07] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3245
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-15 18:37:08] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-15 18:39:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-15 18:39:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-15 18:47:49] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\variableServer\views\var_action_view.py changed, reloading.
+[2026-07-15 18:47:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 18:48:07] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-15 18:48:08] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 19:33:05] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-15 19:33:10] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 20:25:54] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-15 20:26:17] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 20:42:07] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\variableServer\admin.py changed, reloading.
+[2026-07-15 20:42:10] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3245
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-15 20:42:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-15 20:42:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:50] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-15 20:42:56] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-15 20:42:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 10:00:00] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 10:12:33] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 10:12:55] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 10:14:10] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 10:16:48] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 10:31:14] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:10:05] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:21:27] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:23:57] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\hashed_auth\authentication.py changed, reloading.
+[2026-07-16 11:23:59] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:24:05] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:24:17] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\models.py changed, reloading.
+[2026-07-16 11:24:19] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:24:29] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:25:30] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:28:49] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:29:01] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3245
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/js/snapshotServer.js HTTP/1.1" 200 836
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/css/datepicker.css HTTP/1.1" 200 10310
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/css/snapshotServer.css HTTP/1.1" 200 3448
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/js/testResult.js HTTP/1.1" 200 439
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /static/js/displayPanel.js HTTP/1.1" 200 21251
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 11:29:02] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:29:03] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:29:03] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:29:03] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:29:03] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 11:29:03] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:29:04] WARNING [django.request.log_response:253] Not Found: /favicon.ico
+[2026-07-16 11:29:04] WARNING [django.server.log_message:213] "GET /favicon.ico HTTP/1.1" 404 3649
+[2026-07-16 11:33:17] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/7/ HTTP/1.1" 200 36961
+[2026-07-16 11:33:17] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/36/download/ HTTP/1.1" 200 53210
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/38/download/ HTTP/1.1" 200 53082
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/40/download/ HTTP/1.1" 200 62721
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/2/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:33:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:09] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 11:54:22] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/7/ HTTP/1.1" 200 36961
+[2026-07-16 11:54:22] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-16 11:54:22] INFO [django.server.log_message:213] "GET /snapshot/api/file/38/download/ HTTP/1.1" 200 53082
+[2026-07-16 11:54:22] INFO [django.server.log_message:213] "GET /snapshot/api/file/36/download/ HTTP/1.1" 200 53210
+[2026-07-16 11:54:22] INFO [django.server.log_message:213] "GET /snapshot/api/file/40/download/ HTTP/1.1" 200 62721
+[2026-07-16 11:54:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/2/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:27] INFO [django.server.log_message:213] "GET /snapshot/testResults/summary/5 HTTP/1.1" 301 0
+[2026-07-16 11:54:27] INFO [django.server.log_message:213] "GET /snapshot/testResults/summary/5/ HTTP/1.1" 200 9728
+[2026-07-16 11:54:27] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot.css HTTP/1.1" 200 2004
+[2026-07-16 11:54:27] INFO [django.server.log_message:213] "GET /static/js/seleniumRobot.js HTTP/1.1" 200 1635
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 11:54:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 11:54:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:40:48] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 13:40:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:43:19] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\urls.py changed, reloading.
+[2026-07-16 13:43:25] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:44:51] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 13:47:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 13:47:16] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:15] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:57:22] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/7/ HTTP/1.1" 200 36961
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/36/download/ HTTP/1.1" 200 53210
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/38/download/ HTTP/1.1" 200 53082
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/40/download/ HTTP/1.1" 200 62721
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/2/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/7/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 13:57:34] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:11] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\urls.py changed, reloading.
+[2026-07-16 13:58:16] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 34940
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:23] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 13:58:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:34] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 13:58:35] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39609
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:39] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 13:58:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:58:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 13:58:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:59:23] INFO [django.server.log_message:213] "POST /snapshot/api/save-error-cause/ HTTP/1.1" 302 0
+[2026-07-16 13:59:23] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39902
+[2026-07-16 13:59:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 13:59:23] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 13:59:24] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:18:35] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\urls.py changed, reloading.
+[2026-07-16 14:18:36] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:18:49] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\viewsets\viewset_teststep.py changed, reloading.
+[2026-07-16 14:18:51] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:19:28] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:19:30] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:20:05] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\seleniumRobotServer\settings_base.py changed, reloading.
+[2026-07-16 14:20:06] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:32:18] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:32:19] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:32:44] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:35:41] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:36:24] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39682
+[2026-07-16 14:36:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:36:24] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:36:24] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3428
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:36:25] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39682
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:36:42] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:24] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39682
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:40:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:40:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39682
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:40:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:53] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\forms.py changed, reloading.
+[2026-07-16 14:40:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:40:56] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\viewsets.py changed, reloading.
+[2026-07-16 14:40:57] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 42180
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:40:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:41:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:41:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:35] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 42180
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:41:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 14:41:39] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 14:41:49] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\models.py changed, reloading.
+[2026-07-16 14:41:51] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 39622
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 14:41:56] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 14:41:57] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 14:44:29] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:52:13] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:52:14] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:52:37] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:52:38] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:55:45] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:55:46] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:55:47] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:55:48] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:56:27] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:56:28] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:58:19] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:58:25] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 14:59:32] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 14:59:33] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:05:20] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:06:03] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 41921
+[2026-07-16 15:06:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:06:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:06:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:06:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:06:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 15:06:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:20:31] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 35045
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3245
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 15:20:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 373
+[2026-07-16 15:20:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 374
+[2026-07-16 15:24:19] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:24:20] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:25:11] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\variableServer\views\api_view.py changed, reloading.
+[2026-07-16 15:25:13] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:30:01] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:30:07] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:32:08] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:32:09] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:32:21] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:32:22] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:33:53] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:33:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:34:42] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\test_result_view.py changed, reloading.
+[2026-07-16 15:34:43] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:43:55] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 38161
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3428
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 15:44:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 15:44:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 38161
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 15:44:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:45:14] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-07-16 15:45:17] WARNING [django.request.log_response:253] Not Found: /
+[2026-07-16 15:45:17] WARNING [django.server.log_message:213] "GET / HTTP/1.1" 404 3746
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /admin/snapshotServer/stepreference/ HTTP/1.1" 200 16718
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2804
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/css/base.css HTTP/1.1" 200 22092
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/css/changelists.css HTTP/1.1" 200 6878
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/css/responsive.css HTTP/1.1" 200 17972
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/core.js HTTP/1.1" 200 6208
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 9097
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/actions.js HTTP/1.1" 200 8076
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 200 285314
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 325171
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 581
+[2026-07-16 15:45:36] INFO [django.server.log_message:213] "GET /static/admin/img/icon-alert.svg HTTP/1.1" 200 504
+[2026-07-16 15:46:32] WARNING [django.request.log_response:253] Not Found: /admin/snapshot/testResults/result/
+[2026-07-16 15:46:32] WARNING [django.server.log_message:213] "GET /admin/snapshot/testResults/result/ HTTP/1.1" 404 9078
+[2026-07-16 15:46:41] WARNING [django.request.log_response:253] Not Found: /admin/snapshot/testResults/result/10
+[2026-07-16 15:46:41] WARNING [django.server.log_message:213] "GET /admin/snapshot/testResults/result/10 HTTP/1.1" 404 9084
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/11/ HTTP/1.1" 200 38161
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 304 0
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/68/download/ HTTP/1.1" 200 54731
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/70/download/ HTTP/1.1" 200 3436
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/72/download/ HTTP/1.1" 200 57193
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/74/download/ HTTP/1.1" 200 40358
+[2026-07-16 15:47:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/76/download/ HTTP/1.1" 200 49412
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 15:47:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/11/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/10/ HTTP/1.1" 200 19403
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/10/1/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/api/file/60/download/ HTTP/1.1" 200 45684
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/api/file/62/download/ HTTP/1.1" 200 43835
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/api/file/64/download/ HTTP/1.1" 200 51949
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/10/2/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/10/3/noheader/ HTTP/1.1" 200 508
+[2026-07-16 15:47:25] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/1/ HTTP/1.1" 200 51168
+[2026-07-16 15:47:26] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/1/1/noheader/ HTTP/1.1" 200 507
+[2026-07-16 15:47:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/2/download/ HTTP/1.1" 200 6744
+[2026-07-16 15:47:26] INFO [django.server.log_message:213] "GET /snapshot/api/file/4/download/ HTTP/1.1" 200 6744
+[2026-07-16 15:47:26] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/1/2/noheader/ HTTP/1.1" 200 507
+[2026-07-16 15:47:26] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/1/3/noheader/ HTTP/1.1" 200 508
+[2026-07-22 15:56:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 09:54:54] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 09:55:33] INFO [django.server.log_message:213] "GET /snapshot/testResults/summary/7/ HTTP/1.1" 302 0
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /accounts/login/?next=/snapshot/testResults/summary/7/ HTTP/1.1" 200 3974
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /static/admin/css/responsive.css HTTP/1.1" 200 17972
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /static/admin/css/login.css HTTP/1.1" 200 951
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2804
+[2026-08-04 09:55:34] INFO [django.server.log_message:213] "GET /static/admin/css/base.css HTTP/1.1" 200 22092
+[2026-08-04 09:55:34] WARNING [django.request.log_response:253] Not Found: /favicon.ico
+[2026-08-04 09:55:34] WARNING [django.server.log_message:213] "GET /favicon.ico HTTP/1.1" 404 3797
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap._bind_as:879] Binding as CN=zpsmojenkins,OU=ComptesDeService,DC=societe,DC=mma,DC=fr
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap.execute:201] Invoking search_s('DC=societe,DC=mma,DC=fr', 2, '(sAMAccountName=s068202)')
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap._process_results:288] search_s('DC=societe,DC=mma,DC=fr', 2, '(sAMAccountName=%(user)s)') returned 1 objects: cn=s068202,ou=mma,dc=societe,dc=mma,dc=fr
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap._bind_as:879] Binding as cn=s068202,ou=mma,dc=societe,dc=mma,dc=fr
+[2026-08-04 09:56:10] INFO [django_auth_ldap._get_or_create_user:650] Populating Django user s068202
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap._bind_as:879] Binding as CN=zpsmojenkins,OU=ComptesDeService,DC=societe,DC=mma,DC=fr
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap.is_member_of:976] cn=s068202,ou=mma,dc=societe,dc=mma,dc=fr is a member of cn=racp_selenium_003,ou=selenium,ou=ressappli,ou=groupes,dc=societe,dc=mma,dc=fr
+[2026-08-04 09:56:10] DEBUG [django_auth_ldap.is_member_of:976] cn=s068202,ou=mma,dc=societe,dc=mma,dc=fr is a member of cn=racp_selenium_001,ou=selenium,ou=ressappli,ou=groupes,dc=societe,dc=mma,dc=fr
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "POST /accounts/login/?next=/snapshot/testResults/summary/7/ HTTP/1.1" 302 0
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /snapshot/testResults/summary/7/ HTTP/1.1" 200 82850
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /static/css/snapshotServer.css HTTP/1.1" 200 3448
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot.css HTTP/1.1" 200 2004
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /static/css/datepicker.css HTTP/1.1" 200 10310
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /static/js/snapshotServer.js HTTP/1.1" 200 836
+[2026-08-04 09:56:10] INFO [django.server.log_message:213] "GET /static/js/seleniumRobot.js HTTP/1.1" 200 1635
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /static/css/seleniumRobot_solo.css HTTP/1.1" 200 3428
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /static/js/testResult.js HTTP/1.1" 200 439
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /static/js/displayPanel.js HTTP/1.1" 200 21251
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 09:56:29] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 09:56:30] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:18:39] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\controllers\error_cause\knowledge_base_analyzer.py changed, reloading.
+[2026-08-04 10:18:45] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 10:20:58] INFO [snapshotServer.controllers.error_cause.knowledge_base_analyzer.find_probable_cause:66] Aucune cause connue pour exception='java.lang.AssertionError', testCase=15, testStep=2
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:20:58] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:20:59] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:21:15] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:21:15] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:21:27] INFO [snapshotServer.controllers.error_cause.knowledge_base_analyzer.find_probable_cause:66] Aucune cause connue pour exception='java.lang.AssertionError', testCase=15, testStep=2
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 10:21:27] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:21:27] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:21:27] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:21:28] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:21:28] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:10] INFO [snapshotServer.controllers.error_cause.knowledge_base_analyzer.find_probable_cause:66] Aucune cause connue pour exception='java.lang.AssertionError', testCase=15, testStep=2
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 10:22:10] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:22:10] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:11] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:11] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:22:11] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:22:55] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\controllers\error_cause\knowledge_base_analyzer.py changed, reloading.
+[2026-08-04 10:23:00] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 10:23:36] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 10:23:47] INFO [snapshotServer.controllers.error_cause.knowledge_base_analyzer.find_probable_cause:66] Aucune cause connue pour exception='java.lang.AssertionError', testCase=15, testStep=2
+[2026-08-04 10:23:49] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 10:23:49] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:23:49] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:23:49] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:23:49] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:23:50] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:23:51] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:23:51] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:24:42] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\controllers\error_cause\knowledge_base_analyzer.py changed, reloading.
+[2026-08-04 10:24:52] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 10:25:02] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34559
+[2026-08-04 10:25:03] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:25:03] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:25:03] INFO [django.server.handle_error:81] - Broken pipe from ('127.0.0.1', 56363)
+[2026-08-04 10:25:03] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:25:04] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:25:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:25:05] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:12] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34560
+[2026-08-04 10:45:13] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:45:13] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:45:13] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:45:13] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:14] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:45:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:45:45] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:45:45] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:49:26] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 10:49:35] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34520
+[2026-08-04 10:49:35] WARNING [django.request.log_response:253] Not Found: /.well-known/appspecific/com.chrome.devtools.json
+[2026-08-04 10:49:35] WARNING [django.server.log_message:213] "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 3908
+[2026-08-04 10:49:35] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 10:49:35] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 10:49:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 10:49:36] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 10:49:36] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 10:49:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:03:49] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:05:33] ERROR [django.request.log_response:253] Internal Server Error: /snapshot/testResults/result/24/
+Traceback (most recent call last):
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endfor'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 72, in resolve_template
+    return select_template(template, using=self.using)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader.py", line 42, in select_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 322: 'endfor', expected 'elif', 'else' or 'endif'. Did you forget to register or load this tag?
+[2026-08-04 11:05:33] ERROR [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 500 311746
+[2026-08-04 11:05:40] ERROR [django.request.log_response:253] Internal Server Error: /snapshot/testResults/result/24/
+Traceback (most recent call last):
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endfor'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\core\handlers\base.py", line 220, in _get_response
+    response = response.render()
+               ^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 114, in render
+    self.content = self.rendered_content
+                   ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 90, in rendered_content
+    template = self.resolve_template(self.template_name)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\response.py", line 72, in resolve_template
+    return select_template(template, using=self.using)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader.py", line 42, in select_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "D:\outilsdev\wks\seleniumRobot-server\venv\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 322: 'endfor', expected 'elif', 'else' or 'endif'. Did you forget to register or load this tag?
+[2026-08-04 11:05:40] ERROR [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 500 311609
+[2026-08-04 11:07:57] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:08:04] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34677
+[2026-08-04 11:08:05] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:08:05] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:08:06] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:08:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:08:07] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:11:01] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:11:10] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 35120
+[2026-08-04 11:11:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:11:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:11:11] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:11:11] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:11:11] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:11:11] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:11:11] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:11:12] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:11:12] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:11:12] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:11:12] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:22:41] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:23:00] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 40242
+[2026-08-04 11:23:00] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:23:01] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:29] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:23:36] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34811
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:23:37] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:23:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:23:38] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:09] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:28:19] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/ HTTP/1.1" 200 34549
+[2026-08-04 11:28:19] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:28:19] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:28:20] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:28:20] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:28:20] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:20] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:28:20] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:28:21] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:31] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=xtDmlucQbQKOuYiEeto7p3xFq5Vtelc3H3epUxRiROHosNnToztAPELnMtVhB8mH&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 34549
+[2026-08-04 11:28:31] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:28:32] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:51] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 34549
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:52] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:28:53] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:28:53] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:32:35] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:32:42] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 34574
+[2026-08-04 11:32:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:32:42] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:32:43] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:32:44] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:09] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:33:14] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 34574
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:33:15] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:38] INFO [django.server.log_message:213] "POST /snapshot/api/save-error-cause/ HTTP/1.1" 302 0
+[2026-08-04 11:33:39] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 35253
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:40] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:41] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:33:41] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:33:41] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:34:16] INFO [django.server.log_message:213] "POST /snapshot/api/save-error-cause/ HTTP/1.1" 302 0
+[2026-08-04 11:34:17] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 35266
+[2026-08-04 11:34:17] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:34:17] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:34:17] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:34:18] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:38:07] INFO [django.server.log_message:213] "POST /snapshot/api/save-error-cause/ HTTP/1.1" 302 0
+[2026-08-04 11:38:08] INFO [django.server.log_message:213] "GET /snapshot/testResults/result/24/?csrfmiddlewaretoken=woEPOK8U99Wq8TagGnAH4SqHRPRDLKK1GYfSnNNmP7T06IfvQtFautEpddRr8xUF&cause=Application&commentaire=+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles&exception=java.lang.AssertionError&errorMessage=class+java.lang.AssertionError%3A+Les+d%C3%A9tails+du+composant+%27api-product-sandbox-demo%27+ne+sont+pas+visibles.+expected+%5Btrue%5D+but+found+%5Bfalse%5D&stepName=Test+end&testCaseId=15&testStepId=2 HTTP/1.1" 200 35266
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/api/file/233/download/ HTTP/1.1" 200 66218
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/api/file/227/download/ HTTP/1.1" 200 52838
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/api/file/229/download/ HTTP/1.1" 200 6744
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/api/file/235/download/ HTTP/1.1" 200 38639
+[2026-08-04 11:38:09] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:38:10] INFO [django.server.log_message:213] "GET /snapshot/api/file/231/download/ HTTP/1.1" 200 78809
+[2026-08-04 11:38:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:38:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/1/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:38:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/2/noheader/ HTTP/1.1" 200 507
+[2026-08-04 11:38:10] INFO [django.server.log_message:213] "GET /snapshot/compare/picture/24/3/noheader/ HTTP/1.1" 200 508
+[2026-08-04 11:40:10] INFO [django.utils.autoreload.trigger_reload:265] D:\outilsdev\wks\seleniumRobot-server\snapshotServer\views\error_cause_view.py changed, reloading.
+[2026-08-04 11:40:20] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
+[2026-08-04 11:40:36] INFO [django.utils.autoreload.run_with_reloader:667] Watching for file changes with StatReloader
