@@ -4,14 +4,40 @@
 
 {% block head %}
     <link rel="stylesheet" type="text/css" href="{% static 'css/seleniumRobot_solo.css' %}">
- 
+
     <script type="text/javascript" src="https://unpkg.com/interactjs/dist/interact.min.js"></script>
-	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>	
+	<script type="text/javascript" src="{% static 'js/displayPanel.js' %}"></script>
 	<script type="text/javascript" src="{% static 'js/testResult.js' %}"></script>
 
 {% endblock %}
 
 {% block body %}
+
+{% if messages %}
+<div class="container mt-3">
+	{% for message in messages %}
+	<div class="alert
+                        {% if message.tags == 'error' %}
+                            alert-danger
+                        {% elif message.tags %}
+                            alert-{{ message.tags }}
+                        {% else %}
+                            alert-info
+                        {% endif %}
+                        alert-dismissible fade show"
+		 role="alert">
+
+		{{ message }}
+
+		<button type="button"
+				class="btn-close"
+				data-bs-dismiss="alert"
+				aria-label="Fermer">
+		</button>
+	</div>
+	{% endfor %}
+</div>
+{% endif %}
 
 <header class="{% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
 	<div class="row">
@@ -74,14 +100,14 @@
 	                    <tr>
 	                        <th>Grid node</th>
 	                        <td>{{ currentTest.gridNode }}</td>
-	                    </tr>                                                                                                
-	                    
+	                    </tr>
+
 	                    {% for info_name, info in infos.items %}
 	                    <tr>
 	                        <th>{{ info_name }}</th>
-                            {% include "snapshotServer/info.html" with info=info %}  
-                        </tr>  
-                        {% endfor %}                                                                                               
+                            {% include "snapshotServer/info.html" with info=info %}
+                        </tr>
+                        {% endfor %}
                     </table>
 
 		      		{% for stepResult, snapshotsCompared in object_list.items %}
@@ -105,12 +131,141 @@
 							<div class="box-body collapse" id="box-body-{{ stepResult.step.id }}">
 								{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
 
-								{% if stepResult.details.exception %}
-									<div class="message-error">
-										{{ stepResult.details.exceptionMessage }}
-									</div>
+								{% if stepResult.details.status == 'FAILED' %}
+
+								{% if stepResult.details.exceptionMessage %}
+								<div class="message-error">
+									{{ stepResult.details.exceptionMessage }}
+								</div>
+								{% elif stepResult.details.exception %}
+								<div class="message-error">
+									{{ stepResult.details.exception }}
+								</div>
+								{% else %}
+								<div class="message-error">
+									L’étape a échoué, mais aucun message d’erreur détaillé n’est disponible.
+								</div>
 								{% endif %}
 
+								{% if stepResult.details.suggestedCause %}
+								<div style="
+            margin-top: 10px;
+            background: #e8f0fe;
+            padding: 8px;
+            border-radius: 4px;
+        ">
+									<strong>Cause probable :</strong>
+									{{ stepResult.details.suggestedCause }}
+								</div>
+								{% endif %}
+
+								<div style="margin-top: 10px;">
+									<button type="button"
+											class="btn btn-sm btn-outline-primary collapsed"
+											data-bs-toggle="collapse"
+											data-bs-target="#form-{{ stepResult.id }}"
+											aria-expanded="false"
+											aria-controls="form-{{ stepResult.id }}">
+										Déclarer une cause
+									</button>
+								</div>
+
+								<div id="form-{{ stepResult.id }}" class="collapse">
+
+									<div style=" margin-top: 12px;padding: 15px;border: 1px solid #ddd;border-radius: 8px;background: #f8f9fa; max-width: 460px; ">
+										<form method="post"
+											  action="/snapshot/api/save-error-cause/">
+
+											{% csrf_token %}
+
+											<div style="font-weight: bold; margin-bottom: 10px;">
+												Ajouter un diagnostic
+											</div>
+
+											<div style="margin-bottom: 10px;">
+												<label for="cause-{{ stepResult.id }}"
+													   style="font-size: 13px; color: #555;">
+													Type
+												</label>
+
+												<br>
+
+												<select name="cause"
+														id="cause-{{ stepResult.id }}"
+														class="cause-type"
+														required
+														style="width: 100%; padding: 5px;">
+
+													<option value="Application">Application</option>
+													<option value="Configuration">Configuration</option>
+													<option value="Script">Script</option>
+													<option value="Environment">Environment</option>
+												</select>
+											</div>
+
+											<div style="margin-bottom: 10px;">
+												<label for="commentaire-{{ stepResult.id }}"
+													   style="font-size: 13px; color: #555;">
+													Commentaire
+												</label>
+
+												<br>
+
+												<textarea name="commentaire"
+														  id="commentaire-{{ stepResult.id }}"
+														  class="commentaire-cause"
+														  rows="3"
+														  maxlength="180"
+														  required
+														  style="width: 100%; padding: 6px;"
+														  placeholder="Décrire la cause probable"></textarea>
+
+												<small style=" display: block;margin-top: 6px;color: #666;font-size: 12px; ">
+													Décrire la cause probable en une phrase courte.
+													Ne pas répéter l’exception technique.
+												</small>
+											</div>
+
+											<input type="hidden"
+												   name="exception"
+												   value="{{ stepResult.details.exception|default:'UnknownException' }}">
+
+											<input type="hidden"
+												   name="errorMessage"
+												   value="{{ stepResult.details.exceptionMessage|default:'' }}">
+
+											<input type="hidden"
+												   name="stepName"
+												   value="{{ stepResult.details.name }}">
+
+											<input type="hidden"
+												   name="testCaseId"
+												   value="{{ currentTest.testCase.id }}">
+
+											<input type="hidden"
+												   name="testStepId"
+												   value="{{ stepResult.step.id }}">
+
+											<div class="save-cause-status"
+												 role="status"
+												 aria-live="polite"
+												 style=" display: none; margin-bottom: 10px; padding: 8px; border-radius: 4px;font-size: 13px; ">
+											</div>
+
+											<div style="text-align: right;">
+												<button type="submit"
+														class="btn btn-primary btn-sm save-cause-button">
+													Enregistrer
+												</button>
+											</div>
+
+										</form>
+
+									</div>
+
+								</div>
+
+								{% endif %}
 								<div class="row">
 									{% for snapshot in stepResult.details.snapshots %}
 										{% if snapshot.displayInReport and snapshot.idImage %}
@@ -163,9 +318,9 @@
 
 								</div>
 							</div>
-		      	
+
 		      		{% endfor %}
-		      		
+
 		      		<!-- step for displaying if snapshot comparison is OK or KO -->
 		      		{% if currentTest.session.compareSnapshot %}
 		      		<div class="box {% if snasphotComparisonResult %}success{% else %}failed{% endif %}">
@@ -177,7 +332,7 @@
 						</div>
 					</div>
 		      		{% endif %}
-		
+
 					<div class="box {% if status == 'SUCCESS' %} success {% elif status == 'FAILURE' %}failed {% else %} skipped {% endif %}">
 						<div class="box-header with-border">
 							<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-exec-logs" aria-expanded="false" aria-controls="box-body-exec-logs"><i class="fa-solid fa-angle-right collapse-icon"></i></button> Execution logs
@@ -198,17 +353,17 @@
 							{% for line in logs %}
 								<div>{{ line }}</div>
 							{% endfor %}
-							
+
 						</div>
-					</div>				
+					</div>
 				</div>
 			</div>
 		</section>
-	</div>		
+	</div>
 </div>
 <script>
     var elements = document.getElementsByClassName("stepTimestamp");
-    
+
     function toggleTimestamps() {
         for (var i = 0; i < elements.length; i++) {
             var element = elements[i];
@@ -219,7 +374,7 @@
             }
         }
     }
-    
+
     document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
 
 
