@@ -48,32 +48,52 @@ def _load_har(har_file):
     return json.loads(content)
 
 
-def get_average_request_time_per_page(har_file):
+def get_network_info_per_page(har_file):
     """
-    Compute, for each page of the HAR file, the average request time (in milliseconds) of XHR, JS and image
-    requests. Other request types (document, css, font, ...) are ignored.
+    Compute, for each page of the HAR file, network information:
+    - 'times': the average request time (in milliseconds) of XHR, JS, HTML and image requests. Other request
+      types (document, css, font, ...) are ignored
+    - 'errors': the list of requests that failed on that page, i.e. requests that got no response at all, or
+      whose response has a 4xx or 5xx HTTP status code. Each error is a dict
+      {'url': <request_url>, 'status': <response_status_or_None>, 'statusText': <response_status_text_or_None>}
     :param har_file: path to a '.har' or '.har.zip' file (str or Path), raw bytes/str of a HAR file content,
                       or an already parsed HAR dict
-    :return: dict {page_title: average_time_in_ms}, pages without any matching request are omitted
+    :return: dict {page_title: {'times': {...}, 'errors': [...]}}, pages with neither a matching request nor an
+             error are omitted
     """
     har = _load_har(har_file)
     log = har.get('log', {})
     page_names = {page['id']: page.get('title') or page['id'] for page in log.get('pages', [])}
 
-    times_by_page = {}
+    data_by_page = {}
     for entry in log.get('entries', []):
-        category =_get_resource_category(entry)
-        if category is None:
-            continue
-
         pageref = entry.get('pageref')
         page_name = page_names.get(pageref, pageref or 'unknown')
+        page_data = data_by_page.setdefault(page_name, {'times': {'xhr': [], 'js': [], 'image': [], 'html': []}, 'errors': []})
 
-        time_ms = entry.get('time')
-        if time_ms is None or time_ms < 0:
+        category = _get_resource_category(entry)
+        if category is not None:
+            time_ms = entry.get('time')
+            if time_ms is not None and time_ms >= 0:
+                page_data['times'][category].append(time_ms)
+
+        response = entry.get('response')
+        status = response.get('status') if response else None
+
+        # no response at all (status missing or 0) or a 4xx / 5xx status is considered a network error
+        if not response or not status or status >= 400:
+            page_data['errors'].append({
+                'url': entry.get('request', {}).get('url'),
+                'status': status or None,
+                'statusText': (response or {}).get('statusText') or None,
+            })
+
+    result = {}
+    for page_name, page_data in data_by_page.items():
+        times = {category: round(mean(times), 2) for category, times in page_data['times'].items() if times}
+        if not times and not page_data['errors']:
             continue
 
-        # /!\ if 2 pages have the same name, all load times will be merged
-        times_by_page.setdefault(page_name, {'xhr': [], 'js': [], 'image': [], 'html': []})[category].append(time_ms)
+        result[page_name] = {'times': times, 'errors': page_data['errors']}
 
-    return {page: {category: round(mean(times), 2) for category, times in times_by_category.items() if times} for page, times_by_category in times_by_page.items() }
+    return result

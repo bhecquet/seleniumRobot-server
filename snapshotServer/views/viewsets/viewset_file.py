@@ -11,7 +11,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import StepResult, File
-from snapshotServer.utils.har_analyzer import get_average_request_time_per_page
+from snapshotServer.utils.har_analyzer import get_network_info_per_page
+from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder
 from snapshotServer.viewsets import ResultRecordingViewSet
 
 
@@ -118,18 +119,26 @@ class FileViewSet(ResultRecordingViewSet): # post
 
             # we assume that HAR file is sent AFTER all step results have been recorded
             if request.FILES['file'].name.lower().endswith('.har'):
-                request_time_per_page = get_average_request_time_per_page(request.FILES['file'].file.getvalue())
+                network_info_per_page = get_network_info_per_page(request.FILES['file'].file.getvalue())
+                network_error_cause_finder = NetworkErrorCauseFinder(file_step_result.testCase)
 
-                for page_name, mean_times in request_time_per_page.items():
+                for page_name, network_info in network_info_per_page.items():
                     step_result = StepResult.objects.filter(fullName=page_name, testCase=file_step_result.testCase).first()
                     if not step_result:
                         continue
 
-                    for category, mean_time in mean_times.items():
+                    for category, mean_time in network_info['times'].items():
                         if category == 'js': step_result.meanJsLoadTimes = mean_time
                         elif category == 'xhr': step_result.meanXhrLoadTimes = mean_time
                         elif category == 'image': step_result.meanImageLoadTimes = mean_time
                         elif category == 'html': step_result.meanHtmlLoadTimes = mean_time
+
+                    step_result.networkErrors = network_info['errors']
+
+                    # compute network slowness once, at upload time, and store the result so that it does not
+                    # need to be recomputed each time the test result is displayed
+                    slowness = network_error_cause_finder.get_network_slowness_for_step(step_result)
+                    step_result.networkSlowness = '\n'.join(slowness) if slowness else None
 
                     step_result.save()
 

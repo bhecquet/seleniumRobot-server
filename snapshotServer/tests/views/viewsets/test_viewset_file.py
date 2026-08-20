@@ -108,15 +108,38 @@ class TestViewsetFile(TestApi):
             self.assertEquals(step_1.meanJsLoadTimes, 55)
             self.assertEquals(step_1.meanXhrLoadTimes, 150)
             self.assertEquals(step_1.meanImageLoadTimes, 30)
+            self.assertEquals(step_1.networkErrors, [])
 
             step_2 = StepResult.objects.get(pk=2)
             self.assertEquals(step_2.meanImageLoadTimes, 40)
             self.assertEquals(step_2.meanXhrLoadTimes, 300)
             self.assertEquals(step_2.meanHtmlLoadTimes, -1.0)
+            self.assertEquals(step_2.networkErrors, [])
 
             with zipfile.ZipFile(file.file.path) as zip:
                 with zip.open('test_average_time.har', 'r') as myfile:
                     self.assertTrue('X-Requested-With' in myfile.read().decode('utf-8'))
+
+    def test_upload_har_file_with_network_errors(self):
+        """
+        Check network errors found in the HAR file are recorded on the corresponding StepResult
+        """
+        self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_file', content_type=self.content_type_file)))
+        with open('snapshotServer/tests/data/test_network_errors.har', 'rb') as fp:
+            response = self.client.post('/snapshot/api/file/', data={'stepResult': 3, 'file': fp})
+            self.assertEqual(response.status_code, 201, 'status code should be 201')
+
+            step_1 = StepResult.objects.get(pk=1)
+            self.assertEquals(step_1.networkErrors, [
+                {'url': 'https://myapp/api/data', 'status': 404, 'statusText': 'Not Found'},
+                {'url': 'https://myapp/api/save', 'status': 500, 'statusText': 'Internal Server Error'},
+            ])
+
+            step_2 = StepResult.objects.get(pk=2)
+            self.assertEquals(step_2.networkErrors, [
+                {'url': 'https://myapp/api/timeout', 'status': None, 'statusText': None},
+                {'url': 'https://myapp/api/aborted', 'status': None, 'statusText': None},
+            ])
 
     def test_upload_video_file(self):
         """

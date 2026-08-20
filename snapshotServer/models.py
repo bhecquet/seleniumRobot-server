@@ -433,6 +433,8 @@ class StepResult(models.Model):
     meanHtmlLoadTimes = models.FloatField(default=-1.0)
     meanJsLoadTimes = models.FloatField(default=-1.0)
     meanImageLoadTimes = models.FloatField(default=-1.0)
+    networkErrors = models.JSONField(default=list, blank=True)
+    networkSlowness = models.TextField(null=True, blank=True) # human readable message describing detected network slowness, if any
     
 class ExcludeZone(models.Model):
     """
