@@ -42,6 +42,32 @@
             </div>
         </div>
     </div>
+	<!-- Modal for displaying network slowness message -->
+	<div class="modal fade" id="networkSlownessModal" tabindex="-1" role="dialog" aria-labelledby="networkSlownessModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="networkSlownessModalLabel">Network slowness</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body" id="networkSlownessModalBody" style="white-space: pre-line;"></div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal for displaying network errors -->
+	<div class="modal fade" id="networkErrorsModal" tabindex="-1" role="dialog" aria-labelledby="networkErrorsModalLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="networkErrorsModalLabel">Network errors</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<ul id="networkErrorsList"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div class="container-fluid">
 		<section class="content">
 		  	<div class="row">
@@ -91,18 +117,28 @@
 								<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-{{ stepResult.step.id }}" aria-expanded="false" aria-controls="box-body-{{ stepResult.step.id }}">
 									<i class="fa-solid fa-angle-right collapse-icon"></i>
 								</button>
-								<span class="step-title">
-									{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
+								<span class="step-title">{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
 								</span>
-								{% if stepResult.details.videoTimeStamp %}
-									<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
-									   {% for snapshotCompared in snapshotsCompared %}
-										   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
-									   {% endfor %}
-									</span>
-								{% endif %}
+								<span>
+									{% if stepResult.details.videoTimeStamp %}
+										<i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
+									{% endif %}
+									{% for snapshotCompared in snapshotsCompared %}
+									   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
+									{% endfor %}
+									{% if stepResult.networkSlowness %}<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="{{ stepResult.step.id }}">&#128034;</span>{% endif %}
+									{% if stepResult.networkErrors %}<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="{{ stepResult.step.id }}"></i>{% endif %}
+								</span>
 							</div>
 							<div class="box-body collapse" id="box-body-{{ stepResult.step.id }}">
+								{% if stepResult.networkSlowness %}
+									<div id="network-slowness-data-{{ stepResult.step.id }}" style="display:none">{{ stepResult.networkSlowness }}</div>
+								{% endif %}
+								{% if stepResult.networkErrors %}
+									<div id="network-errors-data-{{ stepResult.step.id }}" style="display:none">
+										{% for error in stepResult.networkErrors %}<div>{{ error.url }} - {% if error.status %}status {{ error.status }} {{ error.statusText }}{% else %}no response{% endif %}</div>{% endfor %}
+									</div>
+								{% endif %}
 								{% include "snapshotServer/step.html" with actions=stepResult.details.actions %}
 
 								{% if stepResult.details.exception %}
@@ -221,6 +257,27 @@
     }
     
     document.getElementById("timestampAction").addEventListener("click", toggleTimestamps);
+
+    document.getElementById('networkSlownessModal').addEventListener('show.bs.modal', function (event) {
+        var stepId = event.relatedTarget.getAttribute('data-step-id');
+        var dataContainer = document.getElementById('network-slowness-data-' + stepId);
+        document.getElementById('networkSlownessModalBody').textContent = dataContainer ? dataContainer.textContent : '';
+    });
+
+    document.getElementById('networkErrorsModal').addEventListener('show.bs.modal', function (event) {
+        var stepId = event.relatedTarget.getAttribute('data-step-id');
+        var list = document.getElementById('networkErrorsList');
+        list.innerHTML = '';
+        var dataContainer = document.getElementById('network-errors-data-' + stepId);
+        if (dataContainer) {
+            var items = dataContainer.children;
+            for (var i = 0; i < items.length; i++) {
+                var li = document.createElement('li');
+                li.textContent = items[i].textContent;
+                list.appendChild(li);
+            }
+        }
+    });
 
 
 

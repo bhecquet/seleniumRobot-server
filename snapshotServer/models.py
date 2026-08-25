@@ -428,6 +428,13 @@ class StepResult(models.Model):
     result = models.BooleanField(null=False)
     duration = models.FloatField(default=0.0)
     stacktrace = models.TextField(null=True)
+    fullName = TruncatingCharField(max_length=400, null=True) # null for compatibility with existing StepResult instances
+    meanXhrLoadTimes = models.FloatField(default=-1.0)
+    meanHtmlLoadTimes = models.FloatField(default=-1.0)
+    meanJsLoadTimes = models.FloatField(default=-1.0)
+    meanImageLoadTimes = models.FloatField(default=-1.0)
+    networkErrors = models.JSONField(default=list, blank=True)
+    networkSlowness = models.TextField(null=True, blank=True) # human readable message describing detected network slowness, if any
     
 class ExcludeZone(models.Model):
     """

@@ -421,6 +421,88 @@ class TestTestResultView(SnapshotTestCase):
         self.assertTrue(
             """<table class="table table-bordered table-sm"><tr><th style="width: 20%">Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>mynode.domain.com</td></tr>""" in html)
 
+    def test_report_with_network_errors(self):
+        """
+        Check that when a step has network errors stored in StepResult.networkErrors, the red network icon is
+        displayed, with the corresponding messages available for the modal (shown on click)
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_result = StepResult.objects.get(pk=1)
+        step_result.networkErrors = [
+            {'url': 'https://myapp/api/data', 'status': 404, 'statusText': 'Not Found'},
+        ]
+        step_result.save()
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        # icon must be inside the step-title span, right after video icon
+        self.assertIn(
+            '<i class="fas fa-file-video"></i>0.005 s<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="1"></i>',
+            html)
+        # error data must be inside the box-body of the same step (id=1), with error details
+        self.assertIn(
+            '<div class="box-body collapse" id="box-body-1"><div id="network-errors-data-1" '
+            'style="display:none"><div>https://myapp/api/data - status 404 Not Found</div></div>',
+            html)
+
+    def test_report_without_network_errors(self):
+        """
+        Check that when a step has no network error, the network errors icon is not displayed
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        self.assertNotIn('fa-network-wired', html)
+        self.assertNotIn('id="network-errors-data-', html)
+
+    def test_report_with_network_slowness(self):
+        """
+        Check that when a step has a network slowness message stored in StepResult.networkSlowness, the turtle
+        icon is displayed, and the stored message is available for the modal (shown on click)
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_result = StepResult.objects.get(pk=1)
+        step_result.networkSlowness = "XHR load time on step 'step 1' is abnormally high: 5000.00 ms"
+        step_result.save()
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        # icon must be inside the step-title span, right after video icon, for step 1
+        self.assertIn(
+            '<i class="fas fa-file-video"></i>0.005 s<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="1">&#128034;</span>',
+            html)
+        # slowness message must be inside the box-body of the same step (id=1)
+        self.assertIn(
+            '<div class="box-body collapse" id="box-body-1"><div id="network-slowness-data-1" '
+            'style="display:none">XHR load time on step &#x27;step 1&#x27; is abnormally high: 5000.00 ms</div>',
+            html)
+
+    def test_report_without_network_slowness(self):
+        """
+        Check that when a step has no network slowness message, the turtle icon is not displayed
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        self.assertNotIn('network-slowness-icon', html)
+        self.assertNotIn('id="network-slowness-data-', html)
+
 
     def test_report_with_step_in_warning(self):
         """

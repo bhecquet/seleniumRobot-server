@@ -124,7 +124,16 @@ Check that the JSON response is valid
     "OPEN_WEBUI_MODEL":
         {"value": 'ministral-3:8b', 'description': 'model to use for picture inference (comparison / find element / error message)'},
     "OPEN_WEBUI_WORKERS":
-        {"value": '2', 'description': 'Number of parallel workers'}
+        {"value": '2', 'description': 'Number of parallel workers'},
+
+    # ----------------------------------------------------------
+    # Network error cause detection parameters
+    # ----------------------------------------------------------
+
+    "NETWORK_SLOWNESS_RATIO":
+        {"value": "1.5", "description": "a step is considered slow, for a given resource type, if its mean load time is greater than this ratio times the average mean load time observed on other executions of the same step"},
+    "NETWORK_SLOWNESS_MIN_DIFFERENCE_MS":
+        {"value": "200", "description": "a step is considered slow, for a given resource type, only if its mean load time exceeds the historical average by more than this value (in ms), to avoid flagging insignificant differences"},
 }
 
 logger = logging.getLogger(__name__)
