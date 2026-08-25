@@ -117,16 +117,18 @@
 								<button type="button" class="btn btn-box-tool collapsed" data-bs-toggle="collapse" data-bs-target="#box-body-{{ stepResult.step.id }}" aria-expanded="false" aria-controls="box-body-{{ stepResult.step.id }}">
 									<i class="fa-solid fa-angle-right collapse-icon"></i>
 								</button>
-								<span class="step-title">
-									{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{% if stepResult.networkSlowness %}<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="{{ stepResult.step.id }}">&#128034;</span>{% endif %}{% if stepResult.networkErrors %}<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="{{ stepResult.step.id }}"></i>{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
+								<span class="step-title">{% if stepResult.details.status == 'FAILED' %}❌{% endif %}{{ stepResult.details.name }}  - {{ stepResult.duration|div:1000 }} secs
 								</span>
-								{% if stepResult.details.videoTimeStamp %}
-									<span><i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
-									   {% for snapshotCompared in snapshotsCompared %}
-										   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
-									   {% endfor %}
-									</span>
-								{% endif %}
+								<span>
+									{% if stepResult.details.videoTimeStamp %}
+										<i class="fas fa-file-video"></i>{{ stepResult.details.videoTimeStamp|div:1000 }} s
+									{% endif %}
+									{% for snapshotCompared in snapshotsCompared %}
+									   <i class="fa-solid fa-code-compare {% if snapshotCompared.tooManyDiffs %}font-failed{% else %}font-success{% endif %}"></i>
+									{% endfor %}
+									{% if stepResult.networkSlowness %}<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="{{ stepResult.step.id }}">&#128034;</span>{% endif %}
+									{% if stepResult.networkErrors %}<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="{{ stepResult.step.id }}"></i>{% endif %}
+								</span>
 							</div>
 							<div class="box-body collapse" id="box-body-{{ stepResult.step.id }}">
 								{% if stepResult.networkSlowness %}

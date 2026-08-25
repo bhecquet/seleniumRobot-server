@@ -439,11 +439,9 @@ class TestTestResultView(SnapshotTestCase):
         response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         html = self.remove_spaces(response.rendered_content)
 
-        # icon must be inside the step-title span, right before the step name, for step 1
+        # icon must be inside the step-title span, right after video icon
         self.assertIn(
-            '<span class="step-title"><i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" '
-            'title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" '
-            'data-step-id="1"></i>openPage with args:',
+            '<i class="fas fa-file-video"></i>0.005 s<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="1"></i>',
             html)
         # error data must be inside the box-body of the same step (id=1), with error details
         self.assertIn(
@@ -481,11 +479,9 @@ class TestTestResultView(SnapshotTestCase):
         response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
         html = self.remove_spaces(response.rendered_content)
 
-        # icon must be inside the step-title span, right before the step name, for step 1
+        # icon must be inside the step-title span, right after video icon, for step 1
         self.assertIn(
-            '<span class="step-title"><span class="network-slowness-icon" style="cursor:pointer;" '
-            'title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" '
-            'data-step-id="1">&#128034;</span>openPage with args:',
+            '<i class="fas fa-file-video"></i>0.005 s<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="1">&#128034;</span>',
             html)
         # slowness message must be inside the box-body of the same step (id=1)
         self.assertIn(
