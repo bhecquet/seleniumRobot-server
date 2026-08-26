@@ -515,6 +515,37 @@ function updateExcludeZones(snapshotId, refSnapshotId, testCaseId, testStepId) {
     // reload step
     updatePanel('/snapshot/compare/picture/' + testCaseId + '/' + testStepId, 'step_' + testStepId);
 
+    // exclude zones / diff computation may have changed the snapshot comparison result, and therefore the
+    // global test status: refresh header and global status boxes accordingly
+    refreshTestGlobalStatus(testCaseId);
 
+}
+
+/**
+ * Refresh the header and the 'Snapshot comparison' / 'Execution logs' boxes of the test result page,
+ * so that a change of snapshot comparison result (exclude zones update, reference change, ...) is
+ * immediately reflected without having to reload the whole page.
+ * Does nothing if the corresponding containers are not present in the page (e.g: when this panel is
+ * displayed outside of the test result page).
+ * @param testCaseId
+ */
+function refreshTestGlobalStatus(testCaseId) {
+    if (!document.getElementById('testHeaderContainer') && !document.getElementById('testGlobalStatusContainer')) {
+        return;
+    }
+
+    $.ajax({
+        type: 'GET',
+        url: '/snapshot/testResults/result/' + testCaseId + '/status/',
+        async: false,
+        success: function(data) {
+            if (document.getElementById('testHeaderContainer')) {
+                $('#testHeaderContainer').html(data.header);
+            }
+            if (document.getElementById('testGlobalStatusContainer')) {
+                $('#testGlobalStatusContainer').html(data.globalStatus);
+            }
+        }
+    });
 }
 

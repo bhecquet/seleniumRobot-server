@@ -1,0 +1,13 @@
+<header class="{% if status == 'SUCCESS' %} header-success {% elif status == 'FAILURE' %}header-failed {% else %} header-skipped {% endif %}">
+	<div class="row">
+
+		<div class="col back-link">
+			<a href="/snapshot/testResults/summary/{{ session.id }}"> << Summary</a>
+		</div>
+		<div class="col main-header">
+            <a href="https://github.com/bhecquet/seleniumRobot">SeleniumRobot</a><br/>
+		</div>
+		<div class="col"></div>
+
+	</div>
+</header>

@@ -7,7 +7,7 @@ from snapshotServer.views.snapshot_upload_view import SnapshotUploadView
 from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
-from snapshotServer.views.test_result_view import TestResultView
+from snapshotServer.views.test_result_view import TestResultView, TestResultStatusView
 
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
@@ -45,6 +45,7 @@ urlpatterns = [
     re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     
     re_path(r'^testResults/result/(?P<test_case_in_session_id>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
+    re_path(r'^testResults/result/(?P<test_case_in_session_id>[0-9]+)/status/$', TestResultStatusView.as_view(), name='testResultStatusView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
     re_path(r'^compare/compute/(?P<snapshot_id>[0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
