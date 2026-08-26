@@ -144,7 +144,7 @@ class TestTestResultView(SnapshotTestCase):
         self.assertEqual(list(response.context['object_list'])[3], StepResult.objects.get(pk=4))
         self.assertEqual(response.context['currentTest'].id, 1)
         self.assertEqual(response.context['testCaseId'], "1")
-        self.assertIsNone(response.context['snasphotComparisonResult'])  # no snapshots to compare
+        self.assertIsNone(response.context['snapshotComparisonResult'])  # no snapshots to compare
         self.assertEqual(response.context['status'], "SUCCESS")
         self.assertEqual(response.context['browserOrApp'], "Firefox")
         self.assertEqual(response.context['applicationType'], "Browser")
@@ -663,3 +663,115 @@ class TestTestResultView(SnapshotTestCase):
     # testStepAnnotationWithErrorNoDetails
     # testStepAnnotationNoErrors
     # testStepAnnotationNoErrorCause
+
+
+class TestTestResultStatusView(SnapshotTestCase):
+    """
+    Tests for the AJAX endpoint refreshing the header and global status boxes of the test result page,
+    used to dynamically reflect a snapshot comparison result change (exclude zones update, reference change)
+    without a full page reload.
+    """
+    fixtures = ['test_result/testresult_commons.yaml',
+                'test_result/testresult_ok.yaml',
+                'test_result/testresult_ko.yaml',
+                'test_result/test_result_snapshot_comparison.yaml']
+    dataDir = 'snapshotServer/tests/data/'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
+
+    def setUp(self):
+        super().setUp()
+
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
+
+    def test_status_security_not_authenticated(self):
+        """
+        Check that with security enabled, we cannot access the view without authentication
+        """
+        response = Client().get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("/accounts/login/?next=/snapshot/testResults/result/1/status/", response.url)
+
+    def test_status_without_snapshot_comparison(self):
+        """
+        Check that returned header and global status fragments reflect the test execution status when snapshot
+        comparison is not active for the session
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        self.assertIn('header-success', header_html)
+        self.assertNotIn('Snapshot comparison', global_status_html)
+        self.assertIn('<div class="box  success ">', global_status_html)
+
+    def test_status_with_snapshot_comparison_display_only_ko(self):
+        """
+        Check that when snapshot comparison behaviour is 'DISPLAY_ONLY', the 'Snapshot comparison' box reflects
+        the KO comparison result, but the header and 'Execution logs' box still reflect the (unchanged)
+        execution status
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=3)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
+        session.save()
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        # execution status is unchanged
+        self.assertIn('header-success', header_html)
+        # snapshot comparison box is present and shows KO
+        self.assertIn('Snapshot comparison KO', global_status_html)
+        self.assertIn('<div class="box failed">', global_status_html)
+        # execution logs box still reflects the (unchanged) SUCCESS status
+        self.assertIn('<div class="box  success ">', global_status_html)
+
+    def test_status_with_snapshot_comparison_change_test_result_ko(self):
+        """
+        Check that when snapshot comparison behaviour is 'CHANGE_TEST_RESULT' and comparison is KO, both the
+        header and the 'Execution logs' box reflect the new 'FAILURE' status
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=3)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        # header now shows failure, even though test execution itself was successful
+        self.assertIn('header-failed', header_html)
+        self.assertNotIn('header-success', header_html)
+        self.assertIn('Snapshot comparison KO', global_status_html)
+        # execution logs box is displayed as failed too
+        self.assertNotIn('<div class="box  success ">', global_status_html)

@@ -5,15 +5,52 @@ Created on 4 sept. 2017
 '''
 
 from django.views.generic.list import ListView
+from django.views.generic.base import View
 from django.views.decorators.clickjacking import xframe_options_exempt
 from django.utils.decorators import method_decorator
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.http import JsonResponse
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot, Error, TestInfo
 import json
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 
+class TestResultViewCommons:
+
+    def get_target_application(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.version.application
+
+    def get_target_environment(self):
+        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
+        return test_case_in_session.session.environment
+
+    def get_common_context(self, test_case_in_session_id: int, context: dict):
+        current_test = get_object_or_404(TestCaseInSession, pk=test_case_in_session_id)
+
+        context['currentTest'] = current_test
+        context['session'] = current_test.session
+        context['snapshotComparisonResult'] = current_test.isOkWithSnapshots()
+
+        # in case of computing error, do not display a step dedicated to it
+        if context['snapshotComparisonResult'] is None:
+            context['currentTest'].session.compareSnapshot = False
+
+        # status also takes into account snapshot comparison result when requested by the test
+        context['status'] = current_test.finalStatus()
+
+        try:
+            stack_and_logs = json.loads(current_test.stacktrace)
+            context['stacktrace'] = stack_and_logs['stacktrace'].split('\n')
+            context['logs'] = stack_and_logs['logs'].split('\n')
+        except:
+            context['stacktrace'] = []
+            context['logs'] = ['no logs available']
+
+        return context, current_test
+
 @method_decorator(xframe_options_exempt, name='dispatch')
-class TestResultView(LoginRequiredMixinConditional, ListView):
+class TestResultView(TestResultViewCommons, LoginRequiredMixinConditional, ListView):
     """
     View displaying a single test result
     """
@@ -47,30 +84,11 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         
     def get_context_data(self, **kwargs):
         context = super(TestResultView, self).get_context_data(**kwargs)
-        current_test = get_object_or_404(TestCaseInSession, pk=self.kwargs['test_case_in_session_id'])
-        context['currentTest'] = current_test
-        context['session'] = current_test.session
-        context['testCaseId'] = self.kwargs['test_case_in_session_id']
-        context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
-        
-        # in case of computing error, do not display a step dedicated to it
-        if context['snasphotComparisonResult'] == None:
-            context['currentTest'].session.compareSnapshot = False
-            
-        # status also takes into account snapshot comparison result when requested by the test
-        context['status'] = current_test.finalStatus()
-            
+        context, current_test = self.get_common_context(self.kwargs['test_case_in_session_id'], context)
+
         context['browserOrApp'] = current_test.session.browser.split(':')[-1].capitalize()
         context['applicationType'] = current_test.session.browser.split(':')[0].capitalize()
-
-        try:
-            stack_and_logs = json.loads(context['currentTest'].stacktrace)
-            context['stacktrace'] = stack_and_logs['stacktrace'].split('\n')
-            context['logs'] = stack_and_logs['logs'].split('\n')
-        except:
-            context['stacktrace'] = []
-            context['logs'] = ['no logs available']
-            
+        context['testCaseId'] = self.kwargs['test_case_in_session_id']
         last_step = [s for s in current_test.testSteps.all() if s.name == 'Test end']
         if last_step:
             last_step_result = StepResult.objects.filter(testCase=current_test, step__in=last_step)
@@ -92,14 +110,28 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
 
 
         return context
-    
-    def get_target_application(self):
-        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
-        return test_case_in_session.session.version.application
 
-    def get_target_environment(self):
-        test_case_in_session = TestCaseInSession.objects.get(id=self.kwargs['test_case_in_session_id'])
-        return test_case_in_session.session.environment
+
+
+@method_decorator(xframe_options_exempt, name='dispatch')
+class TestResultStatusView(TestResultViewCommons, LoginRequiredMixinConditional, View):
+    """
+    View returning the current global status of a test case in session (header and 'Snapshot comparison' /
+    'Execution logs' boxes), rendered as HTML fragments.
+    
+    It is used to refresh the test result page dynamically (without a full page reload) after an action that
+    may change the test result: updating exclude zones or changing the reference picture of a step, as this
+    changes the snapshot comparison result and, depending on session configuration, the final test status.
+    """
+
+
+    def get(self, request, *args, **kwargs):
+        context, _ = self.get_common_context(kwargs['test_case_in_session_id'], {})
+
+        return JsonResponse({
+            'header': render_to_string('snapshotServer/_testHeaderPartial.html', context, request=request),
+            'globalStatus': render_to_string('snapshotServer/_testGlobalStatusPartial.html', context, request=request),
+        })
 
         
     
