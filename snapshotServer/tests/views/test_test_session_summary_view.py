@@ -261,6 +261,67 @@ class TestTestSessionSummaryView(SnapshotTestCase):
         # snapshot comparison icon is present
         self.assertTrue("""<i class="fa-solid fa-code-compare font-failed" data-bs-toggle="tooltip" title="snapshot comparison failed"></i><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
 
+    def test_summary_report_result_change_test_result_with_snapshot_comparison_ko(self):
+        """
+        Check that when snapshot comparison behaviour is 'CHANGE_TEST_RESULT' and comparison is KO, the test
+        is displayed as failed (color, icon and link 'info' attribute), even though test execution itself
+        was successful
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=2)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.tooManyDiffs = True
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+        self.assertEqual(1, len(response.context['object_list']))
+
+        test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
+        self.assertEqual(1, test_case_in_session.id)
+        self.assertEqual('SUCCESS', test_case_in_session.status)  # execution status is unchanged
+        self.assertEqual('FAILURE', test_case_info['status'])     # but final displayed status is changed
+        self.assertFalse(test_case_info['snapshot_comparison_result'])  # snapshot comparison is KO
+
+        # check content
+        html = self.remove_spaces(response.rendered_content)
+
+        # test is displayed as failed, even though test execution status is 'SUCCESS'
+        self.assertTrue("""<tr class="testFailed"><td>❌</td>""" in html)
+        self.assertTrue("""<i class="fa-solid fa-code-compare font-failed" data-bs-toggle="tooltip" title="snapshot comparison failed"></i><a href='/snapshot/testResults/result/1/' info="ko" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
+
+    def test_summary_report_result_display_only_with_snapshot_comparison_ko_does_not_change_status(self):
+        """
+        Check that when snapshot comparison behaviour is 'DISPLAY_ONLY' and comparison is KO, the test is still
+        displayed with its original execution status (color, icon and link 'info' attribute unchanged)
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=2)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.tooManyDiffs = True
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
+        session.save()
+
+        response = client.get(reverse('testSessionSummaryView', kwargs={'sessionId': 1}))
+
+        test_case_in_session, test_case_info = next(iter(response.context['object_list'].items()))
+        self.assertEqual('SUCCESS', test_case_in_session.status)
+        self.assertEqual('SUCCESS', test_case_info['status'])  # status is not changed
+
+        html = self.remove_spaces(response.rendered_content)
+        self.assertTrue("""<tr class="testSuccess"><td>✅</td>""" in html)
+        self.assertTrue("""<i class="fa-solid fa-code-compare font-failed" data-bs-toggle="tooltip" title="snapshot comparison failed"></i><a href='/snapshot/testResults/result/1/' info="ok" data-bs-toggle="tooltip" title="no description available">testJenkins</a>""" in html)
+
     def test_summary_report_result_ko(self):
         """
         Check that the test is displayed in summary

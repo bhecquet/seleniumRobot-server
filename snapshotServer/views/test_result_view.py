@@ -52,15 +52,13 @@ class TestResultView(LoginRequiredMixinConditional, ListView):
         context['session'] = current_test.session
         context['testCaseId'] = self.kwargs['test_case_in_session_id']
         context['snasphotComparisonResult'] = current_test.isOkWithSnapshots()
-        context['status'] = current_test.status
         
         # in case of computing error, do not display a step dedicated to it
         if context['snasphotComparisonResult'] == None:
             context['currentTest'].session.compareSnapshot = False
             
-        # change test result when requested by the test
-        if current_test.session.compareSnapshot and current_test.session.compareSnapshotBehaviour == 'CHANGE_TEST_RESULT' and context['snasphotComparisonResult'] == False :
-            context['status'] = 'FAILURE'
+        # status also takes into account snapshot comparison result when requested by the test
+        context['status'] = current_test.finalStatus()
             
         context['browserOrApp'] = current_test.session.browser.split(':')[-1].capitalize()
         context['applicationType'] = current_test.session.browser.split(':')[0].capitalize()

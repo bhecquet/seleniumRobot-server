@@ -53,7 +53,7 @@ class TestCaseInSession(models.Model):
     stacktrace = models.TextField(null=True)
     name = models.CharField(max_length=100, null=True)
     description = models.CharField(max_length=300, null=True)
-    status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status
+    status = models.CharField(max_length=10, default='SKIP') # SUCCESS, FAILURE, SKIP, ... see TestNG status. This is the status of the test, as sent by seleniumRobot, not the status of snapshot comparison
     gridNode = models.CharField(max_length=100, null=True) # name of the grid node on which test has run 
     optimized = models.IntegerField(default=0) # do attachments have been optimized (deleted, compressed): 0 (no), 10 (html deleted), 20 (images compressed), 30 (video deleted)
     date = models.DateTimeField(blank=True, null=True)
@@ -89,6 +89,23 @@ class TestCaseInSession(models.Model):
             return None
             
         return result
+    
+    def finalStatus(self):
+        """
+        Returns the final status of this test case in session, taking into account both:
+        - the status of the test execution itself (self.status)
+        - the result of the snapshot comparison (self.isOkWithSnapshots()), but only if snapshot comparison
+          is active for the session (session.compareSnapshot) and configured to change the test result
+          (session.compareSnapshotBehaviour == 'CHANGE_TEST_RESULT')
+        
+        If snapshot comparison is inactive, or its behaviour is not 'CHANGE_TEST_RESULT', or the comparison
+        result is undefined (None, e.g: not computed yet or computing error), the test execution status is
+        returned unchanged.
+        """
+        status = self.status
+        if self.session.compareSnapshot and self.session.compareSnapshotBehaviour == 'CHANGE_TEST_RESULT' and self.isOkWithSnapshots() == False:
+            status = 'FAILURE'
+        return status
     
     def computed(self):
         """
@@ -197,7 +214,7 @@ class TestSession(models.Model):
     browser = models.CharField(max_length=100) # contains the name of the browser or the name of the mobile application => 'BROWSER:chrome' or 'APP:myApp.apk'
     environment = models.ForeignKey(TestEnvironment, related_name='testsession', on_delete=models.CASCADE)
     compareSnapshot = models.BooleanField(default=False)                        # if True, this session will be displayed in snapshot comparator
-    compareSnapshotBehaviour = models.CharField(max_length=20, default='DISPLAY_ONLY')                  # DISPLAY_ONLY / ADD_TEST_RESULT / CHANGE_TEST_RESULT
+    compareSnapshotBehaviour = models.CharField(max_length=20, default='DISPLAY_ONLY')                  # DISPLAY_ONLY / CHANGE_TEST_RESULT
     ttl = models.DurationField(default=datetime.timedelta(days=30)) # time to live of the session, in days. After this delay, session may be deleted
     startedBy = models.CharField(max_length=300, null=True, blank=True) # the URL of the tool that started the test
     
