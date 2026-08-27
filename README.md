@@ -299,7 +299,7 @@ Every API / WEB access is secured through authentication and permissions check
 
 ![](doc/images/add_token.png)
 
-- alternatively, you can create token through API (for example via Postman)
+- alternatively, you can create token through API (for example via Postman / Bruno)
   ![](doc/images/generate_token_postman.png)
 
 ### Groups ###
@@ -312,16 +312,21 @@ Allow a user to add / modify variable assets, and also delete variables
 
 Allow a user to view / add / edit snapshot comparisons
 
-### Restrict access to a specific application ###
+### Permissions ###
 
 Restriction can be done on environment or application level.
 
 There are 4 permission sets
 
-- permissions related to variables and result recording: 'can view application and related variable and version for xxx'
-- permissions related to result viewing: 'can view results for application xxx'
-- permissions related to variables and result recording: 'can view environment and related variable and version for xxx'
-- permissions related to result viewing: 'can view results for environment xxx'
+- permissions related to variables and result recording: 'can view *application* and related variable and version for xxx'
+- permissions related to result viewing: 'can view results for *application* xxx'
+- permissions related to variables and result recording: 'can view *environment* and related variable and version for xxx'
+- permissions related to result viewing: 'can view results for *environment* xxx'
+
+#### Permission per group ####
+Permissions can be given to user, but also to groups where user are affected.
+With LDAP connection (see django_auth_ldap documentation), permissions can be given to LDAP groups (just create a Django group with the name of an LDAP group).
+Then users belonging to this LDAP groups will automatically get LDAP group permission
 
 ## User interface ##
 
