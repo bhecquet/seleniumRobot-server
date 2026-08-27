@@ -3,7 +3,7 @@ import shutil
 import zipfile
 from pathlib import Path
 
-from snapshotServer.utils.utils import getTestDirectory
+from snapshotServer.utils.utils import get_test_directory
 from variableServer.models import Application, TestEnvironment
 from django.db.models import Q
 from django.contrib.contenttypes.models import ContentType
@@ -19,7 +19,7 @@ from io import BytesIO
 class TestViewsetFile(TestApi):
     fixtures = ['viewsets/test_viewset_file.yaml']
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
-    data_dir = getTestDirectory()
+    data_dir = get_test_directory()
 
     def setUp(self):
 
