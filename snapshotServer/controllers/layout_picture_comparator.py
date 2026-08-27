@@ -10,9 +10,9 @@ variations, ...
 The algorithm is voluntarily kept simple and relies only on OpenCV / numpy (already used
 elsewhere in the project), so that no new dependency is required:
 
-1. Optionally realign the reference image on the new image using an ORB feature based similarity transform
-   (translation / rotation / uniform scale). This compensates for global changes (page slightly
-   scrolled, browser window resized, ...) before zones are compared.
+1. Optionally realign the reference image on the new image using an ORB feature based, origin-anchored
+   scaling transform (see _align_reference for details). This compensates for global changes (browser
+   window resized, ...) before zones are compared.
 2. Detect zones in both images (reference and new image) using edge detection + dilation +
    contours. Dilation is used to merge close edges/text into bigger, logical zones instead of
    many small ones.
@@ -66,10 +66,11 @@ class LayoutPictureComparator:
                  merge_kernel_size=15,
                  position_tolerance=3,
                  shift_search_radius=40,
-                 similarity_threshold=0.90,
+                 similarity_threshold=0.80,
                  presence_threshold=0.5,
-                 align_globally=True,
-                 min_orb_matches=10):
+                 align_globally=False,
+                 min_orb_matches=10,
+                 content_blur_kernel=9):
         """
         @param min_zone_size: minimal width/height (in pixels) for a detected zone to be taken into account.
                                Used to filter out noise (very small contours)
@@ -87,6 +88,15 @@ class LayoutPictureComparator:
                                 homography) before comparing zones, to compensate for global changes
         @param min_orb_matches: minimum number of ORB keypoint matches required to compute a global alignment.
                                  Below this value, global alignment is skipped and images are compared as-is
+        @param content_blur_kernel: size (in pixels, must be odd) of the Gaussian blur kernel applied to zone
+                                     content before computing its similarity score. Real screenshots of the same
+                                     page (even at the exact same position/size) rarely match pixel for pixel on
+                                     text: font hinting / sub-pixel anti-aliasing changes slightly from one render
+                                     to the other. This has a small effect on the general shape of a zone but a
+                                     large effect on the raw pixel correlation of fine, high frequency content
+                                     such as text. Blurring smooths out this rendering noise while still keeping
+                                     genuinely different content well below similarity_threshold. Set to 0 to
+                                     disable (raw pixel comparison)
         """
         self.min_zone_size = min_zone_size
         self.merge_kernel_size = merge_kernel_size
@@ -96,6 +106,19 @@ class LayoutPictureComparator:
         self.presence_threshold = presence_threshold
         self.align_globally = align_globally
         self.min_orb_matches = min_orb_matches
+        self.content_blur_kernel = content_blur_kernel
+
+
+    def _compute_zone_diffs_surface(self, zone_diffs):
+
+        surface = 0
+        for zone in zone_diffs:
+            if zone.ref_rect:
+                surface += zone.ref_rect.width * zone.ref_rect.height
+            elif zone.image_rect:
+                surface += zone.image_rect.width * zone.image_rect.height
+
+        return surface
 
     def compare_zones(self, reference, image, exclude_zones=None):
         """
@@ -145,7 +168,9 @@ class LayoutPictureComparator:
             if not self._overlaps_any(img_rect, matched_image_rects):
                 diffs.append(ZoneDiff('appeared', None, img_rect, 0.0))
 
-        return diffs
+        diff_percentage = 100 * self._compute_zone_diffs_surface(diffs) / (ref_gray.shape[1] * ref_gray.shape[0])
+
+        return diffs, diff_percentage
 
     # colors (BGR) used to visualize each kind of difference
     VISUALIZATION_COLORS = {
@@ -215,6 +240,59 @@ class LayoutPictureComparator:
         _, buffer = cv2.imencode(".png", annotated)
         return buffer.tobytes()
 
+    def build_diff_overlay(self, image, diffs, thickness=2, show_labels=True):
+        """
+        Builds a transparent overlay (same size as 'image', RGBA), highlighting the zones reported as
+        different, so that it can be superimposed on top of the original picture, the same way
+        PictureComparator / DiffComputer.mark_diff() build their (opaque red on transparent background)
+        diff mask. Unlike visualize_diffs()/encode_visualization() (meant for standalone debugging), this
+        keeps the background fully transparent so it does not hide the picture it is overlaid on.
+
+        @param image: path to the image that was compared to the reference (only used to get its dimensions)
+        @param diffs: list of ZoneDiff, as returned by compare_zones()
+        @param thickness: thickness (in pixels) of the rectangles drawn
+        @param show_labels: if True, prints the diff type (shifted / missing / appeared / changed) next to
+                             each rectangle, the same way visualize_diffs() does
+        @return: a numpy array (BGRA image), transparent except on the rectangles (and, optionally, labels)
+                 that highlight differences
+        """
+        if not os.path.isfile(image):
+            raise PictureComparatorError("Image file %s does not exist" % image)
+
+        img = cv2.imread(image, cv2.IMREAD_COLOR)
+        if img is None:
+            raise PictureComparatorError("Image file %s could not be read as an image" % image)
+
+        height, width = img.shape[:2]
+        overlay = numpy.zeros((height, width, 4), dtype=numpy.uint8)
+
+        for zone_diff in diffs:
+            color = self.VISUALIZATION_COLORS.get(zone_diff.type, (255, 255, 255))
+            bgra_color = (color[0], color[1], color[2], 255)
+            rect = zone_diff.ref_rect if zone_diff.type == 'missing' else zone_diff.image_rect
+            if not rect:
+                continue
+
+            if zone_diff.type == 'missing':
+                self._draw_dashed_rect(overlay, rect, bgra_color, thickness)
+            else:
+                cv2.rectangle(overlay, (rect.x, rect.y), (rect.x + rect.width, rect.y + rect.height), bgra_color, thickness)
+
+            if show_labels:
+                label_pos = (rect.x, max(0, rect.y - 5))
+                cv2.putText(overlay, zone_diff.type, label_pos, cv2.FONT_HERSHEY_SIMPLEX, 0.5, bgra_color, thickness)
+
+        return overlay
+
+    def encode_diff_overlay(self, image, diffs, thickness=2, show_labels=True):
+        """
+        Same as build_diff_overlay(), but returns a PNG-encoded byte buffer instead of a numpy array, so
+        that it can directly be stored, e.g. in Snapshot.pixelsDiff.
+        """
+        overlay = self.build_diff_overlay(image, diffs, thickness=thickness, show_labels=show_labels)
+        _, buffer = cv2.imencode(".png", overlay)
+        return buffer.tobytes()
+
     def show_diffs(self, image, diffs, thickness=2, show_labels=True, window_name="LayoutPictureComparator diffs"):
         """
         Debugging helper: opens a window displaying the compared image with all differences drawn on it
@@ -224,7 +302,11 @@ class LayoutPictureComparator:
         Closes the window as soon as a key is pressed.
         """
         annotated = self.visualize_diffs(image, diffs, thickness=thickness, show_labels=show_labels)
+
+        # Custom window
+        cv2.namedWindow(window_name, cv2.WINDOW_KEEPRATIO)
         cv2.imshow(window_name, annotated)
+        cv2.resizeWindow(window_name, annotated.shape[1], annotated.shape[0])
         cv2.waitKey(0)
         cv2.destroyWindow(window_name)
 
@@ -244,10 +326,18 @@ class LayoutPictureComparator:
 
     def _align_reference(self, ref_gray, img_gray):
         """
-        Tries to realign the reference image on the new image, using an ORB feature based similarity
-        transform, so that global changes (page scrolled a bit, browser window resized, ...) do not
-        impact zone comparisons. If not enough keypoints/matches are found, the reference image is
-        returned unchanged.
+        Tries to realign the reference image on the new image, using an ORB feature based transform, so
+        that global changes (browser window resized, ...) do not impact zone comparisons. If not enough
+        keypoints/matches are found, the reference image is returned unchanged.
+
+        The transform is deliberately restricted to an axis-aligned scaling anchored at the image's
+        top-left corner (0, 0): (x, y) -> (sx * x, sy * y), with independent horizontal/vertical scale
+        factors and no translation/rotation/shear. This models how web content actually reflows when a
+        browser window is resized: the page always starts being laid out from its top-left corner, and
+        may stretch/shrink horizontally and vertically by different amounts (responsive layout), but it is
+        not translated, rotated or scrolled between 2 screenshots taken the same way. Anchoring the
+        transform at (0, 0) instead of letting it fit an arbitrary translation avoids the alignment
+        "correcting" an offset that should actually be reported as a real difference.
         """
         try:
             orb = cv2.ORB_create(500)
@@ -266,20 +356,77 @@ class LayoutPictureComparator:
             src_pts = numpy.float32([kp_ref[m.queryIdx].pt for m in matches]).reshape(-1, 1, 2)
             dst_pts = numpy.float32([kp_img[m.trainIdx].pt for m in matches]).reshape(-1, 1, 2)
 
-            # a web page does not get "warped" with perspective from one screenshot to another: only
-            # translation / scale / (very rarely) rotation differences are expected (window resize,
-            # scroll, ...). A similarity transform is therefore both more robust to estimate (fewer
-            # degrees of freedom, more tolerant to a limited number of keypoints) and more representative
-            # than a full homography here.
-            transform, _ = cv2.estimateAffinePartial2D(src_pts, dst_pts, method=cv2.RANSAC, ransacReprojThreshold=5.0)
-            if transform is None:
+            # estimateAffinePartial2D is only used here to get a robust (RANSAC) inlier mask, rejecting
+            # spurious keypoint matches: the transform itself is discarded, and replaced below by our own
+            # scale-only, origin-anchored transform, fitted on the resulting inliers
+            _, inlier_mask = cv2.estimateAffinePartial2D(src_pts, dst_pts, method=cv2.RANSAC, ransacReprojThreshold=5.0)
+            if inlier_mask is None or inlier_mask.sum() < self.min_orb_matches:
                 return ref_gray
+
+            inliers = inlier_mask.ravel().astype(bool)
+            src_x = src_pts[inliers, 0, 0]
+            src_y = src_pts[inliers, 0, 1]
+            dst_x = dst_pts[inliers, 0, 0]
+            dst_y = dst_pts[inliers, 0, 1]
+
+            scale_x = self._fit_origin_anchored_scale(src_x, dst_x)
+            scale_y = self._fit_origin_anchored_scale(src_y, dst_y)
+            if scale_x is None or scale_y is None:
+                return ref_gray
+            logger.info("Estimated scales: scale_x=%f, scale_y=%f", scale_x, scale_y)
+            transform = numpy.float32([[scale_x, 0, 0], [0, scale_y, 0]])
 
             height, width = img_gray.shape
             return cv2.warpAffine(ref_gray, transform, (width, height), borderMode=cv2.BORDER_REPLICATE)
         except cv2.error:
             logger.exception("Could not align reference image on new image, comparing them as-is")
             return ref_gray
+
+    def _fit_origin_anchored_scale(self, src_coords, dst_coords, min_scale=0.5, max_scale=2.0):
+        """
+        Finds the scale factor 's' that best maps 'src_coords' to 'dst_coords' as dst = s * src (i.e. a
+        1D scaling anchored at 0), in the least squares sense: s = sum(src * dst) / sum(src ** 2).
+
+        Before accepting it, the fit is compared to how well a plain translation (dst = src + t, with the
+        best possible 't') would explain the same points. This is what distinguishes a genuine
+        origin-anchored scaling from a translation (or a translation dominated movement): when points are
+        actually offset by a constant amount, a translation model fits them almost perfectly while an
+        origin-anchored scale cannot (it necessarily has a much higher residual, since a translation isn't
+        a scaling from 0). Conversely, when points genuinely follow a scaling from the origin, the
+        translation model fits markedly worse. Note: comparing raw residuals is preferred here to
+        checking the intercept of an unconstrained regression, which would be unreliable: keypoints
+        detected in a screenshot are rarely close to (0, 0), so extrapolating a regression line back to
+        x=0 amplifies any small slope estimation noise into a large, misleading intercept.
+
+        Fitting a pure origin-anchored scale on points that are actually offset by a translation is
+        numerically well defined but meaningless: it would silently let part of a real translation be
+        "explained away" as a bogus scale factor, which must not happen (see _align_reference's
+        docstring: translations must not be compensated).
+
+        Returns None if the scale cannot be reliably estimated (no/degenerate data, a better fit as a
+        translation, or an aberrant scale value), in which case the caller should not apply any alignment.
+        """
+        if len(src_coords) < 2:
+            return None
+
+        denominator = numpy.sum(src_coords ** 2)
+        if denominator < 1e-6:
+            return None
+
+        scale = float(numpy.sum(src_coords * dst_coords) / denominator)
+        if not min_scale <= scale <= max_scale:
+            return None
+
+        residual_scale = numpy.sum((dst_coords - scale * src_coords) ** 2)
+        translation = numpy.mean(dst_coords - src_coords)
+        residual_translation = numpy.sum((dst_coords - (src_coords + translation)) ** 2)
+
+        if residual_translation < residual_scale * 0.5:
+            # a plain translation explains the points markedly better than an origin-anchored scale: this
+            # looks like a scroll/translation, not a responsive-layout stretch. Do not compensate it
+            return None
+
+        return scale
 
     def _detect_zones(self, gray_img, exclude_zones):
         """
@@ -343,6 +490,9 @@ class LayoutPictureComparator:
         """
         Searches 'crop' (extracted from the reference image) inside a window of 'img_gray' centered on
         'rect' position, extended by 'radius' pixels in every direction.
+        A light Gaussian blur (see content_blur_kernel) is applied beforehand to both the crop and the
+        window, so that the returned similarity score is tolerant to fine-grained rendering noise (text
+        anti-aliasing, sub-pixel hinting, ...) without hiding genuinely different content.
         @return: (score, (x, y)) the best correlation score and the position (top left corner, in img_gray
                  coordinates) where it was found
         """
@@ -355,6 +505,10 @@ class LayoutPictureComparator:
 
         if window.shape[0] < h or window.shape[1] < w:
             return -1.0, (x, y)
+
+        if self.content_blur_kernel:
+            crop = cv2.GaussianBlur(crop, (self.content_blur_kernel, self.content_blur_kernel), 0)
+            window = cv2.GaussianBlur(window, (self.content_blur_kernel, self.content_blur_kernel), 0)
 
         result = cv2.matchTemplate(window, crop, cv2.TM_CCOEFF_NORMED)
         _, max_val, _, max_loc = cv2.minMaxLoc(result)

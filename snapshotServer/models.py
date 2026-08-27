@@ -325,7 +325,7 @@ class Snapshot(models.Model):
     pixelsDiff = models.BinaryField(null=True)
     tooManyDiffs = models.BooleanField(default=False)
     name = models.CharField(max_length=150, default="") # name of the snapshot
-    compareOption = models.CharField(max_length=100, default="true") # options for comparison
+    compareOption = models.CharField(max_length=100, default="FULL") # options for comparison FULL / NONE / ZONES
     computed = models.BooleanField(default=False)
     diffTolerance = models.FloatField(default=0.0) # pixel tolerance when comparing pictures. 0.0 means all pixels must be identical, 10.0 means 10% of the pixels may be different 
     computingError = TruncatingCharField(max_length=250, default="")
