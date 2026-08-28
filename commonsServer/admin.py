@@ -1,10 +1,11 @@
 import logging
 
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from django.contrib.auth.models import User, Permission
+from django.contrib.auth.admin import UserAdmin, GroupAdmin as GroupAdminDefault
+from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
 
+from commonsServer.forms import GroupAdminForm
 from commonsServer.models import AppPreference
 from commonsServer.preferences import sync_defaults
 from snapshotServer.models import TestSession
@@ -76,6 +77,12 @@ class CustomUserAdmin(UserAdmin):
             )
             user.user_permissions.add(permission)
 
+# from https://github.com/Microdisseny/django-groupadmin-users
+class GroupAdmin(GroupAdminDefault):
+
+    form = GroupAdminForm
+    filter_horizontal = ['permissions']
+
 class AppPreferenceAdmin(admin.ModelAdmin):
     list_display = ("key", "value", "updated_at")
     search_fields = ("key", "value", "description")
@@ -95,4 +102,6 @@ class AppPreferenceAdmin(admin.ModelAdmin):
 
 admin.site.unregister(User)
 admin.site.register(User, CustomUserAdmin)
+admin.site.unregister(Group)
+admin.site.register(Group, GroupAdmin)
 admin.site.register(AppPreference, AppPreferenceAdmin)
