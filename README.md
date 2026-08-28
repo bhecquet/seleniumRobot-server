@@ -214,6 +214,7 @@ to use AD/LDAP authentication, in `AUTHENTICATION_BACKENDS`,
   AUTH_LDAP_1_BIND_PASSWORD = 'pwd'
   AUTH_LDAP_1_USER_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
   AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+  AUTH_LDAP_1_FIND_GROUP_PERMS = True
   AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
   AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
   "is_active": (LDAPGroupQuery("CN=GROUP_USER_001,OU=Selenium,DC=my,DC=company,DC=com") |
@@ -322,6 +323,9 @@ There are 4 permission sets
 - permissions related to result viewing: 'can view results for *application* xxx'
 - permissions related to variables and result recording: 'can view *environment* and related variable and version for xxx'
 - permissions related to result viewing: 'can view results for *environment* xxx'
+
+Moreover, variable viewing and test session searching/editing needs access to admin interface and thus, the 'is_staff' flag set to true
+Test result viewing only need permission for result viewing
 
 #### Permission per group ####
 Permissions can be given to user, but also to groups where user are affected.
