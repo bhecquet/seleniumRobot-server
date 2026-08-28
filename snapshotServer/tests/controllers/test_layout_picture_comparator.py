@@ -436,6 +436,7 @@ class TestLayoutPictureComparator(SnapshotTestCase):
         reference = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'avantages_MMA_1.png')
         image = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'avantages_MMA_2.png')
         diffs, diff_percentage = comparator.compare_zones(reference, image)
+        print(diffs)
         # comparator.show_diffs(image, diffs)  # uncomment locally to visually debug a failure
 
         self.assertEqual(len(diffs), 5, "Unexpected differences found: %s" % (diffs,))
