@@ -7,7 +7,7 @@ import os
 
 class SnapshotTestCase(TestWebAndAdmin):
 
-    dataDir = 'snapshotServer/tests/data/'
+    data_dir = 'snapshotServer/tests/data/'
     media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
     
     def setUp(self):

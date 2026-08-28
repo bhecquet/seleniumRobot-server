@@ -948,7 +948,7 @@ class TestViewsetStepResult(TestApi):
         self.assertEqual(0, len(error.relatedErrors.all()))
 
         # check fullName has been updated
-        self.assertEquals(StepResult.objects.get(pk=step_result_id).fullName, 'openPage with args: (https://jenkins/jenkins/, )')
+        self.assertEqual(StepResult.objects.get(pk=step_result_id).fullName, 'openPage with args: (https://jenkins/jenkins/, )')
 
 
     def test_stepresult_parse_stacktrace_result_ko_test_end(self):

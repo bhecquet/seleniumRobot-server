@@ -39,7 +39,7 @@ def _load_har(har_file):
     if isinstance(har_file, dict):
         return har_file
 
-    if isinstance(har_file, (bytes, bytearray, str)) and not Path(str(har_file)).exists():
+    if isinstance(har_file, (bytes, bytearray)):
         content = har_file
     else:
         path = Path(har_file)

@@ -6,6 +6,7 @@ from snapshotServer.controllers import tools
 from django.db.models import Q
 from django.db import close_old_connections
 from snapshotServer.controllers.picture_comparator import PictureComparator
+from snapshotServer.controllers.layout_picture_comparator import LayoutPictureComparator
 from snapshotServer.exceptions.picture_comparator_error import PictureComparatorError
 from snapshotServer.models import ExcludeZone
 import io
@@ -23,6 +24,7 @@ class DiffComputer(threading.Thread):
     _jobLock = threading.Lock()
     _instanceLock = threading.Lock()
     picture_comparator = PictureComparator()
+    layout_picture_comparator = LayoutPictureComparator(align_globally=False)
     
     @classmethod
     def get_instance(cls):
@@ -102,9 +104,10 @@ class DiffComputer(threading.Thread):
         
         DiffComputer._instance = None
 
+
     def _compute_diff(self, ref_snapshot, step_snapshot, save_snapshot=True, additional_exclude_zones=[]): 
         """
-        Compare all pixels from reference snapshto and step snapshot, and store difference to database
+        Compare all pixels from reference snapshot and step snapshot, and store difference to database
         
         @param ref_snapshot: reference snapshot to use for comparison
         @param step_snapshot: snapshot for the current step. We compare it to the reference
@@ -121,14 +124,24 @@ class DiffComputer(threading.Thread):
                 exclude_zones = [e.toRectangle() for e in ExcludeZone.objects.filter(Q(snapshot=ref_snapshot) | Q(snapshot=step_snapshot))]
                 exclude_zones += [e.toRectangle() for e in additional_exclude_zones]
                 
-                pixel_diffs, diff_percentage, diff_image = DiffComputer.picture_comparator.get_changed_pixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
-                
-                # store diff picture mask into database instead of pixels, to reduce size of stored object
-#                 step_snapshot.pixelsDiff = self.mark_diff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
-                step_snapshot.pixelsDiff = self.mark_diff(diff_image)
-                
+                if step_snapshot.compareOption == 'ZONES':
+                    # layout-aware comparison: reasons in terms of zones (logical blocks of content) instead of
+                    # raw pixels, so that it stays tolerant to minor shifts / color changes. As there is no
+                    # percentage of changed pixels here, diffTolerance does not apply: any remaining zone
+                    # difference (after alignment) is considered significant
+                    zone_diffs, diff_percentage = DiffComputer.layout_picture_comparator.compare_zones(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                    step_snapshot.pixelsDiff = DiffComputer.layout_picture_comparator.encode_diff_overlay(step_snapshot.image.path, zone_diffs)
+
+                else:
+                    pixel_diffs, diff_percentage, diff_image = DiffComputer.picture_comparator.get_changed_pixels(ref_snapshot.image.path, step_snapshot.image.path, exclude_zones)
+                    
+                    # store diff picture mask into database instead of pixels, to reduce size of stored object
+#                     step_snapshot.pixelsDiff = self.mark_diff(step_snapshot.image.width, step_snapshot.image.height, pixel_diffs)
+                    step_snapshot.pixelsDiff = self.mark_diff(diff_image)
+                    
                 # too many pixel differences if we go over tolerance
                 step_snapshot.tooManyDiffs = step_snapshot.diffTolerance < diff_percentage
+
             else:
                 step_snapshot.pixelsDiff = None
                 step_snapshot.tooManyDiffs = False
