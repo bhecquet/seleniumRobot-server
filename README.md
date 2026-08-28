@@ -420,14 +420,8 @@ compare snapshot"
 
 #### Visualize comparison results ####
 
-Complete "environment", "sessions", "browser", "test cases" and execution date. Each time, click on "Filter".
+Comparison results are integrated with test result, as part of a step
 
-You will then get a list of test sessions corresponding to your search criteria.
-
-![](doc/images/snapshot_comparison_result.png)
-
-these results will also be accessible from SeleniumRobot HTML result, as a tab in each test result, pointing to this
-page.
 
 #### Edit comparison ####
 
@@ -446,6 +440,10 @@ want them not being used anymore in comparison.
 
 **Reference**: a picture to which further snapshot taken during test will be compared. A reference is specific to
 an [application / version / environment / test case / test step].
+
+From version 4.5.0, there is also a zone comparison. Each zone is compared with its reference to see if it has appeared, changed, moved, vanished.
+Comparison threshold (for now 80% similarity) is applied to each zone and comparison is reported as failed when more than 'diffTolerance' (set for each snapshot) percent of the image has changed. This percentage is computed summing the surface of each zone, divided by the surface of the image.
+
 
 #### Change reference ####
 
