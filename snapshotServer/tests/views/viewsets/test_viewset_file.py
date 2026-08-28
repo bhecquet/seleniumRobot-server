@@ -104,17 +104,17 @@ class TestViewsetFile(TestApi):
             self.assertTrue(Path(file.file.path).exists())
 
             step_1 = StepResult.objects.get(pk=1)
-            self.assertEquals(step_1.meanHtmlLoadTimes, 500)
-            self.assertEquals(step_1.meanJsLoadTimes, 55)
-            self.assertEquals(step_1.meanXhrLoadTimes, 150)
-            self.assertEquals(step_1.meanImageLoadTimes, 30)
-            self.assertEquals(step_1.networkErrors, [])
+            self.assertEqual(step_1.meanHtmlLoadTimes, 500)
+            self.assertEqual(step_1.meanJsLoadTimes, 55)
+            self.assertEqual(step_1.meanXhrLoadTimes, 150)
+            self.assertEqual(step_1.meanImageLoadTimes, 30)
+            self.assertEqual(step_1.networkErrors, [])
 
             step_2 = StepResult.objects.get(pk=2)
-            self.assertEquals(step_2.meanImageLoadTimes, 40)
-            self.assertEquals(step_2.meanXhrLoadTimes, 300)
-            self.assertEquals(step_2.meanHtmlLoadTimes, -1.0)
-            self.assertEquals(step_2.networkErrors, [])
+            self.assertEqual(step_2.meanImageLoadTimes, 40)
+            self.assertEqual(step_2.meanXhrLoadTimes, 300)
+            self.assertEqual(step_2.meanHtmlLoadTimes, -1.0)
+            self.assertEqual(step_2.networkErrors, [])
 
             with zipfile.ZipFile(file.file.path) as zip:
                 with zip.open('test_average_time.har', 'r') as myfile:
@@ -130,13 +130,13 @@ class TestViewsetFile(TestApi):
             self.assertEqual(response.status_code, 201, 'status code should be 201')
 
             step_1 = StepResult.objects.get(pk=1)
-            self.assertEquals(step_1.networkErrors, [
+            self.assertEqual(step_1.networkErrors, [
                 {'url': 'https://myapp/api/data', 'status': 404, 'statusText': 'Not Found'},
                 {'url': 'https://myapp/api/save', 'status': 500, 'statusText': 'Internal Server Error'},
             ])
 
             step_2 = StepResult.objects.get(pk=2)
-            self.assertEquals(step_2.networkErrors, [
+            self.assertEqual(step_2.networkErrors, [
                 {'url': 'https://myapp/api/timeout', 'status': None, 'statusText': None},
                 {'url': 'https://myapp/api/aborted', 'status': None, 'statusText': None},
             ])
