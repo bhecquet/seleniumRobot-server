@@ -413,14 +413,17 @@ class TestLayoutPictureComparator(SnapshotTestCase):
         reference = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'jenkins_100p_full_cropped.png')
         image = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'jenkins_90p_reduced_cropped.png')
         diffs, diff_percentage = comparator.compare_zones(reference, image)
+
+        diffs = sorted(diffs, key=lambda zone: zone.ref_rect.x if zone.ref_rect else zone.image_rect.x)
+        print(diffs)
         # comparator.show_diffs(image, diffs)  # uncomment locally to visually debug a failure
 
         self.assertAlmostEqual(diff_percentage, 5.76, delta=0.1)
         self.assertEqual(len(diffs), 18)
-        self._compare_zone_diff(diffs[0], ZoneDiff(type='shifted', ref_rect=Rectangle(x=194, y=502, width=50, height=27), image_rect=Rectangle(x=200, y=493, width=50, height=27), score=0.873561441898346))
+        self._compare_zone_diff(diffs[4], ZoneDiff(type='shifted', ref_rect=Rectangle(x=194, y=502, width=50, height=27), image_rect=Rectangle(x=200, y=493, width=50, height=27), score=0.873561441898346))
         self._compare_zone_diff(diffs[2], ZoneDiff(type='changed', ref_rect=Rectangle(x=17, y=384, width=156, height=165), image_rect=Rectangle(x=16, y=381, width=156, height=165), score=0.630462646484375))
-        self._compare_zone_diff(diffs[8], ZoneDiff(type='missing', ref_rect=Rectangle(x=1538, y=15, width=30, height=29), image_rect=None, score=0.11229448020458221))
-        self._compare_zone_diff(diffs[11], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=268, y=605, width=28, height=10), score=0.0))
+        self._compare_zone_diff(diffs[13], ZoneDiff(type='missing', ref_rect=Rectangle(x=1538, y=15, width=30, height=29), image_rect=None, score=0.11229448020458221))
+        self._compare_zone_diff(diffs[8], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=268, y=605, width=28, height=10), score=0.0))
 
     def test_diffs_found_matches_expected_content_on_real_image(self):
         """
@@ -436,12 +439,13 @@ class TestLayoutPictureComparator(SnapshotTestCase):
         reference = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'avantages_MMA_1.png')
         image = os.path.join(self.data_dir, 'controllers', 'layout_picture_comparator', 'avantages_MMA_2.png')
         diffs, diff_percentage = comparator.compare_zones(reference, image)
-        print(diffs)
         # comparator.show_diffs(image, diffs)  # uncomment locally to visually debug a failure
 
+        diffs = sorted(diffs, key=lambda zone: zone.ref_rect.x if zone.ref_rect else zone.image_rect.x)
+
         self.assertEqual(len(diffs), 5, "Unexpected differences found: %s" % (diffs,))
-        self._compare_zone_diff(diffs[0], ZoneDiff(type='shifted', ref_rect=Rectangle(x=918, y=994, width=84, height=25), image_rect=Rectangle(x=898, y=994, width=84, height=25), score=0.950654149055481))
-        self._compare_zone_diff(diffs[1], ZoneDiff(type='changed', ref_rect=Rectangle(x=529, y=686, width=862, height=290), image_rect=Rectangle(x=527, y=686, width=862, height=290), score=0.6739785075187683))
+        self._compare_zone_diff(diffs[4], ZoneDiff(type='shifted', ref_rect=Rectangle(x=918, y=994, width=84, height=25), image_rect=Rectangle(x=898, y=994, width=84, height=25), score=0.950654149055481))
+        self._compare_zone_diff(diffs[0], ZoneDiff(type='changed', ref_rect=Rectangle(x=529, y=686, width=862, height=290), image_rect=Rectangle(x=527, y=686, width=862, height=290), score=0.6739785075187683))
         self._compare_zone_diff(diffs[2], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=630, y=887, width=240, height=65), score=0.0))
         self._compare_zone_diff(diffs[3], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=683, y=832, width=128, height=33), score=0.0))
-        self._compare_zone_diff(diffs[4], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=541, y=812, width=49, height=50), score=0.0))
+        self._compare_zone_diff(diffs[1], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=541, y=812, width=49, height=50), score=0.0))
