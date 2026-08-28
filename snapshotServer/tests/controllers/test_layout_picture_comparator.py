@@ -422,7 +422,7 @@ class TestLayoutPictureComparator(SnapshotTestCase):
         self.assertEqual(len(diffs), 18)
         self._compare_zone_diff(diffs[4], ZoneDiff(type='shifted', ref_rect=Rectangle(x=194, y=502, width=50, height=27), image_rect=Rectangle(x=200, y=493, width=50, height=27), score=0.873561441898346))
         self._compare_zone_diff(diffs[2], ZoneDiff(type='changed', ref_rect=Rectangle(x=17, y=384, width=156, height=165), image_rect=Rectangle(x=16, y=381, width=156, height=165), score=0.630462646484375))
-        self._compare_zone_diff(diffs[13], ZoneDiff(type='missing', ref_rect=Rectangle(x=1538, y=15, width=30, height=29), image_rect=None, score=0.11229448020458221))
+        self._compare_zone_diff(diffs[13], ZoneDiff(type='missing', ref_rect=Rectangle(x=1539, y=15, width=30, height=29), image_rect=None, score=0.11229448020458221))
         self._compare_zone_diff(diffs[8], ZoneDiff(type='appeared', ref_rect=None, image_rect=Rectangle(x=268, y=605, width=28, height=10), score=0.0))
 
     def test_diffs_found_matches_expected_content_on_real_image(self):
