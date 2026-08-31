@@ -136,11 +136,13 @@ def _has_context_permission(request, application, environment, variable_ids, has
         return has_global_permission, application, environment
 
     # check user has permission to destination application or destination environment
-    if application and not request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name)\
-            or environment and not request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name):
+    has_application_permission = application and request.user.has_perm(APP_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + application.name)
+    has_environment_permission = environment and request.user.has_perm(ENV_SPECIFIC_VARIABLE_HANDLING_PERMISSION_PREFIX + environment.name)
+
+    if not (has_application_permission or has_environment_permission):
         return False, application, environment
 
-    # user cannot change to 'no application' AND 'no environment'
+    # user cannot change to 'no application' AND 'no environment' because we already checked it has not global permissions
     if not (application or environment):
         return False, 'None', 'None'
 
