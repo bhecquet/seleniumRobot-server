@@ -1,5 +1,7 @@
 
 from django.urls import re_path
+
+from commonsServer.views.user_view import InactiveUsers
 from commonsServer.views.viewsets import ApplicationViewSet, VersionViewSet,\
     TestEnvironmentViewSet, TestCaseViewSet
 
@@ -16,5 +18,7 @@ urlpatterns = [
     re_path(r'^api/version', VersionViewSet.as_view(), name='version'),
     re_path(r'^api/environment', TestEnvironmentViewSet.as_view(), name='environment'),
     re_path(r'^api/testcase', TestCaseViewSet.as_view(), name='testcase'),
+    re_path(r'^api/inactiveUsers', InactiveUsers.as_view(), name='inactive_users'),
+
 ]
 
