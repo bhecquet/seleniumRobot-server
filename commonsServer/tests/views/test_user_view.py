@@ -74,7 +74,7 @@ class TestUserView(TestApi):
         Requesting user has permissions, a user is inactive
         :return:
         """
-        User(username="user1", last_login=timezone.now() - timedelta(days=120)).save()
+        User(username="user1", email="foo@bar.com", first_name="foo", last_name="bar", last_login=timezone.now() - timedelta(days=120)).save()
 
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_user')))
 
@@ -83,6 +83,9 @@ class TestUserView(TestApi):
         user_list = response.json()
         self.assertEqual(len(user_list), 1)
         self.assertEqual(user_list[0]['username'], 'user1')
+        self.assertEqual(user_list[0]['email'], 'foo@bar.com')
+        self.assertEqual(user_list[0]['firstName'], 'foo')
+        self.assertEqual(user_list[0]['lastName'], 'bar')
 
     def test_user_other_verbs_forbidden(self):
         """

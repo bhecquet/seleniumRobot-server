@@ -28,4 +28,5 @@ class InactiveUsers(APIView):
         return Response([{"username": user.username,
                  "lastLogin": user.last_login,
                  "firstName": user.first_name,
+                 "email": user.email,
                  "lastName": user.last_name} for user in inactive_users])

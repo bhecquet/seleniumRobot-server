@@ -122,7 +122,7 @@ AUTH_LDAP_1_USER_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(${lda
 AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("${ldap.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_1_FIND_GROUP_PERMS = True
-AUTH_LDAP_1_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn"}
+AUTH_LDAP_1_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn", "email": "mail"}
 AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.group.admin}") |
@@ -139,7 +139,7 @@ AUTH_LDAP_2_USER_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(${l
 AUTH_LDAP_2_GROUP_SEARCH = LDAPSearch("${ldap.2.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_2_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_2_FIND_GROUP_PERMS = True
-AUTH_LDAP_2_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn"}
+AUTH_LDAP_2_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn", "email": "mail"}
 AUTH_LDAP_2_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.2.group.admin}") |
@@ -156,7 +156,7 @@ AUTH_LDAP_3_USER_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(${l
 AUTH_LDAP_3_GROUP_SEARCH = LDAPSearch("${ldap.3.base}", ldap.SCOPE_SUBTREE, "(objectClass=group)")
 AUTH_LDAP_3_GROUP_TYPE = ActiveDirectoryGroupType()
 AUTH_LDAP_3_FIND_GROUP_PERMS = True
-AUTH_LDAP_3_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn"}
+AUTH_LDAP_3_USER_ATTR_MAP = {"first_name": "givenName", "last_name": "sn", "email": "mail"}
 AUTH_LDAP_3_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.3.group.admin}") |
