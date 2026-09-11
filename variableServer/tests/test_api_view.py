@@ -297,6 +297,7 @@ class TestApiView(TestApi):
     def test_get_all_variables_without_test(self):
         """
         Check that test parameter is not mandatory
+        In this case, we return only variable that are not linked to any test
         """
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='view_variable')))
         response = self.client.get(reverse('variableApi'), data={'version': 2, 'environment': 3})
@@ -309,8 +310,8 @@ class TestApiView(TestApi):
                                 'name'])
             self.assertTrue(variable['version'] in [2, None],
                             "variable %s should not be get as version is different from 2 and None" % variable['name'])
-            self.assertTrue(variable['test'] in [[1], []],
-                            "variable %s should not be get as test is different from 1 and []" % variable['name'])
+            self.assertTrue(variable['test'] == [],
+                            "variable %s should not be get as test is different from []" % variable['name'])
 
         # check we get variables from the generic environment
         for variable in response.data:

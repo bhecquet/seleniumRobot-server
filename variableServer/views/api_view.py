@@ -124,6 +124,7 @@ class VariableFilter:
                 test = get_object_or_404(TestCase, name=test_id)
                 test_name = test.name
         else:
+            # when test is None, all variables bound to a test will be ignored
             test = None
             
         # get list of all variables that applies (variables that live forever and those which have not been obsolated
@@ -183,7 +184,7 @@ class VariableFilter:
         with transaction.atomic():
 
             filtered_variables = Variable.objects.select_for_update().filter(releaseDate=None).filter(id__in=[var.id for var in variable_list]).order_by('id')
-            unique_variable_list = self._unique_variable(filtered_variables)
+            unique_variable_list = self._unique_variable(filtered_variables.prefetch_related("test"))
             
             # check we still have all variables after filtering. Else test may fail
             filtered_variable_names = list(set([v.name for v in unique_variable_list]))
