@@ -77,7 +77,7 @@ REST_FRAMEWORK = {
 
 # Connection to Open-WebUI instance. set empty URL to disable
 OPEN_WEBUI_URL = '${openwebui.url}'
-OPEN_WEBUI_TOKEN = '{openwebui.token}'
+OPEN_WEBUI_TOKEN = '${openwebui.token}'
 
 # URL to API OCR document annotation of mistral AI
 MISTRAL_DOCUMENT_URL = '${mistral.document.annotation.url}'
