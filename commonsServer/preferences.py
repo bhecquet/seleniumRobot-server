@@ -69,6 +69,8 @@ The whole answer will be a JSON with the format:
         {"value": "csv,xls,xlsx,json,txt,pdf", "description": "Comma-separated list of allowed extensions"},
     "VAR_UPLOAD_FILE_MIMETYPES":
         {"value": "text/plain,application/json,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/pdf", 'description': 'Comma-separated list of mimetypes that will be allowed for files as variables'},
+    "USER_MAX_INACTIVE_DAYS":
+        {"value": "120", "description": "number of days after which a user is considered inactive. It has not connected to result or admin interfaces"},
 
     # ----------------------------------------------------------
     # Image detection parameters
