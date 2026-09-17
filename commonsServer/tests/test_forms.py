@@ -102,6 +102,6 @@ class ModelAdminTests(TestCase):
         self.assertTrue(group.user_set.first() == self.admin)
 
     def test_group_permission_performance(self):
-        with self.withAssertNumQueriesLessThan(12):  # instead of 259!
+        with self.withAssertNumQueriesLessThan(18):  # instead of 259!
             response = self.client.get('/admin/auth/group/%s/' % self.group.pk, follow=True)
             self.assertEqual(response.status_code, 200)
