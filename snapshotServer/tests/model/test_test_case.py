@@ -4,7 +4,7 @@ Created on 11 mai 2017
 @author: bhecquet
 '''
 from snapshotServer.models import TestCaseInSession,\
-    TestStep, StepResult, Snapshot
+    TestStep, StepResult, Snapshot, TestSession
 import pickle
 from snapshotServer.tests import SnapshotTestCase
 
@@ -178,4 +178,100 @@ class TestTestCases(SnapshotTestCase):
 
         self.assertTrue(tcs.computed())
     
+    def test_final_status_without_snapshot_comparison(self):
+        """
+        When snapshot comparison is disabled for the session, final status is the test execution status,
+        whatever the snapshot comparison result is
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        tcs.status = 'SUCCESS'
+        tcs.save()
+        session = TestSession.objects.get(pk=6)
+        session.compareSnapshot = False
+        session.save()
+
+        s1 = StepResult.objects.get(pk=5)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1, 1)])).save()
+
+        self.assertEqual('SUCCESS', tcs.finalStatus())
+
+    def test_final_status_with_snapshot_comparison_display_only(self):
+        """
+        When snapshot comparison is enabled but behaviour is 'DISPLAY_ONLY', final status is the test execution
+        status, even if snapshot comparison is KO
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        tcs.status = 'SUCCESS'
+        tcs.save()
+        session = TestSession.objects.get(pk=6)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
+        session.save()
+
+        s1 = StepResult.objects.get(pk=5)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1, 1)])).save()
+
+        self.assertEqual('SUCCESS', tcs.finalStatus())
+
+    def test_final_status_with_snapshot_comparison_change_test_result_and_snapshot_ok(self):
+        """
+        When snapshot comparison is enabled with 'CHANGE_TEST_RESULT' behaviour, and snapshot comparison is OK,
+        final status is not changed
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        tcs.status = 'SUCCESS'
+        tcs.save()
+        session = TestSession.objects.get(pk=6)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        s1 = StepResult.objects.get(pk=5)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([])).save()
+
+        self.assertEqual('SUCCESS', tcs.finalStatus())
+
+    def test_final_status_with_snapshot_comparison_change_test_result_and_snapshot_ko(self):
+        """
+        When snapshot comparison is enabled with 'CHANGE_TEST_RESULT' behaviour, and snapshot comparison is KO,
+        final status becomes 'FAILURE', even if test execution was successful
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        tcs.status = 'SUCCESS'
+        tcs.save()
+        session = TestSession.objects.get(pk=6)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        s1 = StepResult.objects.get(pk=5)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=pickle.dumps([(1, 1)])).save()
+
+        self.assertEqual('FAILURE', tcs.finalStatus())
+
+    def test_final_status_with_snapshot_comparison_change_test_result_and_undefined_result(self):
+        """
+        When snapshot comparison is enabled with 'CHANGE_TEST_RESULT' behaviour, but comparison result is
+        undefined (e.g: computing error), final status is not changed
+        """
+        tcs = TestCaseInSession.objects.get(pk=5)
+        tcs.status = 'SUCCESS'
+        tcs.save()
+        session = TestSession.objects.get(pk=6)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        s1 = StepResult.objects.get(pk=5)
+        initial_ref_snapshot = Snapshot.objects.get(id=1)
+        snapshot = Snapshot(stepResult=s1, refSnapshot=initial_ref_snapshot, pixelsDiff=None)
+        snapshot.computingError = 'some error'
+        snapshot.save()
+
+        self.assertEqual('SUCCESS', tcs.finalStatus())
+
     

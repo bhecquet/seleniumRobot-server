@@ -214,6 +214,7 @@ to use AD/LDAP authentication, in `AUTHENTICATION_BACKENDS`,
   AUTH_LDAP_1_BIND_PASSWORD = 'pwd'
   AUTH_LDAP_1_USER_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(uid=%(user)s)")
   AUTH_LDAP_1_GROUP_SEARCH = LDAPSearch("DC=my,DC=company,DC=com", ldap.SCOPE_SUBTREE, "(objectClass=group)")
+  AUTH_LDAP_1_FIND_GROUP_PERMS = True
   AUTH_LDAP_1_GROUP_TYPE = ActiveDirectoryGroupType()
   AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
   "is_active": (LDAPGroupQuery("CN=GROUP_USER_001,OU=Selenium,DC=my,DC=company,DC=com") |
@@ -299,7 +300,7 @@ Every API / WEB access is secured through authentication and permissions check
 
 ![](doc/images/add_token.png)
 
-- alternatively, you can create token through API (for example via Postman)
+- alternatively, you can create token through API (for example via Postman / Bruno)
   ![](doc/images/generate_token_postman.png)
 
 ### Groups ###
@@ -312,16 +313,24 @@ Allow a user to add / modify variable assets, and also delete variables
 
 Allow a user to view / add / edit snapshot comparisons
 
-### Restrict access to a specific application ###
+### Permissions ###
 
 Restriction can be done on environment or application level.
 
 There are 4 permission sets
 
-- permissions related to variables and result recording: 'can view application and related variable and version for xxx'
-- permissions related to result viewing: 'can view results for application xxx'
-- permissions related to variables and result recording: 'can view environment and related variable and version for xxx'
-- permissions related to result viewing: 'can view results for environment xxx'
+- permissions related to variables and result recording: 'can view *application* and related variable and version for xxx'
+- permissions related to result viewing: 'can view results for *application* xxx'
+- permissions related to variables and result recording: 'can view *environment* and related variable and version for xxx'
+- permissions related to result viewing: 'can view results for *environment* xxx'
+
+Moreover, variable viewing and test session searching/editing needs access to admin interface and thus, the 'is_staff' flag set to true
+Test result viewing only need permission for result viewing
+
+#### Permission per group ####
+Permissions can be given to user, but also to groups where user are affected.
+With LDAP connection (see django_auth_ldap documentation), permissions can be given to LDAP groups (just create a Django group with the name of an LDAP group).
+Then users belonging to this LDAP groups will automatically get LDAP group permission
 
 ## User interface ##
 
@@ -411,14 +420,8 @@ compare snapshot"
 
 #### Visualize comparison results ####
 
-Complete "environment", "sessions", "browser", "test cases" and execution date. Each time, click on "Filter".
+Comparison results are integrated with test result, as part of a step
 
-You will then get a list of test sessions corresponding to your search criteria.
-
-![](doc/images/snapshot_comparison_result.png)
-
-these results will also be accessible from SeleniumRobot HTML result, as a tab in each test result, pointing to this
-page.
 
 #### Edit comparison ####
 
@@ -437,6 +440,10 @@ want them not being used anymore in comparison.
 
 **Reference**: a picture to which further snapshot taken during test will be compared. A reference is specific to
 an [application / version / environment / test case / test step].
+
+From version 4.5.0, there is also a zone comparison. Each zone is compared with its reference to see if it has appeared, changed, moved, vanished.
+Comparison threshold (for now 80% similarity) is applied to each zone and comparison is reported as failed when more than 'diffTolerance' (set for each snapshot) percent of the image has changed. This percentage is computed summing the surface of each zone, divided by the surface of the image.
+
 
 #### Change reference ####
 

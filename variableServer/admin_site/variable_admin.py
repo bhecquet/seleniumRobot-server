@@ -251,7 +251,7 @@ class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
         queryset, forbidden_applications, forbidden_environments = self._filter_queryset(request, queryset, global_permission_code_name)
 
         if forbidden_applications or forbidden_environments:
-            self.message_user(request, "You do not have right to %s variables from application %s or environments %s" % (message, forbidden_applications, forbidden_environments), level=messages.ERROR)
+            self.message_user(request, "You do not have right to %s variables from application %s or environments %s (to modify a variable you need permission to either environment OR application)" % (message, forbidden_applications, forbidden_environments), level=messages.WARNING)
 
         return queryset
     

@@ -69,6 +69,8 @@ The whole answer will be a JSON with the format:
         {"value": "csv,xls,xlsx,json,txt,pdf", "description": "Comma-separated list of allowed extensions"},
     "VAR_UPLOAD_FILE_MIMETYPES":
         {"value": "text/plain,application/json,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv,application/pdf", 'description': 'Comma-separated list of mimetypes that will be allowed for files as variables'},
+    "USER_MAX_INACTIVE_DAYS":
+        {"value": "120", "description": "number of days after which a user is considered inactive. It has not connected to result or admin interfaces"},
 
     # ----------------------------------------------------------
     # Image detection parameters
@@ -124,7 +126,16 @@ Check that the JSON response is valid
     "OPEN_WEBUI_MODEL":
         {"value": 'ministral-3:8b', 'description': 'model to use for picture inference (comparison / find element / error message)'},
     "OPEN_WEBUI_WORKERS":
-        {"value": '2', 'description': 'Number of parallel workers'}
+        {"value": '2', 'description': 'Number of parallel workers'},
+
+    # ----------------------------------------------------------
+    # Network error cause detection parameters
+    # ----------------------------------------------------------
+
+    "NETWORK_SLOWNESS_RATIO":
+        {"value": "1.5", "description": "a step is considered slow, for a given resource type, if its mean load time is greater than this ratio times the average mean load time observed on other executions of the same step"},
+    "NETWORK_SLOWNESS_MIN_DIFFERENCE_MS":
+        {"value": "200", "description": "a step is considered slow, for a given resource type, only if its mean load time exceeds the historical average by more than this value (in ms), to avoid flagging insignificant differences"},
 }
 
 logger = logging.getLogger(__name__)

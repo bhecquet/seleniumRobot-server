@@ -144,7 +144,7 @@ class TestTestResultView(SnapshotTestCase):
         self.assertEqual(list(response.context['object_list'])[3], StepResult.objects.get(pk=4))
         self.assertEqual(response.context['currentTest'].id, 1)
         self.assertEqual(response.context['testCaseId'], "1")
-        self.assertIsNone(response.context['snasphotComparisonResult'])  # no snapshots to compare
+        self.assertIsNone(response.context['snapshotComparisonResult'])  # no snapshots to compare
         self.assertEqual(response.context['status'], "SUCCESS")
         self.assertEqual(response.context['browserOrApp'], "Firefox")
         self.assertEqual(response.context['applicationType'], "Browser")
@@ -421,6 +421,88 @@ class TestTestResultView(SnapshotTestCase):
         self.assertTrue(
             """<table class="table table-bordered table-sm"><tr><th style="width: 20%">Application type</th><td>Browser</td></tr><tr><th>Application</th><td>Firefox</td></tr><tr><th>Grid node</th><td>mynode.domain.com</td></tr>""" in html)
 
+    def test_report_with_network_errors(self):
+        """
+        Check that when a step has network errors stored in StepResult.networkErrors, the red network icon is
+        displayed, with the corresponding messages available for the modal (shown on click)
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_result = StepResult.objects.get(pk=1)
+        step_result.networkErrors = [
+            {'url': 'https://myapp/api/data', 'status': 404, 'statusText': 'Not Found'},
+        ]
+        step_result.save()
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        # icon must be inside the step-title span, right after video icon
+        self.assertIn(
+            '<i class="fas fa-file-video"></i>0.005 s<i class="fa-solid fa-network-wired" style="color:red;cursor:pointer;" title="Network errors detected" data-bs-toggle="modal" data-bs-target="#networkErrorsModal" data-step-id="1"></i>',
+            html)
+        # error data must be inside the box-body of the same step (id=1), with error details
+        self.assertIn(
+            '<div class="box-body collapse" id="box-body-1"><div id="network-errors-data-1" '
+            'style="display:none"><div>https://myapp/api/data - status 404 Not Found</div></div>',
+            html)
+
+    def test_report_without_network_errors(self):
+        """
+        Check that when a step has no network error, the network errors icon is not displayed
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        self.assertNotIn('fa-network-wired', html)
+        self.assertNotIn('id="network-errors-data-', html)
+
+    def test_report_with_network_slowness(self):
+        """
+        Check that when a step has a network slowness message stored in StepResult.networkSlowness, the turtle
+        icon is displayed, and the stored message is available for the modal (shown on click)
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_result = StepResult.objects.get(pk=1)
+        step_result.networkSlowness = "XHR load time on step 'step 1' is abnormally high: 5000.00 ms"
+        step_result.save()
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        # icon must be inside the step-title span, right after video icon, for step 1
+        self.assertIn(
+            '<i class="fas fa-file-video"></i>0.005 s<span class="network-slowness-icon" style="cursor:pointer;" title="Network slowness detected" data-bs-toggle="modal" data-bs-target="#networkSlownessModal" data-step-id="1">&#128034;</span>',
+            html)
+        # slowness message must be inside the box-body of the same step (id=1)
+        self.assertIn(
+            '<div class="box-body collapse" id="box-body-1"><div id="network-slowness-data-1" '
+            'style="display:none">XHR load time on step &#x27;step 1&#x27; is abnormally high: 5000.00 ms</div>',
+            html)
+
+    def test_report_without_network_slowness(self):
+        """
+        Check that when a step has no network slowness message, the turtle icon is not displayed
+        """
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultView', kwargs={'test_case_in_session_id': 1}))
+        html = self.remove_spaces(response.rendered_content)
+
+        self.assertNotIn('network-slowness-icon', html)
+        self.assertNotIn('id="network-slowness-data-', html)
+
 
     def test_report_with_step_in_warning(self):
         """
@@ -581,3 +663,115 @@ class TestTestResultView(SnapshotTestCase):
     # testStepAnnotationWithErrorNoDetails
     # testStepAnnotationNoErrors
     # testStepAnnotationNoErrorCause
+
+
+class TestTestResultStatusView(SnapshotTestCase):
+    """
+    Tests for the AJAX endpoint refreshing the header and global status boxes of the test result page,
+    used to dynamically reflect a snapshot comparison result change (exclude zones update, reference change)
+    without a full page reload.
+    """
+    fixtures = ['test_result/testresult_commons.yaml',
+                'test_result/testresult_ok.yaml',
+                'test_result/testresult_ko.yaml',
+                'test_result/test_result_snapshot_comparison.yaml']
+    dataDir = 'snapshotServer/tests/data/'
+    media_dir = settings.MEDIA_ROOT + os.sep + 'documents'
+
+    def setUp(self):
+        super().setUp()
+
+        Application.objects.get(pk=1).save()
+        Application.objects.get(pk=2).save()
+        TestEnvironment.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=2).save()
+
+    def test_status_security_not_authenticated(self):
+        """
+        Check that with security enabled, we cannot access the view without authentication
+        """
+        response = Client().get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+
+        self.assertEqual(302, response.status_code)
+        self.assertEqual("/accounts/login/?next=/snapshot/testResults/result/1/status/", response.url)
+
+    def test_status_without_snapshot_comparison(self):
+        """
+        Check that returned header and global status fragments reflect the test execution status when snapshot
+        comparison is not active for the session
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        self.assertEqual(200, response.status_code)
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        self.assertIn('header-success', header_html)
+        self.assertNotIn('Snapshot comparison', global_status_html)
+        self.assertIn('<div class="box  success ">', global_status_html)
+
+    def test_status_with_snapshot_comparison_display_only_ko(self):
+        """
+        Check that when snapshot comparison behaviour is 'DISPLAY_ONLY', the 'Snapshot comparison' box reflects
+        the KO comparison result, but the header and 'Execution logs' box still reflect the (unchanged)
+        execution status
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=3)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'DISPLAY_ONLY'
+        session.save()
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        # execution status is unchanged
+        self.assertIn('header-success', header_html)
+        # snapshot comparison box is present and shows KO
+        self.assertIn('Snapshot comparison KO', global_status_html)
+        self.assertIn('<div class="box failed">', global_status_html)
+        # execution logs box still reflects the (unchanged) SUCCESS status
+        self.assertIn('<div class="box  success ">', global_status_html)
+
+    def test_status_with_snapshot_comparison_change_test_result_ko(self):
+        """
+        Check that when snapshot comparison behaviour is 'CHANGE_TEST_RESULT' and comparison is KO, both the
+        header and the 'Execution logs' box reflect the new 'FAILURE' status
+        """
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(
+            Q(codename='can_view_results_application_myapp')))
+
+        step_snapshot = Snapshot.objects.get(pk=3)
+        step_snapshot.stepResult = StepResult.objects.get(pk=2)
+        step_snapshot.save()
+
+        session = TestSession.objects.get(pk=1)
+        session.compareSnapshot = True
+        session.compareSnapshotBehaviour = 'CHANGE_TEST_RESULT'
+        session.save()
+
+        response = client.get(reverse('testResultStatusView', kwargs={'test_case_in_session_id': 1}))
+        data = response.json()
+
+        header_html = self.remove_spaces(data['header'])
+        global_status_html = self.remove_spaces(data['globalStatus'])
+
+        # header now shows failure, even though test execution itself was successful
+        self.assertIn('header-failed', header_html)
+        self.assertNotIn('header-success', header_html)
+        self.assertIn('Snapshot comparison KO', global_status_html)
+        # execution logs box is displayed as failed too
+        self.assertNotIn('<div class="box  success ">', global_status_html)

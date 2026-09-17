@@ -11,6 +11,8 @@ from django.core.files.uploadedfile import InMemoryUploadedFile
 
 from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
 from snapshotServer.models import StepResult, File
+from snapshotServer.utils.har_analyzer import get_network_info_per_page
+from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder
 from snapshotServer.viewsets import ResultRecordingViewSet
 
 
@@ -112,6 +114,34 @@ class FileViewSet(ResultRecordingViewSet): # post
         """
 
         try:
+
+            file_step_result = StepResult.objects.get(pk=int(request.data['stepResult']))
+
+            # we assume that HAR file is sent AFTER all step results have been recorded
+            if request.FILES['file'].name.lower().endswith('.har'):
+                network_info_per_page = get_network_info_per_page(request.FILES['file'].file.getvalue())
+                network_error_cause_finder = NetworkErrorCauseFinder(file_step_result.testCase)
+
+                for page_name, network_info in network_info_per_page.items():
+                    step_result = StepResult.objects.filter(fullName=page_name, testCase=file_step_result.testCase).first()
+                    if not step_result:
+                        continue
+
+                    for category, mean_time in network_info['times'].items():
+                        if category == 'js': step_result.meanJsLoadTimes = mean_time
+                        elif category == 'xhr': step_result.meanXhrLoadTimes = mean_time
+                        elif category == 'image': step_result.meanImageLoadTimes = mean_time
+                        elif category == 'html': step_result.meanHtmlLoadTimes = mean_time
+
+                    step_result.networkErrors = network_info['errors']
+
+                    # compute network slowness once, at upload time, and store the result so that it does not
+                    # need to be recomputed each time the test result is displayed
+                    slowness = network_error_cause_finder.get_network_slowness_for_step(step_result)
+                    step_result.networkSlowness = '\n'.join(slowness) if slowness else None
+
+                    step_result.save()
+
             if request.FILES['file'].name.lower().endswith('.html') or request.FILES['file'].name.lower().endswith('.har'):
 
                 with io.BytesIO() as zip_buffer:
@@ -120,7 +150,7 @@ class FileViewSet(ResultRecordingViewSet): # post
                         zip.writestr(request.data['file'].name, request.FILES['file'].file.getvalue(), compress_type=zipfile.ZIP_DEFLATED)
 
                     in_memory_uploaded_file = InMemoryUploadedFile(zip_buffer, 'file', request.data['file'].name + '.zip', 'application/zip', zip_buffer.tell(), None)
-                    file = File(stepResult=StepResult.objects.get(pk=int(request.data['stepResult'])), file=in_memory_uploaded_file)
+                    file = File(stepResult=file_step_result, file=in_memory_uploaded_file)
                     file.save()
                     response = HttpResponse(json.dumps({'id': file.id}), status=201)
                     return response

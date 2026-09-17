@@ -26,14 +26,14 @@ class TestVarActionView(TestWebAndAdmin):
     def _test_copy_variable(self, permissions, post_data, number_of_created_variables):
 
         var1 = Variable.objects.get(id=3)
-        existing_variables = len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1))
+        existing_variables = len(Variable.objects.filter(name=var1.name, value=var1.value))
 
         user, client = self._create_and_authenticate_user_with_permissions(permissions)
         response = client.post(reverse('copy_variables'), data=post_data)
         self.assertEqual(response.status_code, 302, "server did not reply as expected")
 
         # check new variable creation
-        self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables + number_of_created_variables)
+        self.assertEqual(len(Variable.objects.filter(name=var1.name, value=var1.value)), existing_variables + number_of_created_variables)
         return response
 
     def test_copy_variables_ko_no_permissions(self):
@@ -54,7 +54,7 @@ class TestVarActionView(TestWebAndAdmin):
                                  {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  1)
 
-    def test_copy_variables_ok_application_permission_and_application_restriction(self):
+    def test_copy_variables_ok_application_permission(self):
         """
         User:
         - has app1 permission
@@ -68,7 +68,39 @@ class TestVarActionView(TestWebAndAdmin):
                                  {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  1)
 
-    def test_copy_variables_ko_application_permission_and_application_restriction_copy_to_no_app(self):
+    def test_copy_variables_ok_application_permission_not_environment_permission(self):
+        """
+        User:
+        - has app1 permission
+        - has not DEV permission
+        - has NOT add variable permission
+        applications specific permissions are enabled
+
+        User can copy variable to an other environment has it has permission on application
+        User has permissions as soon as it has permission on environment OR application
+        """
+
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                 {'ids': '3', 'application': '1', 'environment': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 1)
+
+    def test_copy_variables_ok_not_application_permission_environment_permission(self):
+        """
+        User:
+        - has NOT app1 permission
+        - has DEV permission
+        - has NOT add variable permission
+        applications specific permissions are enabled
+
+        User can copy variable to an other environment has it has permission on environment
+        User has permissions as soon as it has permission on environment OR application
+        """
+        Variable.objects.filter(pk=3).update(application=None, environment=1)
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_environment_DEV')),
+                                 {'ids': '3', 'application': '1', 'environment': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 1)
+
+    def test_copy_variables_ko_application_permission_copy_to_no_app(self):
         """
         copy variable to no application
         User:
@@ -83,7 +115,37 @@ class TestVarActionView(TestWebAndAdmin):
                                  {'ids': '3', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  0)
 
-    def test_copy_variables_ok_global_permission_and_application_restriction(self):
+    def test_copy_variables_ko_no_application_permission_on_source(self):
+        """
+        copy variable to no application
+        User:
+        - has app2 permission
+        - has NOT add variable permission
+        applications specific permissions are enabled
+
+        User can NOT copy variable as it has no permission on source application
+        """
+
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_application_app2')),
+                                 {'ids': '3', 'application': 1, 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 0)
+
+    def test_copy_variables_ko_no_environment_permission_on_source(self):
+        """
+        copy variable to no application
+        User:
+        - has app2 permission
+        - has NOT add variable permission
+        applications specific permissions are enabled
+
+        User can NOT copy variable as it has no permission on source environment
+        """
+        Variable.objects.filter(pk=3).update(application=None, environment=1)
+        self._test_copy_variable(Permission.objects.filter(Q(codename='can_view_environment_ASS')),
+                                 {'ids': '3', 'environment': 1, 'nexturl': '/admin/variableServer/variable/?application=1'},
+                                 0)
+
+    def test_copy_variables_ok_global_permission(self):
         """
         User:
         - has NOT app1 permission
@@ -97,7 +159,7 @@ class TestVarActionView(TestWebAndAdmin):
                                  {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  1)
 
-    def test_copy_variables_ko_change_global_permission_and_application_restriction(self):
+    def test_copy_variables_ko_change_global_permission(self):
         """
         User:
         - has NOT app1 permission
@@ -111,7 +173,7 @@ class TestVarActionView(TestWebAndAdmin):
                                  {'ids': '3', 'application': '1', 'nexturl': '/admin/variableServer/variable/?application=1'},
                                  0)
 
-    def test_copy_variables_ko_wrong_application_and_application_restriction(self):
+    def test_copy_variables_ko_wrong_application(self):
         """
         User:
         - has app1 permission
@@ -130,7 +192,7 @@ class TestVarActionView(TestWebAndAdmin):
         self.assertEqual(existing_variables, len(Variable.objects.filter(application__id=2)))
 
 
-    def test_copy_variables_ko_wrong_application_and_application_restriction2(self):
+    def test_copy_variables_ko_wrong_application2(self):
         """
         User:
         - has app1 permission
@@ -151,7 +213,7 @@ class TestVarActionView(TestWebAndAdmin):
         # check new variable creation
         self.assertEqual(len(Variable.objects.filter(name=var1.name).filter(value=var1.value).filter(application__id=1)), existing_variables)
 
-    def test_copy_variables_ko_no_application_for_variable_and_application_restriction2(self):
+    def test_copy_variables_ko_no_application_for_variable2(self):
         """
         Copy a variable that does not belong to any application
         User:
@@ -245,7 +307,7 @@ class TestVarActionView(TestWebAndAdmin):
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
-    def test_change_variables_global_change_permissioçn(self):
+    def test_change_variables_global_change_permission(self):
         """
         User:
         - has change permission
@@ -258,21 +320,21 @@ class TestVarActionView(TestWebAndAdmin):
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app2", "application for variable should have been moved to 'app2'")
 
-    def test_change_variables_global_change_permission_and_permission_restrictions(self):
+    def test_change_variables_ko_add_permission_only(self):
         """
         User:
-        - has change permission
+        - has NOT change permission
+        - has add_variable permission (wrong permission)
         - has NOT app1 / app2 permission
-        applications specific permissions are enabled
+        applications specific permissions are disabled
 
-        change allowed
+        change NOT allowed because 'add_variable' permission does not grant right to change variables
         """
-
-        self._test_change_variables(Permission.objects.filter(Q(codename='change_variable')), {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        self._test_change_variables(Permission.objects.filter(Q(codename='add_variable')), {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
         var1 = Variable.objects.get(id=3)
-        self.assertEqual(var1.application.name, "app2", "application for variable should have been moved to 'app2'")
+        self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
-    def test_change_variables_application_permission_and_permission_restrictions(self):
+    def test_change_variables_application_permission(self):
         """
         User:
         - has NOT change permission
@@ -287,7 +349,7 @@ class TestVarActionView(TestWebAndAdmin):
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app2", "application for variable should have not been moved to 'app2'")
 
-    def test_change_variables_application1_permission_and_permission_restrictions(self):
+    def test_change_variables_application1_permission(self):
         """
         User:
         - has NOT change permission
@@ -303,7 +365,7 @@ class TestVarActionView(TestWebAndAdmin):
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
 
-    def test_change_variables_application2_permission_and_permission_restrictions(self):
+    def test_change_variables_application2_permission(self):
         """
         User:
         - has NOT change permission
@@ -318,6 +380,58 @@ class TestVarActionView(TestWebAndAdmin):
                                     {'ids': '3', 'application': '2', 'nexturl': '/admin/variableServer/variable/?application=1'})
         var1 = Variable.objects.get(id=3)
         self.assertEqual(var1.application.name, "app1", "application for variable should have not been moved to 'app2'")
+
+    def test_change_variables_ok_application_permission_not_environment_permission(self):
+        """
+        User:
+        - has app1 permission
+        - has NOT DEV environment permission
+        - has NOT change variable permission
+        applications specific permissions are enabled
+
+        User can change variable to an other environment as it has permission on application
+        User has permission as soon as it has permission on environment OR application
+        """
+
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_application_app1')),
+                                    {'ids': '3', 'application': '1', 'environment': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.environment.name, "DEV", "environment for variable should have been changed to 'DEV'")
+
+    def test_change_variables_ok_not_application_permission_environment_permission(self):
+        """
+        User:
+        - has NOT app1 permission
+        - has DEV environment permission
+        - has NOT change variable permission
+        applications specific permissions are enabled
+
+        User can change variable to an other application as it has permission on environment
+        User has permission as soon as it has permission on environment OR application
+        """
+        Variable.objects.filter(pk=3).update(application=None, environment=1)
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_environment_DEV')),
+                                    {'ids': '3', 'application': '1', 'environment': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertEqual(var1.application.name, "app1", "application for variable should have been changed to 'app1'")
+
+    def test_change_variables_ko_no_environment_permission_on_source(self):
+        """
+        User:
+        - has NOT app1 permission
+        - has ASS environment permission
+        - has NOT DEV environment permission
+        - has NOT change variable permission
+        applications specific permissions are enabled
+
+        change NOT allowed because user has no permission on source/destination environment
+        """
+        Variable.objects.filter(pk=3).update(application=None, environment=1)
+        self._test_change_variables(Permission.objects.filter(Q(codename='can_view_environment_ASS')),
+                                    {'ids': '3', 'environment': '1', 'nexturl': '/admin/variableServer/variable/?application=1'})
+        var1 = Variable.objects.get(id=3)
+        self.assertIsNone(var1.application, "application for variable should have not been changed")
+        self.assertEqual(var1.environment.name, "DEV", "environment for variable should have not been changed")
 
     def test_change_variables_application1_permission_and_permission_restrictions_destination_None(self):
         """

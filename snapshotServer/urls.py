@@ -7,7 +7,7 @@ from snapshotServer.views.snapshot_upload_view import SnapshotUploadView
 from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
-from snapshotServer.views.test_result_view import TestResultView
+from snapshotServer.views.test_result_view import TestResultView, TestResultStatusView
 from snapshotServer.views.error_cause_view import save_error_cause
 
 from django.urls.conf import re_path, path
@@ -23,7 +23,6 @@ from snapshotServer.views.viewsets.viewset_testinfo import TestInfoSessionViewSe
 from snapshotServer.views.viewsets.viewset_testsession import TestSessionViewSet
 from snapshotServer.views.viewsets.viewset_teststep import TestStepViewSet
 
-
 router = routers.DefaultRouter()
 router.register(r'testcaseinsession', TestCaseInSessionViewSet)
 router.register(r'session', TestSessionViewSet)
@@ -37,6 +36,7 @@ router.register(r'logs', ExecutionLogsViewSet)
 
 urlpatterns = [
     re_path(r'^$',  viewsets.Ping.as_view(), name='snapshotPing'),
+    path( 'api/save-error-cause/', save_error_cause,name='save-error-cause',),
     re_path(r'^api/', include(router.urls), name='api'),
     re_path(r'^home/', viewsets.Home.as_view(), name='home'),
 
@@ -47,6 +47,7 @@ urlpatterns = [
     re_path(r'^stepReference/$', StepReferenceView.as_view(), name='uploadStepRef'),
     
     re_path(r'^testResults/result/(?P<test_case_in_session_id>[0-9]+)/$', TestResultView.as_view(), name='testResultView'),
+    re_path(r'^testResults/result/(?P<test_case_in_session_id>[0-9]+)/status/$', TestResultStatusView.as_view(), name='testResultStatusView'),
     re_path(r'^testResults/summary/(?P<sessionId>[0-9]+)/$', TestSessionSummaryView.as_view(), name='testSessionSummaryView'),
 
     re_path(r'^compare/compute/(?P<snapshot_id>[0-9]+)/$', RecomputeDiffView.as_view(), name='recompute'),
@@ -62,7 +63,5 @@ urlpatterns = [
     # re-trigger error cause analysis for a test case
     re_path(r'^errorAnalysis/(?P<test_case_in_session_id>[0-9]+)/$', ErrorAnalysisView.as_view(), name="errorAnalysisView"),
 
-    #
-    path('api/save-error-cause/', save_error_cause, name='saveErrorCause'),
     
 ]

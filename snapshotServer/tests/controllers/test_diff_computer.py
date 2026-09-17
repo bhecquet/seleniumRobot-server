@@ -8,6 +8,9 @@ import os
 import time
 from unittest.mock import MagicMock, patch
 
+import cv2
+import io
+import numpy
 from django.core.files.images import ImageFile
 
 from snapshotServer.controllers.diff_computer import DiffComputer
@@ -339,3 +342,132 @@ class TestDiffComputer(SnapshotTestCase):
                 
                 # check exclude zone has been used for comparison
                 wrapped_get_changed_pixels.assert_called_with(ref_snapshot.image.path, step_snapshot.image.path, [exclusion1.toRectangle()])             
+
+    def test_compute_diff_uses_layout_comparator_when_compare_option_is_zones(self):
+        """
+        Check that, when the step snapshot has compareOption='ZONES', the layout-aware comparator is used
+        instead of the pixel by pixel one
+        """
+        with patch.object(DiffComputer.layout_picture_comparator, 'compare_zones', wraps=DiffComputer.layout_picture_comparator.compare_zones) as wrapped_compare_zones, \
+             patch.object(DiffComputer.picture_comparator, 'get_changed_pixels', wraps=DiffComputer.picture_comparator.get_changed_pixels) as wrapped_get_changed_pixels:
+            with open("snapshotServer/tests/data/test_Image1.png", 'rb') as reference:
+                with open("snapshotServer/tests/data/test_Image1Mod.png", 'rb') as step:
+                    img_reference = ImageFile(reference)
+                    img_step = ImageFile(step)
+                    ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                    ref_snapshot.save()
+                    ref_snapshot.image.save("img", img_reference)
+                    ref_snapshot.save()
+                    step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None, compareOption='ZONES')
+                    step_snapshot.save()
+                    step_snapshot.image.save("img", img_step)
+                    step_snapshot.save()
+
+                    DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
+
+                    wrapped_compare_zones.assert_called_once_with(ref_snapshot.image.path, step_snapshot.image.path, [])
+                    wrapped_get_changed_pixels.assert_not_called()
+                    self.assertIsNotNone(step_snapshot.pixelsDiff)
+                    self.assertTrue(step_snapshot.computed)
+
+    def test_compute_diff_zones_option_no_diff_found_on_identical_images(self):
+        """
+        Check that, with compareOption='ZONES', identical images are not reported as different
+        """
+        with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+            img = ImageFile(imgFile)
+            ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+            ref_snapshot.save()
+            ref_snapshot.image.save("img", img)
+            ref_snapshot.save()
+            step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None, compareOption='ZONES')
+            step_snapshot.save()
+            step_snapshot.image.save("img", img)
+            step_snapshot.save()
+
+            DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
+
+            self.assertIsNotNone(step_snapshot.pixelsDiff)
+            self.assertFalse(step_snapshot.tooManyDiffs)
+            self.assertEqual(step_snapshot.computingError, '')
+
+    def _build_zone_canvas(self, modify=False):
+        """
+        Builds a synthetic "page" made of 4 separated, textured zones (same principle as
+        test_layout_picture_comparator.py), so that the zone based comparator can detect a change in a
+        localized zone instead of averaging it out over the whole image (unlike test_Image1.png, which is
+        a single, edge-less picture detected as one single big zone).
+        @param modify: if True, the first zone's content is changed (different pattern/fill)
+        """
+        canvas = numpy.full((220, 300), 255, dtype=numpy.uint8)
+        zones = [(30, 30, 60, 40), (150, 30, 60, 40), (30, 120, 60, 40), (150, 120, 60, 40)]
+        for i, (x, y, w, h) in enumerate(zones):
+            fill = 40 if (modify and i == 0) else 200
+            cv2.rectangle(canvas, (x, y), (x + w, y + h), fill, -1)
+            cv2.rectangle(canvas, (x, y), (x + w, y + h), 0, 2)
+            if modify and i == 0:
+                # checker pattern instead of a diagonal cross: clearly different content, not just a shift
+                step = 8
+                for row in range(y, y + h, step):
+                    for col in range(x, x + w, step):
+                        if ((row - y) // step + (col - x) // step) % 2 == 0:
+                            cv2.rectangle(canvas, (col, row), (min(col + step, x + w), min(row + step, y + h)), 0, -1)
+            else:
+                cv2.line(canvas, (x, y), (x + w, y + h), 0, 2)
+                cv2.line(canvas, (x + w, y), (x, y + h), 0, 2)
+        _, buffer = cv2.imencode(".png", canvas)
+        return io.BytesIO(buffer.tobytes())
+
+    def test_compute_diff_zones_option_diff_found_on_different_images(self):
+        """
+        Check that, with compareOption='ZONES', changed content is reported as a difference
+        DiffTolerance is above real difference
+        """
+        self._test_compute_diff_zones_on_differences(diff_tolerance=7.0, expected_too_many_diff=False)
+
+    def test_compute_diff_zones_option_diff_found_on_different_images_with_different_tolerance(self):
+        """
+        Check that, with compareOption='ZONES', changed content is reported as a difference
+        DiffTolerance is below real difference
+        """
+        self._test_compute_diff_zones_on_differences(diff_tolerance=6.7, expected_too_many_diff=True)
+
+    def _test_compute_diff_zones_on_differences(self, diff_tolerance, expected_too_many_diff):
+        img_reference = ImageFile(self._build_zone_canvas(modify=False), name='ref.png')
+        img_step = ImageFile(self._build_zone_canvas(modify=True), name='step.png')
+        ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+        ref_snapshot.save()
+        ref_snapshot.image.save("img", img_reference)
+        ref_snapshot.save()
+        step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None,
+                                 compareOption='ZONES', diffTolerance=diff_tolerance)
+        step_snapshot.save()
+        step_snapshot.image.save("img", img_step)
+        step_snapshot.save()
+
+        DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
+
+        self.assertIsNotNone(step_snapshot.pixelsDiff)
+        self.assertEqual(step_snapshot.tooManyDiffs, expected_too_many_diff)
+
+    def test_compute_diff_full_option_still_used_by_default(self):
+        """
+        Check that compareOption default value ('FULL') still triggers the pixel by pixel comparator
+        """
+        with patch.object(DiffComputer.layout_picture_comparator, 'compare_zones', wraps=DiffComputer.layout_picture_comparator.compare_zones) as wrapped_compare_zones, \
+             patch.object(DiffComputer.picture_comparator, 'get_changed_pixels', wraps=DiffComputer.picture_comparator.get_changed_pixels) as wrapped_get_changed_pixels:
+            with open("snapshotServer/tests/data/test_Image1.png", 'rb') as imgFile:
+                img = ImageFile(imgFile)
+                ref_snapshot = Snapshot(stepResult=StepResult.objects.get(id=1), refSnapshot=None, pixelsDiff=None)
+                ref_snapshot.save()
+                ref_snapshot.image.save("img", img)
+                ref_snapshot.save()
+                step_snapshot = Snapshot(stepResult=StepResult.objects.get(id=2), refSnapshot=None, pixelsDiff=None)
+                step_snapshot.save()
+                step_snapshot.image.save("img", img)
+                step_snapshot.save()
+
+                DiffComputer.get_instance().compute_now(ref_snapshot, step_snapshot)
+
+                wrapped_get_changed_pixels.assert_called_once()
+                wrapped_compare_zones.assert_not_called()

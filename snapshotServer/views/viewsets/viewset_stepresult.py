@@ -87,12 +87,19 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
         """
         parse the stacktrace, looking for action in error
         """
-        if (not serializer.data['result']
-            and serializer.instance.stacktrace
+        step_result_details = {}
+        if (serializer.instance.stacktrace
             and len(serializer.instance.stacktrace) > 100):
+            step_result_details = json.loads(serializer.validated_data['stacktrace'])
+
+        if step_result_details.get('name', None):
+            serializer.instance.fullName = step_result_details['name']
+            serializer.instance.save()
+
+        if (not serializer.data['result']
+            and step_result_details):
             try:
                 failed_step_results = StepResult.objects.filter(testCase=serializer.instance.testCase, result=False).exclude(step__name=TestStep.LAST_STEP_NAME).order_by('-pk')
-                step_result_details = json.loads(serializer.validated_data['stacktrace'])
 
                 # we won't analyze this step if it's the 'Test end' step
                 # EXCEPT when no previous step has failed (which means that error is in scenario)

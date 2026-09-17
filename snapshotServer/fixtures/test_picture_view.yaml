@@ -7,7 +7,7 @@
 #     - Application 1 (myapp) / 2 (myapp2)     -> saved to (re)generate 'can_view_results_*' permissions
 #     - TestEnvironment 1 (DEV) / 2 (PROD)     -> saved to (re)generate 'can_view_results_*' permissions
 #     - TestCase 1, TestStep 1, Version 1
-#     - Snapshot 1 (initialRefSnapshot, no refSnapshot) -> its chain StepResult 1 / TestCaseInSession 1 / TestSession 1
+#     - Snapshot 1 (initial_ref_snapshot, no refSnapshot) -> its chain StepResult 1 / TestCaseInSession 1 / TestSession 1
 #     - TestSession 10/11, TestCaseInSession 9/10, StepResult 11/12 (other env / other browser)
 #
 #   test bodies:
@@ -28,6 +28,12 @@
 -   model: snapshotServer.version
     pk: 1
     fields: {application: 1, name: '2.4'}
+-   model: snapshotServer.version
+    pk: 2
+    fields: {application: 1, name: '2.3'}
+-   model: snapshotServer.version
+    pk: 3
+    fields: {application: 1, name: '2.5'}
 -   model: snapshotServer.testenvironment
     pk: 1
     fields: {name: DEV}
@@ -108,6 +114,30 @@
         name: session_other_env
         ttl: '0'
 
+# sessions for same environment, same browser, but differente versions (before / after)
+-   model: snapshotServer.testsession
+    pk: 11
+    fields:
+        sessionId: '1255'
+        version: 2
+        date: '2017-05-05T12:16:09.184106+01:00'
+        browser: firefox
+        environment: 1
+        compareSnapshot: true
+        name: session_previous_version
+        ttl: '0'
+-   model: snapshotServer.testsession
+    pk: 12
+    fields:
+        sessionId: '1256'
+        version: 3
+        date: '2017-05-05T12:16:09.184106+01:00'
+        browser: firefox
+        environment: 1
+        compareSnapshot: true
+        name: session_next_version
+        ttl: '0'
+
 # session1 / session_same_env : created dynamically in setUp originally, now provided by the fixture.
 # Same version 1 / environment 1 (DEV) / firefox browser as the initial reference (Snapshot 1),
 # so the reference lookup matches them.
@@ -161,6 +191,20 @@
         session: 10
         testSteps: [1]
 
+# test cases executed on previous / next versions
+-   model: snapshotServer.testcaseinsession
+    pk: 10
+    fields:
+        testCase: 1
+        session: 11
+        testSteps: [1]
+-   model: snapshotServer.testcaseinsession
+    pk: 11
+    fields:
+        testCase: 1
+        session: 12
+        testSteps: [1]
+
 # TestCaseInSession for session1 / session_same_env (formerly built in setUp)
 -   model: snapshotServer.testcaseinsession
     pk: 20
@@ -202,6 +246,18 @@
     fields:
         step: 1
         testCase: 9
+        result: true
+-   model: snapshotServer.stepresult
+    pk: 12
+    fields:
+        step: 1
+        testCase: 10
+        result: true
+-   model: snapshotServer.stepresult
+    pk: 13
+    fields:
+        step: 1
+        testCase: 11
         result: true
 
 # StepResults for session1 (sr1) / session_same_env (formerly built in setUp)

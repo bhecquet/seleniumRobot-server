@@ -28,6 +28,12 @@
 -   model: snapshotServer.teststep
     pk: 1
     fields: {name: Step 1}
+-   model: snapshotServer.teststep
+    pk: 2
+    fields: {name: Step 2}
+-   model: snapshotServer.teststep
+    pk: 3
+    fields: {name: Test end}
 -   model: snapshotServer.testsession
     pk: 1
     fields:
@@ -51,6 +57,21 @@
         step: 1
         testCase: 1
         result: true
+        fullName: Step 1 with args(foo,)
+-   model: snapshotServer.stepresult
+    pk: 2
+    fields:
+        step: 1
+        testCase: 1
+        result: true
+        fullName: Step 2 with args(bar,)
+-   model: snapshotServer.stepresult
+    pk: 3
+    fields:
+        step: 2
+        testCase: 1
+        result: true
+        fullName: Test end
 
 # files need to be copied at the beginning of the test to /media/documents so that they can be used
 -   model: snapshotServer.file

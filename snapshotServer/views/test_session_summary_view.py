@@ -60,6 +60,7 @@ class TestSessionSummaryView(LoginRequiredMixinConditional, ListView):
             
             
             test_case_in_session_data[test_case_in_session] = {
+                        'status': test_case_in_session.finalStatus(),                                               # final status, combining test execution and snapshot comparison results
                         'snapshot_comparison_result': test_case_in_session.isOkWithSnapshots(),                     # no problem with snapshot comparison
                         'steps_number': len(test_case_in_session.stepresult.all()),                                 # number of steps
                         'failed_steps_number': len([sr for sr in step_results if not sr.result]),                   # number of failed steps

@@ -106,7 +106,7 @@
 										{% if namedSnapshot.stepSnapshot.refSnapshot %}
 											<button type="submit" 
 													class="btn btn-success mt-3 mb-3" 
-													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}')"
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=True&snapshotId={{ snapshot_id }}');refreshTestGlobalStatus({{ testCaseId }})"
 													{% if not editable %}disabled{% endif %}
 													>Make reference</button>
 											<button type="button" 
@@ -126,7 +126,7 @@
 													disabled>This step is a reference</button>
 											<button type="submit" 
 													class="btn btn-primary mt-3 mb-3" 
-													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=False&snapshotId={{ snapshot_id }}')"
+													onclick="updatePanel('{% url "pictureView" testCaseId testStepId %}' + 'noheader/', 'step_{{testStepId}}', 'makeRef=False&snapshotId={{ snapshot_id }}');refreshTestGlobalStatus({{ testCaseId }})"
 													{% if not editable %}disabled{% endif %}
 													>Remove this reference</button>
 										{% endif %}

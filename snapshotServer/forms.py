@@ -4,6 +4,11 @@ from snapshotServer.models import StepResult, Version, TestEnvironment,\
     Application, TestCase, TestSession, TestStep, TestCaseInSession, ExcludeZone
 import datetime
 
+# same list as SnapshotCheckType.Control class is seleniumRobot
+COMPARE_OPTIONS = ['FULL',
+                   'NONE',
+                   'ZONES',
+                   'NONE_REFERENCE']
 
 class ImageForComparisonUploadForm(forms.Form):
     """Image upload form."""
@@ -26,19 +31,22 @@ class ImageForComparisonUploadForm(forms.Form):
         except Exception as e:
             raise forms.ValidationError("stepResult not found")
 
-        if self.cleaned_data['excludeZones'] == None:
+        if self.cleaned_data['excludeZones'] is None:
             self.cleaned_data['excludeZones'] = []
         else:
             self.cleaned_data['excludeZones'] = [ExcludeZone(x=e['x'], y=e['y'], width=e['width'], height=e['height']) for e in self.cleaned_data['excludeZones']]
         
         
         self.cleaned_data['storeSnapshot'] = True
+
+        try:
+            if self.cleaned_data['diffTolerance'] is None:
+                self.cleaned_data['diffTolerance'] = 0.0
+        except KeyError:
+            return # error on diffTolerance value
         
-        if self.cleaned_data['diffTolerance'] == None:
-            self.cleaned_data['diffTolerance'] = 0.0
-        
-        if self.cleaned_data['compare'] not in ['true', 'false']:
-            self.cleaned_data['compare'] = 'true'
+        if self.cleaned_data['compare'] not in COMPARE_OPTIONS:
+            self.cleaned_data['compare'] = 'FULL'
             
 class ImageForComparisonUploadFormNoStorage(forms.Form):
     """
@@ -103,10 +111,9 @@ class ImageForComparisonUploadFormNoStorage(forms.Form):
         
         if self.cleaned_data['diffTolerance'] == None:
             self.cleaned_data['diffTolerance'] = 0.0
-        
-        # TODO: handle other cases
-        if self.cleaned_data['compare'] not in ['true', 'false']:
-            self.cleaned_data['compare'] = 'true'
+
+        if self.cleaned_data['compare'] not in COMPARE_OPTIONS:
+            self.cleaned_data['compare'] = 'FULL'
 
 class ImageForFieldDetectionForm(forms.Form):
     """
