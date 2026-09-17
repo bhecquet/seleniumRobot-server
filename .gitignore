@@ -11,5 +11,9 @@ dist/
 /media/
 /coverage_html_report/
 
+
 # Configuration locale MMA
 seleniumRobotServer/settings_dev_mma.py
+
+# Local application logs
+log/*.log
