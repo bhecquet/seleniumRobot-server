@@ -5,7 +5,7 @@ class Difference:
         try:
             self.page = max(int(page), 0)
         except:
-            pass
+            self.page = -1
         try:
             self.details = str(details)
         except:
@@ -28,10 +28,12 @@ class ComparisonResult:
 
     differences = []
 
-    def __init__(self, differences: list[Difference]):
+    def __init__(self, differences: list[Difference], full_response: bytes=b'{}'):
         self.differences = differences
+        self.full_response = full_response
 
     def serialize(self):
-        return {'differences': [difference.serialize() for difference in self.differences]}
+        return {'differences': [difference.serialize() for difference in self.differences],
+                'full_response': self.full_response.decode("utf-8")}
 
 

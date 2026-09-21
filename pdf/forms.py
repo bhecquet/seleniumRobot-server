@@ -16,8 +16,11 @@ class PdfCompareForm(forms.Form):
     model = forms.ChoiceField(
         label='Model to use',
         help_text='Select model to use for comparison',
-        choices=[('mistral_doc', 'Mistral Document annotation'),
-                 ('stub', 'Stub (for tests only)')]
+        choices=[
+            ('azure_ocr', 'Azure document comparator'),
+            ('mistral_doc', 'Mistral Document annotation'),
+             ('stub', 'Stub (for tests only)')
+        ]
     )
 
     user_prompt = forms.CharField(

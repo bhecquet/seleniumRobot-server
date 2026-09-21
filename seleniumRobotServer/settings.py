@@ -83,6 +83,13 @@ OPEN_WEBUI_TOKEN = '${openwebui.token}'
 MISTRAL_DOCUMENT_URL = '${mistral.document.annotation.url}'
 MISTRAL_DOCUMENT_API_KEY = '${mistral.document.annotation.key}'
 
+AZURE_TOKEN_URL = '${azure.token.url}'
+AZURE_KEYVAULT_URL = '${azure.keyvault.url}'
+AZURE_PLATFORM_CLIENT_ID = '${azure.platform.client.id}'
+AZURE_PLATFORM_CLIENT_SECRET = '${azure.platform.client.secret}'
+AZURE_PDF_API_SCOPE = '${azure.pdf.api.scope}'
+AZURE_PDF_API_URL = '${azure.pdf.api.url}'
+
 
 # -------- Application specific flags ------------
 # whether we restrict the view/change/delete/add to the user, in admin view to only applications he has rights for (issue #28)
