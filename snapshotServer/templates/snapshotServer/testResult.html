@@ -172,131 +172,138 @@
                                 </div>
                                 {% endif %}
 
-                                {% if stepResult.details.suggestedCause %}
+								{% if stepResult.details.suggestedCause %}
 								<div class="suggested-cause">
-                                    {% if stepResult.details.suggestedCauseType %}
-                                    <strong>Type :</strong>
-                                    {{ stepResult.details.suggestedCauseType }}
-                                    <br>
-                                    {% endif %}
+									{% if stepResult.details.suggestedCauseType %}
+									<div class="suggested-cause-type">
+										<strong>Type:</strong>
+										{{ stepResult.details.suggestedCauseType }}
+									</div>
+									{% endif %}
 
-                                    <strong>Cause probable :</strong>
-                                    {{ stepResult.details.suggestedCause }}
-                                </div>
-                                {% endif %}
+									<div>
+										<strong>Probable cause:</strong>
+										{{ stepResult.details.suggestedCause }}
+									</div>
+								</div>
+								{% endif %}
 
 								<div class="declare-cause-action">
-                                    <button type="button"
-                                            class="btn btn-sm btn-outline-primary collapsed"
-                                            data-bs-toggle="collapse"
-                                            data-bs-target="#form-{{ stepResult.id }}"
-                                            aria-expanded="false"
-                                            aria-controls="form-{{ stepResult.id }}">
-                                        Déclarer une cause
-                                    </button>
-                                </div>
+									<button type="button"
+											class="btn btn-sm btn-outline-primary declare-cause-button collapsed"
+											data-bs-toggle="collapse"
+											data-bs-target="#form-{{ stepResult.id }}"
+											aria-expanded="false"
+											aria-controls="form-{{ stepResult.id }}">
+										Add a cause
+									</button>
+								</div>
 
-                                <div id="form-{{ stepResult.id }}"
-                                     class="collapse">
+								<div id="form-{{ stepResult.id }}"
+									 class="collapse error-cause-collapse">
 
 									<div class="error-cause-form-container">
-                                        <form method="post"
-                                              action="/snapshot/api/save-error-cause/">
 
-                                        {% csrf_token %}
+										<div class="error-cause-form-header">
 											<div class="error-cause-form-title">
-												Ajouter un diagnostic
+												Add a probable cause
 											</div>
 
-											<div class="error-cause-form-group">
-												<label for="cause-{{ stepResult.id }}"
-													   class="error-cause-label">
-                                                Type
-                                            </label>
+											<div class="error-cause-form-subtitle">
+												Help identify why this test step failed.
+											</div>
+										</div>
 
-                                            <br>
+										<form method="post"
+											  action="{% url 'save-error-cause' %}">
 
-												<select name="cause"
-														id="cause-{{ stepResult.id }}"
-														class="cause-type error-cause-select"
-														required>
+										{% csrf_token %}
 
-                                                <option value="Application">
-                                                    Application
-                                                </option>
+										<div class="error-cause-form-group">
+											<label for="cause-{{ stepResult.id }}"
+												   class="error-cause-label">
+												Cause type
+											</label>
 
-                                                <option value="Configuration">
-                                                    Configuration
-                                                </option>
+											<select name="cause"
+													id="cause-{{ stepResult.id }}"
+													class="error-cause-select"
+													required>
+												<option value="Application">
+													Application
+												</option>
 
-                                                <option value="Script">
-                                                    Script
-                                                </option>
+												<option value="Configuration">
+													Configuration
+												</option>
 
-                                                <option value="Environment">
-                                                    Environment
-                                                </option>
-                                            </select>
-                                        </div>
+												<option value="Script">
+													Script
+												</option>
 
-											<div class="error-cause-form-group">
-												<label for="comment-{{ stepResult.id }}"
-													   class="error-cause-label">
-                                                Comment
-                                            </label>
+												<option value="Environment">
+													Environment
+												</option>
+											</select>
+										</div>
 
-                                            <br>
+										<div class="error-cause-form-group">
+											<label for="comment-{{ stepResult.id }}"
+												   class="error-cause-label">
+												Comment
+											</label>
 
-												<textarea name="comment"
-														  id="comment-{{ stepResult.id }}"
-														  class="comment-cause error-cause-comment"
-														  rows="3"
-														  maxlength="180"
-														  required
-														  placeholder="Décrire la cause probable"></textarea>
+											<textarea name="comment"
+													  id="comment-{{ stepResult.id }}"
+													  class="error-cause-comment"
+													  rows="4"
+													  maxlength="180"
+													  required
+													  placeholder="Describe the probable cause"></textarea>
 
-												<small class="error-cause-help">
-                                                Décrire la cause probable en une phrase courte.
-                                                Ne pas répéter l’exception technique.
-                                            </small>
-                                        </div>
+											<small class="error-cause-help">
+												Describe the probable cause in one short sentence.
+												Do not repeat the technical exception.
+											</small>
+										</div>
 
-                                        <input type="hidden"
-                                               name="exception"
-                                               value="{{ stepResult.details.exception|default:'UnknownException' }}">
+										<input type="hidden"
+											   name="exception"
+											   value="{{ stepResult.details.exception|default:'UnknownException' }}">
 
-                                        <input type="hidden"
-                                               name="errorMessage"
-                                               value="{{ stepResult.details.exceptionMessage|default:'' }}">
+										<input type="hidden"
+											   name="errorMessage"
+											   value="{{ stepResult.details.exceptionMessage|default:'' }}">
 
-                                        <input type="hidden"
-                                               name="stepName"
-                                               value="{{ stepResult.details.name }}">
+										<input type="hidden"
+											   name="stepName"
+											   value="{{ stepResult.details.name }}">
 
-                                        <input type="hidden"
-                                               name="testCaseId"
-                                               value="{{ currentTest.testCase.id }}">
+										<input type="hidden"
+											   name="testCaseId"
+											   value="{{ currentTest.testCase.id }}">
 
-                                        <input type="hidden"
-                                               name="testStepId"
-                                               value="{{ stepResult.step.id }}">
+										<input type="hidden"
+											   name="testStepId"
+											   value="{{ stepResult.step.id }}">
 
-                                        <div class="save-cause-status" role="status" aria-live="polite">
-                                        </div>
+										<div class="save-cause-status"
+											 role="status"
+											 aria-live="polite">
+										</div>
 
-											<div class="error-cause-submit">
-                                            <button type="submit"
-                                                    class="btn btn-primary btn-sm save-cause-button">
-                                                Enregistrer
-                                            </button>
-                                        </div>
+										<div class="error-cause-submit">
+											<button type="submit"
+													class="btn btn-primary save-cause-button">
+												Save cause
+											</button>
+										</div>
 
-                                        </form>
+										</form>
+									</div>
+								</div>
 
-                                    </div>
-                                </div>
-
-                                {% endif %}
+								{% endif %}
 
 								<div class="row">
 									{% for snapshot in stepResult.details.snapshots %}
