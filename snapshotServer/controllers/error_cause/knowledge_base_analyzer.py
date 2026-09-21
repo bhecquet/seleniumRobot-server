@@ -47,9 +47,9 @@ def find_probable_cause(exception, testCase=None, testStep=None):
                 exception=normalized_exception,
                 testCase=testCase,
                 testStep=testStep,
-                commentaire__isnull=False
+                comment__isnull=False
             )
-            .exclude(commentaire__exact="")
+            .exclude(comment__exact="")
             .order_by("-id")
         )
 
@@ -86,7 +86,7 @@ def find_probable_cause(exception, testCase=None, testStep=None):
             return None
 
         # Vérification complémentaire du commentaire
-        cause = entry.commentaire.strip()
+        cause = entry.comment.strip()
 
         if not cause:
             logger.warning(

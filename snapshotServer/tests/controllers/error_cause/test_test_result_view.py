@@ -3,6 +3,8 @@ from unittest.mock import patch
 from django.test import TestCase
 
 from snapshotServer.views.test_result_view import TestResultView
+from django.contrib.auth import get_user_model
+from django.urls import reverse
 
 
 class TestKnowledgeBaseInTestResultView(TestCase):
@@ -143,3 +145,44 @@ class TestKnowledgeBaseInTestResultView(TestCase):
             testCase=first_step_result.testCase.testCase,
             testStep=first_step_result.step,
         )
+
+@patch(
+    "snapshotServer.views.test_result_view.find_probable_cause"
+)
+def test_rendered_html_displays_error_cause_form_and_existing_cause(
+        self,
+        find_probable_cause_mock,
+):
+    find_probable_cause_mock.return_value = {
+        "cause": "The button locator is obsolete",
+        "count": 1,
+        "total": 1,
+    }
+
+    user = get_user_model().objects.create_user(
+        username="test-result-user",
+        password="test-password",
+    )
+    self.client.force_login(user)
+
+    response = self.client.get(
+        reverse(  "testResultView",
+            kwargs={"test_case_in_session_id": 11, }, )
+    )
+
+    self.assertEqual(200, response.status_code)
+    self.assertTemplateUsed(
+        response,
+        "snapshotServer/testResult.html",
+    )
+
+    # The user can open the error-cause form.
+    self.assertContains(   response, "Déclarer une cause",)
+    self.assertContains(response, 'name="cause"', )
+    self.assertContains( response,'name="comment"',)
+    self.assertContains(response, reverse("save-error-cause"),)
+
+    # An existing probable cause is visible in the rendered page.
+    self.assertContains(response,"Cause probable",)
+    self.assertContains(response,"The button locator is obsolete",)
+    self.assertTrue(find_probable_cause_mock.called )

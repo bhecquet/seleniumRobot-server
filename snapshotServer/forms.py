@@ -161,3 +161,24 @@ class DataForFieldDetectionForm(forms.Form):
         if not (self.cleaned_data['stepResultId'] or self.cleaned_data['image']):
             raise forms.ValidationError("'image' OR 'stepResultId' parameters are mandatory")
 
+
+class ErrorCauseForm(forms.Form):
+    CAUSE_TYPES = (
+        ("Application", "Application"),
+        ("Configuration", "Configuration"),
+        ("Script", "Script"),
+        ("Environment", "Environment"),
+    )
+
+    exception = forms.CharField()
+    errorMessage = forms.CharField(required=False)
+    stepName = forms.CharField(required=False)
+    comment = forms.CharField(max_length=1000)
+    cause = forms.ChoiceField(choices=CAUSE_TYPES)
+
+    testCaseId = forms.ModelChoiceField(
+        queryset=TestCase.objects.all()
+    )
+    testStepId = forms.ModelChoiceField(
+        queryset=TestStep.objects.all()
+    )

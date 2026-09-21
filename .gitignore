@@ -11,9 +11,13 @@ dist/
 /media/
 /coverage_html_report/
 
+# IntelliJ IDEA local files
+*.iml
 
-# Configuration locale MMA
-seleniumRobotServer/settings_dev_mma.py
 
 # Local application logs
 log/*.log
+
+.seleniumRobot-server.iml
+# IntelliJ IDEA local files
+*.iml

@@ -488,7 +488,7 @@ class ErrorCauseFromUser(models.Model):
     exception = models.CharField(max_length=100, default="")        # the exception raised by the test. Used for correlation
     errorMessage =  models.TextField()  # the exception message associated to the exception. Used for correlation
     type = models.CharField(max_length=100, null=False)             # the type of error: 'Environment', 'Application bug', 'Test', 'user defined'
-    commentaire = models.CharField(max_length=1000, default="")
+    comment = models.CharField(max_length=1000, default="")
 
 class Error(models.Model):
     """

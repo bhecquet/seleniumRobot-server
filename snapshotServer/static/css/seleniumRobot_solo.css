@@ -221,3 +221,148 @@ table.table-bordered > tbody > tr > td {
 .btn-box-tool:not(.collapsed) .collapse-icon {
 	transform: rotate(90deg);
 }
+.suggested-cause {
+	margin-top: 10px;
+	padding: 8px;
+	border-radius: 4px;
+	background: #e8f0fe;
+}
+
+.declare-cause-action {
+	margin-top: 10px;
+}
+
+.error-cause-form-container {
+	margin-top: 12px;
+	padding: 15px;
+	max-width: 460px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background: #f8f9fa;
+}
+
+.error-cause-form-title {
+	margin-bottom: 10px;
+	font-weight: bold;
+}
+
+.error-cause-form-group {
+	margin-bottom: 10px;
+}
+
+.error-cause-label {
+	color: #555;
+	font-size: 13px;
+}
+
+.error-cause-select,
+.error-cause-comment {
+	width: 100%;
+	padding: 6px;
+}
+
+.error-cause-help {
+	display: block;
+	margin-top: 6px;
+	color: #666;
+	font-size: 12px;
+}
+
+.save-cause-status {
+	display: none;
+	margin-bottom: 10px;
+	padding: 8px;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+.error-cause-submit {
+	text-align: right;
+}
+.suggested-cause {
+	margin-top: 10px;
+	padding: 10px 12px;
+	border-left: 4px solid #0d6efd;
+	border-radius: 4px;
+	background-color: #e8f0fe;
+}
+
+.declare-cause-action {
+	margin-top: 12px;
+}
+
+.error-cause-form-container {
+	width: 100%;
+	max-width: 480px;
+	margin-top: 12px;
+	padding: 16px;
+	border: 1px solid #d6d9dc;
+	border-radius: 8px;
+	background-color: #f8f9fa;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.error-cause-form-title {
+	margin-bottom: 14px;
+	font-size: 16px;
+	font-weight: 600;
+}
+
+.error-cause-form-group {
+	margin-bottom: 14px;
+}
+
+.error-cause-label {
+	display: block;
+	margin-bottom: 5px;
+	color: #444;
+	font-size: 13px;
+	font-weight: 600;
+}
+
+.error-cause-select,
+.error-cause-comment {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 8px 10px;
+	border: 1px solid #adb5bd;
+	border-radius: 4px;
+	background-color: #fff;
+	font-size: 14px;
+}
+
+.error-cause-select:focus,
+.error-cause-comment:focus {
+	border-color: #86b7fe;
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+.error-cause-comment {
+	min-height: 90px;
+	resize: vertical;
+}
+
+.error-cause-help {
+	display: block;
+	width: 100%;
+	margin-top: 6px;
+	color: #6c757d;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.save-cause-status {
+	display: none;
+	margin-bottom: 12px;
+	padding: 8px;
+	border-radius: 4px;
+	font-size: 13px;
+}
+
+.error-cause-submit {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 12px;
+}

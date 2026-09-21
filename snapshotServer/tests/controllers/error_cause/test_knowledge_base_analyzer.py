@@ -37,7 +37,7 @@ class TestKnowledgeBaseAnalyzer(TestCase):
             exception=NOT_PROVIDED,
             test_case=NOT_PROVIDED,
             test_step=NOT_PROVIDED,
-            commentaire="Le locator du bouton est obsolète",
+            comment="Le locator du bouton est obsolète",
             cause_type="Script",
     ):
         """
@@ -63,7 +63,7 @@ class TestKnowledgeBaseAnalyzer(TestCase):
             exception=exception,
             action="Cliquer sur le bouton",
             errorMessage="Element not found",
-            commentaire=commentaire,
+            comment=comment,
             type=cause_type,
         )
 
@@ -185,7 +185,7 @@ class TestKnowledgeBaseAnalyzer(TestCase):
 
     def test_ignores_empty_comment(self):
         self.create_error_cause(
-            commentaire=""
+            comment=""
         )
 
         result = find_probable_cause(
@@ -198,7 +198,7 @@ class TestKnowledgeBaseAnalyzer(TestCase):
 
     def test_ignores_comment_containing_only_spaces(self):
         self.create_error_cause(
-            commentaire="   "
+            comment="   "
         )
 
         result = find_probable_cause(
@@ -235,12 +235,12 @@ class TestKnowledgeBaseAnalyzer(TestCase):
 
     def test_selects_most_recent_cause_when_duplicates_exist(self):
         first_entry = self.create_error_cause(
-            commentaire="Première cause",
+            comment="Première cause",
             cause_type="Application",
         )
 
         second_entry = self.create_error_cause(
-            commentaire="Cause la plus récente",
+            comment="Cause la plus récente",
             cause_type="Configuration",
         )
 

@@ -13,9 +13,11 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from snapshotServer.models import TestCaseInSession, StepResult, Snapshot, Error, TestInfo
 import json
+import logging
 from snapshotServer.views.login_required_mixin_conditional import LoginRequiredMixinConditional
 from snapshotServer.controllers.error_cause.knowledge_base_analyzer import find_probable_cause
 
+logger = logging.getLogger(__name__)
 
 class TestResultViewCommons:
 
@@ -89,9 +91,10 @@ class TestResultView(TestResultViewCommons, LoginRequiredMixinConditional, ListV
                             step_result.details["confidence"] = int(
                                 (result["count"] / result["total"]) * 100
                             )
+                    except Exception:
+                        logger.exception(
+                            "Error while searching for a probable cause in the knowledge base" )
 
-                    except Exception as exception:
-                        print("ERROR in find_probable_cause:", exception)
 
                 try:
                     step_snapshots[step_result] = list(Snapshot.objects.filter(stepResult = step_result))
