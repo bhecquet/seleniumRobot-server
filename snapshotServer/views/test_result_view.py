@@ -77,6 +77,7 @@ class TestResultView(TestResultViewCommons, LoginRequiredMixinConditional, ListV
                 step_result.details = details
                                 # Exploitation de la base de connaissance
                 step_result.details["suggestedCause"] = None
+                step_result.details["suggestedCauseId"] = None
 
                 if "exception" in step_result.details:
                     try:
@@ -88,6 +89,7 @@ class TestResultView(TestResultViewCommons, LoginRequiredMixinConditional, ListV
 
                         if result:
                             step_result.details["suggestedCause"] = result["cause"]
+                            step_result.details["suggestedCauseId"] = result["knowledgeId"]
                             step_result.details["confidence"] = int(
                                 (result["count"] / result["total"]) * 100
                             )

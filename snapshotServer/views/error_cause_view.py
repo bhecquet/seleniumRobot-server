@@ -34,22 +34,21 @@ class SaveErrorCauseView(View):
 
         test_case = form.cleaned_data["testCaseId"]
         test_step = form.cleaned_data["testStepId"]
+        existing_cause_id = form.cleaned_data.get("existingCauseId")
 
         try:
             with transaction.atomic():
-                existing = (
-                    ErrorCauseFromUser.objects
-                    .filter(
-                        exception=exception,
+                existing = None
+
+                if existing_cause_id:
+                    existing = ErrorCauseFromUser.objects.filter(
+                        id=existing_cause_id,
                         testCase=test_case,
                         testStep=test_step,
-                    )
-                    .order_by("-id")
-                    .first()
-                )
+                    ).first()
 
                 if existing is None:
-                    ErrorCauseFromUser.objects.create(
+                    entry = ErrorCauseFromUser.objects.create(
                         testCase=test_case,
                         testStep=test_step,
                         exception=exception,
@@ -62,9 +61,8 @@ class SaveErrorCauseView(View):
                     return JsonResponse(
                         {
                             "success": True,
-                            "message": (
-                                "La nouvelle cause a été enregistrée."
-                            ),
+                            "message": "La nouvelle cause a été enregistrée.",
+                            "causeId": entry.id,
                         },
                         status=201,
                     )
@@ -78,13 +76,11 @@ class SaveErrorCauseView(View):
                 return JsonResponse(
                     {
                         "success": True,
-                        "message": (
-                            "La cause existante a été mise à jour."
-                        ),
+                        "message": "La cause existante a été mise à jour.",
+                        "causeId": existing.id,
                     },
                     status=200,
                 )
-
         except Exception:
             logger.exception(
                 "Erreur pendant l’enregistrement de la cause : "

@@ -190,12 +190,16 @@
 
 								<div class="declare-cause-action">
 									<button type="button"
-											class="btn btn-sm btn-outline-primary declare-cause-button collapsed"
+											class="btn btn-sm btn-outline-primary collapsed"
 											data-bs-toggle="collapse"
 											data-bs-target="#form-{{ stepResult.id }}"
 											aria-expanded="false"
 											aria-controls="form-{{ stepResult.id }}">
+										{% if stepResult.details.suggestedCauseId %}
+										Edit cause
+										{% else %}
 										Add a cause
+										{% endif %}
 									</button>
 								</div>
 
@@ -206,7 +210,11 @@
 
 										<div class="error-cause-form-header">
 											<div class="error-cause-form-title">
-												Add a probable cause
+												{% if stepResult.details.suggestedCauseId %}
+												Update cause
+												{% else %}
+												Add a cause
+												{% endif %}
 											</div>
 
 											<div class="error-cause-form-subtitle">
@@ -215,7 +223,7 @@
 										</div>
 
 										<form method="post"
-											  action="{% url 'save-error-cause' %}">
+											  action="{% url 'save-error-cause' %}" class="error-cause-form">
 
 										{% csrf_token %}
 
@@ -259,7 +267,7 @@
 													  rows="4"
 													  maxlength="180"
 													  required
-													  placeholder="Describe the probable cause"></textarea>
+													  placeholder="Describe the probable cause">{% if stepResult.details.suggestedCauseId %}{{ stepResult.details.suggestedCause }}{% endif %}</textarea>
 
 											<small class="error-cause-help">
 												Describe the probable cause in one short sentence.
@@ -286,6 +294,10 @@
 										<input type="hidden"
 											   name="testStepId"
 											   value="{{ stepResult.step.id }}">
+											<input type="hidden"
+												   name="existingCauseId"
+												   value="{{ stepResult.details.suggestedCauseId|default:'' }}">
+
 
 										<div class="save-cause-status"
 											 role="status"
@@ -295,7 +307,11 @@
 										<div class="error-cause-submit">
 											<button type="submit"
 													class="btn btn-primary save-cause-button">
+												{% if stepResult.details.suggestedCauseId %}
+												Update cause
+												{% else %}
 												Save cause
+												{% endif %}
 											</button>
 										</div>
 

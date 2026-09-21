@@ -182,3 +182,7 @@ class ErrorCauseForm(forms.Form):
     testStepId = forms.ModelChoiceField(
         queryset=TestStep.objects.all()
     )
+    existingCauseId = forms.IntegerField(
+        required=False,
+        min_value=1,
+    )
