@@ -1,12 +1,14 @@
 import base64
 import logging
 import uuid
+import json
 
 from django.core.cache import cache
 from django.shortcuts import render, redirect
 from django.views import View
 
 from pdf.controllers.comparison import ComparisonError
+from pdf.controllers.comparison.azure_ocr_comparator import AzureOcrComparator
 from pdf.controllers.comparison.mistral_document_annotation_comparator import MistralDocComparator
 from pdf.controllers.comparison.stub_comparator import StubComparator
 from pdf.forms import PdfCompareForm
@@ -28,7 +30,8 @@ class PdfCompareView(View):
     def get(self, request):
 
         form = PdfCompareForm()
-        return render(request, self.template_name, {'form': form})
+        json_response = json.dumps({'bla': 'bidule', 'foo': 'truc'}, indent=3)
+        return render(request, self.template_name, {'form': form, 'test_json': json_response})
 
     def post(self, request):
         form = PdfCompareForm(request.POST, request.FILES)
@@ -43,7 +46,7 @@ class PdfCompareView(View):
         try:
             result = self._compare_pdfs(model, pdf1, pdf2, user_prompt)
         except Exception as e:
-            logger.exception('Error comparing PDF PDF')
+            logger.exception('Error comparing PDF')
             return render(request, self.template_name, {
                 'form': form,
                 'error': f'Error occured during comparison : {e}'
@@ -78,10 +81,12 @@ class PdfCompareView(View):
         # comparator will return comparison result
         if model == 'stub':
             comparator = StubComparator("")
+        elif model == 'azure_ocr':
+            comparator = AzureOcrComparator(user_prompt)
         elif model == 'mistral_doc':
             comparator = MistralDocComparator(user_prompt)
         else:
-            raise ComparisonError("Only 'stub' and 'mistral_doc' are allowed")
+            raise ComparisonError("Only 'stub', 'azure_ocr' and 'mistral_doc' are allowed")
         comparison_result = comparator.compare(file1, file2)
 
 
@@ -94,13 +99,14 @@ class PdfCompareView(View):
         nb_pages_2 = len(reader2.pages)
 
 
-
+        serialized_result = comparison_result.serialize()
         return {
             'file1_name': file1.name,
             'file2_name': file2.name,
             'nb_pages_1': nb_pages_1,
             'nb_pages_2': nb_pages_2,
-            'differences': comparison_result.serialize()['differences'],
+            'differences': serialized_result['differences'],
+            'full_response': json.dumps(json.loads(serialized_result['full_response']), indent=4),
         }
 
     def _store_uploaded_pdfs_temporarily(self, left_pdf_file, right_pdf_file):

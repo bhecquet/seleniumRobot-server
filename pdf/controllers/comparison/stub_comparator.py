@@ -10,4 +10,4 @@ class StubComparator():
         """Simulate a PDF comparison by returning a fixed result."""
 
         differences = [Difference(1, "first part", "Amount is different")]
-        return ComparisonResult(differences)
+        return ComparisonResult(differences, b'{"differences": [{"page": 1, "location": "first part", "details": "Amount is different"}]}')

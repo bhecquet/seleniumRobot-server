@@ -41,7 +41,7 @@
                     <tr>
                         <td>{{ difference.page }}</td>
                         <td>{{ difference.location }}</td>
-                        <td>{{ difference.details }}</td>
+                        <td>{{ difference.details|linebreaks }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -76,7 +76,24 @@
                 <i class="fas fa-rotate"></i> Comparer d'autres PDF
             </a>
         </div>
+
+        <div class="mt-3">
+            <button type="button" class="btn btn-outline-secondary" id="debugInfoBtn">
+                <i class="fas fa-bug"></i> Debug info
+            </button>
+            <div class="mt-2" id="debugInfoContainer" style="display:none;">
+                <textarea class="form-control" id="debugInfoText" rows="15" readonly>{{ result.full_response }}</textarea>
+            </div>
+        </div>
+
     </div>
 </div>
+
+<script>
+    document.getElementById('debugInfoBtn').addEventListener('click', function () {
+        var container = document.getElementById('debugInfoContainer');
+        container.style.display = (container.style.display === 'none') ? 'block' : 'none';
+    });
+</script>
 {% endblock %}
 

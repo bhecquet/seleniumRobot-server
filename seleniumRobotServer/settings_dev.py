@@ -93,6 +93,13 @@ OPEN_WEBUI_TOKEN = 'abc'
 MISTRAL_DOCUMENT_URL = 'http://localhost/ocr'
 MISTRAL_DOCUMENT_API_KEY = 'abc'
 
+AZURE_TOKEN_URL = 'https://login.microsoftonline.com/uuid/oauth2/v2.0/token'
+AZURE_KEYVAULT_URL = 'https://uuid.vault.azure.net/secrets'
+AZURE_PLATFORM_CLIENT_ID = 'abc'
+AZURE_PLATFORM_CLIENT_SECRET = '-def'
+AZURE_PDF_API_SCOPE = 'api://8123/.default'
+AZURE_PDF_API_URL = 'https://mycompany.azure-api.net/pdf/v1/compare'
+
 # -------- OpenID Authentication -----------------
 OIDC_RP_CLIENT_ID = 'seleniumserver'
 OIDC_RP_CLIENT_SECRET = 'secret'
