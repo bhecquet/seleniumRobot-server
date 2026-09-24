@@ -360,3 +360,112 @@ table.table-bordered > tbody > tr > td {
 	border-radius: 6px;
 	font-weight: 500;
 }
+.error-cause-header-shortcut {
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+.error-cause-header-alert {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 0;
+	border-left: 4px solid #ffc107;
+}
+
+.error-cause-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+@media screen and (max-width: 768px) {
+	.error-cause-header-alert {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+}
+.error-cause-header-shortcut {
+	width: 85%;
+	margin: 12px auto 8px;
+}
+
+.error-cause-shortcut-card {
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	min-width: 340px;
+	max-width: 720px;
+	padding: 10px 12px;
+	gap: 24px;
+	border: 1px solid #d8dee4;
+	border-left: 3px solid #dc3545;
+	border-radius: 7px;
+	background-color: #ffffff;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.error-cause-shortcut-content {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.error-cause-shortcut-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background-color: #fbe9eb;
+	color: #b02a37;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.error-cause-shortcut-text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.25;
+}
+
+.error-cause-shortcut-text strong {
+	color: #343a40;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.error-cause-shortcut-text span {
+	margin-top: 2px;
+	color: #6c757d;
+	font-size: 12px;
+}
+
+.error-cause-shortcut-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 7px;
+}
+
+.error-cause-shortcut-actions .btn {
+	white-space: nowrap;
+}
+
+@media screen and (max-width: 768px) {
+	.error-cause-header-shortcut {
+		width: calc(100% - 24px);
+	}
+
+	.error-cause-shortcut-card {
+		display: flex;
+		align-items: flex-start;
+		flex-direction: column;
+		min-width: 0;
+		width: 100%;
+		gap: 10px;
+	}
+}

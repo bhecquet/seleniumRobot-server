@@ -40,6 +40,10 @@
 <div id="testHeaderContainer">
     {% include "snapshotServer/_testHeaderPartial.html" %}
 </div>
+<div id="errorCauseHeaderShortcut"
+	 class="container-fluid error-cause-header-shortcut"
+	 aria-live="polite">
+</div>
 
 <div id="testResultDetails">
 	<!-- Modal for displaying pictures -->
@@ -79,6 +83,137 @@
 				<div class="modal-body">
 					<ul id="networkErrorsList"></ul>
 				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal for adding or updating an error cause -->
+	<div class="modal fade"
+		 id="errorCauseModal"
+		 tabindex="-1"
+		 aria-labelledby="errorCauseModalLabel"
+		 aria-hidden="true">
+
+		<div class="modal-dialog modal-dialog-centered">
+			<div class="modal-content">
+
+				<form method="post"
+					  action="{% url 'save-error-cause' %}"
+					  id="errorCauseModalForm"
+					  class="error-cause-form">
+
+					{% csrf_token %}
+
+					<div class="modal-header">
+						<h5 class="modal-title"
+							id="errorCauseModalLabel">
+							Add a cause
+						</h5>
+
+						<button type="button"
+								class="btn-close"
+								data-bs-dismiss="modal"
+								aria-label="Close">
+						</button>
+					</div>
+
+					<div class="modal-body">
+
+						<div class="mb-3">
+							<label for="modalCauseType"
+								   class="form-label">
+								Cause type
+							</label>
+
+							<select name="cause"
+									id="modalCauseType"
+									class="form-select"
+									required>
+								<option value="Application">
+									Application
+								</option>
+
+								<option value="Configuration">
+									Configuration
+								</option>
+
+								<option value="Script">
+									Script
+								</option>
+
+								<option value="Environment">
+									Environment
+								</option>
+							</select>
+						</div>
+
+						<div class="mb-3">
+							<label for="modalCauseComment"
+								   class="form-label">
+								Comment
+							</label>
+
+							<textarea name="comment"
+									  id="modalCauseComment"
+									  class="form-control"
+									  rows="4"
+									  maxlength="180"
+									  required
+									  placeholder="Describe the probable cause"></textarea>
+
+							<div class="form-text">
+								Describe the probable cause in one short sentence.
+								Do not repeat the technical exception.
+							</div>
+						</div>
+
+						<input type="hidden"
+							   name="existingCauseId"
+							   id="modalExistingCauseId">
+
+						<input type="hidden"
+							   name="exception"
+							   id="modalException">
+
+						<input type="hidden"
+							   name="errorMessage"
+							   id="modalErrorMessage">
+
+						<input type="hidden"
+							   name="stepName"
+							   id="modalStepName">
+
+						<input type="hidden"
+							   name="testCaseId"
+							   id="modalTestCaseId">
+
+						<input type="hidden"
+							   name="testStepId"
+							   id="modalTestStepId">
+
+						<div class="save-cause-status"
+							 role="status"
+							 aria-live="polite">
+						</div>
+
+					</div>
+
+					<div class="modal-footer">
+						<button type="button"
+								class="btn btn-secondary"
+								data-bs-dismiss="modal">
+							Cancel
+						</button>
+
+						<button type="submit"
+								id="errorCauseModalSubmit"
+								class="btn btn-primary save-cause-button"
+								disabled>
+							Save cause
+						</button>
+					</div>
+
+				</form>
+
 			</div>
 		</div>
 	</div>
@@ -190,11 +325,18 @@
 
 								<div class="declare-cause-action">
 									<button type="button"
-											class="btn btn-sm btn-outline-primary collapsed"
-											data-bs-toggle="collapse"
-											data-bs-target="#form-{{ stepResult.id }}"
-											aria-expanded="false"
-											aria-controls="form-{{ stepResult.id }}">
+											class="btn btn-sm btn-outline-primary declare-cause-button"
+											data-bs-toggle="modal"
+											data-bs-target="#errorCauseModal"
+											data-cause-id="{{ stepResult.details.suggestedCauseId|default:'' }}"
+											data-cause-type="{{ stepResult.details.suggestedCauseType|default:'Application' }}"
+											data-comment="{{ stepResult.details.suggestedCause|default:'' }}"
+											data-exception="{{ stepResult.details.exception|default:'UnknownException' }}"
+											data-error-message="{{ stepResult.details.exceptionMessage|default:'' }}"
+											data-step-name="{{ stepResult.details.name|default:'' }}"
+											data-test-case-id="{{ currentTest.testCase.id }}"
+											data-test-step-id="{{ stepResult.step.id }}">
+
 										{% if stepResult.details.suggestedCauseId %}
 										Edit cause
 										{% else %}
