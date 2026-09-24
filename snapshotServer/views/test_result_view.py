@@ -75,7 +75,7 @@ class TestResultView(TestResultViewCommons, LoginRequiredMixinConditional, ListV
                 except:
                     details = {}
                 step_result.details = details
-                                # Exploitation de la base de connaissance
+
                 step_result.details["suggestedCause"] = None
                 step_result.details["suggestedCauseId"] = None
 

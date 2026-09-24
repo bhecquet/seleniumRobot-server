@@ -10,28 +10,28 @@ logger = logging.getLogger(__name__)
 
 def find_probable_cause(exception, testCase=None, testStep=None):
     """
-    Recherche une cause connue pour une exception, un test
-    et une étape précise.
+    Searches for a known cause associated with a specific exception,
+    test case, and test step.
 
-    Retourne un dictionnaire si une cause exploitable existe.
-    Retourne None si aucune cause n'est trouvée ou si les
-    données reçues ne permettent pas d'effectuer la recherche.
+    Returns a dictionary if a usable cause exists.
+    Returns None if no cause is found or if the provided data
+    does not allow the search to be performed.
     """
 
-    # Vérification de l'exception
+    # Exception validation
     if not isinstance(exception, str) or not exception.strip():
         logger.warning(
             "Recherche de cause impossible : exception absente ou invalide."
         )
         return None
 
-    # Suppression des espaces inutiles
+    # Remove unnecessary whitespace
     normalized_exception = exception.strip()
 
-    # Vérification du contexte du test
+    # Test context validation
     if testCase is None or testStep is None:
         logger.warning(
-            "Recherche de cause impossible : contexte incomplet. "
+            "Unable to search for a cause: incomplete context. "
             "exception='%s', testCase=%s, testStep=%s",
             normalized_exception,
             getattr(testCase, "id", None),
@@ -40,7 +40,7 @@ def find_probable_cause(exception, testCase=None, testStep=None):
         return None
 
     try:
-        # Recherche exacte par exception, test et étape
+        # Exact search by exception, test case, and test step
         queryset = (
             ErrorCauseFromUser.objects
             .filter(
@@ -55,10 +55,10 @@ def find_probable_cause(exception, testCase=None, testStep=None):
 
         number_of_entries = queryset.count()
 
-        # Aucune connaissance trouvée
+        # No knowledge entry found
         if number_of_entries == 0:
             logger.debug(
-                "Aucune cause connue pour exception='%s', "
+                "No known cause found for exception='%s', "
                 "testCase=%s, testStep=%s",
                 normalized_exception,
                 testCase.id,
@@ -66,37 +66,37 @@ def find_probable_cause(exception, testCase=None, testStep=None):
             )
             return None
 
-        # Plusieurs entrées existent pour le même contexte
+        # Multiple entries exist for the same context
         if number_of_entries > 1:
             logger.error(
-                "Incohérence dans la base de connaissance : "
-                "%s causes trouvées pour exception='%s', "
+                "Knowledge base inconsistency: "
+                "%s causes found for exception='%s', "
                 "testCase=%s, testStep=%s. "
-                "La cause la plus récente sera utilisée.",
+                "The most recent cause will be used.",
                 number_of_entries,
                 normalized_exception,
                 testCase.id,
                 testStep.id
             )
 
-        # Grâce à order_by("-id"), la plus récente est sélectionnée
+        # Thanks to order_by("-id"), the most recent entry is selected
         entry = queryset.first()
 
         if entry is None:
             return None
 
-        # Vérification complémentaire du commentaire
+        # Additional comment validation
         cause = entry.comment.strip()
 
         if not cause:
             logger.warning(
-                "La connaissance id=%s possède un commentaire vide.",
+                "Knowledge entry with id=%s has an empty comment.",
                 entry.id
             )
             return None
 
         logger.debug(
-            "Cause connue trouvée : id=%s, type=%s, "
+            "Known cause found: id=%s, type=%s, "
             "testCase=%s, testStep=%s",
             entry.id,
             entry.type,
@@ -114,22 +114,21 @@ def find_probable_cause(exception, testCase=None, testStep=None):
 
     except DatabaseError:
         logger.exception(
-            "Erreur de base de données pendant la recherche "
-            "d'une cause : exception='%s', testCase=%s, testStep=%s",
+            "Database error while searching for a cause: "
+            "exception='%s', testCase=%s, testStep=%s",
             normalized_exception,
             getattr(testCase, "id", None),
             getattr(testStep, "id", None)
         )
 
-        # Le rapport doit continuer à s'afficher même si la
-        # base de connaissance est temporairement indisponible.
+        # The report must continue to be displayed even if the
+        # knowledge base is temporarily unavailable.
         return None
 
     except Exception:
         logger.exception(
-            "Erreur inattendue pendant l'analyse de la base "
-            "de connaissance : exception='%s', "
-            "testCase=%s, testStep=%s",
+            "Unexpected error while analyzing the knowledge base: "
+            "exception='%s', testCase=%s, testStep=%s",
             normalized_exception,
             getattr(testCase, "id", None),
             getattr(testStep, "id", None)
