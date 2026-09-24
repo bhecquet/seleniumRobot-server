@@ -17,7 +17,7 @@ from django.utils.translation import gettext_lazy
 from commonsServer import preferences
 from commonsServer.admin_site.application_admin import ApplicationFilter
 from commonsServer.admin_site.base_model_admin import BaseServerModelAdmin
-from commonsServer.admin_site.environment_admin import EnvironmentFilter
+from commonsServer.admin_site.environment_admin import EnvironmentFilter, EnvironmentFilterForVariables
 from commonsServer.admin_site.version_admin import VersionFilter
 from variableServer.models import Variable, TestCase, Version
 
@@ -120,7 +120,7 @@ class VariableForm2(forms.ModelForm):
     
 class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
     list_display = ('nameWithApp', 'value', 'link', 'application', 'environment', 'version', 'allTests', 'reservable', 'releaseDate', 'creationDate')
-    list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilter, 'internal')
+    list_filter = (ApplicationFilter, VersionFilter, EnvironmentFilterForVariables, 'internal')
     search_fields = ['name', 'value', 'description']
     form = VariableForm
     actions = ['delete_selected', 'copy_to', 'change_values_at_once', 'unreserve_variable']
@@ -133,7 +133,9 @@ class VariableAdmin(AuditlogHistoryAdminMixin, BaseServerModelAdmin):
         """
         Filter the returned variables with the application user is allowed to see
         """
-        return super().get_queryset(request, 'variableServer.view_variable')
+        return super().get_queryset(request, 'variableServer.view_variable') \
+            .select_related('environment', 'version') \
+            .prefetch_related('test', 'application')
 
     def get_form(self, request, obj=None, **kwargs):
         """

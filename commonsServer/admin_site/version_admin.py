@@ -20,9 +20,9 @@ class VersionFilter(SimpleListFilter):
     def lookups(self, request, model_admin):
         if 'application' in request.GET:
             app_id = request.GET['application']
-            versions = {c.version for c in model_admin.model.objects.all().filter(application=app_id)}
+            versions = {c.version for c in model_admin.model.objects.all().filter(application=app_id).prefetch_related("application")}
         else:
-            versions = set(Version.objects.all())
+            versions = set(Version.objects.all().prefetch_related("application"))
         return [(v.id, str(v)) for v in versions if v is not None] + [('_None_', 'None')]
 
     def queryset(self, request, queryset):
