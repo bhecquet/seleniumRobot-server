@@ -76,9 +76,10 @@ class TestStepReferenceAdmin(TestWebAndAdmin):
         Check only the versions of the selected application are displayed
         """
         step_reference_admin = StepReferenceAdmin(model=StepReference, admin_site=AdminSite())
-        
-        request = MockRequest()
-        request.GET = {'version__application__id__exact': 1}
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        request = MockRequest(user)
+        request.GET = {'application': 1}
         
         test_case_filter = TestCaseFilter(request, {}, StepReference, step_reference_admin)
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)
@@ -88,14 +89,33 @@ class TestStepReferenceAdmin(TestWebAndAdmin):
         self.assertEqual(request._messages.content, ["Select at least a test case", "Select at least a test case"]) # present 2 times because filter init already calls 'lookup' method
 
 
+    def test_test_case_filter_lookup_with_application_no_permissions(self):
+        """
+        Check only the versions of the selected application are displayed
+        """
+        step_reference_admin = StepReferenceAdmin(model=StepReference, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+        request = MockRequest(user)
+        request.GET = {'application': 1}
+
+        test_case_filter = TestCaseFilter(request, {}, StepReference, step_reference_admin)
+        filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)
+
+        # only test cases where a step reference exist for the application app1 are returned
+        self.assertEqual(filtered_test_cases, [])
+        self.assertEqual(request._messages.content, ["Select at least a test case", "Select at least a test case"]) # present 2 times because filter init already calls 'lookup' method
+
+
     def test_test_case_filter_lookup_with_application_and_testcase(self):
         """
         Check only the versions of the selected application are displayed
         """
         step_reference_admin = StepReferenceAdmin(model=StepReference, admin_site=AdminSite())
 
-        request = MockRequest()
-        request.GET = {'version__application__id__exact': 1, 'test_case_id': [5]}
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        request = MockRequest(user)
+        request.GET = {'application': 1, 'test_case_id': [5]}
 
         test_case_filter = TestCaseFilter(request, {}, StepReference, step_reference_admin)
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=step_reference_admin)

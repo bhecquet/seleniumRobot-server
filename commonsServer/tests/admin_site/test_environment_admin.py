@@ -2,16 +2,23 @@
 from django.contrib.admin.sites import AdminSite
 
 from commonsServer.tests.test_parent import TestWebAndAdmin, MockRequest, MockSuperUser
+from snapshotServer.admin_site.testsession_admin import TestSessionAdmin
+from snapshotServer.models import TestSession
 from variableServer.models import Variable, TestEnvironment, Application
 from variableServer.admin_site.variable_admin import VariableAdmin
-from commonsServer.admin_site.environment_admin import EnvironmentFilter,\
-    EnvironmentAdmin
+from commonsServer.admin_site.environment_admin import EnvironmentFilter, \
+    EnvironmentAdmin, EnvironmentFilterForTestSession
 from django.contrib.auth.models import Permission
 from django.db.models import Q
 
 class TestEnvironmentAdmin(TestWebAndAdmin):
 
     fixtures = ['test_environment_admin.yaml']
+
+    def setUp(self):
+        # add permissions for application and environment
+        Application.objects.get(pk=1).save()
+        TestEnvironment.objects.get(pk=1).save()
     
     def test_environment_filter_lookup_without_application(self):
         """
@@ -27,7 +34,24 @@ class TestEnvironmentAdmin(TestWebAndAdmin):
         
         # all environments are displayed
         self.assertEqual(filtered_environments,  [(2, 'ASS'), (1, 'DEV'), (3, 'DEV1'), (4, 'DEV2'), ('_None_', 'None')])
-        
+
+    def test_environment_filter_lookup_with_application_on_test_session(self):
+        """
+        TestSession object looks for application using "version__application"
+        Check it's handled correctly and we get only environments associated to test session user can see
+        """
+        environment_admin = TestSessionAdmin(model=TestSession, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_app1')))
+        request = MockRequest(user=user)
+        request.GET = {'application': 1}
+
+        environment_filter = EnvironmentFilterForTestSession(request, {}, TestSession, environment_admin)
+        filtered_environments = environment_filter.lookups(request=request, model_admin=environment_admin)
+
+        # all environments are displayed
+        self.assertEqual(filtered_environments,  [(1, 'DEV'), ('_None_', 'None')])
+
     def test_environment_filter_lookup_with_application(self):
         """
         Check only the environments of the selected application are displayed

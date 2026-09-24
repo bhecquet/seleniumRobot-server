@@ -61,10 +61,8 @@ class TestTestSessionAdmin(TestWebAndAdmin):
         test_case_filter = TestCaseFilterForSession(request, {}, TestSession, session_admin)
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=session_admin)
 
-        # all distinct test case names, whatever the application
-        self.assertEqual(sorted(filtered_test_cases),
-                         sorted([(1, 'test1'), (2, 'test2'), (3, 'test3'),
-                                 (4, 'test login'), (5, 'test1app2')]))
+        # no application provided => no test cases
+        self.assertEqual(filtered_test_cases, [])
 
     def test_lookup_with_application(self):
         """
@@ -72,8 +70,9 @@ class TestTestSessionAdmin(TestWebAndAdmin):
         """
         session_admin = TestSessionAdmin(model=TestSession, admin_site=AdminSite())
 
-        request = MockRequest()
-        request.GET = {'version__application__id__exact': 1}
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        request = MockRequest(user)
+        request.GET = {'application': 1}
 
         test_case_filter = TestCaseFilterForSession(request, {}, TestSession, session_admin)
         filtered_test_cases = test_case_filter.lookups(request=request, model_admin=session_admin)
@@ -82,6 +81,21 @@ class TestTestSessionAdmin(TestWebAndAdmin):
         self.assertEqual(sorted(filtered_test_cases),
                          sorted([(1, 'test1'), (2, 'test2'), (3, 'test3'),
                                  (4, 'test login')]))
+
+    def test_lookup_with_application_no_permission(self):
+        """
+        If user has not permission on requested application, no test cases are returned
+        """
+        session_admin = TestSessionAdmin(model=TestSession, admin_site=AdminSite())
+
+        user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.none())
+        request = MockRequest(user)
+        request.GET = {'application': 1}
+
+        test_case_filter = TestCaseFilterForSession(request, {}, TestSession, session_admin)
+        filtered_test_cases = test_case_filter.lookups(request=request, model_admin=session_admin)
+
+        self.assertEqual(filtered_test_cases, [])
 
     def test_queryset_without_value(self):
         """

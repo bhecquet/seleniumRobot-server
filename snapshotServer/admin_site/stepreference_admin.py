@@ -1,6 +1,7 @@
 from django.contrib import messages
 
-from snapshotServer.models import StepReference
+from seleniumRobotServer.permissions.permissions import ContextPermissionChecker
+from snapshotServer.models import StepReference, Application
 from django.contrib.admin.filters import SimpleListFilter
 
 from commonsServer.admin_site.application_admin import ApplicationFromVersionFilter
@@ -19,9 +20,13 @@ class TestCaseFilter(SimpleListFilter):
         if self.parameter_name not in request.GET:
             model_admin.message_user(request, "Select at least a test case", messages.WARNING)
 
-        if 'version__application__id__exact' in request.GET:
-            app_id = request.GET['version__application__id__exact']
-            test_cases = {sr.testCase for sr in model_admin.model.objects.filter(version__application=app_id)}
+        if 'application' in request.GET:
+            allowed_applications = ContextPermissionChecker.get_allowed_applications(request)
+            app_id = request.GET['application']
+            if Application.objects.get(id=app_id).name not in allowed_applications:
+                test_cases = []
+            else:
+                test_cases = {sr.testCase for sr in model_admin.model.objects.filter(version__application=app_id)}
         else:
             test_cases = {sr.testCase for sr in model_admin.model.objects.all()}
 

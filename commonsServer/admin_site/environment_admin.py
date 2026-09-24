@@ -18,6 +18,7 @@ class EnvironmentFilter(SimpleListFilter):
     """
     title = 'Environment'
     parameter_name = 'environment'
+    application_field_path = 'application' # to redefine if access to application object is not done directly (e.g: version__application)
 
     def lookups(self, request, model_admin):
         if bypass_context_permissions(request, 'variableServer.view_testenvironment'):
@@ -28,7 +29,8 @@ class EnvironmentFilter(SimpleListFilter):
 
         if 'application' in request.GET:
             app_id = request.GET['application']
-            environments = {c.environment for c in model_admin.model.objects.filter(application=app_id).order_by('name')}
+
+            environments = {c.environment for c in model_admin.model.objects.filter(**{self.application_field_path + '__id': app_id}).order_by('name')}
         else:
             # it could be possible to filter environment to only display environments that are present in model instances, but it would make requests heavier on global change list
             environments = set(TestEnvironment.objects.all().order_by('name'))
@@ -50,6 +52,13 @@ class EnvironmentFilter(SimpleListFilter):
                 return queryset.filter(environment__id=self.value())
         else:
             return queryset
+
+class EnvironmentFilterForTestSession(EnvironmentFilter):
+    application_field_path = 'version__application'
+
+
+class EnvironmentFilterForVariables(EnvironmentFilter):
+    application_field_path = 'application'
 
 class EnvironmentForm(forms.ModelForm):
     
