@@ -1,9 +1,12 @@
 import logging
 
 from django.contrib import admin
+from django.contrib.auth import get_backends
 from django.contrib.auth.admin import UserAdmin, GroupAdmin as GroupAdminDefault
 from django.contrib.auth.models import User, Permission, Group
 from django.contrib.contenttypes.models import ContentType
+
+from django.utils.html import format_html_join
 
 from commonsServer.forms import GroupAdminForm
 from commonsServer.models import AppPreference
@@ -11,12 +14,67 @@ from commonsServer.preferences import sync_defaults
 from snapshotServer.models import TestSession
 from variableServer.models import Application, TestEnvironment
 
+try:
+    from django_auth_ldap.backend import LDAPBackend, _LDAPUser
+except ImportError:
+    LDAPBackend = None
+    _LDAPUser = None
+
 logger = logging.getLogger(__name__)
 
 class CustomUserAdmin(UserAdmin):
     """
     When variables edition permission is provided, also provide permission to view results for the same application
     """
+
+    readonly_fields = ('effective_permissions',)
+
+    def get_fieldsets(self, request, obj=None):
+        fs = UserAdmin.fieldsets
+        if 'effective_permissions' not in fs[2][1]['fields']:
+            fs[2][1]['fields'] = fs[2][1]['fields'] + ('effective_permissions',)
+        return fs
+
+    @admin.display(description='Effective permissions')
+    def effective_permissions(self, obj):
+        if not obj or not obj.pk:
+            return ''
+
+        permissions = set(obj.get_all_permissions())
+        permissions |= self._get_ldap_group_permissions(obj)
+
+        return format_html_join('', '{}<br>', ((p,) for p in sorted(permissions)))
+
+    @staticmethod
+    def _get_ldap_group_permissions(user):
+        """
+        Permissions granted through LDAP group membership are only computed and
+        cached by django-auth-ldap when the user actually logs in (they are
+        stored on the transient 'user.ldap_user' attribute of the in-memory
+        User instance). As the admin displays permissions for a User fetched
+        fresh from the database, this information is missing.
+        To get it anyway, query each configured LDAP backend directly: this
+        uses the backend's service account (AUTH_LDAP_x_BIND_DN /
+        AUTH_LDAP_x_BIND_PASSWORD) to look up the user's LDAP groups and
+        resolve the corresponding Django permissions, without requiring the
+        user to authenticate.
+        """
+        permissions = set()
+
+        if LDAPBackend is None:
+            return permissions
+
+        for backend in get_backends():
+            if not isinstance(backend, LDAPBackend):
+                continue
+
+            try:
+                ldap_user = _LDAPUser(backend, username=user.username)
+                permissions |= ldap_user.get_group_permissions()
+            except Exception:
+                logger.warning("could not retrieve LDAP group permissions for user '%s'", user.username, exc_info=True)
+
+        return permissions
 
     def save_related(self, request, form, formsets, change):
 
