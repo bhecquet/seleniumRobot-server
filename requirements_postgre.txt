@@ -1,2 +1,2 @@
 -r requirements.txt
-psycopg[binary]==3.3.3
+psycopg[binary]==3.3.6

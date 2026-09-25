@@ -1,8 +1,5 @@
 from rest_framework import parsers, renderers
-from rest_framework.compat import coreapi, coreschema
 from rest_framework.response import Response
-from rest_framework.schemas import ManualSchema
-from rest_framework.schemas import coreapi as coreapi_schema
 from rest_framework.views import APIView
 
 from hashed_auth.models import Token
@@ -15,31 +12,6 @@ class ObtainAuthToken(APIView):
     parser_classes = (parsers.FormParser, parsers.MultiPartParser, parsers.JSONParser,)
     renderer_classes = (renderers.JSONRenderer,)
     serializer_class = AuthTokenSerializer
-
-    if coreapi_schema.is_enabled():
-        schema = ManualSchema(
-            fields=[
-                coreapi.Field(
-                    name="username",
-                    required=True,
-                    location='form',
-                    schema=coreschema.String(
-                        title="Username",
-                        description="Valid username for authentication",
-                    ),
-                ),
-                coreapi.Field(
-                    name="password",
-                    required=True,
-                    location='form',
-                    schema=coreschema.String(
-                        title="Password",
-                        description="Valid password for authentication",
-                    ),
-                ),
-            ],
-            encoding="application/json",
-        )
 
     def get_serializer_context(self):
         return {

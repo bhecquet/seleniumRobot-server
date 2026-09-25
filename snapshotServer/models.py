@@ -335,7 +335,7 @@ class Snapshot(models.Model):
     
     class Meta:
         constraints = [
-            models.CheckConstraint(check=Q(diffTolerance__gte=0) & Q(diffTolerance__lte=100) , name='percentage_diff_tolerance'),
+            models.CheckConstraint(condition=Q(diffTolerance__gte=0) & Q(diffTolerance__lte=100) , name='percentage_diff_tolerance'),
         ]
     
     def snapshotsUntilNextRef(self, ref_snapshot):

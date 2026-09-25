@@ -17,6 +17,6 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='snapshot',
-            constraint=models.CheckConstraint(check=models.Q(('diffTolerance__gte', 0), ('diffTolerance__lte', 100)), name='percentage_diff_tolerance'),
+            constraint=models.CheckConstraint(condition=models.Q(('diffTolerance__gte', 0), ('diffTolerance__lte', 100)), name='percentage_diff_tolerance'),
         ),
     ]
