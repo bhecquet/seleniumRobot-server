@@ -134,7 +134,6 @@ AUTH_LDAP_1_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.group.admin}") |
 #                   LDAPGroupQuery("${ldap.group.edit}")),
-    "is_staff": "${ldap.group.edit}",
     "is_superuser": "${ldap.group.admin}"
 }
 
@@ -151,7 +150,6 @@ AUTH_LDAP_2_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.2.group.admin}") |
 #                   LDAPGroupQuery("${ldap.2.group.edit}")),
-    "is_staff": "${ldap.2.group.edit}",
     "is_superuser": "${ldap.2.group.admin}"
 }
                                    
@@ -168,6 +166,5 @@ AUTH_LDAP_3_USER_FLAGS_BY_GROUP = {
 # authenticated users will be active
 #     "is_active": (LDAPGroupQuery("${ldap.3.group.admin}") |
 #                   LDAPGroupQuery("${ldap.3.group.edit}")),
-    "is_staff": "${ldap.3.group.edit}",
     "is_superuser": "${ldap.3.group.admin}"
 }
