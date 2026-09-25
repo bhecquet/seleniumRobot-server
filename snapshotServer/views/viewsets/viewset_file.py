@@ -9,7 +9,8 @@ from rest_framework.response import Response
 from django.http.response import FileResponse, HttpResponse
 from django.core.files.uploadedfile import InMemoryUploadedFile
 
-from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording, \
+    ContextSpecificPermissionsResultConsultation
 from snapshotServer.models import StepResult, File
 from snapshotServer.utils.har_analyzer import get_network_info_per_page
 from snapshotServer.controllers.error_cause.network_error_cause_finder import NetworkErrorCauseFinder
@@ -31,11 +32,10 @@ class PassthroughRenderer(renderers.BaseRenderer):
     def render(self, data, accepted_media_type=None, renderer_context=None):
         return data
 
-class FilePermission(ContextSpecificPermissionsResultRecording):
+class FilePermission:
     """
     Redefine permission class so that it's possible to get application from data
     """
-
     def get_object_application(self, file):
         if file:
             return file.stepResult.testCase.session.version.application
@@ -64,6 +64,14 @@ class FilePermission(ContextSpecificPermissionsResultRecording):
         else:
             return ''
 
+class FilePermissionForResultRecording(FilePermission, ContextSpecificPermissionsResultRecording):
+    pass
+
+class FilePermissionForResultReading(FilePermission, ContextSpecificPermissionsResultConsultation):
+    pass
+
+
+
 class FileViewSet(ResultRecordingViewSet): # post
     """
     View allowing to upload any file that has been produced by test
@@ -77,9 +85,9 @@ class FileViewSet(ResultRecordingViewSet): # post
     http_method_names = ['post', 'get']
     queryset = File.objects.all()
     serializer_class = FileSerializer
-    permission_classes = [FilePermission]
+    permission_classes = [FilePermissionForResultRecording]
 
-    @action(methods=['get'], detail=True, renderer_classes=(PassthroughRenderer,))
+    @action(methods=['get'], detail=True, renderer_classes=(PassthroughRenderer,), permission_classes = [FilePermissionForResultRecording | FilePermissionForResultReading])
     def download(self, *args, **kwargs):
         instance = self.get_object()
 
