@@ -221,3 +221,251 @@ table.table-bordered > tbody > tr > td {
 .btn-box-tool:not(.collapsed) .collapse-icon {
 	transform: rotate(90deg);
 }
+.suggested-cause {
+	max-width: 720px;
+	margin-top: 12px;
+	padding: 12px 14px;
+	border-left: 4px solid #0d6efd;
+	border-radius: 5px;
+	background-color: #e8f0fe;
+	color: #212529;
+	line-height: 1.5;
+}
+
+.suggested-cause-type {
+	margin-bottom: 4px;
+}
+
+.declare-cause-action {
+	margin-top: 12px;
+}
+
+.declare-cause-button {
+	padding: 7px 14px;
+	border-radius: 6px;
+	font-weight: 500;
+}
+
+.declare-cause-button:hover,
+.declare-cause-button:focus {
+	color: #ffffff;
+	background-color: #0d6efd;
+}
+
+.error-cause-collapse {
+	width: 100%;
+	max-width: 540px;
+}
+
+.error-cause-form-container {
+	width: 100%;
+	margin-top: 12px;
+	padding: 20px;
+	box-sizing: border-box;
+	border: 1px solid #d8dee4;
+	border-radius: 9px;
+	background-color: #f8f9fa;
+	box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+}
+
+.error-cause-form-header {
+	margin-bottom: 18px;
+	padding-bottom: 13px;
+	border-bottom: 1px solid #dee2e6;
+}
+
+.error-cause-form-title {
+	color: #212529;
+	font-size: 18px;
+	font-weight: 600;
+	line-height: 1.3;
+}
+
+.error-cause-form-subtitle {
+	margin-top: 5px;
+	color: #6c757d;
+	font-size: 13px;
+	line-height: 1.4;
+}
+
+.error-cause-form-group {
+	margin-bottom: 17px;
+}
+
+.error-cause-label {
+	display: block;
+	margin-bottom: 7px;
+	color: #343a40;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.error-cause-select,
+.error-cause-comment {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	padding: 9px 11px;
+	border: 1px solid #adb5bd;
+	border-radius: 5px;
+	background-color: #ffffff;
+	color: #212529;
+	font-family: inherit;
+	font-size: 14px;
+}
+
+.error-cause-select {
+	height: 40px;
+}
+
+.error-cause-comment {
+	min-height: 100px;
+	line-height: 1.45;
+	resize: vertical;
+}
+
+.error-cause-select:focus,
+.error-cause-comment:focus {
+	border-color: #86b7fe;
+	outline: 0;
+	box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.2);
+}
+
+.error-cause-help {
+	display: block;
+	width: 100%;
+	margin-top: 7px;
+	color: #6c757d;
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.save-cause-status {
+	display: none;
+	margin-bottom: 12px;
+	padding: 9px 11px;
+	border-radius: 5px;
+	font-size: 13px;
+}
+
+.error-cause-submit {
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 4px;
+}
+
+.save-cause-button {
+	min-width: 110px;
+	padding: 8px 17px;
+	border-radius: 6px;
+	font-weight: 500;
+}
+.error-cause-header-shortcut {
+	margin-top: 12px;
+	margin-bottom: 12px;
+}
+
+.error-cause-header-alert {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 16px;
+	margin-bottom: 0;
+	border-left: 4px solid #ffc107;
+}
+
+.error-cause-header-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+@media screen and (max-width: 768px) {
+	.error-cause-header-alert {
+		align-items: flex-start;
+		flex-direction: column;
+	}
+
+}
+.error-cause-header-shortcut {
+	width: 85%;
+	margin: 12px auto 8px;
+}
+
+.error-cause-shortcut-card {
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	min-width: 340px;
+	max-width: 720px;
+	padding: 10px 12px;
+	gap: 24px;
+	border: 1px solid #d8dee4;
+	border-left: 3px solid #dc3545;
+	border-radius: 7px;
+	background-color: #ffffff;
+	box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.error-cause-shortcut-content {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.error-cause-shortcut-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex-shrink: 0;
+	border-radius: 50%;
+	background-color: #fbe9eb;
+	color: #b02a37;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.error-cause-shortcut-text {
+	display: flex;
+	flex-direction: column;
+	line-height: 1.25;
+}
+
+.error-cause-shortcut-text strong {
+	color: #343a40;
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.error-cause-shortcut-text span {
+	margin-top: 2px;
+	color: #6c757d;
+	font-size: 12px;
+}
+
+.error-cause-shortcut-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 7px;
+}
+
+.error-cause-shortcut-actions .btn {
+	white-space: nowrap;
+}
+
+@media screen and (max-width: 768px) {
+	.error-cause-header-shortcut {
+		width: calc(100% - 24px);
+	}
+
+	.error-cause-shortcut-card {
+		display: flex;
+		align-items: flex-start;
+		flex-direction: column;
+		min-width: 0;
+		width: 100%;
+		gap: 10px;
+	}
+}

@@ -8,6 +8,7 @@ from snapshotServer.views.picture_view import PictureView
 from snapshotServer.views.recompute_diff_view import RecomputeDiffView
 from snapshotServer.views.test_status_view import TestStatusView
 from snapshotServer.views.test_result_view import TestResultView, TestResultStatusView
+from snapshotServer.views.error_cause_view import SaveErrorCauseView
 
 from django.urls.conf import re_path, path
 from snapshotServer.views.step_reference_view import StepReferenceView
@@ -35,6 +36,7 @@ router.register(r'logs', ExecutionLogsViewSet)
 
 urlpatterns = [
     re_path(r'^$',  viewsets.Ping.as_view(), name='snapshotPing'),
+    path("api/save-error-cause/",SaveErrorCauseView.as_view(), name="save-error-cause",),
     re_path(r'^api/', include(router.urls), name='api'),
     re_path(r'^home/', viewsets.Home.as_view(), name='home'),
 

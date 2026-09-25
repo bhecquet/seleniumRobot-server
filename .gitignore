@@ -10,3 +10,14 @@ dist/
 /cover/
 /media/
 /coverage_html_report/
+
+# IntelliJ IDEA local files
+*.iml
+
+
+# Local application logs
+log/*.log
+
+.seleniumRobot-server.iml
+# IntelliJ IDEA local files
+*.iml
