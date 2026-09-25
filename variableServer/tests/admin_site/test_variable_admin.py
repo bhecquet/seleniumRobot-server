@@ -9,7 +9,6 @@ from django.contrib.auth.models import User, Permission
 from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.db.models import Q
-from django.test import override_settings
 from django.urls.base import reverse
 from django.utils import timezone
 
@@ -58,7 +57,7 @@ class TestVariableAdmin(TestWebAndAdmin):
             app_list.append(var.application)
 
         self.assertEqual(len(list(set(app_list))), 1)  # 'None' and 'app1'
-        self.assertTrue(Application.objects.get(pk=1) in app_list)
+        self.assertIn(Application.objects.get(pk=1), app_list)
 
 
     def test_variable_queryset_with_application_and_environment_restriction(self):
@@ -338,7 +337,7 @@ class TestVariableAdmin(TestWebAndAdmin):
             Q(codename='view_variable') | Q(codename='change_variable')))
         change_url = reverse('admin:variableServer_variable_change', args=(3,))
         response = client.get(change_url)
-        self.assertTrue(b'<input type="file" name="uploadFile" id="id_uploadFile">' in response.content)
+        self.assertIn(b'<input type="file" name="uploadFile" id="id_uploadFile">', response.content)
 
     def test_variable_change_template_with_file(self):
         """
@@ -349,7 +348,7 @@ class TestVariableAdmin(TestWebAndAdmin):
             Q(codename='view_variable') | Q(codename='change_variable')))
         change_url = reverse('admin:variableServer_variable_change', args=(999,))
         response = client.get(change_url)
-        self.assertTrue(b'Current value: <a href="/variable/api/variable/999/file">http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx</a>' in response.content)
+        self.assertIn(b'Current value: <a href="/variable/api/variable/999/file">http://127.0.0.1:8000/media/appFileVar/fauxfile.xlsx</a>', response.content)
 
     def test_variable_changelist_template_with_file(self):
         """
@@ -360,7 +359,7 @@ class TestVariableAdmin(TestWebAndAdmin):
             Q(codename='view_variable')))
         change_url = reverse('admin:variableServer_variable_changelist')
         response = client.get(change_url)
-        self.assertTrue(b'<th class="field-nameWithApp"><a href="/admin/variableServer/variable/999/change/">appFileVar.user</a></th><td class="field-value">file</td><td class="field-link"><a href="/variable/api/variable/999/file?format=json">fauxfile.xlsx</a></td>' in response.content)
+        self.assertIn(b'<th class="field-nameWithApp"><a href="/admin/variableServer/variable/999/change/">appFileVar.user</a></th><td class="field-value">file</td><td class="field-link"><a href="/variable/api/variable/999/file?format=json">fauxfile.xlsx</a></td>', response.content)
 
     def test_variable_copy_to_no_variables(self):
         """
@@ -405,11 +404,9 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4])
 
-        self.assertTrue('<form action="/variable/copyVariables" method="post">' in content)
-        self.assertTrue(
-            '<option value="1" selected>app1</option>' in content)  # check 'app1' is already selected as both variables have the same application
-        self.assertTrue(
-            'Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content)  # check no version is selected as variables have the same
+        self.assertIn('<form action="/variable/copyVariables" method="post">', content)
+        self.assertIn('<option value="1" selected>app1</option>', content)  # check 'app1' is already selected as both variables have the same application
+        self.assertIn('Version:</label><select name="version" id="id_version"><option value="" selected>- Select an option -</option>', content)  # check no version is selected as variables have the same
 
 
     def test_variable_copy_to_no_add_variable(self):
@@ -419,11 +416,11 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(
             Permission.objects.filter(Q(codename='view_variable') | Q(codename='change_variable')), [3, 4])
 
-        self.assertTrue('<form action="/variable/copyVariables" method="post">' in content)
-        self.assertTrue(
-            '<select name="application" id="id_application"><option value="" selected>' in content)  # no app selected
-        self.assertTrue(
-            '<select name="version" id="id_version"><option value="" selected>' in content)  # check no version is selected
+        self.assertIn('<form action="/variable/copyVariables" method="post">', content)
+        self.assertIn(
+            '<select name="application" id="id_application"><option value="" selected>', content)  # no app selected
+        self.assertIn(
+            '<select name="version" id="id_version"><option value="" selected>', content)  # check no version is selected
 
 
     def test_variable_copy_to_multiple_application(self):
@@ -433,7 +430,7 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4, 9, 10])
 
-        self.assertTrue('<input type="hidden" name="ids" value=3,4,9,10 />' in content)  # check 4 variables will be copied
+        self.assertIn('<input type="hidden" name="ids" value=3,4,9,10 />', content)  # check 4 variables will be copied
 
 
     def test_variable_copy_to_with_application_restrictions(self):
@@ -444,7 +441,7 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')),
                                               [3, 4, 9, 10])  # 3 & 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content)  # check both variables will be copied
+        self.assertIn('<input type="hidden" name="ids" value=3,4 />', content)  # check both variables will be copied
 
 
     def test_variable_copy_to_with_application_restrictions_and_global_change_variable(self):
@@ -456,8 +453,8 @@ class TestVariableAdmin(TestWebAndAdmin):
             Permission.objects.filter(Q(codename='add_variable') | Q(codename='view_variable')),
             [3, 4, 9, 10])  # 3 & 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value=3,4,9,10 />' in content)  # check both variables will be copied
+        self.assertIn(
+            '<input type="hidden" name="ids" value=3,4,9,10 />', content)  # check both variables will be copied
 
 
     def test_variable_copy_to_with_application_restrictions_and_without_global_add_variable(self):
@@ -468,8 +465,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='change_variable')),
                                               [4, 9, 10])  # 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value= />' in content)  # check no variable is kept => no permissions
+        self.assertIn(
+            '<input type="hidden" name="ids" value= />', content)  # check no variable is kept => no permissions
 
 
     def test_variable_copy_to_with_application_restrictions_on_variable_from_other_application(self):
@@ -480,8 +477,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_copy_to(Permission.objects.filter(Q(codename='can_view_application_app1')),
                                               [4, 9, 10])  # 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value=4 />' in content)  # check only variable which is associated to application 1 is kept
+        self.assertIn(
+            '<input type="hidden" name="ids" value=4 />', content)  # check only variable which is associated to application 1 is kept
 
 
     def test_variable_get_default_values_single_variable(self):
@@ -555,9 +552,9 @@ class TestVariableAdmin(TestWebAndAdmin):
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(
                 codename='delete_variable')), 3)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue(
-            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content)  # variable 'appName' is ready to be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn(
+            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>', content)  # variable 'appName' is ready to be deleted
 
 
     def test_variable_delete_selected_no_restriction_no_delete_permission(self):
@@ -567,8 +564,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_deletion(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue('<h2>Objects</h2><ul></ul>' in content)  # no variable can be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn('<h2>Objects</h2><ul></ul>', content)  # no variable can be deleted
 
 
     def test_variable_delete_selected_with_restriction_and_no_delete_permission(self):
@@ -579,8 +576,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_deletion(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), 3)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue('<h2>Objects</h2><ul></ul>' in content)  # no variable can be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn('<h2>Objects</h2><ul></ul>', content)  # no variable can be deleted
 
 
     def test_variable_delete_selected_with_restriction_and_delete_permission(self):
@@ -592,9 +589,9 @@ class TestVariableAdmin(TestWebAndAdmin):
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable') | Q(
                 codename='delete_variable')), 3)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue(
-            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content)  # variable 'appName' is ready to be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn(
+            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>', content)  # variable 'appName' is ready to be deleted
 
 
     def test_variable_delete_selected_with_application_restrictions_and_app1_permission(self):
@@ -604,9 +601,9 @@ class TestVariableAdmin(TestWebAndAdmin):
 
         content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 3)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue(
-            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>' in content)  # variable 'appName' is ready to be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn(
+            '<li>Variable: <a href="/admin/variableServer/variable/3/change/">appName</a></li></ul>', content)  # variable 'appName' is ready to be deleted
 
 
     def test_variable_delete_with_restriction_and_no_linked_application(self):
@@ -616,8 +613,8 @@ class TestVariableAdmin(TestWebAndAdmin):
 
         content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 9)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue('<h2>Objects</h2><ul></ul>' in content)  # no variable can be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn('<h2>Objects</h2><ul></ul>', content)  # no variable can be deleted
 
 
     def test_variable_delete_selected_with_restriction_and_other_application_permission(self):
@@ -627,8 +624,8 @@ class TestVariableAdmin(TestWebAndAdmin):
 
         content = self._test_variable_deletion(Permission.objects.filter(Q(codename='can_view_application_app1')), 301)
 
-        self.assertTrue('<title>Are you sure? | Django site admin</title>' in content)  # variable is ready to be deleted
-        self.assertTrue('<h2>Objects</h2><ul></ul>' in content)  # no variable can be deleted
+        self.assertIn('<title>Delete multiple objects | Django site admin</title>', content)  # variable is ready to be deleted
+        self.assertIn('<h2>Objects</h2><ul></ul>', content)  # no variable can be deleted
 
 
     def _test_variable_unreserve(self, permissions, app_of_application):
@@ -746,7 +743,7 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._format_content(response.content)
 
         self.assertEqual(response.status_code, 200, 'status code should be 200: ' + str(response.content))
-        self.assertTrue('<form action="/variable/changeVariables" method="post">' in content)
+        self.assertIn('<form action="/variable/changeVariables" method="post">', content)
 
         return content
 
@@ -773,11 +770,11 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_change_values_at_once(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4])
 
-        self.assertTrue(
-            '<option value="1" selected>app1</option>' in content)  # check 'app1' is already selected as both variables have the same application
-        self.assertTrue(
-            'Version:</label><select name="version" id="id_version"><option value="" selected>---------</option>' in content)  # check no version is selected as variables have the the same
-        self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content)  # check both variables will be modified
+        self.assertIn(
+            '<option value="1" selected>app1</option>', content)  # check 'app1' is already selected as both variables have the same application
+        self.assertIn(
+            'Version:</label><select name="version" id="id_version"><option value="" selected>- Select an option -</option>', content)  # check no version is selected as variables have the the same
+        self.assertIn('<input type="hidden" name="ids" value=3,4 />', content)  # check both variables will be modified
 
 
     def test_variable_change_values_at_once_no_change_permission(self):
@@ -804,8 +801,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_change_values_at_once(Permission.objects.filter(
             Q(codename='view_variable') | Q(codename='change_variable') | Q(codename='add_variable')), [3, 4, 9, 10])
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value=3,4,9,10 />' in content)  # check 4 variables will be modified
+        self.assertIn(
+            '<input type="hidden" name="ids" value=3,4,9,10 />', content)  # check 4 variables will be modified
 
 
     def test_variable_change_values_at_once_with_application_restrictions(self):
@@ -817,7 +814,7 @@ class TestVariableAdmin(TestWebAndAdmin):
             Permission.objects.filter(Q(codename='can_view_application_app1')),
             [3, 4, 9, 10])  # 3 & 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue('<input type="hidden" name="ids" value=3,4 />' in content)  # check both variables will be modified
+        self.assertIn('<input type="hidden" name="ids" value=3,4 />', content)  # check both variables will be modified
 
 
     def test_variable_change_values_at_once_with_application_restrictions_and_global_change_variable(self):
@@ -828,8 +825,8 @@ class TestVariableAdmin(TestWebAndAdmin):
         content = self._test_variable_change_values_at_once(Permission.objects.filter(Q(codename='change_variable')),
                                                             [3, 4, 9, 10])  # 3 & 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value=3,4,9,10 />' in content)  # check both variables will be modified
+        self.assertIn(
+            '<input type="hidden" name="ids" value=3,4,9,10 />', content)  # check both variables will be modified
 
 
     def test_variable_change_values_at_once_with_application_restrictions_and_without_global_change_variable(self):
@@ -859,8 +856,8 @@ class TestVariableAdmin(TestWebAndAdmin):
             Permission.objects.filter(Q(codename='can_view_application_app1')),
             [4, 9, 10])  # 4: app1; 9: no app; 10: app3,
 
-        self.assertTrue(
-            '<input type="hidden" name="ids" value=4 />' in content)  # check only variable which is associated to application 1 is kept
+        self.assertIn(
+            '<input type="hidden" name="ids" value=4 />', content)  # check only variable which is associated to application 1 is kept
 
 
     ### Variable Form ###
@@ -889,14 +886,14 @@ class TestVariableAdmin(TestWebAndAdmin):
                          "If 'application' value is modified, click 'save and continue editing' to display the related list of tests")
         self.assertFalse(form.fields['test'].disabled)  # check field is disabled when no application is selected
         self.assertEqual(len(form.fields['test'].queryset), 2)
-        self.assertTrue(2 in [v.id for v in form.fields['test'].queryset])
+        self.assertIn(2, [v.id for v in form.fields['test'].queryset])
         self.assertEqual(form.fields['version'].help_text,
                          "If 'application' value is modified, click 'save and continue editing' to display the related list of versions")
         self.assertFalse(form.fields['version'].disabled)  # check field is disabled when no application is selected
         self.assertEqual(len(form.fields['version'].queryset),
                          2)  # check only versions for app1 (the application related to variable is present
-        self.assertTrue(1 in [v.id for v in form.fields['version'].queryset])
-        self.assertTrue(2 in [v.id for v in form.fields['version'].queryset])
+        self.assertIn(1, [v.id for v in form.fields['version'].queryset])
+        self.assertIn(2, [v.id for v in form.fields['version'].queryset])
 
 
     def test_variable_form_with_protected_var_and_authorized(self):

@@ -146,8 +146,13 @@ class Variable(models.Model):
     def save(self, *args, **kwargs):
         if self.id:
             var = Variable.objects.get(id=self.id)
-            if var.uploadFile != self.uploadFile:
-                var.delete_variable_file()
+            try:
+                if var.uploadFile and var.uploadFile != self.uploadFile:
+                    var.delete_variable_file()
+
+            except ValueError:
+                pass
+
 
 
         super().save(*args, **kwargs)
