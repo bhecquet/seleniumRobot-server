@@ -6,9 +6,9 @@ Created on 15 mai 2017
 
 import datetime
 import os
-import pytz
 import json
 
+from django.utils import timezone
 from django.urls.base import reverse
 from django.conf import settings
 from django.db.models import Q
@@ -355,7 +355,7 @@ class TestFileUploadView(TestApi):
         self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='can_view_application_myapp', content_type=self.content_type_application)))
 
         # same as self.testCase in a greater version
-        session3 = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=pytz.UTC), browser="firefox", version=Version.objects.get(pk=2), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
+        session3 = TestSession(sessionId="8890", date=datetime.datetime(2017, 5, 7, tzinfo=timezone.get_current_timezone()), browser="firefox", version=Version.objects.get(pk=2), environment=TestEnvironment.objects.get(id=1), ttl=datetime.timedelta(0))
         session3.save()
         tcs3 = TestCaseInSession(testCase=self.testCase, session=session3)
         tcs3.save()
