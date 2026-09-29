@@ -139,6 +139,58 @@ class TestViewsetExcludeZone(TestApi):
         self._create_excludezone(403)
 
 
+    def test_excludezone_create_with_application_restriction_and_result_view_app1_permission(self):
+        """
+        User
+        - has NOT add_excludezone permission
+        - has 'can_view_results_application_myapp' permission (ExcludeZonePermissionForResultViewing)
+
+        User can add exclude zone on app1
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        self._create_excludezone(201)
+
+    def test_excludezone_create_with_application_restriction_and_result_view_app2_permission(self):
+        """
+        User
+        - has NOT add_excludezone permission
+        - has 'can_view_results_application_myapp2' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT add exclude zone on an other application than app2
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
+        self._create_excludezone(403)
+
+    def test_excludezone_create_with_application_restriction_and_result_view_env_DEV_permission(self):
+        """
+        User
+        - has NOT add_excludezone permission
+        - has 'can_view_results_environment_DEV' permission (ExcludeZonePermissionForResultViewing)
+
+        User can add exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+        self._create_excludezone(201)
+
+    def test_excludezone_create_with_application_restriction_and_result_view_env_PROD_permission(self):
+        """
+        User
+        - has NOT add_excludezone permission
+        - has 'can_view_results_environment_PROD' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT add exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+        self._create_excludezone(403)
+
     def test_excludezone_create_already_created(self):
         """
         Check it's not possible to create the same ExcludeZone twice
@@ -215,6 +267,58 @@ class TestViewsetExcludeZone(TestApi):
             Permission.objects.filter(Q(codename='can_view_application_myapp2')))
         self._update_excludezone(403)
 
+    def test_excludezone_update_with_application_restriction_and_result_view_app1_permission(self):
+        """
+        User
+        - has NOT change_excludezone permission
+        - has 'can_view_results_application_myapp' permission (ExcludeZonePermissionForResultViewing)
+
+        User can update exclude zone on app1
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        self._update_excludezone(200)
+
+    def test_excludezone_update_with_application_restriction_and_result_view_app2_permission(self):
+        """
+        User
+        - has NOT change_excludezone permission
+        - has 'can_view_results_application_myapp2' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT update exclude zone on an other application than app2
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
+        self._update_excludezone(403)
+
+    def test_excludezone_update_with_application_restriction_and_result_view_env_DEV_permission(self):
+        """
+        User
+        - has NOT change_excludezone permission
+        - has 'can_view_results_environment_DEV' permission (ExcludeZonePermissionForResultViewing)
+
+        User can update exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+        self._update_excludezone(200)
+
+    def test_excludezone_update_with_application_restriction_and_result_view_env_PROD_permission(self):
+        """
+        User
+        - has NOT change_excludezone permission
+        - has 'can_view_results_environment_PROD' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT update exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
+        self._update_excludezone(403)
+
 
     def _delete_excludezone(self, expected_status):
         exclude_zone = ExcludeZone(x=0, y=0, width=10, height=10, snapshot_id=1)
@@ -280,4 +384,56 @@ class TestViewsetExcludeZone(TestApi):
 
         self._create_and_authenticate_user_with_permissions(
             Permission.objects.filter(Q(codename='can_view_application_myapp2')))
+        self._delete_excludezone(403)
+
+    def test_excludezone_delete_with_application_restriction_and_result_view_app1_permission(self):
+        """
+        User
+        - has NOT delete_excludezone permission
+        - has 'can_view_results_application_myapp' permission (ExcludeZonePermissionForResultViewing)
+
+        User can delete exclude zone on app1
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp')))
+        self._delete_excludezone(204)
+
+    def test_excludezone_delete_with_application_restriction_and_result_view_app2_permission(self):
+        """
+        User
+        - has NOT delete_excludezone permission
+        - has 'can_view_results_application_myapp2' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT delete exclude zone on an other application than app2
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_application_myapp2')))
+        self._delete_excludezone(403)
+
+    def test_excludezone_delete_with_application_restriction_and_result_view_env_DEV_permission(self):
+        """
+        User
+        - has NOT delete_excludezone permission
+        - has 'can_view_results_environment_DEV' permission (ExcludeZonePermissionForResultViewing)
+
+        User can delete exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_DEV')))
+        self._delete_excludezone(204)
+
+    def test_excludezone_delete_with_application_restriction_and_result_view_env_PROD_permission(self):
+        """
+        User
+        - has NOT delete_excludezone permission
+        - has 'can_view_results_environment_PROD' permission (ExcludeZonePermissionForResultViewing)
+
+        User can NOT delete exclude zone on environment DEV
+        """
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_results_environment_PROD')))
         self._delete_excludezone(403)

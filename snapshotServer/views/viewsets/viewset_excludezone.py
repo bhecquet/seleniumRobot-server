@@ -1,6 +1,7 @@
 from rest_framework import serializers
 
-from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording
+from seleniumRobotServer.permissions.permissions import ContextSpecificPermissionsResultRecording, \
+    ContextSpecificPermissionsResultConsultation
 from snapshotServer.models import ExcludeZone, Snapshot
 from snapshotServer.viewsets import ResultRecordingViewSet
 
@@ -11,7 +12,7 @@ class ExcludeZoneSerializer(serializers.ModelSerializer):
         model = ExcludeZone
         fields = ('id', 'x', 'y', 'width', 'height', 'snapshot')
 
-class ExcludeZonePermission(ContextSpecificPermissionsResultRecording):
+class ExcludeZonePermission:
 
     def get_object_application(self, exclude_zone):
         if exclude_zone:
@@ -41,9 +42,16 @@ class ExcludeZonePermission(ContextSpecificPermissionsResultRecording):
         else:
             return ''
 
+class ExcludeZonePermissionForResultRecording(ExcludeZonePermission, ContextSpecificPermissionsResultRecording):
+    pass
+
+class ExcludeZonePermissionForResultViewing(ExcludeZonePermission, ContextSpecificPermissionsResultConsultation):
+    pass
+
 class ExcludeZoneViewSet(ResultRecordingViewSet): # post
     http_method_names = ['post', 'patch', 'delete']
     queryset = ExcludeZone.objects.all()
     serializer_class = ExcludeZoneSerializer
-    permission_classes = [ExcludeZonePermission]
+    permission_classes = [ExcludeZonePermissionForResultRecording | ExcludeZonePermissionForResultViewing]
     recreate_existing_instance = False
+
