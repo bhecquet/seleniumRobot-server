@@ -30,8 +30,9 @@ class CustomUserAdmin(UserAdmin):
     readonly_fields = ('effective_permissions',)
 
     def get_fieldsets(self, request, obj=None):
-        fs = UserAdmin.fieldsets
-        if 'effective_permissions' not in fs[2][1]['fields']:
+        fs = super().get_fieldsets(request, obj)
+
+        if obj and 'effective_permissions' not in fs[2][1]['fields']:
             fs[2][1]['fields'] = fs[2][1]['fields'] + ('effective_permissions',)
         return fs
 

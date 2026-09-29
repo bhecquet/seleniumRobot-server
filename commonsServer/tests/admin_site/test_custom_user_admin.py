@@ -237,6 +237,43 @@ class TestCustomUserAdminEffectivePermissions(TestWebAndAdmin):
         permission_fields = fieldsets[2][1]['fields']
         self.assertIn('effective_permissions', permission_fields)
 
+    def test_get_fieldsets_for_add_view_returns_creation_fields(self):
+        """
+        Check that, when creating a new user (obj is None), get_fieldsets returns the
+        standard 'add' fieldsets (username, password1, password2) instead of crashing
+        while trying to add 'effective_permissions' to a fieldset that does not exist yet
+        """
+        fieldsets = self.admin.get_fieldsets(MockRequest(), None)
+        creation_fields = fieldsets[0][1]['fields']
+        self.assertIn('username', creation_fields)
+        self.assertIn('password1', creation_fields)
+        self.assertIn('password2', creation_fields)
+
+    def test_effective_permissions_not_in_fieldsets_for_add_view(self):
+        """
+        Check the 'effective_permissions' field is not added to the fieldsets when creating
+        a new user, since there is no instance yet to compute permissions for
+        """
+        fieldsets = self.admin.get_fieldsets(MockRequest(), None)
+        for fieldset in fieldsets:
+            self.assertNotIn('effective_permissions', fieldset[1]['fields'])
+
+    def test_add_view_displays_creation_fields(self):
+        """
+        Check the user creation page actually renders the specific creation fields
+        """
+        admin_user, client = self._create_and_authenticate_user_with_permissions(Permission.objects.filter(Q(codename='add_user', content_type=self.content_type_application)))
+        admin_user.is_superuser = True
+        admin_user.save()
+        client.force_login(admin_user)
+
+        response = client.get('/admin/auth/user/add/')
+        self.assertEqual(200, response.status_code)
+        self.assertContains(response, 'name="username"')
+        self.assertContains(response, 'name="password1"')
+        self.assertContains(response, 'name="password2"')
+        self.assertNotContains(response, 'effective_permissions')
+
     def test_effective_permissions_returns_empty_string_for_unsaved_user(self):
         """
         Check no error occurs and an empty value is returned when there is no user instance (add view)
