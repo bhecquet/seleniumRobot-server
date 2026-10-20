@@ -23,10 +23,11 @@ class InactiveUsers(APIView):
     def get(self, request, *args, **kwargs):
         max_inactive_days = preferences.get_preference("USER_MAX_INACTIVE_DAYS")
 
-        inactive_users = User.objects.filter(last_login__lt=timezone.now() - datetime.timedelta(days=int(max_inactive_days)))
+        inactive_users = User.objects.filter(last_login__isnull=False, last_login__lt=timezone.now() - datetime.timedelta(days=int(max_inactive_days)))
+        never_loggedin_users = User.objects.filter(last_login__isnull=True, date_joined__lt=timezone.now() - datetime.timedelta(days=int(max_inactive_days)))
 
         return Response([{"username": user.username,
                  "lastLogin": user.last_login,
                  "firstName": user.first_name,
                  "email": user.email,
-                 "lastName": user.last_name} for user in inactive_users])
+                 "lastName": user.last_name} for user in inactive_users.union(never_loggedin_users)])
