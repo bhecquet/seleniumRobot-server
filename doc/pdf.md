@@ -214,5 +214,3 @@ None: every existing test is linked to at least one rule.
   exception, reported to the user as a comparison error. Current behavior, not covered by a test.
 - **Azure**: user instructions are ignored (RG-AZR-05) although the form offers them for every model.
 - **Mistral**: the displayed full response is always `{}` (RG-MIS-07).
-- **PDF validation**: only the extension and the `%PDF-` signature are checked (RG-FRM-02); a corrupted PDF with a valid signature is only detected when counting
-  pages (empty page count in the log, RG-LOG-03), then possibly by the comparator.
