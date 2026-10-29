@@ -6,16 +6,21 @@ import json
 from django.core.cache import cache
 from django.shortcuts import render, redirect
 from django.views import View
+from django.contrib.auth.mixins import LoginRequiredMixin
 
 from pdf.controllers.comparison import ComparisonError
 from pdf.controllers.comparison.azure_ocr_comparator import AzureOcrComparator
 from pdf.controllers.comparison.mistral_document_annotation_comparator import MistralDocComparator
 from pdf.controllers.comparison.stub_comparator import StubComparator
 from pdf.forms import PdfCompareForm
+from pdf.models import PdfRequestLog
 
 logger = logging.getLogger(__name__)
 
-class PdfCompareView(View):
+PURGE_CACHE_KEY = 'pdf_request_log_purge'
+PURGE_INTERVAL_SECONDS = 3600
+
+class PdfCompareView(LoginRequiredMixin, View):
     """
     Vue permettant de comparer deux fichiers PDF.
     GET  : affiche le formulaire d'upload.
@@ -43,25 +48,69 @@ class PdfCompareView(View):
         model = form.cleaned_data['model']
         user_prompt = form.cleaned_data['user_prompt']
 
+        nb_pages_1 = self._count_pages(pdf1)
+        nb_pages_2 = self._count_pages(pdf2)
+
         try:
-            result = self._compare_pdfs(model, pdf1, pdf2, user_prompt)
+            result = self._compare_pdfs(model, pdf1, pdf2, user_prompt, nb_pages_1, nb_pages_2)
         except Exception as e:
             logger.exception('Error comparing PDF')
+            self._log_request(request.user, nb_pages_1, nb_pages_2, user_prompt, success=False, error_message=str(e))
             return render(request, self.template_name, {
                 'form': form,
                 'error': f'Error occured during comparison : {e}'
             })
+
+        self._log_request(request.user, nb_pages_1, nb_pages_2, user_prompt, success=True)
 
         request.session['pdf_compare_result'] = result
         token = self._store_uploaded_pdfs_temporarily(pdf1, pdf2)
         request.session['pdf_compare_payload_token'] = token
         return redirect('pdf-compare-result')
 
+    @staticmethod
+    def _count_pages(pdf_file):
+        """Return the number of pages, or None if the file cannot be read"""
+        import pypdf
+        try:
+            pdf_file.seek(0)
+            return len(pypdf.PdfReader(pdf_file).pages)
+        except Exception:
+            logger.warning('Cannot read number of pages of %s', getattr(pdf_file, 'name', 'PDF'))
+            return None
+        finally:
+            pdf_file.seek(0)
+
+    @staticmethod
+    def _log_request(user, nb_pages_1, nb_pages_2, user_prompt, success, error_message=''):
+        try:
+            PdfRequestLog.objects.create(
+                user=user,
+                request_type=PdfRequestLog.TYPE_COMPARISON,
+                origin=PdfRequestLog.ORIGIN_UI,
+                nb_pages_1=nb_pages_1,
+                nb_pages_2=nb_pages_2,
+                user_instructions=user_prompt or '',
+                success=success,
+                error_message=error_message,
+            )
+        except Exception:
+            # logging must never break the comparison itself
+            logger.exception('Cannot log PDF request')
+            return
+
+        # Purge at most once per hour. cache.add is atomic: only one concurrent caller gets True
+        try:
+            if cache.add(PURGE_CACHE_KEY, True, timeout=PURGE_INTERVAL_SECONDS):
+                PdfRequestLog.purge_old()
+        except Exception:
+            logger.exception('Cannot purge old PDF request logs')
+
     # ------------------------------------------------------------------
     # Comparison logic
     # ------------------------------------------------------------------
 
-    def _compare_pdfs(self, model, file1, file2, user_prompt):
+    def _compare_pdfs(self, model, file1, file2, user_prompt, nb_pages_1, nb_pages_2):
         """Compare two PDF files and return a dict with the results."""
 
         # Do not treat user prompt as secure
@@ -88,16 +137,6 @@ class PdfCompareView(View):
         else:
             raise ComparisonError("Only 'stub', 'azure_ocr' and 'mistral_doc' are allowed")
         comparison_result = comparator.compare(file1, file2)
-
-
-        import pypdf
-
-        reader1 = pypdf.PdfReader(file1)
-        reader2 = pypdf.PdfReader(file2)
-
-        nb_pages_1 = len(reader1.pages)
-        nb_pages_2 = len(reader2.pages)
-
 
         serialized_result = comparison_result.serialize()
         return {
@@ -137,30 +176,4 @@ class PdfCompareView(View):
         if not content:
             return None
         return 'data:application/pdf;base64,' + base64.b64encode(content).decode('ascii')
-
-
-class PdfCompareResultView(View):
-    """Affiche les résultats de la dernière comparaison de PDF."""
-
-    template_name = 'pdf/compare_result.html'
-
-    def get(self, request):
-        result = request.session.get('pdf_compare_result')
-        if not result:
-            return redirect('pdf-compare')
-
-        payload = None
-        token = request.session.get('pdf_compare_payload_token')
-        if token:
-            payload = cache.get(f'{PdfCompareView.cache_prefix}:{token}')
-
-        context = {'result': result}
-        if payload:
-            context['left_pdf_name'] = payload.get('left_name')
-            context['right_pdf_name'] = payload.get('right_name')
-            context['left_pdf_src'] = PdfCompareView._build_pdf_data_uri(payload.get('left_content'))
-            context['right_pdf_src'] = PdfCompareView._build_pdf_data_uri(payload.get('right_content'))
-
-        return render(request, self.template_name, context)
-
 
