@@ -25,12 +25,14 @@ class TestMistralDocComparator(SimpleTestCase):
         return http_response(content=json.dumps({'document_annotation': annotation}).encode())
 
     def test_combine_pdf(self, prefs):
+        """RG-MIS-02: page by page grouping, limited to the smallest page count"""
         prefs.side_effect = self._prefs
         nb1, nb2, combined = MistralDocComparator('p').combine_pdf_for_comparison(build_pdf(3), build_pdf(2))
         self.assertEqual((3, 2), (nb1, nb2))
         self.assertEqual(2, len(combined))
 
     def test_filter_differences(self, prefs):
+        """RG-MIS-06: duplicates are removed"""
         prefs.side_effect = self._prefs
         d = Difference(1, 'l', 'd')
         self.assertEqual([d, Difference(2, 'l', 'd')],
@@ -38,6 +40,7 @@ class TestMistralDocComparator(SimpleTestCase):
 
     @mock.patch(POST)
     def test_compare(self, post, prefs):
+        """RG-MIS-04, RG-MIS-05: one request per page, differences attached to the page (starting at 1)"""
         prefs.side_effect = self._prefs
         post.return_value = self._mistral_response([{'location': 'top', 'details': 'changed'}])
 
@@ -48,6 +51,7 @@ class TestMistralDocComparator(SimpleTestCase):
 
     @mock.patch(POST)
     def test_compare_different_page_count(self, post, prefs):
+        """RG-MIS-03: different page counts => additional difference (page 0)"""
         prefs.side_effect = self._prefs
         post.return_value = self._mistral_response([])
 
@@ -59,6 +63,7 @@ class TestMistralDocComparator(SimpleTestCase):
 
     @mock.patch(POST)
     def test_compare_timeout(self, post, prefs):
+        """RG-MIS-04: code 408 => timeout error"""
         prefs.side_effect = self._prefs
         post.return_value = http_response(status=408)
         with self.assertRaisesRegex(ComparisonError, 'Timeout'):
@@ -66,6 +71,7 @@ class TestMistralDocComparator(SimpleTestCase):
 
     @mock.patch(POST)
     def test_compare_http_error(self, post, prefs):
+        """RG-MIS-04: code >= 400 => error"""
         prefs.side_effect = self._prefs
         post.return_value = http_response(status=500)
         with self.assertRaises(ComparisonError):
@@ -73,6 +79,7 @@ class TestMistralDocComparator(SimpleTestCase):
 
     @mock.patch(POST)
     def test_compare_invalid_body(self, post, prefs):
+        """RG-MIS-04: unusable response => error"""
         prefs.side_effect = self._prefs
         post.return_value = http_response(content=b'not json')
         with self.assertRaises(ComparisonError):

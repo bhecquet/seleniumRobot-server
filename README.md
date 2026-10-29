@@ -478,6 +478,45 @@ Usage is the same for all API (example for version)
 - `/commons/api/environment/`: get/post environment by id
 - `/commons/api/testcase/`: get/post test case by id
 
+### pdf ###
+
+#### compare two PDF files ####
+
+	POST http://<server>:<port>/pdf/api/compare/
+
+Request is `multipart/form-data`, authentication is mandatory (header `Authorization: Token <token>`, token obtained
+from `/api-token-auth/`). No specific permission is required.
+
+- `reference`: PDF file used as reference
+- `file`: PDF file to compare to the reference
+- `model`: model used for comparison: `azure_ocr`, `mistral_doc` or `stub` (tests only)
+- `instructions`: (optional) additional instructions sent to the model (e.g. differences to ignore)
+
+Both files must have the `.pdf` extension and contain a PDF.
+
+Example:
+
+	curl -X POST http://<server>:<port>/pdf/api/compare/ -H "Authorization: Token <token>" \
+	  -F "reference=@ref.pdf" -F "file=@new.pdf" -F "model=mistral_doc" -F "instructions=ignore the footer"
+
+Response (200):
+
+	{
+	  "differences": [
+	    {"location": "<section of the document>", "details": "<details>", "page": <page number>}
+	  ],
+	  "duration": <analysis duration in seconds>
+	}
+
+Errors:
+
+- `400`: invalid input, `{"errors": {"<parameter>": ["<message>"]}}`
+- `401` / `403`: not authenticated
+- `500`: comparison failed, `{"error": "<message>"}`
+
+Every comparison (success or failure) is recorded in database with origin `api`. Records older than 6 months are
+removed. See `doc/pdf.md` for business rules (RG-API-xx).
+
 ### variables ###
 
 #### get all variables ####

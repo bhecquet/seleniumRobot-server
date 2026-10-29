@@ -22,18 +22,21 @@ class TestPdfCompareView(PdfViewTestCase):
         return self.client.post(reverse('pdf-compare'), data)
 
     def test_get_authentication_required(self):
+        """RG-ACC-01: GET redirected to login when not authenticated"""
         url = reverse('pdf-compare')
         response = self.client.get(url)
         self.assertEqual(302, response.status_code)
         self.assertEqual(f'/accounts/login/?next={url}', response.url)
 
     def test_post_authentication_required(self):
+        """RG-ACC-01: POST redirected to login, no comparison run"""
         response = self._post()
         self.assertEqual(302, response.status_code)
         self.assertTrue(response.url.startswith('/accounts/login/'))
         self.assertNotIn('pdf_compare_result', self.client.session)
 
     def test_get_displays_form(self):
+        """RG-CMP-01: GET displays the form"""
         self.login()
         response = self.client.get(reverse('pdf-compare'))
         self.assertEqual(200, response.status_code)
@@ -41,6 +44,7 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertIn('form', response.context)
 
     def test_post_invalid_form(self):
+        """RG-CMP-02: invalid form is displayed again with its errors"""
         self.login()
         response = self._post(model='unknown')
         self.assertEqual(200, response.status_code)
@@ -48,6 +52,7 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertIn('model', response.context['form'].errors)
 
     def test_post_stub_redirects_to_result(self):
+        """RG-CMP-03, RG-CMP-05, RG-CMP-07, RG-LOG-01, RG-LOG-02: successful comparison (stub)"""
         self.login()
         response = self._post()
 
@@ -75,8 +80,9 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertEqual('a.pdf', payload['left_name'])
         self.assertTrue(payload['right_content'].startswith(b'%PDF'))
 
-    @mock.patch('pdf.views.compare_view.AzureOcrComparator')
+    @mock.patch('pdf.controllers.comparison.comparison_service.AzureOcrComparator')
     def test_post_azure_model(self, comparator_class):
+        """RG-CMP-03, RG-CMP-04, RG-LOG-01: Azure model, instructions wrapped for the model, logged raw"""
         comparator_class.return_value.compare.return_value = ComparisonResult([Difference(1, 'l', 'd')])
         self.login()
         response = self._post(model='azure_ocr', user_prompt='ignore totals')
@@ -88,8 +94,9 @@ class TestPdfCompareView(PdfViewTestCase):
         # raw user instructions are logged, not the wrapped prompt
         self.assertEqual('ignore totals', PdfRequestLog.objects.get().user_instructions)
 
-    @mock.patch('pdf.views.compare_view.MistralDocComparator')
+    @mock.patch('pdf.controllers.comparison.comparison_service.MistralDocComparator')
     def test_post_mistral_model(self, comparator_class):
+        """RG-CMP-03, RG-CMP-04: Mistral model, empty instructions passed as is"""
         comparator_class.return_value.compare.return_value = ComparisonResult([])
         self.login()
         response = self._post(model='mistral_doc')
@@ -97,11 +104,12 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertRedirects(response, reverse('pdf-compare-result'), fetch_redirect_response=False)
         comparator_class.assert_called_once_with('')
 
-    @mock.patch('pdf.views.compare_view.StubComparator')
+    @mock.patch('pdf.controllers.comparison.comparison_service.StubComparator')
     def test_post_comparison_error(self, comparator_class):
+        """RG-CMP-06, RG-LOG-02: comparison error, message displayed and failure logged"""
         comparator_class.return_value.compare.side_effect = Exception('boom')
         self.login()
-        with self.assertLogs('pdf.views.compare_view', level='ERROR'):
+        with self.assertLogs('pdf.controllers.comparison.comparison_service', level='ERROR'):
             response = self._post()
 
         self.assertEqual(200, response.status_code)
@@ -114,9 +122,10 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertEqual((1, 2), (log.nb_pages_1, log.nb_pages_2))
 
     def test_post_unreadable_pdf_is_logged(self):
+        """RG-LOG-03: unreadable file, page count is empty in the log"""
         self.login()
-        bad = SimpleUploadedFile('bad.pdf', b'not a pdf')
-        with self.assertLogs('pdf.views.compare_view', level='WARNING'):
+        bad = SimpleUploadedFile('bad.pdf', b'%PDF-1.4 corrupted')
+        with self.assertLogs('pdf.controllers.comparison.comparison_service', level='WARNING'):
             self._post(pdf_file_1=bad, model='stub')
 
         log = PdfRequestLog.objects.get()
@@ -124,6 +133,7 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertEqual(2, log.nb_pages_2)
 
     def test_post_purges_old_logs(self):
+        """RG-LOG-06, RG-LOG-07: old logs are purged after recording a new one"""
         old = PdfRequestLog.objects.create(request_type=PdfRequestLog.TYPE_COMPARISON, nb_pages_1=1)
         PdfRequestLog.objects.filter(pk=old.pk).update(date=timezone.now() - timedelta(days=400))
         self.login()
@@ -133,6 +143,7 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertEqual(1, PdfRequestLog.objects.count())
 
     def test_post_purge_throttled(self):
+        """RG-LOG-07: purge runs at most once per hour"""
         """
         As a purge has already been done through the first 'post', no new purge should be done before 1 hour
         :return:
@@ -146,10 +157,12 @@ class TestPdfCompareView(PdfViewTestCase):
         self.assertTrue(PdfRequestLog.objects.filter(pk=old.pk).exists())
 
     def test_post_invalid_form_not_logged(self):
+        """RG-LOG-05: invalid form is not logged"""
         self.login()
         self._post(model='unknown')
         self.assertEqual(0, PdfRequestLog.objects.count())
 
     def test_build_pdf_data_uri(self):
+        """RG-RES-04: data URI only when content is not empty"""
         self.assertIsNone(PdfCompareView._build_pdf_data_uri(b''))
         self.assertEqual('data:application/pdf;base64,YWJj', PdfCompareView._build_pdf_data_uri(b'abc'))

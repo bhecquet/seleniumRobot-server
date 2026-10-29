@@ -31,14 +31,21 @@ class PdfCompareForm(forms.Form):
     )
 
     def clean_pdf_file_1(self):
-        f = self.cleaned_data.get('pdf_file_1')
-        if f and not f.name.lower().endswith('.pdf'):
-            raise forms.ValidationError('File must be PDF.')
-        return f
+        return self._check_pdf(self.cleaned_data.get('pdf_file_1'))
 
     def clean_pdf_file_2(self):
-        f = self.cleaned_data.get('pdf_file_2')
-        if f and not f.name.lower().endswith('.pdf'):
-            raise forms.ValidationError('File must be PDF.')
-        return f
+        return self._check_pdf(self.cleaned_data.get('pdf_file_2'))
 
+    @staticmethod
+    def _check_pdf(f):
+        """Check extension and content signature ('%PDF-' header, allowed in the first 1024 bytes)"""
+        if not f:
+            return f
+        if not f.name.lower().endswith('.pdf'):
+            raise forms.ValidationError('File must be PDF.')
+        f.seek(0)
+        header = f.read(1024)
+        f.seek(0)
+        if b'%PDF-' not in header:
+            raise forms.ValidationError('File content is not a PDF.')
+        return f

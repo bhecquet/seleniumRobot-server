@@ -6,12 +6,14 @@ from pdf.tests.views.pdf_view_test_case import PdfViewTestCase
 class TestPdfHomeView(PdfViewTestCase):
 
     def test_home(self):
+        """RG-NAV-01: home page is displayed for a logged user"""
         self.login()
         response = self.client.get(reverse('pdf-home'))
         self.assertEqual(200, response.status_code)
         self.assertTemplateUsed(response, 'pdf/home.html')
 
     def test_authentication_required(self):
+        """RG-ACC-01: redirect to login when not authenticated"""
         url = reverse('pdf-home')
         response = self.client.get(url)
         self.assertEqual(302, response.status_code)

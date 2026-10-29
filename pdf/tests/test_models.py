@@ -15,6 +15,7 @@ class TestPdfRequestLog(TestCase):
         return log
 
     def test_purge_old_removes_only_old_entries(self):
+        """RG-LOG-06: only rows older than 183 days are deleted"""
         old = self._create(PdfRequestLog.RETENTION_DAYS + 1)
         recent = self._create(PdfRequestLog.RETENTION_DAYS - 1)
 
@@ -24,6 +25,7 @@ class TestPdfRequestLog(TestCase):
         self.assertFalse(PdfRequestLog.objects.filter(pk=old.pk).exists())
 
     def test_purge_old_is_idempotent(self):
+        """RG-LOG-06: purge is idempotent (repeated / concurrent calls)"""
         self._create(PdfRequestLog.RETENTION_DAYS + 10)
         self._create(1)
 
