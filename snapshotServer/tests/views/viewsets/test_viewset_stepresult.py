@@ -745,6 +745,65 @@ class TestViewsetStepResult(TestApi):
         self.assertEqual(0, len(error.relatedErrors.all()))
 
 
+    def test_stepresult_parse_stacktrace_result_action_failed_without_name(self):
+        """
+        When error in step, stacktrace is parsed and a new error is created
+        If error is due to assertion, then no element is in used, nor action
+        """
+        stacktrace = """
+            {
+                "date": "Wed Oct 25 14:53:58 CEST 2023",
+                "failed": true,
+                "exception": "class java.lang.AssertionError",
+                "exceptionMessage": "class java.lang.AssertionError: expected [false] but <_> found [true]",
+                "type": "step",
+                "duration": 713,
+                "snapshots": [],
+                "videoTimeStamp": 5,
+                "name": "openPage with args: (https://jenkins/jenkins/, )",
+                "action": "openPage",
+                "files": [],
+                "position": 0,
+                "actions": [
+                    {
+                        "name": "Opening page LoginPage",
+                        "action": "openPage",
+                        "origin": "LoginPage",
+                        "failed": false,
+                        "position": 0,
+                        "type": "action",
+                        "timestamp": 1698245638815
+                    },
+                    {
+                        "messageType": "ERROR",
+                        "name": "Check: No Check message provided",
+                        "failed": true,
+                        "type": "check"
+                    }
+                ],
+                "timestamp": 1698245638814,
+                "status": "FAILED",
+                "harCaptures": []
+            }"""
+
+        self._create_and_authenticate_user_with_permissions(
+            Permission.objects.filter(Q(codename='can_view_application_myapp')))
+        response = self.client.post('/snapshot/api/stepresult/',
+                                    data={'step': 1, 'testCase': 1, 'result': False, 'stacktrace': stacktrace})
+        self.assertEqual(201, response.status_code)
+        step_result_id = response.data['id']
+        self.assertEqual(1, len(Error.objects.all()))
+        error = Error.objects.all()[0]
+
+        self.assertEqual('openPage with args: (https://jenkins/jenkins/, )', error.action)
+        self.assertIsNone(error.cause)
+        self.assertEqual('class java.lang.AssertionError: expected [false] but <_> found [true]', error.errorMessage)
+        self.assertEqual('class java.lang.AssertionError', error.exception)
+        self.assertEqual('', error.element)
+        self.assertEqual(step_result_id, error.stepResult.id)
+        self.assertEqual(0, len(error.relatedErrors.all()))
+
+
     def test_stepresult_parse_stacktrace_result_action_failed_on_element(self):
         """
         When error in step, stacktrace is parsed and a new error is created

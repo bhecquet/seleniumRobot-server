@@ -146,6 +146,8 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
     def search_failed_action(self, data, path=''):
         """
         Look for an action that has the 'failed' flag set to true and return the name and the exception message, if it's present
+
+        actions of type "check" won't be analyzed because details are in parent step
         """
 
         if 'actions' in data:
@@ -157,7 +159,7 @@ class StepResultViewSet(ResultRecordingViewSet): # post / patch
                     if failed_action:
                         return failed_action, exception, exception_message, element
 
-                if action.get('failed', False):
+                if action.get('failed', False) and action.get('type', '') != 'check':
                     if action.get('element', ''):
                         return f"{path}>{action['action']} on {action['origin']}.{action['element']}", action.get('exception', None), action.get('exceptionMessage', None), action.get('elementDescription', '')
                     else:
